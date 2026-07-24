@@ -1,15 +1,16 @@
 import { Show, For, Switch, Match, createMemo } from 'solid-js'
 import { deskData } from '../../data/relay'
 import styles from './DeskCard.module.css'
+import shared from '../shared.module.css'
 
 function Skeleton() {
   return (
-    <div class={styles.skeleton}>
-      <div class={`${styles.bar} ${styles.wide}`} />
-      <div class={`${styles.bar} ${styles.medium}`} />
-      <div class={`${styles.bar} ${styles.wide}`} />
-      <div class={`${styles.bar} ${styles.narrow}`} />
-      <div class={`${styles.bar} ${styles.medium}`} />
+    <div class={shared.skeleton}>
+      <div class={`${shared.bar} ${shared.wide}`} />
+      <div class={`${shared.bar} ${shared.medium}`} />
+      <div class={`${shared.bar} ${shared.wide}`} />
+      <div class={`${shared.bar} ${shared.narrow}`} />
+      <div class={`${shared.bar} ${shared.medium}`} />
     </div>
   )
 }
