@@ -1,13 +1,16 @@
-import { For, createMemo } from 'solid-js'
+import { For, Show, createMemo } from 'solid-js'
+import { wcStandings } from '../../data/relay'
 import styles from './Seasons.module.css'
 import shared from '../shared.module.css'
 
 // SAMPLE DATA — see docs/EXPERIMENT-seasons-ground-mockups.md. The relay's
-// real /context/date/{date} standings field is pre-rendered prose, not a
-// structured per-team model, so there's nothing real to fetch yet. This
-// exists to test whether ONE shape can honestly describe competition
-// state across structurally different sports -- not to look like live
-// data, which is why every card below says SAMPLE DATA directly in the UI.
+// /context/date/{date} standings field is pre-rendered prose, not a
+// structured per-team model — that finding holds. /wc/standings is real
+// (confirmed live, checked 2026-07-24), but scoped to World Cup group
+// stage only, and the tournament ended 2026-07-19 -- a final table, not
+// an ongoing race. Doesn't cover the cross-sport, ongoing-stakes question
+// this experiment actually asks. So: real World Cup section below, sample
+// cards for everything else, kept visibly separate rather than blended.
 
 const SAMPLE_TEAMS = [
   // Division/wild-card sport (MLB)
@@ -50,6 +53,30 @@ function SeasonCard(props) {
   )
 }
 
+// Real data, deliberately NOT run through the state/urgency model above --
+// a concluded group stage doesn't have "urgency" to show, and inventing an
+// "advanced"/"eliminated" label here would mean guessing this tournament's
+// actual advancement rule, which was never confirmed. Plain, honest table:
+// rank, team, record, goal difference, points. Nothing invented.
+function WcGroupTable(props) {
+  return (
+    <div class={styles.wcGroup}>
+      <div class={styles.wcGroupLabel}>Group {props.groupId}</div>
+      <For each={props.teams}>
+        {(t, i) => (
+          <div class={styles.wcRow}>
+            <span class={styles.wcRank}>{i() + 1}</span>
+            <span class={styles.wcTeam}>{t.team}</span>
+            <span class={styles.wcRecord}>{t.won}-{t.drawn}-{t.lost}</span>
+            <span class={styles.wcGd}>{t.gd > 0 ? '+' : ''}{t.gd}</span>
+            <span class={styles.wcPts}>{t.points}</span>
+          </div>
+        )}
+      </For>
+    </div>
+  )
+}
+
 export function Seasons() {
   const bySport = createMemo(() => {
     const map = {}
@@ -64,22 +91,46 @@ export function Seasons() {
     <div class={styles.root}>
       <header class={styles.header}>
         <span class={styles.label}>Seasons</span>
-        <span class={styles.sampleTag}>SAMPLE DATA — no real endpoint yet</span>
       </header>
-      <p class={styles.note}>
-        Same shape (state, label, urgency, detail) applied across three
-        structurally different season formats — division/wild-card,
-        seeded playoff, promotion/relegation. Testing whether one model
-        actually fits all three.
-      </p>
-      <For each={bySport()}>
-        {([sport, teams]) => (
-          <div class={styles.sportGroup}>
-            <div class={styles.sportLabel}>{sport}</div>
-            <For each={teams}>{team => <SeasonCard team={team} />}</For>
-          </div>
-        )}
-      </For>
+
+      <section class={styles.realSection}>
+        <div class={styles.realHeader}>
+          <span class={styles.sectionSubLabel}>World Cup — Group Stage</span>
+          <span class={styles.liveTag}>LIVE — /wc/standings</span>
+        </div>
+        <p class={styles.note}>
+          Real, structured data — the one genuinely queryable standings
+          source that exists. Tournament ended 2026-07-19, so this is a
+          final table, not an ongoing race.
+        </p>
+        <Show when={wcStandings()} fallback={<p class={styles.empty}>Loading…</p>}>
+          <For each={Object.entries(wcStandings().groups || {})}>
+            {([groupId, teams]) => <WcGroupTable groupId={groupId} teams={teams} />}
+          </For>
+        </Show>
+      </section>
+
+      <section class={styles.sampleSection}>
+        <div class={styles.realHeader}>
+          <span class={styles.sectionSubLabel}>Ongoing Competition State</span>
+          <span class={styles.sampleTag}>SAMPLE — no real endpoint yet</span>
+        </div>
+        <p class={styles.note}>
+          Same shape (state, label, urgency, detail) applied across three
+          structurally different, currently-ongoing season formats —
+          division/wild-card, seeded playoff, promotion/relegation. This is
+          the actual experiment question; nothing above with a LIVE tag
+          answers it, since a concluded group stage has no urgency left.
+        </p>
+        <For each={bySport()}>
+          {([sport, teams]) => (
+            <div class={styles.sportGroup}>
+              <div class={styles.sportLabel}>{sport}</div>
+              <For each={teams}>{team => <SeasonCard team={team} />}</For>
+            </div>
+          )}
+        </For>
+      </section>
     </div>
   )
 }
