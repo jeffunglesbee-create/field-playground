@@ -18,7 +18,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--field-text-secondary);
 }
 
 .sampleTag {
@@ -34,7 +34,7 @@
 
 .note {
   font-size: 11px;
-  color: #555;
+  color: var(--field-text-secondary);
   line-height: 1.5;
   margin-bottom: 14px;
 }
@@ -52,7 +52,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #3a3a3a;
+  color: var(--field-text-muted);
   padding-bottom: 4px;
   border-bottom: 1px solid #1a1a1a;
   margin-bottom: 8px;
@@ -76,14 +76,14 @@
 
 .sportTag {
   font-size: 8px;
-  color: #444;
+  color: var(--field-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .teamName {
   font-size: 12px;
-  color: #ddd;
+  color: var(--field-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -111,7 +111,7 @@
 .wildcard_race, .promotion_race,
 .bubble                        { background: #2a2410; color: #da4; }
 .relegation_battle             { background: #2a1a1a; color: #e66; }
-.eliminated, .mid_table        { background: #1a1a1a; color: #555; }
+.eliminated, .mid_table        { background: #1a1a1a; color: var(--field-text-secondary); }
 
 .urgencyTrack {
   flex: 1 1 auto;
@@ -129,6 +129,6 @@
 
 .detail {
   font-size: 10px;
-  color: #444;
+  color: var(--field-text-muted);
   font-variant-numeric: tabular-nums;
 }
