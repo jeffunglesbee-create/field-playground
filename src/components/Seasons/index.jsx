@@ -1,40 +1,89 @@
-import { For, Show, createMemo } from 'solid-js'
+import { For, Show, createMemo, createSignal } from 'solid-js'
 import { wcStandings, mlbStandings, mlsStandings } from '../../data/relay'
 import styles from './Seasons.module.css'
 import shared from '../shared.module.css'
 
-// SAMPLE DATA for NFL/EPL — see docs/EXPERIMENT-seasons-ground-mockups.md.
-// No structured, ongoing source found for either. MLB and MLS below are
-// real as of 2026-07-24.
-const SAMPLE_TEAMS = [
-  { team: 'Kansas City Chiefs',   sport: 'NFL', state: 'clinched',   label: 'Clinched Division', urgency: 0.1, detail: '#1 seed locked' },
-  { team: 'Denver Broncos',       sport: 'NFL', state: 'bubble',     label: 'Playoff Bubble',     urgency: 0.8, detail: '#7 seed · 1 game cushion' },
-  { team: 'Las Vegas Raiders',    sport: 'NFL', state: 'eliminated', label: 'Eliminated',         urgency: 0.0, detail: 'no playoff path' },
-  { team: 'Sunderland',      sport: 'EPL', state: 'promotion_race',   label: 'Promotion Race',    urgency: 0.6, detail: '3rd · 4 pts off automatic' },
-  { team: 'Southampton',     sport: 'EPL', state: 'relegation_battle',label: 'Relegation Battle',  urgency: 0.9, detail: '18th · 2 pts from safety' },
-  { team: 'Arsenal',         sport: 'EPL', state: 'mid_table',        label: 'Mid-Table',          urgency: 0.1, detail: '9th · nothing at stake' },
-]
+// MLB division ID -> name. Not in the API response (only numeric division
+// IDs) -- verified against real live team rosters per division before
+// mapping, not guessed from memory: 201=[Rays,Yankees,Red Sox,Orioles,Blue
+// Jays]=AL East, 202=[White Sox,Guardians,Twins,Tigers,Royals]=AL Central,
+// 200=[Rangers,Mariners,Astros,Athletics,Angels]=AL West, 204=[Braves,
+// Phillies,Marlins,Nationals,Mets]=NL East, 205=[Brewers,Cubs,Pirates,
+// Cardinals,Reds]=NL Central, 203=[Dodgers,D-backs,Padres,Giants,
+// Rockies]=NL West.
+const MLB_DIVISION_NAMES = {
+  201: 'AL East', 202: 'AL Central', 200: 'AL West',
+  204: 'NL East', 205: 'NL Central', 203: 'NL West',
+}
 
-// Compact row shared by MLB and sample cards — replaces the old padded
-// .card layout, which took ~3 lines of vertical space per team.
-function StateRow(props) {
-  const t = () => props.team
+// MLS conference membership -- NOT in the API (checked standings AND club
+// metadata, neither has a conference field). Searched for the real, current
+// 2026 breakdown rather than guess; cross-referenced every name against the
+// live standings' exact team-name strings (API uses "Los Angeles Football
+// Club" not "LAFC", "Red Bull New York" not "NY Red Bulls", etc. -- matched
+// exactly, not fuzzy). Externally-maintained mapping, not derived from any
+// FIELD or relay source -- flagged as such in the UI.
+const MLS_EASTERN = new Set([
+  'Nashville SC', 'Chicago Fire FC', 'Inter Miami CF', 'New York City Football Club',
+  'Charlotte FC', 'Toronto FC', 'Red Bull New York', 'New England Revolution',
+  'D.C. United', 'FC Cincinnati', 'Atlanta United', 'CF Montréal',
+  'Columbus Crew', 'Orlando City', 'Philadelphia Union',
+])
+const MLS_WESTERN = new Set([
+  'San Diego Football Club', 'Los Angeles Football Club', 'San Jose Earthquakes', 'FC Dallas',
+  'Portland Timbers', 'Houston Dynamo FC', 'Vancouver Whitecaps FC', 'Austin FC',
+  'Minnesota United FC', 'St. Louis CITY SC', 'Colorado Rapids', 'LA Galaxy',
+  'Real Salt Lake', 'Seattle Sounders FC', 'Sporting Kansas City',
+])
+
+function Tabs(props) {
   return (
-    <div class={styles.stateRow}>
-      <span class={styles.rowSport}>{t().sport}</span>
-      <span class={styles.rowTeam}>{t().name}</span>
-      <span class={`${shared.chip} ${styles.stateBadge} ${styles[t().state]}`}>{t().label}</span>
-      <div class={styles.urgencyTrack}>
-        <div class={styles.urgencyFill} style={{ width: `${t().urgency * 100}%` }} />
-      </div>
-      <span class={styles.rowDetail}>{t().detail}</span>
+    <div class={styles.tabBar}>
+      <For each={props.tabs}>
+        {tab => (
+          <button
+            class={`${styles.tab} ${props.active() === tab.key ? styles.tabActive : ''}`}
+            onClick={() => props.setActive(tab.key)}
+          >
+            {tab.label}
+          </button>
+        )}
+      </For>
     </div>
   )
 }
 
-// Group winners only -- real data has 12 groups / 59 rows, far too much
-// for a compact panel. Winner per group is a meaningful real subset (who
-// actually won), not an arbitrary truncation.
+// Card format, back from the compact-row version -- state badge, urgency
+// bar, detail line, one team per card.
+function TeamCard(props) {
+  const t = () => props.team
+  return (
+    <div class={styles.card}>
+      <span class={styles.teamName}>{t().name}</span>
+      <div class={styles.stateRow}>
+        <span class={`${shared.chip} ${styles.stateBadge} ${styles[t().state]}`}>{t().label}</span>
+        <div class={styles.urgencyTrack}>
+          <div class={styles.urgencyFill} style={{ width: `${t().urgency * 100}%` }} />
+        </div>
+      </div>
+      <div class={styles.detail}>{t().detail}</div>
+    </div>
+  )
+}
+
+function TableRow(props) {
+  const t = () => props.team
+  return (
+    <div class={styles.wcRow}>
+      <span class={styles.wcRank}>{t().rank}</span>
+      <span class={styles.wcTeam}>{t().name}</span>
+      <span class={styles.wcRecord}>{t().record}</span>
+      <span class={styles.wcGd}>{t().gd}</span>
+      <span class={styles.wcPts}>{t().pts}</span>
+    </div>
+  )
+}
+
 function mlbTeamState(t) {
   const rank = parseInt(t.divisionRank, 10)
   const gb = t.gamesBack === '-' ? 0 : parseFloat(t.gamesBack)
@@ -45,98 +94,126 @@ function mlbTeamState(t) {
   return { state: 'eliminated', label: 'Trailing', urgency: 0.1 }
 }
 
-export function Seasons() {
-  const bySport = createMemo(() => {
-    const map = {}
-    for (const t of SAMPLE_TEAMS) {
-      if (!map[t.sport]) map[t.sport] = []
-      map[t.sport].push(t)
-    }
-    return Object.entries(map)
+// --- MLB section: 7 tabs (6 divisions + Wild Card) ---
+function MlbSection() {
+  const [active, setActive] = createSignal(201)
+
+  const records = createMemo(() => mlbStandings()?.records ?? [])
+
+  const tabs = createMemo(() =>
+    records()
+      .map(r => ({ key: r.division.id, label: MLB_DIVISION_NAMES[r.division.id] || `Div ${r.division.id}` }))
+      .concat([{ key: 'wc', label: 'Wild Card' }])
+  )
+
+  const divisionTeams = createMemo(() => {
+    const rec = records().find(r => r.division.id === active())
+    return (rec?.teamRecords ?? []).map(t => {
+      const s = mlbTeamState(t)
+      return { name: t.team.name, ...s, detail: `${t.gamesBack === '-' ? 'GA' : t.gamesBack + ' GB'} · ${t.streak?.streakCode ?? ''}` }
+    })
   })
 
-  const mlbTeams = createMemo(() =>
-    (mlbStandings()?.records ?? []).flatMap(r => r.teamRecords ?? []).map(t => {
-      const s = mlbTeamState(t)
-      return {
-        sport: 'MLB', name: t.team.name, state: s.state, label: s.label, urgency: s.urgency,
-        detail: `${t.gamesBack === '-' ? 'GA' : t.gamesBack + ' GB'} · ${t.streak?.streakCode ?? ''}`,
-      }
-    })
+  const wildCardTeams = createMemo(() => {
+    const all = records().flatMap(r => r.teamRecords ?? [])
+    return all
+      .filter(t => parseInt(t.divisionRank, 10) !== 1)
+      .sort((a, b) => parseFloat(a.wildCardGamesBack === '-' ? 0 : a.wildCardGamesBack) - parseFloat(b.wildCardGamesBack === '-' ? 0 : b.wildCardGamesBack))
+      .slice(0, 8)
+      .map(t => {
+        const s = mlbTeamState(t)
+        return { name: t.team.name, ...s, detail: `WC ${t.wildCardGamesBack} GB · ${t.league.id === 103 ? 'AL' : 'NL'}` }
+      })
+  })
+
+  return (
+    <section class={styles.realSection}>
+      <div class={styles.realHeader}>
+        <span class={styles.sectionSubLabel}>MLB</span>
+        <span class={styles.liveTag}>LIVE, DERIVED</span>
+      </div>
+      <Show when={records().length} fallback={<p class={styles.empty}>Loading…</p>}>
+        <Tabs tabs={tabs()} active={active} setActive={setActive} />
+        <div class={styles.cardGrid}>
+          <For each={active() === 'wc' ? wildCardTeams() : divisionTeams()}>
+            {team => <TeamCard team={team} />}
+          </For>
+        </div>
+      </Show>
+    </section>
+  )
+}
+
+// --- MLS section: 2 tabs (Eastern / Western) ---
+function MlsSection() {
+  const [active, setActive] = createSignal('East')
+  const tabs = [{ key: 'East', label: 'Eastern' }, { key: 'West', label: 'Western' }]
+
+  const entries = createMemo(() => mlsStandings()?.tables?.[0]?.entries ?? [])
+
+  const conferenceTeams = createMemo(() => {
+    const set = active() === 'East' ? MLS_EASTERN : MLS_WESTERN
+    return entries()
+      .filter(t => set.has(t.team))
+      .map((t, i) => ({
+        rank: i + 1, name: t.team,
+        record: `${t.wins}-${t.draws}-${t.losses}`,
+        gd: `${t.goals_difference > 0 ? '+' : ''}${t.goals_difference}`,
+        pts: t.points,
+      }))
+  })
+
+  return (
+    <section class={styles.realSection}>
+      <div class={styles.realHeader}>
+        <span class={styles.sectionSubLabel}>MLS</span>
+        <span class={styles.liveTag}>LIVE</span>
+      </div>
+      <Show when={entries().length} fallback={<p class={styles.empty}>Loading…</p>}>
+        <Tabs tabs={tabs} active={active} setActive={setActive} />
+        <For each={conferenceTeams()}>{team => <TableRow team={team} />}</For>
+      </Show>
+    </section>
+  )
+}
+
+// --- World Cup section: 12 tabs (one per group), full tables now that
+// tabs give room -- no longer trimmed to winners-only. ---
+function WcSection() {
+  const groups = createMemo(() => wcStandings()?.groups ?? {})
+  const [active, setActive] = createSignal('A')
+  const tabs = createMemo(() => Object.keys(groups()).map(g => ({ key: g, label: g })))
+
+  const groupTeams = createMemo(() =>
+    (groups()[active()] ?? []).map((t, i) => ({
+      rank: i + 1, name: t.team, record: `${t.won}-${t.drawn}-${t.lost}`,
+      gd: `${t.gd > 0 ? '+' : ''}${t.gd}`, pts: t.points,
+    }))
   )
 
-  const sampleRows = createMemo(() =>
-    bySport().flatMap(([sport, teams]) => teams.map(t => ({ ...t, name: t.team })))
+  return (
+    <section class={styles.realSection}>
+      <div class={styles.realHeader}>
+        <span class={styles.sectionSubLabel}>World Cup</span>
+        <span class={styles.liveTag}>LIVE, CONCLUDED 7/19</span>
+      </div>
+      <Show when={tabs().length} fallback={<p class={styles.empty}>Loading…</p>}>
+        <Tabs tabs={tabs()} active={active} setActive={setActive} />
+        <For each={groupTeams()}>{team => <TableRow team={team} />}</For>
+      </Show>
+    </section>
   )
+}
 
-  const wcWinners = createMemo(() =>
-    Object.entries(wcStandings()?.groups ?? {}).map(([g, teams]) => ({ group: g, winner: teams[0] }))
-  )
-
+export function Seasons() {
   return (
     <div class={styles.root}>
       <header class={styles.header}>
         <span class={styles.label}>Seasons</span>
       </header>
-
-      <section class={styles.realSection}>
-        <div class={styles.realHeader}>
-          <span class={styles.sectionSubLabel}>MLB</span>
-          <span class={styles.liveTag}>LIVE, DERIVED</span>
-        </div>
-        <Show when={mlbTeams().length} fallback={<p class={styles.empty}>Loading…</p>}>
-          <For each={mlbTeams()}>{team => <StateRow team={team} />}</For>
-        </Show>
-      </section>
-
-      <section class={styles.realSection}>
-        <div class={styles.realHeader}>
-          <span class={styles.sectionSubLabel}>MLS</span>
-          <span class={styles.liveTag}>LIVE</span>
-        </div>
-        <Show when={mlsStandings()?.tables?.[0]?.entries} fallback={<p class={styles.empty}>Loading…</p>}>
-          <For each={mlsStandings().tables[0].entries}>
-            {t => (
-              <div class={styles.wcRow}>
-                <span class={styles.wcRank}>{t.position}</span>
-                <span class={styles.wcTeam}>{t.team}</span>
-                <span class={styles.wcRecord}>{t.wins}-{t.draws}-{t.losses}</span>
-                <span class={styles.wcGd}>{t.goals_difference > 0 ? '+' : ''}{t.goals_difference}</span>
-                <span class={styles.wcPts}>{t.points}</span>
-              </div>
-            )}
-          </For>
-        </Show>
-      </section>
-
-      <section class={styles.realSection}>
-        <div class={styles.realHeader}>
-          <span class={styles.sectionSubLabel}>World Cup — Group Winners</span>
-          <span class={styles.liveTag}>LIVE</span>
-        </div>
-        <p class={styles.note}>Concluded 2026-07-19 · 12 groups, winner shown per group (59 rows compressed to 12).</p>
-        <Show when={wcStandings()} fallback={<p class={styles.empty}>Loading…</p>}>
-          <For each={wcWinners()}>
-            {g => (
-              <div class={styles.wcRow}>
-                <span class={styles.wcRank}>{g.group}</span>
-                <span class={styles.wcTeam}>{g.winner.team}</span>
-                <span class={styles.wcRecord}>{g.winner.won}-{g.winner.drawn}-{g.winner.lost}</span>
-                <span class={styles.wcGd}>{g.winner.gd > 0 ? '+' : ''}{g.winner.gd}</span>
-                <span class={styles.wcPts}>{g.winner.points}</span>
-              </div>
-            )}
-          </For>
-        </Show>
-      </section>
-
-      <section class={styles.sampleSection}>
-        <div class={styles.realHeader}>
-          <span class={styles.sectionSubLabel}>NFL / EPL</span>
-          <span class={styles.sampleTag}>SAMPLE</span>
-        </div>
-        <For each={sampleRows()}>{team => <StateRow team={team} />}</For>
-      </section>
+      <MlbSection />
+      <MlsSection />
+      <WcSection />
     </div>
   )
 }
