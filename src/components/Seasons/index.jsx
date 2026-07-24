@@ -36,6 +36,20 @@ const MLS_WESTERN = new Set([
   'Real Salt Lake', 'Seattle Sounders FC', 'Sporting Kansas City',
 ])
 
+// SAMPLE — no structured, ongoing source found for either NFL (seeded
+// playoff) or EPL (promotion/relegation). Kept from the original mockup
+// rather than dropped, since MLB/MLS/WC only cover the division-wildcard
+// and points-table currency types -- these two are the only representation
+// of the other two currency types the original experiment set out to test.
+const SAMPLE_TEAMS = [
+  { name: 'Kansas City Chiefs', sport: 'NFL', state: 'clinched',   label: 'Clinched Division', urgency: 0.1, detail: '#1 seed locked' },
+  { name: 'Denver Broncos',     sport: 'NFL', state: 'bubble',     label: 'Playoff Bubble',     urgency: 0.8, detail: '#7 seed · 1 game cushion' },
+  { name: 'Las Vegas Raiders',  sport: 'NFL', state: 'eliminated', label: 'Eliminated',         urgency: 0.0, detail: 'no playoff path' },
+  { name: 'Sunderland',    sport: 'EPL', state: 'promotion_race',   label: 'Promotion Race',    urgency: 0.6, detail: '3rd · 4 pts off automatic' },
+  { name: 'Southampton',   sport: 'EPL', state: 'relegation_battle',label: 'Relegation Battle',  urgency: 0.9, detail: '18th · 2 pts from safety' },
+  { name: 'Arsenal',       sport: 'EPL', state: 'mid_table',        label: 'Mid-Table',          urgency: 0.1, detail: '9th · nothing at stake' },
+]
+
 function Tabs(props) {
   return (
     <div class={styles.tabBar}>
@@ -214,6 +228,15 @@ export function Seasons() {
       <MlbSection />
       <MlsSection />
       <WcSection />
+      <section class={styles.sampleSection}>
+        <div class={styles.realHeader}>
+          <span class={styles.sectionSubLabel}>NFL / EPL</span>
+          <span class={styles.sampleTag}>SAMPLE — no source found</span>
+        </div>
+        <div class={styles.cardGrid}>
+          <For each={SAMPLE_TEAMS}>{team => <TeamCard team={team} />}</For>
+        </div>
+      </section>
     </div>
   )
 }
