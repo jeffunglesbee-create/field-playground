@@ -6,7 +6,7 @@ own file — this is the "what's actually done" view, not the reasoning.
 | Experiment | Status | Result |
 |---|---|---|
 | [`desk-ambient-rebuild`](EXPERIMENT-desk-ambient-rebuild.md) | **Done** | Split result — skeleton/render-state bugs: structurally prevented (`<Switch>`). CSS containment bugs: not prevented by the framework, still needs a shared primitive + verification, same as ever. |
-| [`live-reconciliation`](EXPERIMENT-live-reconciliation.md) | Scoped, not started | — |
+| [`live-reconciliation`](EXPERIMENT-live-reconciliation.md) | Built, partially verified | Naive refetch confirmed (via SolidJS's own docs, not guessed) to NOT be free — built the real fix directly (`createStore` + `reconcile`), builds clean. Runtime behavior across real poll cycles not yet watched live — no deployed URL reachable from chat's tooling. Mount-count instrumentation is in place for whoever has real browser access next. |
 | [`chip-density-stress`](EXPERIMENT-chip-density-stress.md) | Considered, not started | Deprioritized — same bug class as `desk-ambient-rebuild` already tested, unlikely to produce new information. |
 | [`fieldjs-module-migration`](EXPERIMENT-fieldjs-module-migration.md) | Considered, not started | Deprioritized — different kind of task (extraction/refactor of real production code, not a from-scratch build); real analysis, never a live edit path from this repo. |
 
