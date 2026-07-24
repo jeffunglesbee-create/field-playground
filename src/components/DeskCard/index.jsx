@@ -21,6 +21,17 @@ function gameStatus(g) {
   return 'live'
 }
 
+// Individual-athlete sports (golf confirmed live; may not be the only
+// one) don't have a home/away TEAM matchup at all -- checked the real
+// relay payload rather than guess: sport is 'golf' (lowercase), home
+// holds the tournament name, away holds the round label ("R2"),
+// away_score is genuinely, permanently null, and there's already a
+// real human-readable summary in `note` ("Ben Kohles -11") that this
+// component wasn't reading at all. This is what produced the literal
+// "null–11" text -- away_score interpolated as the string "null", not
+// a missing-data edge case, a wrong data-model assumption.
+const NON_MATCHUP_SPORTS = new Set(['golf'])
+
 // Live-reconciliation instrumentation (EXPERIMENT-live-reconciliation.md):
 // a real, per-id mount counter, not a console.log someone has to remember to
 // open devtools for. If reconciliation is working, every game's count stays
@@ -31,6 +42,7 @@ const mountCounts = {}
 function GameRow(props) {
   const g = () => props.game
   const status = () => gameStatus(g())
+  const isIndividual = () => NON_MATCHUP_SPORTS.has(g().sport)
   const scoreStr = () => `${g().away_score}–${g().home_score}`
 
   onMount(() => {
@@ -44,24 +56,37 @@ function GameRow(props) {
   return (
     <div class={styles.gameRow}>
       <span class={`${styles.statusDot} ${styles[status()]}`} />
-      <span class={styles.matchup}>{g().away} @ {g().home}</span>
+      <span class={styles.matchup}>
+        <Show when={isIndividual()} fallback={<>{g().away} @ {g().home}</>}>
+          {g().home} — {g().away}
+        </Show>
+      </span>
       <span class={styles.scoreArea}>
-        <Switch>
-          <Match when={status() === 'pre'}>
-            <span class={styles.pre}>—</span>
-          </Match>
-          <Match when={status() === 'live'}>
-            <span class={styles.liveScore}>{scoreStr()}</span>
-          </Match>
-          <Match when={status() === 'final'}>
-            <span class={styles.finalScore}>{scoreStr()}</span>
-            <span class={styles.badge}>F</span>
-          </Match>
-          <Match when={status() === 'final_ot'}>
-            <span class={styles.finalScore}>{scoreStr()}</span>
-            <span class={styles.badge}>F/OT</span>
-          </Match>
-        </Switch>
+        <Show
+          when={!isIndividual()}
+          fallback={
+            <span class={styles.finalScore}>
+              {g().note || (g().home_score != null ? `${g().home_score > 0 ? '+' : ''}${g().home_score}` : '—')}
+            </span>
+          }
+        >
+          <Switch>
+            <Match when={status() === 'pre'}>
+              <span class={styles.pre}>—</span>
+            </Match>
+            <Match when={status() === 'live'}>
+              <span class={styles.liveScore}>{scoreStr()}</span>
+            </Match>
+            <Match when={status() === 'final'}>
+              <span class={styles.finalScore}>{scoreStr()}</span>
+              <span class={styles.badge}>F</span>
+            </Match>
+            <Match when={status() === 'final_ot'}>
+              <span class={styles.finalScore}>{scoreStr()}</span>
+              <span class={styles.badge}>F/OT</span>
+            </Match>
+          </Switch>
+        </Show>
       </span>
       <Show when={g().venue}>
         <span class={styles.venue}>{g().venue}</span>
