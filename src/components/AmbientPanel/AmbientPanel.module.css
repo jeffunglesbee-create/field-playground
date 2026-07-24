@@ -1,0 +1,56 @@
+.root {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.panel {
+  overflow: hidden;
+}
+
+.debug {
+  font-size: 11px;
+  color: #888;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow: auto;
+  max-height: 400px;
+}
+
+.error {
+  font-size: 12px;
+  color: #e05;
+}
+
+/* skeleton */
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonBar {
+  height: 12px;
+  background: #1e1e1e;
+  border-radius: 4px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.wide   { width: 80%; }
+.medium { width: 55%; }
+.narrow { width: 35%; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
