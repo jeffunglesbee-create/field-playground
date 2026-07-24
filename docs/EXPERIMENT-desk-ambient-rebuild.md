@@ -38,3 +38,55 @@ true right now.**
 (smaller surface, and the skeleton-overlap bug's root cause — "nothing
 clears the old state when the new state mounts" — is exactly the kind of
 thing a real reconciler either solves for free or doesn't).
+
+**2026-07-23** — Vite + SolidJS scaffold built, `AmbientPanel` and
+`DeskCard` both wired to `createResource` against the real relay
+endpoints (`/analytics/newspaper/{date}`, `/context/date/{date}`, live
+data confirmed, not stubbed). Both components handle loading/error/
+content structurally via `<Show>`/`<Switch>` — no imperative flag
+anywhere that could be forgotten. **Test 1 (skeleton-overlap) result:
+yes, structurally awkward to write here** — the skeleton's own visibility
+is a reactive expression tied to `resource.loading`, not a call site
+someone has to remember to make.
+
+**2026-07-23** — Verification pass (not code review — checked the real
+committed CSS) found Test 2 had already gone the other way: `.skeleton`/
+`.bar`/`pulse` were duplicated verbatim across both components' CSS
+modules, and `AmbientPanel`'s `.reasonBadge` chip was missing the exact
+overflow handling `DeskCard`'s `.matchup`/`.venue` already had — same
+gap, same shape, reintroduced inside the experiment meant to test
+whether this architecture prevents it. **Test 2 (containment) result:
+no, same footgun, different syntax** — SolidJS's component-scoped CSS
+doesn't structurally prevent a chip from launching without containment
+the way `<Show>` structurally prevents a skeleton from lingering. This
+was predicted almost exactly in `docs/SOLIDJS-BUILD.md` before it
+happened.
+
+**2026-07-23** — Fixed, not just noted: added `src/components/shared.module.css`
+as a real shared primitive (`.chip` owns containment, `.skeleton`/`.bar`/
+`.wide`/`.medium`/`.narrow`/`pulse` deduplicated). Both components now
+import and compose it instead of each carrying their own copy.
+`reasonBadge`/`tier` compose `shared.chip` for containment while keeping
+their own background/color as visual identity only.
+
+**Honest caveat on the fix:** applied via direct file edits, carefully
+cross-checked against each file's exact prior content and CSS Modules'
+import/compose pattern already in use elsewhere in these same files —
+but not verified against an actual `npm run build` or a live render,
+since no Node toolchain was available to do that check from where the
+fix was made. Worth an explicit `npm run build` + visual check as the
+next real step, not assumed clean.
+
+---
+
+## Current honest answer to the experiment question
+
+**Split result, and that's a real result, not an inconclusive one:**
+some categories of bug (state-transition/lingering-old-content) become
+structurally hard to write with a real reactive framework. Others
+(CSS containment discipline) don't — they're still a convention someone
+has to remember, just easier to *see* the omission once you know to look,
+since each component's styles live next to its own markup instead of
+buried in a 45k-line file. A shared primitive closes the containment gap
+the same way it always does — not free from the framework, but cheap to
+build once you have real modules to put it in.
