@@ -1,5 +1,5 @@
-import { Show, For, Switch, Match, createMemo } from 'solid-js'
-import { deskData } from '../../data/relay'
+import { Show, For, Switch, Match, createMemo, onMount } from 'solid-js'
+import { deskData, deskStore } from '../../data/relay'
 import styles from './DeskCard.module.css'
 import shared from '../shared.module.css'
 
@@ -21,10 +21,25 @@ function gameStatus(g) {
   return 'live'
 }
 
+// Live-reconciliation instrumentation (EXPERIMENT-live-reconciliation.md):
+// a real, per-id mount counter, not a console.log someone has to remember to
+// open devtools for. If reconciliation is working, every game's count stays
+// at 1 across every poll cycle, forever, no matter how many times its score
+// changes. If it climbs, GameRow is remounting instead of updating in place.
+const mountCounts = {}
+
 function GameRow(props) {
   const g = () => props.game
   const status = () => gameStatus(g())
   const scoreStr = () => `${g().away_score}–${g().home_score}`
+
+  onMount(() => {
+    const id = g().id
+    mountCounts[id] = (mountCounts[id] || 0) + 1
+    if (import.meta.env.DEV) {
+      console.log(`[reconcile-check] GameRow mounted: ${id} (mount #${mountCounts[id]})`)
+    }
+  })
 
   return (
     <div class={styles.gameRow}>
@@ -51,6 +66,11 @@ function GameRow(props) {
       <Show when={g().venue}>
         <span class={styles.venue}>{g().venue}</span>
       </Show>
+      <Show when={import.meta.env.DEV}>
+        <span class={styles.mountDebug} title="mount count -- should never exceed 1 if reconciliation is working">
+          m{mountCounts[g().id] || 1}
+        </span>
+      </Show>
     </div>
   )
 }
@@ -64,10 +84,10 @@ function SportGroup(props) {
   )
 }
 
-function Content(props) {
+function Content() {
   const allGames = createMemo(() => [
-    ...(props.data.games?.regular ?? []),
-    ...(props.data.games?.postseason ?? []),
+    ...(deskStore.games?.regular ?? []),
+    ...(deskStore.games?.postseason ?? []),
   ])
 
   const grouped = createMemo(() => {
@@ -83,7 +103,7 @@ function Content(props) {
     <div>
       <header class={styles.header}>
         <span class={styles.label}>Desk</span>
-        <span class={styles.dateMeta}>{props.data.date}</span>
+        <span class={styles.dateMeta}>{deskStore.date}</span>
       </header>
 
       <Show when={grouped().length} fallback={<p class={styles.empty}>No games today.</p>}>
@@ -106,7 +126,7 @@ export function DeskCard() {
           <p class={styles.error}>{String(deskData.error)}</p>
         </Match>
         <Match when={deskData()}>
-          {data => <Content data={data()} />}
+          <Content />
         </Match>
       </Switch>
     </div>
