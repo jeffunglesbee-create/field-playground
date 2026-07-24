@@ -120,11 +120,17 @@ function MlbSection() {
       .concat([{ key: 'wc', label: 'Wild Card' }])
   )
 
+  // Detail line restored to GB + WC + streak together, matching the
+  // pre-tabs build (2026-07-24) rather than the shortened GB-only version
+  // that shipped with the tabs rebuild.
   const divisionTeams = createMemo(() => {
     const rec = records().find(r => r.division.id === active())
     return (rec?.teamRecords ?? []).map(t => {
       const s = mlbTeamState(t)
-      return { name: t.team.name, ...s, detail: `${t.gamesBack === '-' ? 'GA' : t.gamesBack + ' GB'} · ${t.streak?.streakCode ?? ''}` }
+      return {
+        name: t.team.name, ...s,
+        detail: `${t.gamesBack === '-' ? 'GA' : t.gamesBack + ' GB'} · WC ${t.wildCardGamesBack} · ${t.streak?.streakCode ?? ''}`,
+      }
     })
   })
 
@@ -136,7 +142,10 @@ function MlbSection() {
       .slice(0, 8)
       .map(t => {
         const s = mlbTeamState(t)
-        return { name: t.team.name, ...s, detail: `WC ${t.wildCardGamesBack} GB · ${t.league.id === 103 ? 'AL' : 'NL'}` }
+        return {
+          name: t.team.name, ...s,
+          detail: `${t.gamesBack === '-' ? 'GA' : t.gamesBack + ' GB'} · WC ${t.wildCardGamesBack} · ${t.streak?.streakCode ?? ''}`,
+        }
       })
   })
 
