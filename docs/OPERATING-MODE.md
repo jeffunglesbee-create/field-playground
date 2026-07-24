@@ -28,6 +28,20 @@ ceremony.
   `field-relay-nba` through the normal CC-CMD process. This repo itself
   never becomes a second production surface.
 
+## Mechanical fact worth stating plainly: outbox path differs from jubilant-bassoon
+
+`jubilant-bassoon`'s session outbox manifests live at root `outbox/`
+(confirmed early in this project, outside the MCP READ_ALLOWLIST — needs
+`get_archive_url`, not `read_file`, to reach). **field-playground's
+outbox is `docs/outbox/`** — inside `docs/`, where `read_file`/
+`read_source` can actually reach it directly. Different convention,
+confirmed 2026-07-24 by pulling the real repo and checking, not assumed
+to match the other one. When checking "what did the last session
+actually do" here, check `docs/outbox/`, not root `outbox/` — a session
+doc existing there is not something that should need a screenshot to
+surface; a full-repo path sweep (`find . -iname "*outbox*"`) finds it in
+one call.
+
 ## "Should we add rules?" — reconsidered and rejected, 2026-07-24
 
 Asked directly after a session that hit a real string of friction:
