@@ -38,6 +38,43 @@ function PickRow(props) {
   )
 }
 
+/*
+  Streak Board — reads record_streak_board (real win/loss streaks),
+  deliberately NOT streak_board (FIELD's own journalism-quality signal —
+  see Codex: streak-board-metric-mismatch). This is principle #5's first
+  real test, not a hypothetical one: the label says "Streak Board," and
+  it needs to actually mean win/loss streaks for that label to be honest.
+  Naming checked before writing this, not after a screenshot caught it.
+*/
+function StreakChip(props) {
+  const s = () => props.streak
+  const icon = () => props.kind === 'hot' ? '🔥' : '🧊'
+  const chipClass = () => props.kind === 'hot' ? styles.streakHot : styles.streakCold
+  return (
+    <span class={`${shared.chip} ${styles.streakChip} ${chipClass()}`}>
+      {icon()} {s().team} × {s().streak}
+    </span>
+  )
+}
+
+function StreakBoard(props) {
+  const rsb = () => props.data.record_streak_board
+  const hot = () => rsb()?.hot ?? []
+  const cold = () => rsb()?.cold ?? []
+
+  return (
+    <Show when={rsb() && !rsb().degraded && (hot().length || cold().length)}>
+      <section class={styles.section}>
+        <h3 class={styles.sectionLabel}>Streak Board</h3>
+        <div class={styles.streakRow}>
+          <For each={hot()}>{s => <StreakChip streak={s} kind="hot" />}</For>
+          <For each={cold()}>{s => <StreakChip streak={s} kind="cold" />}</For>
+        </div>
+      </section>
+    </Show>
+  )
+}
+
 function Content(props) {
   const d = () => props.data
   return (
@@ -61,6 +98,8 @@ function Content(props) {
           </div>
         </section>
       </Show>
+
+      <StreakBoard data={d()} />
     </div>
   )
 }
