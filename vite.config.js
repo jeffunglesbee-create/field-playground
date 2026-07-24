@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
 
 function mockRelay() {
+  let contextRequestCount = 0
+
   const newspaper = (date) => ({
     ok: true,
     date,
@@ -17,24 +19,35 @@ function mockRelay() {
     },
   })
 
-  const context = (date) => ({
-    ok: true,
-    date,
-    games: {
-      regular: [
-        { id: `${date}-mlb-nym-phi`, sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets',        home_score: 4,    away_score: 2,    venue: 'Citizens Bank Park',        finalized_at: `${date}T02:15:00Z`, went_to_ot: null },
-        { id: `${date}-mlb-bos-nyy`, sport: 'MLB', home: 'NY Yankees',            away: 'Boston Red Sox', home_score: 3,    away_score: 2,    venue: 'Yankee Stadium',            finalized_at: null,                went_to_ot: null },
-        { id: `${date}-mlb-hou-tex`, sport: 'MLB', home: 'Texas Rangers',          away: 'Houston Astros', home_score: null, away_score: null, venue: 'Globe Life Field',          finalized_at: null,                went_to_ot: null },
-        { id: `${date}-mls-col-slc`, sport: 'MLS', home: 'Real Salt Lake',         away: 'Colorado Rapids',home_score: null, away_score: null, venue: 'America First Field',       finalized_at: null,                went_to_ot: null },
-        { id: `${date}-mls-cfm-nyr`, sport: 'MLS', home: 'NY Red Bulls',           away: 'CF Montr\xe9al', home_score: null, away_score: null, venue: 'Red Bull Arena',            finalized_at: null,                went_to_ot: null },
-        { id: `${date}-mls-sj-col`,  sport: 'MLS', home: 'Colorado Rapids',        away: 'San Jose Earthquakes', home_score: 0, away_score: 1, venue: "Dick's Sporting Goods Park", finalized_at: `${date}T01:45:00Z`, went_to_ot: null },
-        { id: `${date}-wnba-sea-phx`,sport: 'WNBA',home: 'Phoenix Mercury',        away: 'Seattle Storm',  home_score: 68,   away_score: 71,   venue: 'Footprint Center',          finalized_at: `${date}T02:30:00Z`, went_to_ot: true  },
-        { id: `${date}-wnba-ind-min`,sport: 'WNBA',home: 'Minnesota Lynx',         away: 'Indiana Fever',  home_score: null, away_score: null, venue: 'Target Center',             finalized_at: null,                went_to_ot: null },
-      ],
-      postseason: [],
-    },
-    briefs: [], series: [], standings: [],
-  })
+  // Live-reconciliation CI check needs data that actually changes between
+  // polls, not the same static snapshot every time -- this is the only
+  // thing that varies. Request 1: hou-tex is pregame (null-null). Request
+  // 2+: it goes live (1-0), matching what the experiment doc actually set
+  // out to test (a pre-to-live transition). Every other game stays
+  // byte-identical across all requests on purpose -- that's the control
+  // group for "did unrelated rows avoid remounting."
+  const context = (date) => {
+    contextRequestCount++
+    const houTexLive = contextRequestCount >= 2
+    return {
+      ok: true,
+      date,
+      games: {
+        regular: [
+          { id: `${date}-mlb-nym-phi`, sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets',        home_score: 4,    away_score: 2,    venue: 'Citizens Bank Park',        finalized_at: `${date}T02:15:00Z`, went_to_ot: null },
+          { id: `${date}-mlb-bos-nyy`, sport: 'MLB', home: 'NY Yankees',            away: 'Boston Red Sox', home_score: 3,    away_score: 2,    venue: 'Yankee Stadium',            finalized_at: null,                went_to_ot: null },
+          { id: `${date}-mlb-hou-tex`, sport: 'MLB', home: 'Texas Rangers',          away: 'Houston Astros', home_score: houTexLive ? 1 : null, away_score: houTexLive ? 0 : null, venue: 'Globe Life Field',          finalized_at: null,                went_to_ot: null },
+          { id: `${date}-mls-col-slc`, sport: 'MLS', home: 'Real Salt Lake',         away: 'Colorado Rapids',home_score: null, away_score: null, venue: 'America First Field',       finalized_at: null,                went_to_ot: null },
+          { id: `${date}-mls-cfm-nyr`, sport: 'MLS', home: 'NY Red Bulls',           away: 'CF Montr\xe9al', home_score: null, away_score: null, venue: 'Red Bull Arena',            finalized_at: null,                went_to_ot: null },
+          { id: `${date}-mls-sj-col`,  sport: 'MLS', home: 'Colorado Rapids',        away: 'San Jose Earthquakes', home_score: 0, away_score: 1, venue: "Dick's Sporting Goods Park", finalized_at: `${date}T01:45:00Z`, went_to_ot: null },
+          { id: `${date}-wnba-sea-phx`,sport: 'WNBA',home: 'Phoenix Mercury',        away: 'Seattle Storm',  home_score: 68,   away_score: 71,   venue: 'Footprint Center',          finalized_at: `${date}T02:30:00Z`, went_to_ot: true  },
+          { id: `${date}-wnba-ind-min`,sport: 'WNBA',home: 'Minnesota Lynx',         away: 'Indiana Fever',  home_score: null, away_score: null, venue: 'Target Center',             finalized_at: null,                went_to_ot: null },
+        ],
+        postseason: [],
+      },
+      briefs: [], series: [], standings: [],
+    }
+  }
 
   return {
     name: 'mock-relay',
