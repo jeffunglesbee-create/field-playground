@@ -1,21 +1,70 @@
-import { Show, For } from 'solid-js'
+import { Show, For, Switch, Match } from 'solid-js'
 import { ambientData } from '../../data/relay'
 import styles from './AmbientPanel.module.css'
 
-function AmbientSkeleton() {
+function Skeleton() {
   return (
     <div class={styles.skeleton}>
-      <div class={`${styles.skeletonBar} ${styles.wide}`} />
-      <div class={`${styles.skeletonBar} ${styles.medium}`} />
-      <div class={`${styles.skeletonBar} ${styles.narrow}`} />
+      <div class={`${styles.bar} ${styles.wide}`} />
+      <div class={`${styles.bar} ${styles.medium}`} />
+      <div class={`${styles.bar} ${styles.wide}`} />
+      <div class={`${styles.bar} ${styles.narrow}`} />
+      <div class={`${styles.bar} ${styles.medium}`} />
     </div>
   )
 }
 
-function AmbientContent(props) {
+function PickRow(props) {
+  const p = () => props.pick
+  const reasons = () => {
+    const r = p().reasons
+    if (!r) return []
+    return Array.isArray(r) ? r : [r]
+  }
   return (
-    <div class={styles.panel}>
-      <pre class={styles.debug}>{JSON.stringify(props.data, null, 2)}</pre>
+    <div class={styles.pickRow}>
+      <div class={styles.pickHead}>
+        <span class={`${styles.tier} ${styles['tier_' + String(p().tier).toLowerCase()]}`}>
+          {p().tier}
+        </span>
+        <span class={styles.pickSport}>{p().sport}</span>
+        <span class={styles.pickMatchup}>{p().away} @ {p().home}</span>
+        <Show when={p().score}>
+          <span class={styles.pickScore}>{p().score}</span>
+        </Show>
+      </div>
+      <Show when={reasons().length}>
+        <ul class={styles.reasons}>
+          <For each={reasons()}>{r => <li>{r}</li>}</For>
+        </ul>
+      </Show>
+    </div>
+  )
+}
+
+function Content(props) {
+  const d = () => props.data
+  return (
+    <div>
+      <header class={styles.header}>
+        <span class={styles.label}>Ambient</span>
+        <span class={styles.dateMeta}>{d().date} · recap through {d().recap_date}</span>
+      </header>
+
+      <Show when={d().morning_report}>
+        <p class={styles.morningReport}>{d().morning_report}</p>
+      </Show>
+
+      <Show when={d().pick?.ranked?.length}>
+        <section class={styles.section}>
+          <h3 class={styles.sectionLabel}>Picks</h3>
+          <div class={styles.pickList}>
+            <For each={d().pick.ranked}>
+              {pick => <PickRow pick={pick} />}
+            </For>
+          </div>
+        </section>
+      </Show>
     </div>
   )
 }
@@ -23,14 +72,15 @@ function AmbientContent(props) {
 export function AmbientPanel() {
   return (
     <div class={styles.root}>
-      <h2 class={styles.label}>Ambient</h2>
-      <Show when={!ambientData.loading} fallback={<AmbientSkeleton />}>
-        <Show when={!ambientData.error} fallback={
+      <Switch>
+        <Match when={ambientData.loading}><Skeleton /></Match>
+        <Match when={ambientData.error}>
           <p class={styles.error}>{String(ambientData.error)}</p>
-        }>
-          <AmbientContent data={ambientData()} />
-        </Show>
-      </Show>
+        </Match>
+        <Match when={ambientData()}>
+          {data => <Content data={data()} />}
+        </Match>
+      </Switch>
     </div>
   )
 }
