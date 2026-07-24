@@ -9,23 +9,17 @@ independent design docs collided on the same filename because neither
 writer knew the other existed):
 
 - **`docs/GROUND-UP-DESIGN.md`** — founding design spec for what FIELD
-  would look like rebuilt from scratch. Eight principles, each traced to
+  would look like rebuilt from scratch. Nine principles, each traced to
   a real incident, revised 2026-07-24 with actual evidence from building
   against them (some confirmed, some humbled — read the revision notes).
-- **`docs/SOLIDJS-BUILD.md`** — the actual SolidJS implementation plan
-  for the AmbientPanel + DeskCard rebuild specifically (why SolidJS,
-  architecture, the two structural tests being run).
-- **`docs/EXPERIMENT-desk-ambient-rebuild.md`** — the build log and
-  current honest answer to that experiment's real question (is this
-  class of bug structurally harder to write in a real framework — split
-  result: yes for state-transition bugs, no for CSS containment).
-- **`docs/EXPERIMENT-live-reconciliation.md`** — scoped, not yet
-  started. Tests a harder, untested bug class: temporal/reconciliation
-  state (poll → partial update), not just initial render — targets the
-  actual shape of FIELD's worst real bugs (stuck-live cards,
-  permanently-stuck pick resolution, cross-game text races).
+- **`docs/SOLIDJS-BUILD.md`** — the SolidJS implementation plan behind
+  the AmbientPanel + DeskCard rebuild (why SolidJS, architecture).
+- **`docs/EXPERIMENTS.md`** — status index for every experiment run or
+  considered here, one row each. Check this before starting something
+  new — it's the fastest way to see what's done, what's scoped and
+  waiting, and what's been considered and deprioritized (with why).
 
 Current implementation: `src/components/AmbientPanel/` and
 `src/components/DeskCard/`, wired to live relay data via
 `src/data/relay.js`. Vite + SolidJS, no router, no TypeScript, no test
-suite (exploratory — the experiment's answer *is* the output).
+suite (exploratory — each experiment's answer *is* the output).
