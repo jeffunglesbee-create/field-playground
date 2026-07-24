@@ -16,11 +16,6 @@ function Skeleton() {
 
 function PickRow(props) {
   const p = () => props.pick
-  const reasons = () => {
-    const r = p().reasons
-    if (!r) return []
-    return Array.isArray(r) ? r : [r]
-  }
   return (
     <div class={styles.pickRow}>
       <div class={styles.pickHead}>
@@ -33,10 +28,10 @@ function PickRow(props) {
           <span class={styles.pickScore}>{p().score}</span>
         </Show>
       </div>
-      <Show when={reasons().length}>
-        <ul class={styles.reasons}>
-          <For each={reasons()}>{r => <li>{r}</li>}</For>
-        </ul>
+      <Show when={p().reasons?.length}>
+        <div class={styles.reasons}>
+          <For each={p().reasons}>{r => <span class={styles.reasonBadge}>{r}</span>}</For>
+        </div>
       </Show>
     </div>
   )
