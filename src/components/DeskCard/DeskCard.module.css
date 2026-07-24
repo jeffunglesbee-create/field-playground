@@ -39,6 +39,9 @@
 }
 
 .sportLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -47,6 +50,24 @@
   padding-bottom: 3px;
   border-bottom: 1px solid #1a1a1a;
   margin-bottom: 2px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sportLabel:hover {
+  color: var(--field-text-secondary);
+}
+
+.collapseIcon {
+  font-size: 8px;
+  width: 8px;
+  flex-shrink: 0;
+}
+
+.groupCount {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
 }
 
 /* 5th column (mountDebug) only ever renders in dev mode -- see
