@@ -28,12 +28,33 @@ ceremony.
   `field-relay-nba` through the normal CC-CMD process. This repo itself
   never becomes a second production surface.
 
-## Note on where this file lives
+## "Should we add rules?" — reconsidered and rejected, 2026-07-24
 
-Wanted this at the root README.md; the FIELD Handoff MCP's
-`commit_file` write-allowlist (`docs/`, `HANDOFF.md`, `CODE_MAP.json` —
-same fixed set applied across all three repos) doesn't include a bare
-root `README.md`, so it landed here instead. Root README still just says
-"# field-playground" from repo creation. Fixing the allowlist itself
-would be a field-relay-nba change, which is production infra, not
-in-scope for this repo's own lighter rules.
+Asked directly after a session that hit a real string of friction:
+Chromium unreachable from chat's sandbox, a Node harness that couldn't
+actually test SolidJS's reactive scheduler, a couple of stale-`parent_sha`
+retries. Worth checking honestly rather than assuming "no" by default.
+
+**Conclusion: no, once the causes are separated out.** None of that
+friction was caused by light governance. A CC-CMD document doesn't make
+a blocked download succeed. No process gate substitutes for actually
+running something and discovering a real Node-vs-browser incompatibility
+— that requires trying it, which is what happened. The stale-sha retries
+are a read-before-write habit, already self-correcting via the tool's
+own error messages, and would happen identically under full CC-CMD
+discipline in the other two repos.
+
+**The real distinction: ceremony vs. knowledge.** "No rules" here has
+only ever meant no *process weight* — CC-CMD dispatch, confidence-gate
+scoring, mandatory bookkeeping. It was never a case against writing down
+what's actually learned. The fix for today's friction wasn't a new gate,
+it was capturing the hard-won fact ("Node can't test SolidJS's reactive
+scheduler, use a real browser") directly in `docs/EXPERIMENT-live-reconciliation.md`
+and encoding it into a reusable GHA workflow
+(`.github/workflows/live-reconciliation-check.yml`) — durable knowledge
+as an artifact, not a rule that has to be remembered and manually
+followed. That's already the right kind of governance for this repo. If
+the same question comes up again, check whether the actual cause is
+missing process or missing knowledge before assuming the answer is
+"add rules" — they're different problems with different fixes, and only
+one of them fits what this repo is for.
