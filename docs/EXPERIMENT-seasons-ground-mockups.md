@@ -23,25 +23,35 @@ same standard as every experiment here.
 `standings` field — real, live, current data. It's not a structured
 per-team model (points, wins, losses, games-back). It's pre-rendered
 prose: `"Group H: 1. Cape Verde (1pts, 0 GD) 2. Spain (1pts, 0 GD)"`.
-Fine for injecting into a journalism brief, not queryable as data. So
-there is currently no real, structured source to build a cross-sport
-model *from* — this isn't a gap in the mockup, it's a gap in what the
-relay serves today.
+Fine for injecting into a journalism brief, not queryable as data.
 
 **Honest choice, not a workaround pretending otherwise:** the mockup
 uses clearly-labeled sample data to demonstrate the abstraction itself
 (does the *shape* of the model hold across sports), not real relay data.
 Every previous component here used 100% real data — this one explicitly
-doesn't, and says so in the UI itself, not just in this doc. A real
-implementation would need a new structured standings endpoint; that's a
-relay-side task, out of scope for what a playground mockup can do on its
-own.
+doesn't, and says so in the UI itself, not just in this doc.
+
+**2026-07-24 — correction, not a new finding replacing the old one:**
+the claim above ("no real structured source exists") needed narrowing,
+not reversing. Checked field-relay-nba's source directly for any other
+standings route — `/wc/standings` is real: a genuine D1 query (`SELECT *
+FROM wc_group ORDER BY points DESC, gd DESC, gf DESC`), clean per-team
+fields, confirmed live by fetching it. But it's scoped to World Cup
+group stage only, and the tournament ended 2026-07-19 — every team
+already shows `played: 6`. A final table, not an ongoing race. Wired up
+as its own real, clearly-tagged `LIVE` section in the component,
+separate from the sample cards — doesn't answer the cross-sport ongoing-
+stakes question on its own, since a concluded group has no urgency left
+to model, but it's genuinely real data where there wasn't any before.
 
 **Done when:** the abstraction is tried against realistic shapes from at
-least three structurally different sports (a division/wildcard sport, a
-seeded-playoff sport, a promotion/relegation sport) and there's an
-honest answer to whether one shared shape covers all three or needs
-per-sport branches everywhere.
+least three structurally different, currently-ongoing sports (a
+division/wildcard sport, a seeded-playoff sport, a promotion/relegation
+sport) and there's an honest answer to whether one shared shape covers
+all three or needs per-sport branches everywhere. Still sample data for
+this part — `/wc/standings` doesn't reach it, it's a different, already-
+answered question (does a real final-standings table render correctly,
+which it now does).
 
 ## Ground
 
