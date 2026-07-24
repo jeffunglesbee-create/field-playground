@@ -26,33 +26,46 @@ same standard as every experiment here.
 fields), but scoped to World Cup group stage, concluded 2026-07-19 — a
 final table, not an ongoing race.
 
-**2026-07-24 — the actual question now has real data behind it.**
-Checked field-relay-nba further for anything covering a currently-
-ongoing sport: both MLB (`/mlb-stats/standings`, proxying
-statsapi.mlb.com) and MLS (`/mls/stats/competitions/.../standings`,
-proxying stats-api.mlssoccer.com) are real, live, and genuinely
-mid-season — confirmed by fetching them directly (MLB `gamesPlayed:
-102`, `lastUpdated` today; MLS `match_day: 17`). Both wired up as their
-own `LIVE` sections.
+**2026-07-24 — real MLB + MLS wiring.** Both `/mlb-stats/standings` and
+`/mls/stats/competitions/.../standings` confirmed real, live, mid-season
+(MLB `gamesPlayed: 102`; MLS `match_day: 17`). MLB gets a conservative
+derived state from real fields only; MLS stays a plain table.
 
-MLB additionally gets a derived state (division_lead / wildcard_race /
-eliminated) computed from real fields only (`divisionRank`, `gamesBack`,
-`wildCardGamesBack`) — deliberately conservative, tagged `LIVE, DERIVED`
-rather than plain `LIVE`, and does not claim "clinched" or officially
-"eliminated," since those need magic-number fields not confirmed present
-or correctly parsed here. MLS stays a plain table, same choice as World
-Cup — its playoff-line position isn't confirmed with enough confidence
-to label a state honestly.
+**2026-07-24 — tabs rebuild ("split the difference" between the compact
+row version and the original card version).** Card format restored
+(state badge + urgency bar + detail line), organized into tabs instead
+of one long scroll: MLB gets 7 tabs (6 divisions + Wild Card), MLS gets
+2 (Eastern/Western), World Cup gets 12 (one per group, full tables now
+that tabs give room — no longer trimmed to winners-only).
+
+**Two groupings needed that don't exist in either API, both verified
+before use, not guessed:**
+- MLB division names: the API only returns numeric division IDs. Mapped
+  by checking which real teams belong to each ID in the live response
+  (division 201 = Rays/Yankees/Red Sox/Orioles/Blue Jays = AL East, etc.)
+  — derived from real data, not memory.
+- MLS conference membership: not present anywhere in the API (checked
+  standings and club metadata both). Searched for the real, current 2026
+  breakdown and cross-referenced every team name against the live
+  standings' exact strings ("Los Angeles Football Club" not "LAFC",
+  etc.) before using it. This one is externally-maintained, not derived
+  from any FIELD/relay source — flagged as such in the code comment.
+
+NFL/EPL sample section was dropped in the first pass of this rebuild,
+then added back — wasn't asked to remove it, and it's the only remaining
+representation of the seeded-playoff and promotion/relegation currency
+types MLB/MLS/WC don't cover. Worth being explicit that dropping it
+without being asked would have quietly narrowed the experiment's scope.
+
+`npm run build` clean, 22 modules each pass.
 
 **Done when:** the abstraction is tried against realistic shapes from at
 least three structurally different, currently-ongoing sports and there's
 an honest answer to whether one shared shape covers all three or needs
-per-sport branches. **Partially answered now:** MLB genuinely uses the
-state/label/urgency shape with real data. MLS deliberately doesn't
-(table only, no state claimed). NFL and EPL — the seeded-playoff and
-promotion/relegation currency types — are still sample; no structured
-source found for either yet. Real progress, not a complete answer: one
-of three currency types now proven against real data, not zero.
+per-sport branches. Still partially answered: MLB uses the full
+state/label/urgency shape with real data; MLS and World Cup deliberately
+don't (table only); NFL/EPL remain sample. One of three currency types
+proven against real data.
 
 ## Ground
 
