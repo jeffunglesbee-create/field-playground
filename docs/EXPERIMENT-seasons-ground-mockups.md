@@ -20,38 +20,39 @@ sport-by-sport once you try to build it? Genuinely unknown until tried,
 same standard as every experiment here.
 
 **Checked before building anything:** `/context/date/{date}`'s
-`standings` field — real, live, current data. It's not a structured
-per-team model (points, wins, losses, games-back). It's pre-rendered
-prose: `"Group H: 1. Cape Verde (1pts, 0 GD) 2. Spain (1pts, 0 GD)"`.
-Fine for injecting into a journalism brief, not queryable as data.
+`standings` field is pre-rendered prose, not queryable data.
 
-**Honest choice, not a workaround pretending otherwise:** the mockup
-uses clearly-labeled sample data to demonstrate the abstraction itself
-(does the *shape* of the model hold across sports), not real relay data.
-Every previous component here used 100% real data — this one explicitly
-doesn't, and says so in the UI itself, not just in this doc.
+**2026-07-24 — correction:** `/wc/standings` is real (D1-backed, clean
+fields), but scoped to World Cup group stage, concluded 2026-07-19 — a
+final table, not an ongoing race.
 
-**2026-07-24 — correction, not a new finding replacing the old one:**
-the claim above ("no real structured source exists") needed narrowing,
-not reversing. Checked field-relay-nba's source directly for any other
-standings route — `/wc/standings` is real: a genuine D1 query (`SELECT *
-FROM wc_group ORDER BY points DESC, gd DESC, gf DESC`), clean per-team
-fields, confirmed live by fetching it. But it's scoped to World Cup
-group stage only, and the tournament ended 2026-07-19 — every team
-already shows `played: 6`. A final table, not an ongoing race. Wired up
-as its own real, clearly-tagged `LIVE` section in the component,
-separate from the sample cards — doesn't answer the cross-sport ongoing-
-stakes question on its own, since a concluded group has no urgency left
-to model, but it's genuinely real data where there wasn't any before.
+**2026-07-24 — the actual question now has real data behind it.**
+Checked field-relay-nba further for anything covering a currently-
+ongoing sport: both MLB (`/mlb-stats/standings`, proxying
+statsapi.mlb.com) and MLS (`/mls/stats/competitions/.../standings`,
+proxying stats-api.mlssoccer.com) are real, live, and genuinely
+mid-season — confirmed by fetching them directly (MLB `gamesPlayed:
+102`, `lastUpdated` today; MLS `match_day: 17`). Both wired up as their
+own `LIVE` sections.
+
+MLB additionally gets a derived state (division_lead / wildcard_race /
+eliminated) computed from real fields only (`divisionRank`, `gamesBack`,
+`wildCardGamesBack`) — deliberately conservative, tagged `LIVE, DERIVED`
+rather than plain `LIVE`, and does not claim "clinched" or officially
+"eliminated," since those need magic-number fields not confirmed present
+or correctly parsed here. MLS stays a plain table, same choice as World
+Cup — its playoff-line position isn't confirmed with enough confidence
+to label a state honestly.
 
 **Done when:** the abstraction is tried against realistic shapes from at
-least three structurally different, currently-ongoing sports (a
-division/wildcard sport, a seeded-playoff sport, a promotion/relegation
-sport) and there's an honest answer to whether one shared shape covers
-all three or needs per-sport branches everywhere. Still sample data for
-this part — `/wc/standings` doesn't reach it, it's a different, already-
-answered question (does a real final-standings table render correctly,
-which it now does).
+least three structurally different, currently-ongoing sports and there's
+an honest answer to whether one shared shape covers all three or needs
+per-sport branches. **Partially answered now:** MLB genuinely uses the
+state/label/urgency shape with real data. MLS deliberately doesn't
+(table only, no state claimed). NFL and EPL — the seeded-playoff and
+promotion/relegation currency types — are still sample; no structured
+source found for either yet. Real progress, not a complete answer: one
+of three currency types now proven against real data, not zero.
 
 ## Ground
 
@@ -63,10 +64,7 @@ mock meaningfully.
 
 **Honest scope:** pure UI/UX mockup. Sample content, clearly marked as
 sample, no backend, no persistence, no real posting. Tests "does this
-concept look and feel right," not any architecture question — there's
-no structural claim to verify here the way there was for every other
-experiment. Worth being explicit that this is a different kind of
-"done" than everything else in this index.
+concept look and feel right," not any architecture question.
 
 **Done when:** there's something visual to actually react to and decide
 whether the concept is worth further investment — not a structural
