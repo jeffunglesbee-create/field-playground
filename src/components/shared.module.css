@@ -6,6 +6,23 @@
    twice, no shared base" pattern GROUND-UP-DESIGN.md principle #6
    exists to prevent. See docs/GROUND-UP-DESIGN.md. */
 
+/* ---- color tokens ----
+   Added after the same pattern showed up a third way: every component's
+   own CSS was hardcoding its own greys for secondary/muted text, and
+   several of them (#333, #3a3a3a, #444) are genuinely too dark against
+   the #111 card background -- dark grey on near-black, illegible, not
+   just a stylistic nitpick. One source of truth now, so a future palette
+   fix happens here once instead of getting hunted down across five
+   files again. Borders/dividers are NOT part of this -- subtle, darker
+   tones are fine and often correct for non-text elements; this is
+   specifically about text needing to stay readable against the
+   background. */
+:root {
+  --field-text-primary: #e8e8e8;
+  --field-text-secondary: #9a9a9a;
+  --field-text-muted: #707070;
+}
+
 /* ---- chip / pill primitive ----
    Any small badge-style element (tier, reason tag, future additions)
    composes this IN ADDITION to its own visual styling (background,
