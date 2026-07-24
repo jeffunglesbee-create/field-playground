@@ -70,24 +70,78 @@ stores documentation almost exactly.
 - `src/components/DeskCard/index.jsx` — reads from `deskStore` instead
   of the resource's return value. Real instrumentation added: a per-game
   mount counter (`mountCounts`), visible as a small dev-only badge on
-  each row (`m1`, `m2`, ...) and logged to console in dev mode. This is
-  the actual falsifiable check — if reconciliation is working, every
-  count stays at `m1` forever, no matter how many poll cycles run or how
-  many times a score changes.
+  each row (`m1`, `m2`, ...) and logged to console in dev mode.
 
 **Verified:** `npm install && npm run build` — clean, 15 modules, no
 errors.
 
-**Honest gap, not glossed over:** what's NOT verified is watching this
-run live across real poll cycles. This repo has no deployed URL my own
-browser tooling can reach (no Cloudflare Pages/GitHub Pages configured),
-and my remote browser tool can't be pointed at a local dev server —
-those are real, current tooling limits, not skipped effort. The
-technical claim above is sourced from SolidJS's own documentation and
-core-team discussion of this exact scenario, not from watching this
-specific build run. The mount-count instrumentation exists specifically
-so the next session with real browser access to a running dev server —
-Claude Code's own environment, or `npm run dev` open locally — can
-confirm it in under a minute: watch the `m` badges across two or three
-15-second poll cycles. If they climb past `m1`, the sourced claim above
-was wrong and this needs a real second look, not a shrug.
+---
+
+**2026-07-24, automated verification attempt.** Tried to close the
+runtime-behavior gap directly rather than leave it for someone else.
+Two approaches, both genuinely attempted, neither gave a clean answer —
+reporting exactly what happened rather than picking whichever result is
+more convenient.
+
+**Attempt 1 — real headless browser (Puppeteer).** `npm install
+puppeteer` fails in this environment: Chromium download gets a 403 from
+`storage.googleapis.com`, which isn't reachable from here. Confirmed by
+actually running it, not assumed from the existing "no deployed URL"
+note. This closes off the most direct verification path from chat's own
+sandbox specifically — not a general statement about whether it's
+possible anywhere, just that it isn't from here.
+
+**Attempt 2 — standalone Node script against the real `solid-js/store`
+package, no browser at all.** Four iterations, each addressing a problem
+found in the last:
+1. First pass: reconciled two slightly-different "polls" into a real
+   store, compared object references directly. Result: references
+   changed across every reconcile call, for both the changed AND an
+   untouched, byte-identical game. Surprising — contradicts the sourced
+   claim above.
+2. Second pass: suspected the store's proxy wrapper re-wraps on every
+   external access rather than the underlying data actually changing —
+   used `unwrap()` to compare raw targets instead. Same result: `false`
+   across the board, even for the untouched game.
+3. Third pass: suspected nesting depth (`games.regular`, two levels
+   deep) was breaking `reconcile`'s "match by id" default — reconciled a
+   bare top-level array directly, the simplest possible case the docs
+   describe. Same result again.
+4. Fourth pass: reconsidered whether raw reference/unwrap comparison
+   from *outside* the reactive graph is even the right thing to
+   check — switched to `createEffect`, the actual mechanism `<For>`
+   depends on internally, to see whether an effect scoped to an
+   untouched game re-runs when a different game changes. Result:
+   effects never fired at all, not even once for the initial value —
+   likely because `solid-js`'s `"node"` export condition resolves to its
+   SSR build, which doesn't drive the same effect-flushing scheduler a
+   real browser render does. Added an explicit tick delay between
+   reconciles to rule out a timing issue — same result, still zero runs.
+
+**Honest conclusion: inconclusive, not failed.** The reference/unwrap
+tests (1–3) showed a real, reproducible negative signal across three
+different configurations, including the simplest one the documentation
+itself describes — that's not nothing, and it's worth taking seriously.
+But the effect-based test (4), which should be the *more* trustworthy
+check since it uses the same tracking mechanism `<For>` actually relies
+on, couldn't run at all in this environment — meaning the test harness
+itself has a real, unresolved compatibility gap between solid-js's
+Node/SSR build and how the library behaves when actually driven by a
+browser's render cycle. A negative result from a harness that can't even
+run its own control case isn't trustworthy enough to overwrite the
+sourced claim from earlier in this log, but it's also not something to
+wave away — it's a genuine, specific reason to distrust "verify via
+plain Node" as a substitute for "verify via an actual browser," which
+narrows what the next real verification step needs to be.
+
+**What this changes about the next step:** not "watch it run" in
+general — specifically, *only a real browser render* will settle this.
+Neither a Node script (tried, inconclusive for the reasons above) nor
+this chat's own sandbox (Puppeteer's binary is unreachable from here)
+can close it. Claude Code's own environment or `npm run dev` opened
+locally remain the real path — same as before, just now with two ruled-
+out shortcuts and a clearer reason why they didn't substitute for it.
+
+Scripts from this attempt (`verify-reconcile*.mjs`) were scratch work in
+chat's own sandbox, not committed — the finding is what's worth keeping,
+not the throwaway harness that produced an inconclusive result.
