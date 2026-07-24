@@ -1,17 +1,21 @@
 # FIELD — Ground-Up Design Spec
 
 **Status:** founding reference for prototyping in this repo, not a
-production commitment. Written 2026-07-23, after a single session that
-found and fixed three real, live bugs (streak-board naming collision,
-ambient-panel skeleton overlap, chip overflow) and used each one as
-evidence for what a from-scratch design should get right the first time.
+production commitment. Originally written 2026-07-23, after a single
+session that found and fixed three real, live bugs (streak-board naming
+collision, ambient-panel skeleton overlap, chip overflow). **Revised
+2026-07-24**, after actually building against these principles (the
+AmbientPanel + DeskCard SolidJS rebuild) produced real evidence — some
+of it confirming, some of it humbling. Updates are marked inline rather
+than silently folded in, per this doc's own rule below about not
+silently drifting.
 
 **How to use this doc:** every principle below traces to a specific,
 real incident — not generic rewrite advice. If you're prototyping
 something here and it conflicts with one of these, that's worth noticing
 explicitly, not silently drifting from — either the prototype is
 teaching you the principle was wrong, or it's cutting a corner worth
-naming out loud.
+naming out loud. This revision is that rule applied to itself.
 
 ---
 
@@ -35,6 +39,13 @@ the skeleton was a DOM sibling nothing ever told to leave. Pick
 fine-grained reactive rendering everywhere, upfront. When a component's
 rendering model changes, write down explicitly what the old model
 provided implicitly that the new one now needs to provide on purpose.
+
+**CONFIRMED (2026-07-24):** this is no longer a prediction. The actual
+rebuild's `<Switch><Match>` makes the skeleton and content branches
+mutually exclusive by construction — there is no code path where both
+render. Not "harder to write," genuinely not writable. Strongest result
+in this whole document, because it's the only one tested against a real
+build rather than reasoned from the original incident alone.
 
 ## 3. RUWT's two tests as one document, written before any relay code
 
@@ -76,6 +87,18 @@ with `overflow:hidden; text-overflow:ellipsis; max-width` on it once.
 No variant gets the chance to forget what it was never responsible for
 remembering.
 
+**HUMBLED (2026-07-24):** knowing this principle did not prevent it from
+happening again. The first pass of the AmbientPanel rebuild — written
+*with this exact document open as the spec* — still shipped
+`.reasonBadge` without overflow handling while `DeskCard`'s `.matchup`/
+`.venue` had it. Same gap, third occurrence, despite the gap being
+explicitly named in the doc being built against. It only got caught by
+an actual verification pass reading the real committed CSS, not by
+having the principle written down. The real lesson isn't "write the
+principle" — it's "write the principle AND still verify it held,"
+because stating a rule and following it under real build pressure are
+different things, every time, no exceptions earned yet.
+
 ## 7. Verification artifacts ship with the feature, not bolted on after a bug report
 
 The most expensive relearned lesson this session (now Rule 90,
@@ -88,6 +111,14 @@ clientWidth`, not "looks fine"). A component touching rendering ships
 it — not as a follow-up CC-CMD after someone spots it broken in a
 screenshot.
 
+**HUMBLED (2026-07-24):** the rebuild's own production build
+(`npm run build`) wasn't actually run until several turns after the
+components were declared done — verified by careful manual review of
+each file in the meantime, not by a real compiler. It built clean when
+finally run, so no harm done this time, but "shipped with the feature"
+did not happen here either. Same shape of gap as principle 6: correct
+in the document, not automatic in practice.
+
 ## 8. Two governance tiers, declared upfront
 
 Full CC-CMD/confidence-gate/Codex discipline for anything shipping to
@@ -96,6 +127,26 @@ because the heavy tier got retrofitted onto a need it was never designed
 for. Decide both tiers, and the boundary between them, before writing
 code — not after the friction teaches you they should have been
 separate.
+
+## 9. Uncoordinated concurrent writers will collide — plan for the collision, not for preventing it (NEW, 2026-07-24)
+
+Not anticipated by the original eight — discovered by living in this
+repo's own lighter-governance tier. This exact document collided on its
+own filename: written independently in two places (this file, and a
+separate design doc Claude Code wrote in its own session) without either
+side knowing about the other, resolved only when a merge conflict forced
+it into the open (Claude Code's version renamed to
+`docs/SOLIDJS-BUILD.md`; a set of commits also got misattributed to the
+wrong author in the process, since nobody had a way to check who
+actually made them). Nothing broke — git's own conflict detection did
+real work here, and `commit_file`'s stale-`parent_sha` rejection prevents
+blind overwrites on the writing side. But coordination gaps are real in
+a repo built for speed over process, and adding real process would
+defeat the point of this tier existing. The honest design stance: expect
+occasional collisions as the accepted cost of tier 8's tradeoff, rely on
+git's conflict detection to surface them rather than hide them, and
+don't mistake "no collision yet" for "coordinated" — it usually just
+means nobody's touched the same file yet.
 
 ---
 
@@ -107,3 +158,19 @@ problem: an agent with no persistent memory needing real continuity
 across sessions. Nothing found this session argues against it. If
 anything, this repo's own `docs/OPERATING-MODE.md` and this doc are that
 same pattern, deliberately kept even in the lighter-governance tier.
+
+---
+
+## What the actual rebuild changed about this document's confidence
+
+Two principles (2, 7) predicted correctly and got no real test until
+now — one held completely (2), one held on the technical claim but not
+on the practice of *shipping* it as promised (7). One principle (6) was
+violated by the very build meant to demonstrate it, despite being
+explicit, written, and open in front of whoever wrote the first pass.
+The pattern across all three: writing a principle down changes what gets
+*caught*, not what gets *written correctly the first time*. Verification
+remains load-bearing even when the design is right — maybe especially
+then, since a documented-and-still-broken gap is easier to miss than an
+undocumented one, precisely because it looks like it should have been
+covered.
