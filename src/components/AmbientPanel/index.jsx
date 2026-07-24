@@ -1,15 +1,16 @@
 import { Show, For, Switch, Match } from 'solid-js'
 import { ambientData } from '../../data/relay'
 import styles from './AmbientPanel.module.css'
+import shared from '../shared.module.css'
 
 function Skeleton() {
   return (
-    <div class={styles.skeleton}>
-      <div class={`${styles.bar} ${styles.wide}`} />
-      <div class={`${styles.bar} ${styles.medium}`} />
-      <div class={`${styles.bar} ${styles.wide}`} />
-      <div class={`${styles.bar} ${styles.narrow}`} />
-      <div class={`${styles.bar} ${styles.medium}`} />
+    <div class={shared.skeleton}>
+      <div class={`${shared.bar} ${shared.wide}`} />
+      <div class={`${shared.bar} ${shared.medium}`} />
+      <div class={`${shared.bar} ${shared.wide}`} />
+      <div class={`${shared.bar} ${shared.narrow}`} />
+      <div class={`${shared.bar} ${shared.medium}`} />
     </div>
   )
 }
@@ -19,7 +20,7 @@ function PickRow(props) {
   return (
     <div class={styles.pickRow}>
       <div class={styles.pickHead}>
-        <span class={`${styles.tier} ${styles['tier_' + String(p().tier).toLowerCase()]}`}>
+        <span class={`${shared.chip} ${styles.tier} ${styles['tier_' + String(p().tier).toLowerCase()]}`}>
           {p().tier}
         </span>
         <span class={styles.pickSport}>{p().sport}</span>
@@ -30,7 +31,7 @@ function PickRow(props) {
       </div>
       <Show when={p().reasons?.length}>
         <div class={styles.reasons}>
-          <For each={p().reasons}>{r => <span class={styles.reasonBadge}>{r}</span>}</For>
+          <For each={p().reasons}>{r => <span class={`${shared.chip} ${styles.reasonBadge}`}>{r}</span>}</For>
         </div>
       </Show>
     </div>
