@@ -8,18 +8,17 @@ name: Live Reconciliation Check
 # rule-gha-for-sandbox-egress-blocks elsewhere in this project, applied
 # here for the first time in field-playground specifically.
 #
-# 2026-07-24: both the first workflow_dispatch run and the first push-
-# triggered run got stuck at "in_progress" for 2.5+ hours -- a real,
-# reproducible problem, not one-off bad luck. No job-level timeout meant
-# it would have hung until GHA's own 6-hour default ceiling with zero
-# useful feedback in the meantime. Added timeout-minutes so a genuine
-# hang fails fast and visibly instead of silently consuming CI time.
-# Also dropped --with-deps from the playwright install -- it apt-installs
-# a large set of OS packages on top of the browser download, which is
-# the more likely actual hang (package manager lock contention, slow
-# mirror) versus just fetching the Chromium binary. ubuntu-latest
-# runners typically already have what plain chromium needs; --with-deps
-# exists for minimal/custom images, not the default GHA runner.
+# 2026-07-24: two runs stuck in_progress for 2.5+ hours each -- real,
+# reproducible, not bad luck. Added a 10-minute job timeout + dropped
+# --with-deps as a first fix; the timeout correctly fired at 10 minutes
+# (confirmed -- status went to "cancelled" right on schedule) but that
+# only proves the safety net works, not that the hang is gone. outbox/
+# was completely empty on that run -- my own script never got far enough
+# to write even its own error-path manifest, meaning the hang is in
+# checkout/npm-install/playwright-install, before scripts/
+# verify-reconciliation.mjs starts at all. Split into per-step timeouts
+# instead of one job-level one, specifically so the NEXT run narrows
+# down which step, rather than failing opaquely a third time.
 
 on:
   push:
@@ -29,18 +28,32 @@ on:
 jobs:
   reconciliation-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        timeout-minutes: 2
+
       - uses: actions/setup-node@v4
+        timeout-minutes: 2
         with:
           node-version: 22
-      - run: npm install
-      - run: npx playwright install chromium
-      - run: node scripts/verify-reconciliation.mjs
+
+      - name: npm install
+        timeout-minutes: 3
+        run: npm install
+
+      - name: playwright install (chromium only, no --with-deps)
+        timeout-minutes: 3
+        run: npx playwright install chromium
+
+      - name: run verification script
+        timeout-minutes: 2
+        run: node scripts/verify-reconciliation.mjs
+
       - name: Upload manifest + screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: reconciliation-check-results
           path: outbox/reconciliation-check-*
+          if-no-files-found: warn
