@@ -1,6 +1,8 @@
 import { createSignal, createResource } from 'solid-js'
 
-const RELAY_BASE = 'https://field-relay-nba.jeffunglesbee.workers.dev'
+const RELAY_BASE = import.meta.env.DEV
+  ? ''
+  : 'https://field-relay-nba.jeffunglesbee.workers.dev'
 
 function todayStr() {
   return new Date().toISOString().split('T')[0]
