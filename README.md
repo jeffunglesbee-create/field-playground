@@ -16,9 +16,14 @@ writer knew the other existed):
   for the AmbientPanel + DeskCard rebuild specifically (why SolidJS,
   architecture, the two structural tests being run).
 - **`docs/EXPERIMENT-desk-ambient-rebuild.md`** — the build log and
-  current honest answer to the experiment's real question (is this class
-  of bug structurally harder to write in a real framework — split
+  current honest answer to that experiment's real question (is this
+  class of bug structurally harder to write in a real framework — split
   result: yes for state-transition bugs, no for CSS containment).
+- **`docs/EXPERIMENT-live-reconciliation.md`** — scoped, not yet
+  started. Tests a harder, untested bug class: temporal/reconciliation
+  state (poll → partial update), not just initial render — targets the
+  actual shape of FIELD's worst real bugs (stuck-live cards,
+  permanently-stuck pick resolution, cross-game text races).
 
 Current implementation: `src/components/AmbientPanel/` and
 `src/components/DeskCard/`, wired to live relay data via
