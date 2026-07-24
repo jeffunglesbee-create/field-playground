@@ -1,160 +1,109 @@
-# Ground-Up Design: Desk card + Ambient panel in SolidJS
+# FIELD — Ground-Up Design Spec
 
-## The experiment question (restated)
+**Status:** founding reference for prototyping in this repo, not a
+production commitment. Written 2026-07-23, after a single session that
+found and fixed three real, live bugs (streak-board naming collision,
+ambient-panel skeleton overlap, chip overflow) and used each one as
+evidence for what a from-scratch design should get right the first time.
 
-field.js is ~45k lines of hand-rolled DOM manipulation. Two real bugs from
-one session illustrate the structural gap:
-
-1. **Skeleton overlap** — a loading skeleton never gets told to disappear
-   because nothing enforces "old node out before new node in."
-2. **Chip overflow** — a chip component has no overflow handling because CSS
-   containment isn't anyone's job to remember.
-
-Would a real component framework make those categories of bug **harder to
-write**, not just easier to catch? That's the question. Done when we have a
-concrete yes-or-no with an example.
-
----
-
-## Why SolidJS specifically
-
-React would be fine. SolidJS is better *for this question* because of how
-its reactivity model maps onto the bugs above.
-
-**Components run once.** A SolidJS component function is a setup function,
-not a render function. It runs exactly once, wires up signals and effects,
-and then the reactive system handles all subsequent updates. This means
-there is no "re-render path" that can accidentally leave old state alive —
-there is only "the reactive graph updates."
-
-**Effects clean up automatically.** `createEffect` tracks its own
-dependencies and re-runs when they change. When a component unmounts, every
-effect and resource inside it is disposed. The "skeleton never told to
-disappear" bug is structurally awkward to write here: the template's
-`<Show when={...}>` is literally not a call you make — it's a reactive
-expression that's always correct by construction.
-
-**`createResource` makes async state explicit.** Loading, error, and
-resolved states are a first-class union, not an optional flag you might
-forget to set. A skeleton that never disappears would require actively
-ignoring the `loading` property.
-
-**Fine-grained reactivity, no VDOM.** Updates are surgical — only the DOM
-nodes whose dependencies changed get touched. This makes the reconciliation
-behavior predictable and inspectable, which is useful when the experiment is
-specifically about reconciliation correctness.
+**How to use this doc:** every principle below traces to a specific,
+real incident — not generic rewrite advice. If you're prototyping
+something here and it conflicts with one of these, that's worth noticing
+explicitly, not silently drifting from — either the prototype is
+teaching you the principle was wrong, or it's cutting a corner worth
+naming out loud.
 
 ---
 
-## Architecture
+## 1. Real ES modules from day one — no monolith syncing to a deploy artifact
 
-```
-src/
-  main.jsx           — mounts App to #root
-  App.jsx            — layout shell, renders DeskCard + AmbientPanel
-  data/
-    relay.js         — createResource wrappers over relay endpoints
-  components/
-    DeskCard/
-      index.jsx      — Desk card component
-      DeskCard.css   — scoped styles
-    AmbientPanel/
-      index.jsx      — Ambient panel component
-      AmbientPanel.css
-  lib/
-    relay-client.js  — raw fetch helpers (base URL, error handling)
-```
+FIELD's actual source of truth, `src/legacy/field.js`, is 2.3MB. This
+session's own tools (`read_file`/`read_lines`) failed silently against
+it all session — not a bug in the tools, a direct symptom of GitHub's
+Contents API 1MB ceiling on inline file content. The esbuild migration
+(Phases 1-7, first real TypeScript module extractions) is FIELD actively
+escaping this. A rebuild starts where that migration is heading — real
+modules, real imports — not where FIELD started.
 
-### Data layer
+## 2. One rendering model, chosen once, with explicit cleanup contracts
 
-All data is read-only, from the relay's existing public endpoints. Each
-endpoint maps to a `createResource` call in `relay.js`. Components consume
-the resource directly — no intermediate store, no cache, no local state
-duplication.
+The ambient-panel skeleton bug (Codex: `ambient-panel-skeleton-overlap`)
+happened because Solid.js's surgical reconciliation replaced a
+wholesale-innerHTML-replace pattern for one component, and nothing
+carried forward the implicit cleanup the old pattern gave for free —
+the skeleton was a DOM sibling nothing ever told to leave. Pick
+fine-grained reactive rendering everywhere, upfront. When a component's
+rendering model changes, write down explicitly what the old model
+provided implicitly that the new one now needs to provide on purpose.
 
-Relay endpoint base URL: TBD (probe via FIELD_Handoff `probe_relay_route`
-or wire in manually once known).
+## 3. RUWT's two tests as one document, written before any relay code
 
-Target endpoints:
-- Ambient panel data — live/upcoming games, scores, clock state
-- Desk card data — current game context, boxscore summary
+Rule F (commodity vs. proprietary — may the relay compute this at all)
+and Rule A (pull vs. push — may it ever autonomously send this) are
+sound, but Rule A was discovered as a *separate* addition after Rule F
+was already load-bearing — meaning something could pass F and still
+violate A without an obvious reason to suspect it. Write both as one
+decision tree before the first relay endpoint exists, not as sequential
+patches to a policy already in production.
 
-```js
-// relay.js pattern
-export const [ambientData] = createResource(fetchAmbient)
-export const [deskData]    = createResource(fetchDesk)
-```
+## 4. The relay as sole credential holder, from the first commit
 
-### Component contract
+Real history: raw PATs embedded in git URLs → Rule 80 (credential
+boundary) → OAuth 2.1 + PKCE + DCR → per-client trust tiers — each step
+reacting to the previous one's exposure. Some of those raw PATs are
+still sitting in pre-Rule-80 chat history, findable by search, unrotated
+confirmation unclear (Codex: `exposed-pat-pre-rule80-history`). Skip the
+reactive phase — relay-holds-the-only-credential is the starting design,
+not the fourth iteration.
 
-Each component receives its resource directly and handles its own
-loading/error/resolved states using `<Show>` and `<Suspense>`. No prop
-drilling for loading flags, no parent managing skeleton visibility.
+## 5. A naming gate for anything relay-computed that reaches a public label
 
-```jsx
-// AmbientPanel.jsx — structural skeleton-bug resistance
-export function AmbientPanel() {
-  return (
-    <Show when={ambientData()} fallback={<AmbientSkeleton />}>
-      {(data) => <AmbientContent data={data} />}
-    </Show>
-  )
-}
-```
+`streak_board` (Codex: `streak-board-metric-mismatch`) was a real
+editorial-quality signal wearing real sports-streak vocabulary
+("hot"/"cold"/"streak"), and it shipped to a public card because nobody
+asked what a user would assume the name meant before it reached a
+label. This is Rule F's own logic extended one step further: not just
+"may the relay compute this," but "does the field's name lie about what
+it computed." One question, asked at naming time — not discovered from
+a screenshot months later.
 
-The skeleton appears when `ambientData()` is undefined and disappears the
-moment it resolves — there is no code path where the skeleton can linger.
+## 6. Containment built into the shared primitive, not into every consumer
 
----
+Two independent chip classes (`.watch-now-btn`, `.stream-chip`) each
+separately forgot overflow handling — the same gap, twice, because
+there was no shared base either inherited from. One pill/chip primitive
+with `overflow:hidden; text-overflow:ellipsis; max-width` on it once.
+No variant gets the chance to forget what it was never responsible for
+remembering.
 
-## The specific structural tests
+## 7. Verification artifacts ship with the feature, not bolted on after a bug report
 
-### Test 1: skeleton-overlap bug
+The most expensive relearned lesson this session (now Rule 90,
+VERIFY-ARTIFACT-A): a verification task written as a bare action verb
+("verify," "confirm") is satisfiable without proving anything. Real
+fix: a CI-as-proxy Playwright check, real committed screenshots + a
+structured manifest with falsifiable fields (`scrollWidth <=
+clientWidth`, not "looks fine"). A component touching rendering ships
+*with* its own artifact-producing check in the same change that builds
+it — not as a follow-up CC-CMD after someone spots it broken in a
+screenshot.
 
-**In field.js:** nothing enforced "clear old content before mounting new."
-**In SolidJS:** `<Show>` is a reactive expression; "old content visible when
-new is mounted" requires actively returning incorrect JSX. It's not an
-omission that could happen by accident.
+## 8. Two governance tiers, declared upfront
 
-Expected result: this category of bug is structurally hard to write.
-
-### Test 2: containment / overflow
-
-**In field.js:** CSS containment was nobody's job. **In SolidJS (with
-component-scoped CSS):** each component file owns its styles. Overflow
-handling on the chip would be a missing line in `DeskCard.css`, which is
-adjacent to the template that uses it and visually obvious in review.
-
-Expected result: this isn't prevented structurally the same way — it's still
-an omission — but the omission is more visible and localized.
-
----
-
-## Done criteria
-
-Same as the experiment doc:
-
-1. The surface renders real Desk + Ambient data correctly.
-2. Side-by-side visual comparison with production passes.
-3. There's a concrete, honest answer to the experiment question — either
-   "yes, the skeleton-overlap class of bug is structurally awkward to write
-   here, here's why" or "no, same footguns different syntax, here's the
-   SolidJS equivalent trap."
-
-A component library that merely looks nice is not done.
+Full CC-CMD/confidence-gate/Codex discipline for anything shipping to
+users. None of it for exploration. This repo (`field-playground`) exists
+because the heavy tier got retrofitted onto a need it was never designed
+for. Decide both tiers, and the boundary between them, before writing
+code — not after the friction teaches you they should have been
+separate.
 
 ---
 
-## Build setup
+## What's already right — keep this, don't rebuild it
 
-- Vite + `vite-plugin-solid`
-- No TypeScript (speed > safety for a sandbox)
-- No router (single surface)
-- No test suite (this is exploratory; the answer to the experiment IS the
-  output)
-- CSS: plain per-component `.css` files, no preprocessor
-
-```
-npm create vite@latest . -- --template solid
-```
-but we're doing it by hand to keep the scaffold minimal.
+Externalizing session memory into `HANDOFF.md`, `CODE_MAP.json`, and a
+permanent, zero-deletion Codex is a good, hard-won answer to a real
+problem: an agent with no persistent memory needing real continuity
+across sessions. Nothing found this session argues against it. If
+anything, this repo's own `docs/OPERATING-MODE.md` and this doc are that
+same pattern, deliberately kept even in the lighter-governance tier.
