@@ -58,3 +58,41 @@ the same question comes up again, check whether the actual cause is
 missing process or missing knowledge before assuming the answer is
 "add rules" — they're different problems with different fixes, and only
 one of them fits what this repo is for.
+
+## "Should we add rules?" — asked again, different question this time, 2026-07-24
+
+The section above answers the CI-friction version of this question. This
+is a different version, asked the same day: not "why did today feel
+slow," but "real, confirmed findings keep sitting here instead of
+reaching FIELD" — `<Switch>`-based state exclusivity, the shared chip
+primitive, `createStore`+`reconcile()` for live polling. All three
+verified, all three still nowhere near `jubilant-bassoon`. That's not
+the same problem as a blocked Chromium download, and it doesn't get the
+same answer.
+
+**Conclusion: one narrow addition, not a reversal.** The gap isn't
+ceremony during experiments — it's the total absence of anything at the
+*end* of one. "Anything worth keeping graduates through the normal
+CC-CMD process" has been true in principle since this file's first
+version and has never once actually happened. A stated intent with
+nothing forcing it isn't a process, it's a hope.
+
+**The rule:** when an experiment's status in `docs/EXPERIMENTS.md` moves
+to Done, or a specific finding inside an in-progress one is confirmed
+solid, the closing entry isn't finished until it says one of two things
+explicitly: "CC-CMD written: `<link>`" or "Not graduating because
+`<reason>`." Silence is what caused the backlog — an explicit "not yet,
+here's why" is a fine, honest answer; a finding that just trails off
+with no line either way is the actual failure mode. This is one
+checklist line, same shape as session-end already has for other things
+— not a gate on building, not a review step, not anything that slows
+down the next experiment. It only fires at the moment something is
+already confirmed good enough to write down as done.
+
+**Current backlog, named explicitly rather than left implicit:**
+`<Switch>`-based render-state exclusivity, the shared chip/pill
+primitive, and `createStore`+`reconcile()` for live polling are all
+confirmed, all still un-graduated. Whether any of them gets a real
+CC-CMD is Jeff's call, not a decision this rule makes automatically —
+the rule only requires that the call gets made and written down, not
+left to just not happen again.
