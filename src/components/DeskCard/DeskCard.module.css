@@ -74,6 +74,9 @@
   50%       { opacity: 0.3; }
 }
 
+/* Already had correct containment before this refactor — left as-is,
+   not moved to the shared .chip primitive since these are plain text
+   truncation, not pill/badge-styled chips like tier/reasonBadge. */
 .matchup {
   font-size: 12px;
   color: #ccc;
@@ -122,28 +125,4 @@
   font-size: 12px;
   color: #c44;
   padding: 8px 0;
-}
-
-/* skeleton */
-.skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 4px 0;
-}
-
-.bar {
-  height: 11px;
-  background: #1a1a1a;
-  border-radius: 3px;
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-.wide   { width: 90%; }
-.medium { width: 60%; }
-.narrow { width: 40%; }
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50%       { opacity: 0.8; }
 }
