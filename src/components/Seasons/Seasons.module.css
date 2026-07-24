@@ -1,0 +1,134 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.sampleTag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a80;
+  background: #2a2410;
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+.note {
+  font-size: 11px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.sportGroup {
+  margin-bottom: 14px;
+}
+
+.sportGroup:last-child {
+  margin-bottom: 0;
+}
+
+.sportLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #3a3a3a;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.card {
+  padding: 8px 0;
+  border-bottom: 1px solid #181818;
+}
+
+.card:last-child {
+  border-bottom: none;
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.sportTag {
+  font-size: 8px;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.teamName {
+  font-size: 12px;
+  color: #ddd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stateRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* Visual identity only — containment from shared.module.css's .chip. */
+.stateBadge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.clinched, .division_lead     { background: #1a2e1a; color: #4c8; }
+.wildcard_race, .promotion_race,
+.bubble                        { background: #2a2410; color: #da4; }
+.relegation_battle             { background: #2a1a1a; color: #e66; }
+.eliminated, .mid_table        { background: #1a1a1a; color: #555; }
+
+.urgencyTrack {
+  flex: 1 1 auto;
+  height: 3px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.urgencyFill {
+  height: 100%;
+  background: linear-gradient(90deg, #4c8, #da4, #e66);
+  border-radius: 2px;
+}
+
+.detail {
+  font-size: 10px;
+  color: #444;
+  font-variant-numeric: tabular-nums;
+}
