@@ -1,0 +1,32 @@
+name: Live Reconciliation Check
+
+# Closes the gap docs/EXPERIMENT-live-reconciliation.md left open: chat's
+# own sandbox can't download a real browser (Chromium blocked from
+# storage.googleapis.com there, confirmed by trying) and a Node-only
+# harness proved unreliable for testing SolidJS's actual reactive
+# scheduler. GHA has real, unrestricted egress -- same reasoning as
+# rule-gha-for-sandbox-egress-blocks elsewhere in this project, applied
+# here for the first time in field-playground specifically.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  reconciliation-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/verify-reconciliation.mjs
+      - name: Upload manifest + screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reconciliation-check-results
+          path: outbox/reconciliation-check-*
