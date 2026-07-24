@@ -55,19 +55,15 @@ async function fetchDeskReconciled(date) {
 
 export const [deskData, { refetch: refetchDesk }] = createResource(currentDate, fetchDeskReconciled)
 
-// --- Seasons: the one real structured standings source that exists ---
+// --- Seasons: real structured standings sources ---
 //
-// Checked field-relay-nba source directly rather than assume: /context/date
-// only has pre-rendered prose (`brief_text`), not queryable data -- that
-// finding holds. But /wc/standings is real: a genuine D1 query (SELECT *
-// FROM wc_group ORDER BY points DESC, gd DESC, gf DESC), clean per-team
-// fields (team, played, won, drawn, lost, gf, ga, gd, points). Confirmed
-// live. Scoped narrowly though -- World Cup group stage only, and the
-// tournament ended 2026-07-19, so every team already shows played:6. This
-// is a final table, not an ongoing race -- doesn't cover the ongoing-sport
-// cross-comparison Seasons was actually built to test, but it's real, so
-// it's wired up as its own clearly-real section, not blended into the
-// sample cards for the other sports.
+// /wc/standings (World Cup) confirmed real but concluded -- final table,
+// not an ongoing race, doesn't answer the actual Seasons question. Checked
+// field-relay-nba further for anything covering a currently-ongoing sport:
+// both MLB and MLS route through real upstream-API proxies, confirmed live
+// with genuinely current, in-season data (MLB gamesPlayed:102, lastUpdated
+// today; MLS match_day:17) -- not concluded, not sample, real ongoing
+// competition state for the first time in this component.
 async function fetchWcStandings() {
   const res = await fetch(`${RELAY_BASE}/wc/standings`)
   if (!res.ok) throw new Error(`wc/standings fetch failed: ${res.status}`)
@@ -75,3 +71,23 @@ async function fetchWcStandings() {
 }
 
 export const [wcStandings] = createResource(fetchWcStandings)
+
+// MLB: relay proxies statsapi.mlb.com directly. leagueId 103=AL, 104=NL.
+async function fetchMlbStandings() {
+  const res = await fetch(`${RELAY_BASE}/mlb-stats/standings?leagueId=103,104&season=${new Date().getFullYear()}`)
+  if (!res.ok) throw new Error(`mlb-stats/standings fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [mlbStandings] = createResource(fetchMlbStandings)
+
+// MLS: relay proxies stats-api.mlssoccer.com. Real IDs confirmed live,
+// same ones referenced elsewhere in this project's memory
+// (MLS_SEASON_2026='MLS-SEA-0001KA').
+async function fetchMlsStandings() {
+  const res = await fetch(`${RELAY_BASE}/mls/stats/competitions/MLS-COM-000001/seasons/MLS-SEA-0001KA/standings`)
+  if (!res.ok) throw new Error(`mls/stats standings fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [mlsStandings] = createResource(fetchMlsStandings)
