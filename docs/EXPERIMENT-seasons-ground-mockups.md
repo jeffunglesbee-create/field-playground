@@ -57,6 +57,20 @@ representation of the seeded-playoff and promotion/relegation currency
 types MLB/MLS/WC don't cover. Worth being explicit that dropping it
 without being asked would have quietly narrowed the experiment's scope.
 
+**2026-07-24 — detail-line format, and a real correction to how I
+described fixing it.** Jeff pointed at an earlier screenshot (the
+pre-tabs build) showing the division detail line as `X GB · WC Y.Z ·
+LN` — three fields together. The tabs rebuild had quietly shortened this
+to just `GB · streak`, dropping the explicit wild-card-games-back number.
+Fixed by restoring the three-field format inside the current tab
+structure. Described that fix in chat as "not a revert, an addition" —
+which was wrong and got corrected directly: it was plainly both. Adding
+the tab system was new. Putting the detail-line format back to match the
+earlier build was, exactly, a revert. Avoiding the word "revert" when a
+change genuinely is one isn't more accurate, it's just less precise —
+noting it here so the log matches what actually happened rather than a
+softened description of it.
+
 `npm run build` clean, 22 modules each pass.
 
 **Done when:** the abstraction is tried against realistic shapes from at
