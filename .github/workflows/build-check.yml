@@ -1,0 +1,29 @@
+name: Build Check
+
+# Exists because of a real, documented gap: the AmbientPanel/DeskCard
+# rebuild's own production build wasn't run until several turns after
+# the components were declared done (see docs/GROUND-UP-DESIGN.md
+# principle #7's 2026-07-24 revision). It built clean when finally run,
+# but "verification ships with the feature" didn't happen in practice.
+# This is the lightweight, low-ceremony version of closing that gap —
+# no confidence gates, no Codex logging, just: does it actually build.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - name: Report bundle size
+        run: |
+          echo "### Build output" >> $GITHUB_STEP_SUMMARY
+          ls -la dist/assets/ >> $GITHUB_STEP_SUMMARY
