@@ -1,0 +1,9 @@
+{
+  "name": "field-playground",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Sandbox for FIELD-adjacent prototypes that aren't production. See docs/OPERATING-MODE.md and docs/GROUND-UP-DESIGN.md.",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}
