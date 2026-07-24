@@ -145,3 +145,25 @@ out shortcuts and a clearer reason why they didn't substitute for it.
 Scripts from this attempt (`verify-reconcile*.mjs`) were scratch work in
 chat's own sandbox, not committed — the finding is what's worth keeping,
 not the throwaway harness that produced an inconclusive result.
+
+---
+
+**2026-07-24, collapsible sport groups (Claude Code's suggestion).**
+Same underlying question, new surface: local UI/interaction state
+instead of server-driven display state. `grouped()` in `DeskCard` does
+`Object.entries(map)`, producing brand-new `[sport, games]` tuple
+references on every poll — meaning a naive `createSignal` owned inside
+`SportGroup` would get wiped every 15s the same way an unreconciled
+`<For>` row would remount. Built the fix directly, same pattern as
+`deskStore`: expansion state lives in a module-level `createStore` keyed
+by sport *name* (a stable string, immune to `grouped()`'s reference
+churn), not inside the component that re-renders. `npm run build` clean,
+22 modules.
+
+Same open gap as everything above: whether this actually survives a real
+poll cycle in a running browser hasn't been watched, for the same
+reasons already documented in this file — no reachable browser from
+chat's own tooling. The store-keyed-by-name pattern is the right fix per
+the same sourced SolidJS behavior already established here, but "right
+per the docs" and "confirmed running" are still two different claims,
+same distinction this whole log has tried to keep honest about.
