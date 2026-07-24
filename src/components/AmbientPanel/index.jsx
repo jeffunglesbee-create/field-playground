@@ -1,5 +1,6 @@
-import { Show, For, Switch, Match } from 'solid-js'
+import { Show, For, Switch, Match, createMemo } from 'solid-js'
 import { ambientData } from '../../data/relay'
+import { outcomes, setOutcome, clearOutcome } from '../../data/outcomes'
 import styles from './AmbientPanel.module.css'
 import shared from '../shared.module.css'
 
@@ -17,6 +18,13 @@ function Skeleton() {
 
 function PickRow(props) {
   const p = () => props.pick
+  const result = () => outcomes()[p().game_id] ?? null
+
+  const toggle = (val) => {
+    if (result() === val) clearOutcome(p().game_id)
+    else setOutcome(p().game_id, val)
+  }
+
   return (
     <div class={styles.pickRow}>
       <div class={styles.pickHead}>
@@ -25,9 +33,27 @@ function PickRow(props) {
         </span>
         <span class={styles.pickSport}>{p().sport}</span>
         <span class={styles.pickMatchup}>{p().away} @ {p().home}</span>
-        <Show when={p().score}>
-          <span class={styles.pickScore}>{p().score}</span>
-        </Show>
+        <div class={styles.pickTrailing}>
+          <Show when={p().score}>
+            <span class={styles.pickScore}>{p().score}</span>
+          </Show>
+          <div class={styles.outcomeGroup}>
+            <For each={['W', 'L', 'P']}>
+              {val => (
+                <button
+                  class={[
+                    styles.outcomeBtn,
+                    result() === val ? styles['outcome_' + val.toLowerCase()] : '',
+                    result() && result() !== val ? styles.outcomeDim : '',
+                  ].join(' ')}
+                  onClick={() => toggle(val)}
+                >
+                  {val}
+                </button>
+              )}
+            </For>
+          </div>
+        </div>
       </div>
       <Show when={p().reasons?.length}>
         <div class={styles.reasons}>
@@ -77,6 +103,19 @@ function StreakBoard(props) {
 
 function Content(props) {
   const d = () => props.data
+
+  const record = createMemo(() => {
+    const ranked = d().pick?.ranked ?? []
+    let w = 0, l = 0, p = 0
+    for (const pick of ranked) {
+      const o = outcomes()[pick.game_id]
+      if (o === 'W') w++
+      else if (o === 'L') l++
+      else if (o === 'P') p++
+    }
+    return { w, l, p, any: w + l + p > 0 }
+  })
+
   return (
     <div>
       <header class={styles.header}>
@@ -90,7 +129,12 @@ function Content(props) {
 
       <Show when={d().pick?.ranked?.length}>
         <section class={styles.section}>
-          <h3 class={styles.sectionLabel}>Picks</h3>
+          <div class={styles.sectionHeader}>
+            <h3 class={styles.sectionLabel}>Picks</h3>
+            <Show when={record().any}>
+              <span class={styles.record}>{record().w}–{record().l}–{record().p}</span>
+            </Show>
+          </div>
           <div class={styles.pickList}>
             <For each={d().pick.ranked}>
               {pick => <PickRow pick={pick} />}

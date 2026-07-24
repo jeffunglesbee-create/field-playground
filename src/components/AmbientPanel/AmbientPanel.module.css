@@ -38,13 +38,27 @@
   padding-top: 12px;
 }
 
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
 .sectionLabel {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--field-text-muted);
-  margin-bottom: 8px;
+}
+
+.record {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #4c8;
+  letter-spacing: 0.05em;
 }
 
 .pickList {
@@ -99,7 +113,65 @@
 .pickScore {
   font-size: 12px;
   color: var(--field-text-secondary);
+}
+
+.pickTrailing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
+  flex-shrink: 0;
+}
+
+.outcomeGroup {
+  display: flex;
+  gap: 3px;
+}
+
+.outcomeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 18px;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.05em;
+  background: #161616;
+  color: #2e2e2e;
+  border: 1px solid #222;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s, opacity 0.1s;
+}
+
+.outcomeBtn:hover {
+  background: #1e1e1e;
+  color: #555;
+  border-color: #333;
+}
+
+.outcome_w {
+  background: #1a2e1a;
+  color: #4c8;
+  border-color: #2a4a2a;
+}
+
+.outcome_l {
+  background: #2e1a1a;
+  color: #c55;
+  border-color: #4a2a2a;
+}
+
+.outcome_p {
+  background: #1e1e1e;
+  color: #888;
+  border-color: #333;
+}
+
+.outcomeDim {
+  opacity: 0.2;
 }
 
 .reasons {
