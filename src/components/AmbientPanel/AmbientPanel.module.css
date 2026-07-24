@@ -66,6 +66,8 @@
   flex-wrap: wrap;
 }
 
+/* Visual identity only — containment comes from shared.module.css's
+   .chip, composed alongside this in the component. */
 .tier {
   font-size: 10px;
   font-weight: 700;
@@ -107,6 +109,9 @@
   padding-left: 24px;
 }
 
+/* Visual identity only — containment comes from shared.module.css's
+   .chip, composed alongside this in the component. This is the exact
+   element the last verification found missing overflow handling. */
 .reasonBadge {
   font-size: 10px;
   color: #555;
@@ -114,7 +119,6 @@
   border: 1px solid #2a2a2a;
   border-radius: 3px;
   padding: 1px 6px;
-  white-space: nowrap;
 }
 
 /* error */
@@ -122,28 +126,4 @@
   font-size: 12px;
   color: #c44;
   padding: 8px 0;
-}
-
-/* skeleton */
-.skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 4px 0;
-}
-
-.bar {
-  height: 11px;
-  background: #1a1a1a;
-  border-radius: 3px;
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-.wide   { width: 90%; }
-.medium { width: 60%; }
-.narrow { width: 40%; }
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50%       { opacity: 0.8; }
 }
