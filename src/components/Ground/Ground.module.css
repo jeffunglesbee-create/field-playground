@@ -1,0 +1,96 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.sampleTag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a80;
+  background: #2a2410;
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+.note {
+  font-size: 11px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.postList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.post {
+  padding: 8px 0;
+  border-bottom: 1px solid #181818;
+}
+
+.post:last-child {
+  border-bottom: none;
+}
+
+.postHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+/* Visual identity only — containment from shared.module.css's .chip. */
+.teamTag {
+  font-size: 9px;
+  font-weight: 700;
+  color: #4c8;
+  background: #1a2e1a;
+  border-radius: 3px;
+  padding: 1px 5px;
+  text-transform: uppercase;
+}
+
+.author {
+  font-size: 11px;
+  color: #888;
+}
+
+.time {
+  font-size: 10px;
+  color: #444;
+  margin-left: auto;
+}
+
+.postText {
+  font-size: 12px;
+  color: #ccc;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.reactions {
+  font-size: 10px;
+  color: #555;
+}
