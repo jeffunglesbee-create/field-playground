@@ -17,12 +17,12 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--field-text-secondary);
 }
 
 .record {
   font-size: 12px;
-  color: #888;
+  color: var(--field-text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -43,7 +43,7 @@
 
 .matchup {
   font-size: 12px;
-  color: #ccc;
+  color: var(--field-text-primary);
   flex: 1 1 auto;
   min-width: 120px;
   white-space: nowrap;
@@ -59,7 +59,7 @@
 .pickBtn {
   font-size: 10px;
   font-family: inherit;
-  color: #888;
+  color: var(--field-text-secondary);
   background: #1a1a1a;
   border: 1px solid #2a2a2a;
   border-radius: 4px;
@@ -74,7 +74,7 @@
 
 .pickBtn:hover:not(:disabled) {
   border-color: #444;
-  color: #ccc;
+  color: var(--field-text-primary);
 }
 
 .pickBtn:disabled {
@@ -100,13 +100,13 @@
   margin-left: auto;
 }
 
-.statusBadge.unpicked  { background: #1a1a1a; color: #444; }
+.statusBadge.unpicked  { background: #1a1a1a; color: var(--field-text-muted); }
 .statusBadge.pending   { background: #2a2410; color: #a80; }
 .statusBadge.correct   { background: #1a2e1a; color: #4c8; }
 .statusBadge.incorrect { background: #2a1a1a; color: #a66; }
 
 .empty {
   font-size: 12px;
-  color: #333;
+  color: var(--field-text-muted);
   padding: 8px 0;
 }
