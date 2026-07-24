@@ -1,4 +1,5 @@
 import { Show, For, Switch, Match, createMemo, onMount } from 'solid-js'
+import { createStore } from 'solid-js/store'
 import { deskData, deskStore } from '../../data/relay'
 import styles from './DeskCard.module.css'
 import shared from '../shared.module.css'
@@ -38,6 +39,20 @@ const NON_MATCHUP_SPORTS = new Set(['golf'])
 // at 1 across every poll cycle, forever, no matter how many times its score
 // changes. If it climbs, GameRow is remounting instead of updating in place.
 const mountCounts = {}
+
+// Collapsible sport groups (Claude Code's suggestion, 2026-07-24). The real
+// risk: `grouped()` below does Object.entries(map), producing brand-new
+// [sport, games] tuple references on every poll -- <For> keys by reference
+// by default (same fact the live-reconciliation experiment already
+// confirmed), so a signal owned locally inside SportGroup would get wiped
+// every 15s along with the remount. Fix: expansion state lives here, in a
+// module-level store keyed by sport NAME (a stable string, immune to
+// grouped()'s reference churn), not inside the component that re-renders.
+const [collapsed, setCollapsed] = createStore({})
+
+function toggleGroup(sport) {
+  setCollapsed(sport, c => !c)
+}
 
 function GameRow(props) {
   const g = () => props.game
@@ -101,10 +116,22 @@ function GameRow(props) {
 }
 
 function SportGroup(props) {
+  const isCollapsed = () => !!collapsed[props.sport]
   return (
     <div class={styles.sportGroup}>
-      <div class={styles.sportLabel}>{props.sport}</div>
-      <For each={props.games}>{game => <GameRow game={game} />}</For>
+      <div
+        class={styles.sportLabel}
+        onClick={() => toggleGroup(props.sport)}
+        role="button"
+        tabIndex={0}
+      >
+        <span class={styles.collapseIcon}>{isCollapsed() ? '▸' : '▾'}</span>
+        {props.sport}
+        <span class={styles.groupCount}>{props.games.length}</span>
+      </div>
+      <Show when={!isCollapsed()}>
+        <For each={props.games}>{game => <GameRow game={game} />}</For>
+      </Show>
     </div>
   )
 }
