@@ -1,19 +1,25 @@
-import { createResource } from 'solid-js'
+import { createSignal, createResource } from 'solid-js'
 
-// TODO: fill in base URL once relay endpoints are confirmed via probe_relay_route
-const RELAY_BASE = ''
+const RELAY_BASE = 'https://field-relay-nba.jeffunglesbee.workers.dev'
 
-async function fetchAmbient() {
-  const res = await fetch(`${RELAY_BASE}/ambient`)
-  if (!res.ok) throw new Error(`ambient fetch failed: ${res.status}`)
+function todayStr() {
+  return new Date().toISOString().split('T')[0]
+}
+
+// Reactive date signal — swap to navigate days without a page reload.
+export const [currentDate, setCurrentDate] = createSignal(todayStr())
+
+async function fetchAmbient(date) {
+  const res = await fetch(`${RELAY_BASE}/analytics/newspaper/${date}`)
+  if (!res.ok) throw new Error(`newspaper fetch failed: ${res.status}`)
   return res.json()
 }
 
-async function fetchDesk() {
-  const res = await fetch(`${RELAY_BASE}/desk`)
-  if (!res.ok) throw new Error(`desk fetch failed: ${res.status}`)
+async function fetchDesk(date) {
+  const res = await fetch(`${RELAY_BASE}/context/date/${date}`)
+  if (!res.ok) throw new Error(`context fetch failed: ${res.status}`)
   return res.json()
 }
 
-export const [ambientData, { refetch: refetchAmbient }] = createResource(fetchAmbient)
-export const [deskData,    { refetch: refetchDesk }]    = createResource(fetchDesk)
+export const [ambientData, { refetch: refetchAmbient }] = createResource(currentDate, fetchAmbient)
+export const [deskData,    { refetch: refetchDesk }]    = createResource(currentDate, fetchDesk)
