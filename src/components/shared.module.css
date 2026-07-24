@@ -1,0 +1,44 @@
+/* Shared primitive, imported by every component instead of each
+   redefining its own copy. Exists specifically because the last
+   verification pass found .skeleton/.bar/pulse duplicated verbatim
+   across AmbientPanel and DeskCard, and .reasonBadge missing the
+   overflow handling .matchup/.venue already had — the exact "same gap,
+   twice, no shared base" pattern GROUND-UP-DESIGN.md principle #6
+   exists to prevent. See docs/GROUND-UP-DESIGN.md. */
+
+/* ---- chip / pill primitive ----
+   Any small badge-style element (tier, reason tag, future additions)
+   composes this IN ADDITION to its own visual styling (background,
+   color) — this class owns containment, nothing else does. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* ---- skeleton loading primitive ---- */
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.bar {
+  height: 11px;
+  background: #1a1a1a;
+  border-radius: 3px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.wide   { width: 90%; }
+.medium { width: 60%; }
+.narrow { width: 40%; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.8; }
+}
