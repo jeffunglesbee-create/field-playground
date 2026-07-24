@@ -1,6 +1,7 @@
 import { onMount, onCleanup } from 'solid-js'
 import { AmbientPanel } from './components/AmbientPanel'
 import { DeskCard } from './components/DeskCard'
+import { PickEm } from './components/PickEm'
 import { refetchDesk } from './data/relay'
 import styles from './App.module.css'
 
@@ -25,6 +26,9 @@ export default function App() {
       </section>
       <section class={styles.desk}>
         <DeskCard />
+      </section>
+      <section class={styles.pickem}>
+        <PickEm />
       </section>
     </div>
   )
