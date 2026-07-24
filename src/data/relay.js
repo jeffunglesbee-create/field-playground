@@ -54,3 +54,24 @@ async function fetchDeskReconciled(date) {
 }
 
 export const [deskData, { refetch: refetchDesk }] = createResource(currentDate, fetchDeskReconciled)
+
+// --- Seasons: the one real structured standings source that exists ---
+//
+// Checked field-relay-nba source directly rather than assume: /context/date
+// only has pre-rendered prose (`brief_text`), not queryable data -- that
+// finding holds. But /wc/standings is real: a genuine D1 query (SELECT *
+// FROM wc_group ORDER BY points DESC, gd DESC, gf DESC), clean per-team
+// fields (team, played, won, drawn, lost, gf, ga, gd, points). Confirmed
+// live. Scoped narrowly though -- World Cup group stage only, and the
+// tournament ended 2026-07-19, so every team already shows played:6. This
+// is a final table, not an ongoing race -- doesn't cover the ongoing-sport
+// cross-comparison Seasons was actually built to test, but it's real, so
+// it's wired up as its own clearly-real section, not blended into the
+// sample cards for the other sports.
+async function fetchWcStandings() {
+  const res = await fetch(`${RELAY_BASE}/wc/standings`)
+  if (!res.ok) throw new Error(`wc/standings fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [wcStandings] = createResource(fetchWcStandings)
