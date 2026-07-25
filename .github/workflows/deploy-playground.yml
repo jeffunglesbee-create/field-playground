@@ -1,0 +1,56 @@
+name: Deploy Playground
+
+# Publishes the built playground to Cloudflare Workers, giving it a real
+# public URL (https://field-playground.jeffunglesbee.workers.dev).
+#
+# REQUIRES ONE MANUAL STEP, once: add a repo secret named
+# CLOUDFLARE_API_TOKEN with Workers Scripts:Edit permission. Chat cannot
+# add GitHub secrets, and per Rule 80 must not handle the token value at
+# all -- so this is genuinely Jeff's to do, not something that was
+# skipped. Until it exists, this workflow fails at the deploy step only;
+# nothing else is affected.
+#
+# Credential-free alternative, if preferred: this account already runs
+# `field-deploy`, an OIDC courier built specifically so CI can deploy
+# without any stored credential. Using it here would mean adding
+# field-playground to its allowed `repository` claims -- that lives in
+# its own repo, which chat has no access to, so it wasn't attempted.
+# Worth considering if adding a token to a second repo is unwanted.
+#
+# Path filter is deliberate: this repo takes frequent docs/outbox
+# commits from the chat<->Claude Code loop, and none of those change
+# what gets served.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'wrangler.toml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Confirm the deployed site actually serves
+        run: |
+          sleep 10
+          code=$(curl -sS -o /dev/null -w "%{http_code}" https://field-playground.jeffunglesbee.workers.dev/)
+          echo "root returned HTTP $code"
+          test "$code" = "200"
