@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-07-25T02-59-32-246Z",
+  "checks": [
+    {
+      "name": "fetch_counts_stabilized_not_runaway",
+      "pass": true,
+      "finalPage1": 6,
+      "finalPage2": 6,
+      "baseline1": 4,
+      "baseline2": 4,
+      "totalNewFetches": 4,
+      "stabilized": true
+    }
+  ],
+  "baselineCounts": {
+    "page1": 4,
+    "page2": 4
+  },
+  "samples": [
+    {
+      "tMs": 500,
+      "page1Count": 6,
+      "page2Count": 6
+    },
+    {
+      "tMs": 1000,
+      "page1Count": 6,
+      "page2Count": 6
+    },
+    {
+      "tMs": 1500,
+      "page1Count": 6,
+      "page2Count": 6
+    },
+    {
+      "tMs": 2000,
+      "page1Count": 6,
+      "page2Count": 6
+    },
+    {
+      "tMs": 2500,
+      "page1Count": 6,
+      "page2Count": 6
+    },
+    {
+      "tMs": 3000,
+      "page1Count": 6,
+      "page2Count": 6
+    },
+    {
+      "tMs": 3500,
+      "page1Count": 6,
+      "page2Count": 6
+    },
+    {
+      "tMs": 4000,
+      "page1Count": 6,
+      "page2Count": 6
+    }
+  ],
+  "allPass": true
+}

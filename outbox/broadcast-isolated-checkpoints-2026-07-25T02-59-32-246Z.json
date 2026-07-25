@@ -1,0 +1,138 @@
+[
+  {
+    "name": "script_started",
+    "t": 1784948372246
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1784948372246
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1784948372354,
+    "pid": 2185
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1784948372522
+  },
+  {
+    "name": "browser_launched",
+    "t": 1784948373222
+  },
+  {
+    "name": "context_created",
+    "t": 1784948373252
+  },
+  {
+    "name": "page1_created",
+    "t": 1784948373289
+  },
+  {
+    "name": "page1_routes_registered",
+    "t": 1784948373295
+  },
+  {
+    "name": "page1_navigated",
+    "t": 1784948373368
+  },
+  {
+    "name": "page1_settled",
+    "t": 1784948373423
+  },
+  {
+    "name": "page2_created",
+    "t": 1784948373460
+  },
+  {
+    "name": "page2_routes_registered",
+    "t": 1784948373463
+  },
+  {
+    "name": "page2_navigated",
+    "t": 1784948373513
+  },
+  {
+    "name": "page2_settled",
+    "t": 1784948373552
+  },
+  {
+    "name": "baseline_captured",
+    "t": 1784948374552,
+    "baseline1": 4,
+    "baseline2": 4
+  },
+  {
+    "name": "page2_date_button_clicked",
+    "t": 1784948374590
+  },
+  {
+    "name": "sample_0",
+    "t": 1784948375091,
+    "tMs": 500,
+    "page1Count": 6,
+    "page2Count": 6
+  },
+  {
+    "name": "sample_1",
+    "t": 1784948375592,
+    "tMs": 1000,
+    "page1Count": 6,
+    "page2Count": 6
+  },
+  {
+    "name": "sample_2",
+    "t": 1784948376093,
+    "tMs": 1500,
+    "page1Count": 6,
+    "page2Count": 6
+  },
+  {
+    "name": "sample_3",
+    "t": 1784948376594,
+    "tMs": 2000,
+    "page1Count": 6,
+    "page2Count": 6
+  },
+  {
+    "name": "sample_4",
+    "t": 1784948377095,
+    "tMs": 2500,
+    "page1Count": 6,
+    "page2Count": 6
+  },
+  {
+    "name": "sample_5",
+    "t": 1784948377596,
+    "tMs": 3000,
+    "page1Count": 6,
+    "page2Count": 6
+  },
+  {
+    "name": "sample_6",
+    "t": 1784948378096,
+    "tMs": 3500,
+    "page1Count": 6,
+    "page2Count": 6
+  },
+  {
+    "name": "sample_7",
+    "t": 1784948378705,
+    "tMs": 4000,
+    "page1Count": 6,
+    "page2Count": 6
+  },
+  {
+    "name": "browser_closed",
+    "t": 1784948378761
+  },
+  {
+    "name": "manifest_complete",
+    "t": 1784948378846,
+    "allPass": true
+  },
+  {
+    "name": "script_ending",
+    "t": 1784948378967
+  }
+]
