@@ -142,3 +142,24 @@
 .cal_bad   { background: #e66; }
 .cal_split { background: #da4; }
 .cal_empty { background: #1e1e1e; }
+
+.streakDaysList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.streakDaysRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.streakDaysTeam {
+  color: var(--field-text-primary);
+}
+
+.streakDaysCount {
+  color: #d97;
+  font-variant-numeric: tabular-nums;
+}
