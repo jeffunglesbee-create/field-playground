@@ -3,6 +3,7 @@ import { createStore, produce } from 'solid-js/store'
 import { ambientData, deskStore } from '../../data/relay'
 import { outcomes, setOutcome, clearOutcome, annotations, setAnnotation } from '../../data/outcomes'
 import { picks, NON_MATCHUP_SPORTS } from '../PickEm'
+import { setHighlightedGameId } from '../DeskCard'
 import { useTimeOfDay } from '../../data/timeOfDay'
 import styles from './AmbientPanel.module.css'
 import shared from '../shared.module.css'
@@ -65,12 +66,6 @@ function handleDrop(dropIndex) {
   dragIndex = null
 }
 
-// "What would you have picked?" mode -- editorial Picks section stays
-// collapsed until every one of today's DeskCard games has a PickEm
-// prediction, so seeing which games are recapped as dramatic can't
-// subtly bias what the user would otherwise predict. Once revealed, it
-// stays revealed for the session -- this isn't meant to be a puzzle you
-// re-lock, just a one-way sequencing of "commit, then compare."
 const [manuallyRevealed, setManuallyRevealed] = createSignal(false)
 
 function AnnotationInput(props) {
@@ -221,17 +216,6 @@ function StreakBoard(props) {
   )
 }
 
-function TruthIsQuote(props) {
-  const t = () => props.truthIs
-  return (
-    <Show when={t()?.headline}>
-      <blockquote class={styles.truthQuote}>
-        {t().headline}
-      </blockquote>
-    </Show>
-  )
-}
-
 function SportOfWeekBanner(props) {
   return (
     <Show when={props.sport}>
@@ -243,21 +227,34 @@ function SportOfWeekBanner(props) {
   )
 }
 
-function ContradictionCard(props) {
+// truth_is vs contradiction as an explicit two-sided card. Both fields
+// confirmed real; rendering them as stated tension ("the editorial
+// claim" / "the counter-signal") rather than two separate, unrelated
+// blocks is the actual new thing here -- the data already existed, the
+// posture of surfacing internal conflict explicitly didn't.
+function TensionCard(props) {
+  const t = () => props.truthIs
+  const c = () => props.contradiction
   return (
-    <Show when={props.contradiction}>
-      <div class={styles.contradictionCard}>
-        <span class={styles.contradictionLabel}>⚠ Contradiction</span>
-        <p class={styles.contradictionText}>{props.contradiction}</p>
+    <Show when={t()?.headline || c()}>
+      <div class={styles.tensionCard}>
+        <Show when={t()?.headline}>
+          <div class={styles.tensionSide}>
+            <span class={styles.tensionLabel}>the editorial claim</span>
+            <p class={styles.tensionText}>{t().headline}</p>
+          </div>
+        </Show>
+        <Show when={c()}>
+          <div class={`${styles.tensionSide} ${styles.tensionCounter}`}>
+            <span class={styles.tensionLabel}>the counter-signal</span>
+            <p class={styles.tensionText}>{c()}</p>
+          </div>
+        </Show>
       </div>
     </Show>
   )
 }
 
-// quality_alert is a GLOBAL/aggregate structure (alert_count, alerts[],
-// brief) confirmed via the real live payload -- NOT a per-pick field.
-// Surfaced here as a system-wide indicator, not a per-pick badge the
-// data doesn't actually support.
 function QualityAlertBadge(props) {
   const qa = () => props.qualityAlert
   return (
@@ -266,6 +263,44 @@ function QualityAlertBadge(props) {
         ⚡ {qa().alert_count} quality alerts (since {qa().since})
       </div>
     </Show>
+  )
+}
+
+// Prose as navigation. Scans morning_report for real team names (from
+// today's own deskStore games, not a fixed list) and wraps matches in
+// clickable spans -- tapping one highlights the matching DeskCard row
+// via the exported setHighlightedGameId, a signal DeskCard itself owns
+// and reads. Editorial copy becomes a navigation layer into the
+// structured game grid, not just static text describing it.
+function ProseReport(props) {
+  const teamMap = createMemo(() => {
+    const map = {}
+    for (const g of props.games()) {
+      if (g.home) map[g.home] = g.id
+      if (g.away) map[g.away] = g.id
+    }
+    return map
+  })
+
+  const segments = createMemo(() => {
+    const text = props.text
+    const names = Object.keys(teamMap()).sort((a, b) => b.length - a.length) // longest first, avoids partial-name matches inside longer names
+    if (!text || names.length === 0) return [{ text, gameId: null }]
+    const pattern = new RegExp(`(${names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g')
+    const parts = text.split(pattern)
+    return parts.map(part => ({ text: part, gameId: teamMap()[part] ?? null }))
+  })
+
+  return (
+    <p class={styles.morningReport} style={{ '--quality-sharpness': props.qualitySharpness }}>
+      <For each={segments()}>
+        {seg => seg.gameId ? (
+          <span class={styles.teamLink} onClick={() => setHighlightedGameId(seg.gameId)}>{seg.text}</span>
+        ) : (
+          <>{seg.text}</>
+        )}
+      </For>
+    </p>
   )
 }
 
@@ -298,22 +333,24 @@ function Content(props) {
     return ids.map(id => byId[id]).filter(Boolean)
   })
 
-  // "What would you have picked" gating -- today's real games (from
-  // DeskCard's own deskStore, not editorial picks, since editorial
-  // picks are already a recap, not the set of games available to
-  // predict) vs. how many the user has actually predicted in PickEm.
-  // Mirror PickEm's own sport filter so the gate's game count matches
-  // the games PickEm actually shows -- without this, golf/tennis events
-  // in deskStore inflate the denominator and allPicked() never fires.
-  // Also: if there are zero pickable games today, the gate makes no
-  // sense (PickEm shows "No games"), so reveal immediately in that case.
   const todaysGames = createMemo(() => [
     ...(deskStore.games?.regular ?? []),
     ...(deskStore.games?.postseason ?? []),
-  ].filter(g => !NON_MATCHUP_SPORTS.has(g.sport?.toLowerCase())))
-  const pickedCount = createMemo(() => todaysGames().filter(g => picks[g.id]).length)
-  const allPicked = createMemo(() => todaysGames().length === 0 || pickedCount() === todaysGames().length)
+  ])
+  const pickableGames = createMemo(() => todaysGames().filter(g => !NON_MATCHUP_SPORTS.has(g.sport?.toLowerCase())))
+  const pickedCount = createMemo(() => pickableGames().filter(g => picks[g.id]).length)
+  const allPicked = createMemo(() => pickableGames().length === 0 || pickedCount() === pickableGames().length)
   const picksRevealed = createMemo(() => allPicked() || manuallyRevealed())
+
+  // Quality-as-texture: a continuous sharpness value derived from
+  // quality_alert's real alert_count, not a discrete good/bad flag --
+  // more alerts, softer rendering, ambient rather than a warning badge.
+  // The badge above still exists too (some signals deserve to be
+  // legible, not just felt) -- this is an additional, gentler layer.
+  const qualitySharpness = createMemo(() => {
+    const count = d().quality_alert?.alert_count ?? 0
+    return Math.max(0.4, 1 - count * 0.05)
+  })
 
   return (
     <div>
@@ -327,12 +364,10 @@ function Content(props) {
 
       <SportOfWeekBanner sport={d().sport_of_week} />
 
-      <TruthIsQuote truthIs={d().truth_is} />
-
-      <ContradictionCard contradiction={d().contradiction} />
+      <TensionCard truthIs={d().truth_is} contradiction={d().contradiction} />
 
       <Show when={d().morning_report}>
-        <p class={styles.morningReport}>{d().morning_report}</p>
+        <ProseReport text={d().morning_report} games={todaysGames} qualitySharpness={qualitySharpness()} />
       </Show>
 
       <Show when={orderedPicks().length}>
@@ -348,7 +383,7 @@ function Content(props) {
             fallback={
               <div class={styles.revealGate}>
                 <p class={styles.revealText}>
-                  Lock your own PickEm picks first ({pickedCount()}/{todaysGames().length}) —
+                  Lock your own PickEm picks first ({pickedCount()}/{pickableGames().length}) —
                   editorial becomes a comparison, not a hint.
                 </p>
                 <button class={styles.revealBtn} onClick={() => setManuallyRevealed(true)}>
