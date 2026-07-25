@@ -226,7 +226,7 @@ function AlertThresholdControl() {
         max="99"
         class={styles.alertInput}
         value={alertThreshold()}
-        onInput={e => setAlertThreshold(Math.max(0, Number(e.currentTarget.value) || 0))}
+        onInput={e => setAlertThreshold(Math.min(99, Math.max(0, Number(e.currentTarget.value) || 0)))}
       />
     </label>
   )

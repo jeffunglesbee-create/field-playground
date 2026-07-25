@@ -15,10 +15,16 @@ function yesterdayOf(dateStr) {
 }
 
 function DayColumn(props) {
-  const games = createMemo(() => [
-    ...(props.ctx.data()?.games?.regular ?? []),
-    ...(props.ctx.data()?.games?.postseason ?? []),
-  ])
+  // Same posture as Seasons: a resource throws when read in error state, and
+  // `?.`/`??` only guard the loading case, not the error case -- checking
+  // `.error` before calling the accessor avoids ever invoking it while errored.
+  const games = createMemo(() => {
+    if (props.ctx.data.error) return []
+    return [
+      ...(props.ctx.data()?.games?.regular ?? []),
+      ...(props.ctx.data()?.games?.postseason ?? []),
+    ]
+  })
 
   return (
     <div class={styles.column}>
@@ -26,6 +32,9 @@ function DayColumn(props) {
       <div class={styles.columnDate}>{props.ctx.date()}</div>
       <Show when={props.ctx.data.loading}>
         <p class={styles.loading}>Loading…</p>
+      </Show>
+      <Show when={props.ctx.data.error}>
+        <p class={styles.loading}>Unable to load this day.</p>
       </Show>
       <Show when={games().length}>
         <div class={styles.gameList}>

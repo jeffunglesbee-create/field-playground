@@ -1,5 +1,5 @@
 import { For, Show, createMemo } from 'solid-js'
-import { ambientData } from '../../data/relay'
+import { ambientData, impliedSide } from '../../data/relay'
 import { picks, NON_MATCHUP_SPORTS } from '../PickEm'
 import styles from './CompareToRelay.module.css'
 
@@ -7,18 +7,6 @@ import styles from './CompareToRelay.module.css'
 // user's own game picks. Neither surface shows where the two diverge --
 // this reads both existing signals (no new fetch) and joins them on the
 // shared game_id to surface agreement/disagreement directly.
-
-// Editorial picks encode their implied winner in the "score" string
-// ("2–1" = home 2, away 1, home favored), not as an explicit side field.
-// Parses the two leading integers regardless of which dash character
-// separates them (en dash in the real data, hyphen is a safe fallback).
-function impliedSide(scoreStr) {
-  const m = String(scoreStr ?? '').match(/(\d+)\D+(\d+)/)
-  if (!m) return null
-  const [, homeNum, awayNum] = m.map(Number)
-  if (homeNum === awayNum) return null
-  return homeNum > awayNum ? 'home' : 'away'
-}
 
 function useComparison() {
   return createMemo(() => {

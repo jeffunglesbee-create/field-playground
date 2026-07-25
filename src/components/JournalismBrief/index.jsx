@@ -15,7 +15,12 @@ export function JournalismBrief() {
   const [prevCycleId, setPrevCycleId] = createSignal(null)
   const [freshlyUpdated, setFreshlyUpdated] = createSignal(false)
 
-  const data = () => journalismBrief()
+  // Reads the resource only when it's NOT in error state -- calling the
+  // accessor while errored throws (same posture as Seasons/DayComparison/
+  // MultiDayStreak). Previously this called journalismBrief() unconditionally,
+  // and the JSX below read it in a sibling <Show> rather than nesting inside
+  // an "!error" check, so an errored resource still threw on every render.
+  const data = () => (journalismBrief.error ? undefined : journalismBrief())
 
   const age = createMemo(() => {
     const d = data()

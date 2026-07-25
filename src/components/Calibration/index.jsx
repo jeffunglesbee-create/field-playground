@@ -18,11 +18,32 @@ function BUCKET(pct) {
 }
 
 function useMarkedWithoutConfidence() {
-  return createMemo(() =>
-    Object.entries(outcomes())
-      .filter(([gameId, result]) => (result === 'W' || result === 'L') && confidence()[gameId] === undefined)
-      .map(([gameId, result]) => ({ gameId, result }))
-  )
+  // Reuse the same {gameId, result} object across recomputes for a gameId
+  // whose result hasn't changed -- <For> keys rows by item reference, so
+  // handing it a fresh object every time (even for untouched rows) remounts
+  // every ConfidenceCapture row whenever ANY confidence value changes,
+  // resetting each row's own in-progress slider draft. Scoped to this call
+  // (not module scope) so each hook instance gets its own cache.
+  const cache = new Map()
+  return createMemo(() => {
+    const currentIds = new Set()
+    const list = []
+    for (const [gameId, result] of Object.entries(outcomes())) {
+      if ((result === 'W' || result === 'L') && confidence()[gameId] === undefined) {
+        currentIds.add(gameId)
+        let entry = cache.get(gameId)
+        if (!entry || entry.result !== result) {
+          entry = { gameId, result }
+          cache.set(gameId, entry)
+        }
+        list.push(entry)
+      }
+    }
+    for (const id of cache.keys()) {
+      if (!currentIds.has(id)) cache.delete(id)
+    }
+    return list
+  })
 }
 
 function useCalibration() {

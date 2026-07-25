@@ -52,96 +52,102 @@ export default function App() {
   const streakTeam = createMemo(() => deskStore.games?.regular?.[0]?.home ?? null)
 
   return (
-    <div class={styles.layout}>
-      <section class={styles.ambient}>
-        <AmbientPanel />
-      </section>
-      <section class={styles.desk}>
-        <DeskCard />
-      </section>
-      <section class={styles.pickem}>
-        <PickEm />
-      </section>
-      <section class={styles.seasons}>
-        <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
-          <ErrorBoundary fallback={err => <div style="font-size:11px;color:#c44;padding:8px 0">{err.message}</div>}>
-            <Seasons />
-          </ErrorBoundary>
-        </Suspense>
-      </section>
-      <section class={styles.ground}>
-        <Ground />
-      </section>
-      <section class={styles.dayComparison}>
-        <DayComparison />
-      </section>
-      <section class={styles.suspenseDemo}>
-        <SuspenseDemo />
-      </section>
-      <section class={styles.agreement}>
-        <Agreement />
-      </section>
-      <section class={styles.crossCheck}>
-        <CrossCheck />
-      </section>
-      <section class={styles.createRootDemo}>
-        <CreateRootDemo />
-      </section>
-      <section class={styles.history}>
-        <History />
-      </section>
-      <section class={styles.journalismBrief}>
-        <JournalismBrief />
-      </section>
-      <section class={styles.multiDayStreak}>
-        {streakTeam() && <MultiDayStreak baseDate={currentDate()} team={streakTeam()} />}
-      </section>
-      <section class={styles.errorBoundaryDemo}>
-        <ErrorBoundaryDemo />
-      </section>
-      <section class={styles.drillDown}>
-        <DrillDown />
-      </section>
-      <section class={styles.transitionDemo}>
-        <TransitionDemo />
-      </section>
-      <section class={styles.contextDemo}>
-        <ContextDemo />
-      </section>
-      <section class={styles.selectorDemo}>
-        <SelectorDemo />
-      </section>
-      <section class={styles.lazyBoundaryDemo}>
-        <LazyBoundaryDemo />
-      </section>
-      <section class={styles.propsDemo}>
-        <PropsDemo />
-      </section>
-      <section class={styles.dateBrowserTransition}>
-        <DateBrowserTransition />
-      </section>
-      <section class={styles.computedDemo}>
-        <ComputedDemo />
-      </section>
-      <section class={styles.indexArrayDemo}>
-        <IndexArrayDemo />
-      </section>
-      <section class={styles.pickStreak}>
-        <PickStreak />
-      </section>
-      <section class={styles.calibration}>
-        <Calibration />
-      </section>
-      <section class={styles.compareToRelay}>
-        <CompareToRelay />
-      </section>
-      <section class={styles.localNoteLayer}>
-        <LocalNoteLayer />
-      </section>
-      <section class={styles.multiDateTrend}>
-        <MultiDateTrend />
-      </section>
-      <ToastLayer />
-    </div>
+    <ErrorBoundary fallback={err => (
+      <div style="padding:24px;font-family:monospace;color:#c44;white-space:pre-wrap">
+        Something broke: {err?.message ?? String(err)}
+      </div>
+    )}>
+      <div class={styles.layout}>
+        <section class={styles.ambient}>
+          <AmbientPanel />
+        </section>
+        <section class={styles.desk}>
+          <DeskCard />
+        </section>
+        <section class={styles.pickem}>
+          <PickEm />
+        </section>
+        <section class={styles.seasons}>
+          <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
+            <ErrorBoundary fallback={err => <div style="font-size:11px;color:#c44;padding:8px 0">{err.message}</div>}>
+              <Seasons />
+            </ErrorBoundary>
+          </Suspense>
+        </section>
+        <section class={styles.ground}>
+          <Ground />
+        </section>
+        <section class={styles.dayComparison}>
+          <DayComparison />
+        </section>
+        <section class={styles.suspenseDemo}>
+          <SuspenseDemo />
+        </section>
+        <section class={styles.agreement}>
+          <Agreement />
+        </section>
+        <section class={styles.crossCheck}>
+          <CrossCheck />
+        </section>
+        <section class={styles.createRootDemo}>
+          <CreateRootDemo />
+        </section>
+        <section class={styles.history}>
+          <History />
+        </section>
+        <section class={styles.journalismBrief}>
+          <JournalismBrief />
+        </section>
+        <section class={styles.multiDayStreak}>
+          {streakTeam() && <MultiDayStreak baseDate={currentDate()} team={streakTeam()} />}
+        </section>
+        <section class={styles.errorBoundaryDemo}>
+          <ErrorBoundaryDemo />
+        </section>
+        <section class={styles.drillDown}>
+          <DrillDown />
+        </section>
+        <section class={styles.transitionDemo}>
+          <TransitionDemo />
+        </section>
+        <section class={styles.contextDemo}>
+          <ContextDemo />
+        </section>
+        <section class={styles.selectorDemo}>
+          <SelectorDemo />
+        </section>
+        <section class={styles.lazyBoundaryDemo}>
+          <LazyBoundaryDemo />
+        </section>
+        <section class={styles.propsDemo}>
+          <PropsDemo />
+        </section>
+        <section class={styles.dateBrowserTransition}>
+          <DateBrowserTransition />
+        </section>
+        <section class={styles.computedDemo}>
+          <ComputedDemo />
+        </section>
+        <section class={styles.indexArrayDemo}>
+          <IndexArrayDemo />
+        </section>
+        <section class={styles.pickStreak}>
+          <PickStreak />
+        </section>
+        <section class={styles.calibration}>
+          <Calibration />
+        </section>
+        <section class={styles.compareToRelay}>
+          <CompareToRelay />
+        </section>
+        <section class={styles.localNoteLayer}>
+          <LocalNoteLayer />
+        </section>
+        <section class={styles.multiDateTrend}>
+          <MultiDateTrend />
+        </section>
+        <ToastLayer />
+      </div>
+    </ErrorBoundary>
   )
 }

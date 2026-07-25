@@ -28,8 +28,12 @@ export function MultiDayStreak(props) {
 
   const teamName = () => props.team
 
+  // Same posture as Seasons/DayComparison: a resource throws when read in
+  // error state, and `?.`/`??` only guard the loading case -- checking
+  // `.error` before calling the accessor avoids ever invoking it while errored.
   const results = createMemo(() =>
     contexts.map(ctx => {
+      if (ctx.data.error) return { date: ctx.date(), result: null }
       const games = [
         ...(ctx.data()?.games?.regular ?? []),
         ...(ctx.data()?.games?.postseason ?? []),

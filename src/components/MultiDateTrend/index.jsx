@@ -1,5 +1,5 @@
 import { For, Show, createMemo, createResource } from 'solid-js'
-import { createDayContext } from '../../data/relay'
+import { createDayContext, impliedSide } from '../../data/relay'
 import styles from './MultiDateTrend.module.css'
 
 // Fixed-size fleet fan-out, different shape from everything else that
@@ -16,16 +16,6 @@ function dayOffset(n) {
   const d = new Date()
   d.setUTCDate(d.getUTCDate() - n)
   return d.toISOString().split('T')[0]
-}
-
-// Same implied-side parse as CompareToRelay: the editorial score string
-// ("2–1") encodes home/away favorite, not an explicit side field.
-function impliedSide(scoreStr) {
-  const m = String(scoreStr ?? '').match(/(\d+)\D+(\d+)/)
-  if (!m) return null
-  const [homeNum, awayNum] = [Number(m[1]), Number(m[2])]
-  if (homeNum === awayNum) return null
-  return homeNum > awayNum ? 'home' : 'away'
 }
 
 async function fetchTopPick(date) {
@@ -45,8 +35,12 @@ export function MultiDateTrend() {
 
   const allLoaded = createMemo(() => entries.every(e => !e.ctx.data.loading && !e.topPick.loading))
 
+  // Same posture as Seasons/DayComparison/MultiDayStreak: a resource throws
+  // when read in error state -- checking `.error` before calling either
+  // accessor means one failed day's fetch can't blank the whole panel.
   const trend = createMemo(() =>
     entries.map(e => {
+      if (e.topPick.error || e.ctx.data.error) return { date: e.date, result: null, pick: null }
       const pick = e.topPick()
       if (!pick) return { date: e.date, result: null, pick: null }
       const games = [

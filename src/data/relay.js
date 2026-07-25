@@ -167,3 +167,17 @@ export function createDayContext(initialDate) {
   const [data] = createResource(date, fetchDay)
   return { date, setDate, data }
 }
+
+// Editorial picks (AmbientPanel's ranked list, the newspaper's top pick)
+// encode their implied winner in a "score" string ("2–1" = home 2, away 1,
+// home favored), not an explicit side field. Shared by CompareToRelay and
+// MultiDateTrend -- both independently parsed this before it was pulled out
+// here, so keep them pointed at one implementation rather than two copies
+// that can silently diverge.
+export function impliedSide(scoreStr) {
+  const m = String(scoreStr ?? '').match(/(\d+)\D+(\d+)/)
+  if (!m) return null
+  const [homeNum, awayNum] = [Number(m[1]), Number(m[2])]
+  if (homeNum === awayNum) return null
+  return homeNum > awayNum ? 'home' : 'away'
+}

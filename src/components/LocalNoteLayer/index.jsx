@@ -17,7 +17,10 @@ const STORAGE_KEY = 'field-local-note-overrides'
 function loadOverrides() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : {}
+    const parsed = raw ? JSON.parse(raw) : {}
+    // Valid JSON like `null`, `42`, or an array would otherwise bypass the
+    // catch below and get handed to createStore as-is.
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
   } catch {
     return {}
   }
@@ -95,16 +98,21 @@ function NoteRow(props) {
       <Show
         when={editing()}
         fallback={
-          <div class={styles.noteDisplay} onClick={() => { setDraft(props.entry.text ?? ''); setEditing(true) }}>
+          <button
+            type="button"
+            class={styles.noteDisplay}
+            onClick={() => { setDraft(props.entry.text ?? ''); setEditing(true) }}
+          >
             <span class={styles.noteText}>{props.entry.text || <em class={styles.noteEmpty}>(no note — click to add)</em>}</span>
             <span class={styles.editHint}>edit</span>
-          </div>
+          </button>
         }
       >
         <div class={styles.editRow}>
           <input
             type="text"
             class={styles.noteInput}
+            aria-label={`local note for ${props.entry.game.away} at ${props.entry.game.home}`}
             value={draft()}
             onInput={e => setDraft(e.currentTarget.value)}
             onKeyDown={e => e.key === 'Enter' && commit()}
