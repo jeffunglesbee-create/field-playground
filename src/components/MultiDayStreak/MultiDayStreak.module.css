@@ -1,0 +1,40 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.teamLabel {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  min-width: 90px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loading {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.sequence {
+  display: flex;
+  gap: 3px;
+}
+
+.pip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 3px;
+}
+
+.pip_W    { background: #1a2e1a; color: #4c8; }
+.pip_L    { background: #2e1a1a; color: #c55; }
+.pip_none { background: #1a1a1a; color: var(--field-text-muted); }
