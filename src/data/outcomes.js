@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js'
+import { createSignal, createEffect } from 'solid-js'
 
 const KEY = 'field-pick-outcomes'
 const META_KEY = 'field-pick-meta'
@@ -58,6 +58,44 @@ export function setAnnotation(gameId, text) {
   }
   setAnnotationsSignal(next)
   localStorage.setItem(NOTE_KEY, JSON.stringify(next))
+}
+
+// --- BroadcastChannel sync: cross-tab outcomes ---
+//
+// New territory: date sync (relay.js) confirmed that external writes to a
+// plain string signal propagate through the reactive graph. This tests the
+// same pattern for an OBJECT signal (outcomes) that has multiple derived
+// memos downstream (TierCalibration, MultiDayRecord, PickCalendar in
+// History). Does a write from another tab re-derive all three correctly?
+// Echo prevention: incoming data is JSON-compared against current state
+// before writing; if it matches what we already have (our own echo bounced
+// back from the other tab) we skip the write and the loop terminates.
+const SYNC_CHANNEL = 'field-playground-outcomes'
+let syncChannel = null
+
+export function initOutcomesSync() {
+  try {
+    syncChannel = new BroadcastChannel(SYNC_CHANNEL)
+  } catch {
+    return // BroadcastChannel unavailable (old browsers, some workers) -- skip
+  }
+
+  syncChannel.onmessage = (event) => {
+    const d = event?.data
+    if (!d) return
+    if (d.outcomes && JSON.stringify(d.outcomes) !== JSON.stringify(outcomes())) {
+      setOutcomesSignal(d.outcomes)
+      localStorage.setItem(KEY, JSON.stringify(d.outcomes))
+    }
+    if (d.meta && JSON.stringify(d.meta) !== JSON.stringify(pickMeta())) {
+      setPickMetaSignal(d.meta)
+      localStorage.setItem(META_KEY, JSON.stringify(d.meta))
+    }
+  }
+
+  createEffect(() => {
+    syncChannel?.postMessage({ outcomes: outcomes(), meta: pickMeta() })
+  })
 }
 
 export { outcomes, pickMeta, annotations }

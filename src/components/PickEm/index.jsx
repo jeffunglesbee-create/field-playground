@@ -84,7 +84,7 @@ function PickRow(props) {
   )
 }
 
-const NON_MATCHUP_SPORTS = new Set(['golf', 'pga', 'atp', 'wta'])
+export const NON_MATCHUP_SPORTS = new Set(['golf', 'pga', 'atp', 'wta'])
 
 export function PickEm() {
   const allGames = createMemo(() => [

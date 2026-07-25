@@ -2,7 +2,7 @@ import { Show, For, createMemo, createSignal, createEffect } from 'solid-js'
 import { createStore, produce } from 'solid-js/store'
 import { ambientData, deskStore } from '../../data/relay'
 import { outcomes, setOutcome, clearOutcome, annotations, setAnnotation } from '../../data/outcomes'
-import { picks } from '../PickEm'
+import { picks, NON_MATCHUP_SPORTS } from '../PickEm'
 import { useTimeOfDay } from '../../data/timeOfDay'
 import styles from './AmbientPanel.module.css'
 import shared from '../shared.module.css'
@@ -302,12 +302,17 @@ function Content(props) {
   // DeskCard's own deskStore, not editorial picks, since editorial
   // picks are already a recap, not the set of games available to
   // predict) vs. how many the user has actually predicted in PickEm.
+  // Mirror PickEm's own sport filter so the gate's game count matches
+  // the games PickEm actually shows -- without this, golf/tennis events
+  // in deskStore inflate the denominator and allPicked() never fires.
+  // Also: if there are zero pickable games today, the gate makes no
+  // sense (PickEm shows "No games"), so reveal immediately in that case.
   const todaysGames = createMemo(() => [
     ...(deskStore.games?.regular ?? []),
     ...(deskStore.games?.postseason ?? []),
-  ])
+  ].filter(g => !NON_MATCHUP_SPORTS.has(g.sport?.toLowerCase())))
   const pickedCount = createMemo(() => todaysGames().filter(g => picks[g.id]).length)
-  const allPicked = createMemo(() => todaysGames().length > 0 && pickedCount() === todaysGames().length)
+  const allPicked = createMemo(() => todaysGames().length === 0 || pickedCount() === todaysGames().length)
   const picksRevealed = createMemo(() => allPicked() || manuallyRevealed())
 
   return (

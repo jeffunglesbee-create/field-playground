@@ -12,6 +12,7 @@ import { History } from './components/History'
 import { JournalismBrief } from './components/JournalismBrief'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync } from './data/relay'
+import { initOutcomesSync } from './data/outcomes'
 import shared from './components/shared.module.css'
 import styles from './App.module.css'
 
@@ -40,6 +41,7 @@ export default function App() {
     onCleanup(() => clearInterval(handle))
     initUrlDateSync()
     initBroadcastDateSync()
+    initOutcomesSync()
   })
 
   return (
