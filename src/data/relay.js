@@ -1,4 +1,4 @@
-import { createSignal, createResource } from 'solid-js'
+import { createSignal, createResource, createEffect } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
 
 const RELAY_BASE = import.meta.env.DEV
@@ -9,8 +9,66 @@ function todayStr() {
   return new Date().toISOString().split('T')[0]
 }
 
+// URL-persisted date: read ?d=YYYY-MM-DD once at module init for the
+// starting value -- this is a plain read, no reactivity needed for it.
+// Falls back to today if absent or malformed. Keeping the URL in sync
+// AFTER init (so navigating days updates the address bar, and a shared
+// link reproduces the same view) needs createEffect, which wants a real
+// reactive root -- that part is wired from App.jsx's onMount, not here.
+function initialDateFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const d = params.get('d')
+    if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d
+  } catch { /* window/location unavailable (SSR, tests) -- fall through */ }
+  return todayStr()
+}
+
 // Reactive date signal — swap to navigate days without a page reload.
-export const [currentDate, setCurrentDate] = createSignal(todayStr())
+export const [currentDate, setCurrentDate] = createSignal(initialDateFromUrl())
+
+// Call once from a component's onMount (needs a reactive root). Keeps
+// the URL's ?d= param in sync with currentDate via replaceState -- not
+// pushState, since date-browsing isn't "back button" navigation
+// semantically and would otherwise spam browser history on every click.
+export function initUrlDateSync() {
+  createEffect(() => {
+    const date = currentDate()
+    try {
+      const url = new URL(window.location.href)
+      url.searchParams.set('d', date)
+      window.history.replaceState({}, '', url)
+    } catch { /* best effort */ }
+  })
+}
+
+// BroadcastChannel: zero server involvement, tests whether a signal
+// write triggered from OUTSIDE the component tree (a browser event
+// listener, not a click handler inside JSX) still propagates through
+// SolidJS's reactive graph cleanly. Two tabs open the same origin, one
+// changes the date, the other follows. Guards against an echo loop
+// (receiving your own broadcast back) by comparing against the current
+// value before writing.
+const CHANNEL_NAME = 'field-playground-date-sync'
+let dateChannel = null
+
+export function initBroadcastDateSync() {
+  try {
+    dateChannel = new BroadcastChannel(CHANNEL_NAME)
+  } catch {
+    return // BroadcastChannel unavailable (very old browsers) -- skip silently
+  }
+  dateChannel.onmessage = (event) => {
+    const incoming = event?.data?.date
+    if (incoming && incoming !== currentDate()) {
+      setCurrentDate(incoming)
+    }
+  }
+  createEffect(() => {
+    const date = currentDate()
+    dateChannel?.postMessage({ date })
+  })
+}
 
 async function fetchAmbient(date) {
   const res = await fetch(`${RELAY_BASE}/analytics/newspaper/${date}`)
@@ -21,20 +79,6 @@ async function fetchAmbient(date) {
 export const [ambientData, { refetch: refetchAmbient }] = createResource(currentDate, fetchAmbient)
 
 // --- Live reconciliation experiment (docs/EXPERIMENT-live-reconciliation.md) ---
-//
-// A plain createResource re-fetch is NOT enough for polling: fetch() returns
-// a brand-new array of brand-new objects every call, and SolidJS's <For>
-// keys by reference by default -- confirmed via SolidJS's own docs and core
-// discussion (github.com/solidjs/solid/discussions/366): updating one field
-// on one row via a naive array clone "will re-render that whole row...
-// recreating all the DOM nodes." Polling on a plain resource would hit this
-// on every single game, every poll cycle -- not fine-grained, not free.
-//
-// The fix is the documented pattern for exactly this case (polled JSON,
-// merge into fine-grained state): a store, updated via reconcile() inside
-// the fetcher. reconcile() diffs incoming data against existing store state
-// by "id" and only touches what actually changed -- unaffected games keep
-// their existing object identity, so GameRow never remounts for them.
 //
 // CONFIRMED 2026-07-25 via real DOM node-identity checks in a real browser
 // -- see the experiment doc's full resolution chain.
@@ -47,9 +91,7 @@ export const [deskStore, setDeskStore] = createStore({
 })
 
 // Stale indicator: a plain timestamp signal, updated on every successful
-// reconcile. Not derived from the resource itself (createResource doesn't
-// expose "when did this last resolve" directly) -- set explicitly inside
-// the fetcher, right after reconcile() succeeds.
+// reconcile.
 export const [deskLastFetchedAt, setDeskLastFetchedAt] = createSignal(null)
 
 async function fetchDeskReconciled(date) {
@@ -58,22 +100,12 @@ async function fetchDeskReconciled(date) {
   const json = await res.json()
   setDeskStore(reconcile(json))
   setDeskLastFetchedAt(Date.now())
-  // The resource's own value is just a "did this succeed" signal now --
-  // real data lives in deskStore, which is what components should read.
   return true
 }
 
 export const [deskData, { refetch: refetchDesk }] = createResource(currentDate, fetchDeskReconciled)
 
 // --- Seasons: real structured standings sources ---
-//
-// /wc/standings (World Cup) confirmed real but concluded -- final table,
-// not an ongoing race, doesn't answer the actual Seasons question. Checked
-// field-relay-nba further for anything covering a currently-ongoing sport:
-// both MLB and MLS route through real upstream-API proxies, confirmed live
-// with genuinely current, in-season data (MLB gamesPlayed:102, lastUpdated
-// today; MLS match_day:17) -- not concluded, not sample, real ongoing
-// competition state for the first time in this component.
 async function fetchWcStandings() {
   const res = await fetch(`${RELAY_BASE}/wc/standings`)
   if (!res.ok) throw new Error(`wc/standings fetch failed: ${res.status}`)
@@ -82,7 +114,6 @@ async function fetchWcStandings() {
 
 export const [wcStandings] = createResource(fetchWcStandings)
 
-// MLB: relay proxies statsapi.mlb.com directly. leagueId 103=AL, 104=NL.
 async function fetchMlbStandings() {
   const res = await fetch(`${RELAY_BASE}/mlb-stats/standings?leagueId=103,104&season=${new Date().getFullYear()}`)
   if (!res.ok) throw new Error(`mlb-stats/standings fetch failed: ${res.status}`)
@@ -91,9 +122,6 @@ async function fetchMlbStandings() {
 
 export const [mlbStandings] = createResource(fetchMlbStandings)
 
-// MLS: relay proxies stats-api.mlssoccer.com. Real IDs confirmed live,
-// same ones referenced elsewhere in this project's memory
-// (MLS_SEASON_2026='MLS-SEA-0001KA').
 async function fetchMlsStandings() {
   const res = await fetch(`${RELAY_BASE}/mls/stats/competitions/MLS-COM-000001/seasons/MLS-SEA-0001KA/standings`)
   if (!res.ok) throw new Error(`mls/stats standings fetch failed: ${res.status}`)
