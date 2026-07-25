@@ -52,6 +52,37 @@ ceremony.
   stopped being the productive path, not solving everything from a
   single vantage point no matter the cost.
 
+- **Verify the deliverable, not the thing upstream of it.** Whatever is
+  actually handed over is what gets checked. Everything before it — a
+  clean compile, a module count, matching chunk hashes, well-formed
+  output — is a *precondition*, not evidence. A precondition passing
+  says the deliverable might work; only exercising the deliverable says
+  it does.
+
+  Real case, 2026-07-25: three standalone HTML artifacts shipped in a
+  row, each one blank on arrival. Every one had been "verified" first —
+  build clean, correct module count, zero chunks where zero chunks were
+  intended, `getElementById("root")` present in the bundle, no
+  tag-breaking sequences, well-formed HTML with the expected tag counts.
+  A full stack of green checks, none of which measured whether the page
+  rendered. That's worse than having no checks at all, because it feels
+  like diligence and produces confident hand-offs.
+
+  What makes this specific rather than "test more": the same repo had
+  already established exactly this discipline for every runtime claim
+  about SolidJS behavior — build it, then load it in a real browser and
+  assert against the real DOM (`scripts/verify-*.mjs`). The discipline
+  existed and was working; it just never got pointed at the one output
+  actually being delivered. When a new kind of deliverable appears, the
+  question to ask is "what would exercising *this* look like," not
+  "which existing checks pass."
+
+  Concretely for artifacts: load the shipped HTML in a real browser,
+  capture `pageerror` and `console`, and assert
+  `document.getElementById('root').childElementCount > 0` before
+  handing it over. See
+  `docs/outbox/chat-update-2026-07-25-blank-artifact-bug.md`.
+
 ## Mechanical fact worth stating plainly: outbox path differs from jubilant-bassoon
 
 `jubilant-bassoon`'s session outbox manifests live at root `outbox/`
