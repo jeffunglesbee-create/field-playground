@@ -20,3 +20,34 @@
   flex: 1 1 320px;
   min-width: 280px;
 }
+
+/* Print/export view -- picks on top, games below, single column, no
+   dark background, no live animations. Ordering handled here (App owns
+   these section classes); broader resets (backgrounds, animations) live
+   in src/print.css as a plain global stylesheet, since CSS Modules'
+   scoped class names mean a global file can't target .gameRow etc.
+   directly -- print.css uses element/attribute selectors instead. */
+@media print {
+  .layout {
+    display: block;
+    padding: 0;
+  }
+
+  .ambient { order: 1; }
+  .desk    { order: 2; }
+  .pickem,
+  .seasons,
+  .ground,
+  .dayComparison,
+  .suspenseDemo {
+    display: none;
+  }
+
+  .ambient,
+  .desk {
+    min-width: 0;
+    flex: none;
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+}
