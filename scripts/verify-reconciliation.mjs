@@ -302,7 +302,7 @@ async function main() {
     const datesBeforeNav = requestedDates.length
     await page.click('[class*="dateBtn"]:last-of-type') // '›' next-day button
     checkpoint('next_day_clicked')
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(3000)
 
     const nextDateRequested = requestedDates[requestedDates.length - 1]
     const expectedNextDate = (() => {
