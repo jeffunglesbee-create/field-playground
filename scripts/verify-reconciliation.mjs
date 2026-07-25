@@ -1,15 +1,20 @@
-// Real browser verification, covering four related claims in one
+// Real browser verification, covering five related claims in one
 // session: (1) docs/EXPERIMENT-live-reconciliation.md's core claim --
 // does deskStore's reconcile() keep GameRow identity stable across a
-// poll, CONFIRMED 2026-07-25 (see that doc for the full chain); (2)
-// collapsible sport groups -- does collapse state survive a poll; (3)
-// PickEm -- does a pick resolve pending -> correct/incorrect
-// automatically; (4) game-transition toast -- does a real <Portal>
-// render fire on a live -> final transition detected via createEffect
-// on DERIVED state.
+// poll, CONFIRMED 2026-07-25; (2) collapsible sport groups; (3) PickEm
+// pending -> correct/incorrect; (4) game-transition toast via <Portal>;
+// (5) date browser -- does clicking next/prev day actually request and
+// display the correct new date.
 //
 // Per Rule 90 (VERIFY-ARTIFACT-A): real JSON manifest, falsifiable
 // fields, not a bare pass/fail assertion.
+//
+// 2026-07-25: the mock previously returned a hardcoded date regardless
+// of what was actually requested -- fine for the poll-cycle tests (same
+// date, repeated calls) but meant there was nothing to check for the
+// date browser specifically. Fixed: the mock now parses the real
+// requested date out of the route's own URL and echoes it back, the
+// same way the actual relay would.
 
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
@@ -48,7 +53,10 @@ async function waitForServer(url, timeoutMs = 15000) {
   throw new Error(`static server did not come up within ${timeoutMs}ms`)
 }
 
-function mockContextResponse(pollCount) {
+// Now takes the REAL requested date, echoed back in the response --
+// pollCount still drives the pre/live/final staging for the poll-cycle
+// tests, independent of which date was requested.
+function mockContextResponse(requestedDate, pollCount) {
   const stage = pollCount >= 3 ? 'final' : pollCount === 2 ? 'live' : 'pre'
   const houTex = {
     id: '2026-07-25-mlb-hou-tex', sport: 'MLB', home: 'Texas Rangers', away: 'Houston Astros',
@@ -60,7 +68,7 @@ function mockContextResponse(pollCount) {
   }
   return {
     ok: true,
-    date: '2026-07-25',
+    date: requestedDate,
     games: {
       regular: [
         { id: '2026-07-25-mlb-nym-phi', sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets', home_score: 4, away_score: 2, venue: 'Citizens Bank Park', finalized_at: '2026-07-25T02:15:00Z', went_to_ot: null },
@@ -154,9 +162,14 @@ async function main() {
     checkpoint('page_created')
 
     let pollCount = 0
+    const requestedDates = []
     await page.route('**/context/date/**', route => {
+      const url = route.request().url()
+      const match = url.match(/\/context\/date\/([^/?]+)/)
+      const requestedDate = match ? match[1] : 'unknown'
+      requestedDates.push(requestedDate)
       pollCount++
-      route.fulfill({ json: mockContextResponse(pollCount) })
+      route.fulfill({ json: mockContextResponse(requestedDate, pollCount) })
     })
     await page.route('**/analytics/newspaper/**', route => route.fulfill({ json: mockNewspaperResponse() }))
     await page.route('**/wc/standings**', route => route.fulfill({ json: { groups: {} } }))
@@ -170,6 +183,10 @@ async function main() {
     checkpoint('gameRow_selector_found')
     await page.waitForTimeout(500)
 
+    const initialDate = requestedDates[0]
+    manifest.initialDate = initialDate
+    checkpoint('initial_date_captured', { initialDate })
+
     const initialHouTex = await readHouTexState(page)
     manifest.initialHouTexState = initialHouTex
     checkpoint('initial_state_read', { initialHouTex })
@@ -178,9 +195,6 @@ async function main() {
     await tagRowIdentities(page)
     checkpoint('row_identities_tagged')
 
-    // Watchlist: star the Rangers/Astros row before any polls, tests
-    // whether the star (createStore keyed by game id) survives the same
-    // way collapsed groups already proved it does.
     const watchButtons = await page.$$('[class*="watchBtn"]')
     let starredHouTex = false
     for (const btn of watchButtons) {
@@ -195,7 +209,6 @@ async function main() {
     manifest.starredHouTex = starredHouTex
     checkpoint('watchlist_star_clicked', { starredHouTex })
 
-    // PickEm: pick "Houston Astros" (away) while still pregame.
     const pickEmButtons = await page.$$('[class*="pickBtn"]')
     let pickedHouTex = false
     for (const btn of pickEmButtons) {
@@ -220,12 +233,8 @@ async function main() {
     manifest.pickStatusAfterPick = pickStatusAfterPick
     checkpoint('pick_status_read_pre_poll', { pickStatusAfterPick })
 
-    // Poll 1 -> live.
     await page.evaluate(() => new Promise(r => setTimeout(r, 16000)))
     checkpoint('first_poll_wait_complete')
-    // Poll 2 -> final. This is the live->final transition the toast
-    // effect watches for -- check for it right after, before it can
-    // auto-dismiss (5s lifetime in the component).
     await page.evaluate(() => new Promise(r => setTimeout(r, 16000)))
     checkpoint('second_poll_wait_complete')
 
@@ -270,7 +279,8 @@ async function main() {
 
     await page.screenshot({ path: `outbox/reconciliation-check-after-${timestamp}.png` })
 
-    // Collapse testing LAST, after every other check that needs rows present.
+    // Collapse testing before date-browser -- both remove/replace rows,
+    // keep them separated from checks that need rows present.
     await page.click('[class*="sportLabel"]')
     checkpoint('mlb_group_clicked')
     const collapsedImmediately = await page.evaluate(() => document.querySelectorAll('[class*="gameRow"]').length === 0)
@@ -282,6 +292,35 @@ async function main() {
     const collapsedAfterPoll = await page.evaluate(() => document.querySelectorAll('[class*="gameRow"]').length === 0)
     manifest.collapsedAfterPoll = collapsedAfterPoll
     checkpoint('collapse_persistence_checked', { collapsedImmediately, collapsedAfterPoll })
+
+    // Date browser LAST. Re-expand the group first so the date-meta
+    // display and next-day request are actually observable.
+    await page.click('[class*="sportLabel"]')
+    checkpoint('mlb_group_reexpanded')
+    await page.waitForTimeout(300)
+
+    const datesBeforeNav = requestedDates.length
+    await page.click('[class*="dateBtn"]:last-of-type') // '›' next-day button
+    checkpoint('next_day_clicked')
+    await page.waitForTimeout(1000)
+
+    const nextDateRequested = requestedDates[requestedDates.length - 1]
+    const expectedNextDate = (() => {
+      const d = new Date(initialDate + 'T00:00:00Z')
+      d.setUTCDate(d.getUTCDate() + 1)
+      return d.toISOString().split('T')[0]
+    })()
+    manifest.nextDateRequested = nextDateRequested
+    manifest.expectedNextDate = expectedNextDate
+    manifest.newRequestMadeOnClick = requestedDates.length > datesBeforeNav
+    checkpoint('date_browser_next_checked', { nextDateRequested, expectedNextDate, requestedDates })
+
+    const displayedDateAfterNav = await page.evaluate(() => {
+      const el = document.querySelector('[class*="dateMeta"]')
+      return el ? el.textContent.trim() : null
+    })
+    manifest.displayedDateAfterNav = displayedDateAfterNav
+    checkpoint('displayed_date_checked', { displayedDateAfterNav })
 
     await browser.close()
     checkpoint('browser_closed')
@@ -303,6 +342,9 @@ async function main() {
 
     manifest.checks.push({ name: 'watchlist_star_survived_poll_cycles', pass: starredHouTex && starredStillAfterPoll })
     manifest.checks.push({ name: 'transition_toast_fired_via_portal', pass: !!toastPresent })
+
+    manifest.checks.push({ name: 'date_browser_requested_correct_next_date', pass: nextDateRequested === expectedNextDate, nextDateRequested, expectedNextDate })
+    manifest.checks.push({ name: 'date_browser_displayed_date_updated', pass: displayedDateAfterNav === expectedNextDate, displayedDateAfterNav, expectedNextDate })
 
     manifest.allPass = manifest.checks.every(c => c.pass)
     checkpoint('manifest_complete', { allPass: manifest.allPass })
