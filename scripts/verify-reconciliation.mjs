@@ -329,6 +329,68 @@ async function main() {
     manifest.displayedDateAfterNav = displayedDateAfterNav
     checkpoint('displayed_date_checked', { displayedDateAfterNav })
 
+    // URL-persisted date: after the next-day click above, the address
+    // bar's ?d= param should already reflect the new date (initUrlDateSync's
+    // createEffect keeps it in sync via replaceState).
+    const urlAfterNav = page.url()
+    const urlDateParam = new URL(urlAfterNav).searchParams.get('d')
+    manifest.urlDateParam = urlDateParam
+    checkpoint('url_date_param_checked', { urlAfterNav, urlDateParam })
+
+    // Reload with a DIFFERENT date in the URL directly -- tests
+    // initialDateFromUrl(), not just the sync-back direction already
+    // covered above.
+    const reloadTargetDate = '2026-08-01'
+    await page.goto(`${SERVE_URL}/?d=${reloadTargetDate}`, { timeout: 15000 })
+    checkpoint('reloaded_with_explicit_url_date')
+    await page.waitForSelector('[class*="gameRow"]', { timeout: 15000 })
+    await page.waitForTimeout(500)
+    const dateAfterUrlReload = requestedDates[requestedDates.length - 1]
+    manifest.dateAfterUrlReload = dateAfterUrlReload
+    checkpoint('url_reload_date_checked', { dateAfterUrlReload, reloadTargetDate })
+
+    // BroadcastChannel: a second real page in the SAME browser context
+    // (context.newPage(), not a second browser -- BroadcastChannel is
+    // same-origin/same-context, not same-tab). Change the date via the
+    // date browser in page2, check whether page1's currentDate follows
+    // without any direct interaction on page1 at all.
+    const context = page.context()
+    const page2 = await context.newPage()
+    checkpoint('second_page_opened_for_broadcast_test')
+    await page2.route('**/context/date/**', route => {
+      const url = route.request().url()
+      const match = url.match(/\/context\/date\/([^/?]+)/)
+      const requestedDate = match ? match[1] : 'unknown'
+      requestedDates.push(requestedDate)
+      pollCount++
+      route.fulfill({ json: mockContextResponse(requestedDate, pollCount) })
+    })
+    await page2.route('**/analytics/newspaper/**', route => route.fulfill({ json: mockNewspaperResponse() }))
+    await page2.route('**/wc/standings**', route => route.fulfill({ json: { groups: {} } }))
+    await page2.route('**/mlb-stats/standings**', route => route.fulfill({ json: { records: [] } }))
+    await page2.route('**/mls/stats/**', route => route.fulfill({ json: { tables: [{ entries: [] }] } }))
+    await page2.goto(SERVE_URL, { timeout: 15000 })
+    await page2.waitForSelector('[class*="gameRow"]', { timeout: 15000 })
+    await page2.waitForTimeout(500)
+    checkpoint('page2_loaded')
+
+    await page2.click('[class*="dateBtn"]:last-of-type')
+    checkpoint('page2_next_day_clicked')
+    await page.waitForTimeout(2000) // let the broadcast propagate to page1
+
+    const page1DateAfterBroadcast = await page.evaluate(() => {
+      const el = document.querySelector('[class*="dateBrowser"] [class*="dateMeta"]')
+      return el ? el.textContent.trim() : null
+    })
+    const page2DateAfterOwnClick = await page2.evaluate(() => {
+      const el = document.querySelector('[class*="dateBrowser"] [class*="dateMeta"]')
+      return el ? el.textContent.trim() : null
+    })
+    manifest.page1DateAfterBroadcast = page1DateAfterBroadcast
+    manifest.page2DateAfterOwnClick = page2DateAfterOwnClick
+    checkpoint('broadcast_sync_checked', { page1DateAfterBroadcast, page2DateAfterOwnClick })
+    await page2.close()
+
     await browser.close()
     checkpoint('browser_closed')
 
