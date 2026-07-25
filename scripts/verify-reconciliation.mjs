@@ -9,19 +9,18 @@
 // 2026-07-25: full rewrite after three straight CI failures/hangs using
 // the previous design (spawn `npm run dev` as a background process, poll
 // for readiness, rely on mockRelay()'s Vite dev-server-only plugin for
-// deterministic data). That pattern is inherently fragile in an ephemeral
-// CI runner -- confirmed by testing a fresh workflow filename (ruling out
-// a stale GitHub Actions cache, which WAS real but wasn't the whole
-// story) and still hitting a different hang later in the same run.
+// deterministic data). New design: build the real production bundle
+// (proven reliable repeatedly), serve dist/ with plain Python
+// http.server, use Playwright's page.route() for deterministic mock data
+// instead of Vite's dev-only plugin.
 //
-// New design: build the real production bundle (this has never once
-// failed -- proven repeatedly), serve the static dist/ folder with a
-// plain Python http.server (no Vite dev machinery, no file-watching, no
-// HMR, nothing that behaves differently in CI than locally), and use
-// Playwright's own page.route() to intercept the relay fetch calls
-// directly at the network layer -- deterministic mock data without
-// depending on Vite's dev-only plugin system at all. Fewer moving parts,
-// each one independently proven reliable on its own.
+// This redesign then failed twice more, fast (~50s), with nothing in
+// outbox at all -- meaning even the catch block never ran, which means
+// the failure is happening somewhere this script doesn't control cleanly
+// (a hard crash, or failing before the try block even starts). Added
+// real checkpoint logging, written to disk after every single stage --
+// so whatever the artifact upload captures this time shows exactly how
+// far it got, instead of nothing.
 
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
@@ -29,6 +28,20 @@ import { chromium } from 'playwright'
 
 const SERVE_PORT = 4173
 const SERVE_URL = `http://localhost:${SERVE_PORT}`
+
+mkdirSync('outbox', { recursive: true })
+const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+const checkpointPath = `outbox/reconciliation-check-checkpoints-${timestamp}.json`
+const checkpoints = []
+
+function checkpoint(name, extra = {}) {
+  checkpoints.push({ name, t: Date.now(), ...extra })
+  try {
+    writeFileSync(checkpointPath, JSON.stringify(checkpoints, null, 2))
+  } catch { /* best effort -- do not let logging itself crash the run */ }
+}
+
+checkpoint('script_started')
 
 function sh(cmd, args, opts = {}) {
   return spawn(cmd, args, { stdio: 'pipe', ...opts })
@@ -122,61 +135,63 @@ async function checkRowIdentities(page) {
 }
 
 async function main() {
-  mkdirSync('outbox', { recursive: true })
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   const manifest = { timestamp, checks: [] }
 
+  checkpoint('checking_dist_exists')
   if (!existsSync('dist/index.html')) {
+    checkpoint('FATAL_dist_missing')
     throw new Error('dist/index.html not found -- npm run build must run before this script')
   }
+  checkpoint('dist_confirmed_present')
 
   const server = sh('python3', ['-m', 'http.server', String(SERVE_PORT), '--directory', 'dist'])
+  checkpoint('static_server_spawned', { pid: server.pid })
   let serverOutput = ''
   server.stdout.on('data', d => { serverOutput += d })
   server.stderr.on('data', d => { serverOutput += d })
+  server.on('error', e => checkpoint('static_server_spawn_error', { error: String(e) }))
 
   try {
     await waitForServer(SERVE_URL)
+    checkpoint('static_server_responding')
 
     const browser = await chromium.launch()
+    checkpoint('browser_launched')
     const page = await browser.newPage()
+    checkpoint('page_created')
 
     let pollCount = 0
     await page.route('**/context/date/**', route => {
       pollCount++
       route.fulfill({ json: mockContextResponse(pollCount) })
     })
-    await page.route('**/analytics/newspaper/**', route => {
-      route.fulfill({ json: mockNewspaperResponse() })
-    })
+    await page.route('**/analytics/newspaper/**', route => route.fulfill({ json: mockNewspaperResponse() }))
     await page.route('**/wc/standings**', route => route.fulfill({ json: { groups: {} } }))
     await page.route('**/mlb-stats/standings**', route => route.fulfill({ json: { records: [] } }))
     await page.route('**/mls/stats/**', route => route.fulfill({ json: { tables: [{ entries: [] }] } }))
+    checkpoint('routes_registered')
 
     await page.goto(SERVE_URL, { timeout: 15000 })
+    checkpoint('page_navigated')
     await page.waitForSelector('[class*="gameRow"]', { timeout: 15000 })
+    checkpoint('gameRow_selector_found')
     await page.waitForTimeout(500)
 
     const initialBadges = await readMountBadges(page)
     const initialHouTex = await readHouTexState(page)
     manifest.initialBadges = initialBadges
     manifest.initialHouTexState = initialHouTex
+    checkpoint('initial_state_read', { initialBadges, initialHouTex })
     await page.screenshot({ path: `outbox/reconciliation-check-initial-${timestamp}.png` })
+    checkpoint('initial_screenshot_taken')
 
     await tagRowIdentities(page)
+    checkpoint('row_identities_tagged')
 
-    // Manually trigger a second poll via refetch, rather than wait 30s of
-    // real time for App.jsx's own interval -- deterministic and fast.
-    // deskStore's fetcher is driven by currentDate; the actual poll
-    // interval remains real production code, untouched here -- this just
-    // avoids the test needing to wait out the real 15s cadence twice.
     await page.evaluate(async () => {
-      // App.jsx's setInterval will fire on its own within 15s in a real
-      // browser tab -- give it real time rather than reach into module
-      // internals from the test, since that would test the test's own
-      // plumbing instead of the app's real polling code path.
       await new Promise(r => setTimeout(r, 16000))
     })
+    checkpoint('poll_wait_complete')
 
     const afterBadges = await readMountBadges(page)
     const afterHouTex = await readHouTexState(page)
@@ -185,9 +200,12 @@ async function main() {
     manifest.afterHouTexState = afterHouTex
     manifest.domIdentityCheck = identityCheck
     manifest.pollCount = pollCount
+    checkpoint('after_state_read', { afterBadges, afterHouTex, pollCount })
     await page.screenshot({ path: `outbox/reconciliation-check-after-${timestamp}.png` })
+    checkpoint('after_screenshot_taken')
 
     await browser.close()
+    checkpoint('browser_closed')
 
     const allStayedAtM1 = afterBadges.length > 0 && afterBadges.every(b => b === 'm1')
     manifest.checks.push({ name: 'all_mount_counts_stayed_at_m1', pass: allStayedAtM1, initialBadges, afterBadges })
@@ -202,11 +220,13 @@ async function main() {
     manifest.checks.push({ name: 'no_gamerow_nodes_removed_from_dom', pass: noRowsPhysicallyRemoved, removedGameRows: identityCheck.removedGameRows })
 
     manifest.allPass = manifest.checks.every(c => c.pass)
+    checkpoint('manifest_complete', { allPass: manifest.allPass })
     console.log(`Result: ${manifest.allPass ? 'ALL PASS ✓' : 'FAILURES DETECTED ✗'}`)
     console.log(JSON.stringify(manifest, null, 2))
     writeFileSync(`outbox/reconciliation-check-manifest-${timestamp}.json`, JSON.stringify(manifest, null, 2))
     if (!manifest.allPass) process.exitCode = 1
   } catch (err) {
+    checkpoint('CAUGHT_ERROR', { error: String(err), stack: err?.stack })
     manifest.error = String(err)
     manifest.serverOutput = serverOutput.slice(-4000)
     writeFileSync(`outbox/reconciliation-check-manifest-${timestamp}.json`, JSON.stringify(manifest, null, 2))
@@ -214,7 +234,17 @@ async function main() {
     process.exitCode = 1
   } finally {
     server.kill()
+    checkpoint('script_ending')
   }
 }
+
+process.on('uncaughtException', e => {
+  checkpoint('UNCAUGHT_EXCEPTION', { error: String(e), stack: e?.stack })
+  process.exit(1)
+})
+process.on('unhandledRejection', e => {
+  checkpoint('UNHANDLED_REJECTION', { error: String(e) })
+  process.exit(1)
+})
 
 main()
