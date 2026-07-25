@@ -1,7 +1,7 @@
 import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup, untrack, batch } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
 import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk, ambientData } from '../../data/relay'
-import { picks } from '../PickEm'
+import { picks, NON_MATCHUP_SPORTS } from '../PickEm'
 import { clearAllOutcomes } from '../../data/outcomes'
 import { showToast } from '../Toast'
 import styles from './DeskCard.module.css'
@@ -25,7 +25,11 @@ function gameStatus(g) {
   return 'live'
 }
 
-const NON_MATCHUP_SPORTS = new Set(['golf'])
+// NON_MATCHUP_SPORTS is imported from PickEm, not redefined here --
+// this used to be a separate local copy (just ['golf']) that silently
+// diverged when PickEm's set was expanded to include pga/atp/wta,
+// found via a real cross-file check after a Claude Code fix landed. A
+// shared import can't drift the same way a second copy can.
 
 const mountCounts = {}
 
@@ -205,7 +209,7 @@ function Countdown(props) {
 function GameRow(props) {
   const g = () => props.game
   const status = () => gameStatus(g())
-  const isIndividual = () => NON_MATCHUP_SPORTS.has(g().sport)
+  const isIndividual = () => NON_MATCHUP_SPORTS.has(g().sport?.toLowerCase())
   const isWatched = () => !!watched[g().id]
   const optimistic = () => optimisticScores[g().id]
   const displayHome = () => optimistic()?.home_score ?? g().home_score
