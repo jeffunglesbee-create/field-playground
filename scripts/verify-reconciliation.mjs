@@ -6,21 +6,23 @@
 // Per Rule 90 (VERIFY-ARTIFACT-A): this produces a real JSON manifest
 // with falsifiable fields, not a bare pass/fail assertion.
 //
-// 2026-07-25: full rewrite after three straight CI failures/hangs using
-// the previous design (spawn `npm run dev` as a background process, poll
-// for readiness, rely on mockRelay()'s Vite dev-server-only plugin for
-// deterministic data). New design: build the real production bundle
-// (proven reliable repeatedly), serve dist/ with plain Python
-// http.server, use Playwright's page.route() for deterministic mock data
-// instead of Vite's dev-only plugin.
+// 2026-07-25: full rewrite -- build the real production bundle, serve
+// dist/ with plain Python http.server, use Playwright's page.route() for
+// deterministic mock data. Confirmed working: real DOM node-reference
+// identity check passed for both a changed and an unchanged game after
+// fixing a real bug in DeskCard's own <Switch> (was checking
+// deskData.loading, which flips true on every refetch and was masking
+// deskStore's correct behavior underneath). See
+// docs/EXPERIMENT-live-reconciliation.md for the full resolution chain.
 //
-// This redesign then failed twice more, fast (~50s), with nothing in
-// outbox at all -- meaning even the catch block never ran, which means
-// the failure is happening somewhere this script doesn't control cleanly
-// (a hard crash, or failing before the try block even starts). Added
-// real checkpoint logging, written to disk after every single stage --
-// so whatever the artifact upload captures this time shows exactly how
-// far it got, instead of nothing.
+// Removed the mount-badge check (all_mount_counts_stayed_at_m1) from
+// pass/fail criteria this pass: that debug badge only renders in dev
+// mode (import.meta.env.DEV), and this harness deliberately tests the
+// production build, where it structurally cannot exist -- it was
+// reporting a false negative on an empty array, not a real failure.
+// Badges are still read and included in the manifest for reference; the
+// DOM node-identity check is a strictly stronger version of the same
+// underlying claim and is what actually gates pass/fail now.
 
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
@@ -207,8 +209,9 @@ async function main() {
     await browser.close()
     checkpoint('browser_closed')
 
-    const allStayedAtM1 = afterBadges.length > 0 && afterBadges.every(b => b === 'm1')
-    manifest.checks.push({ name: 'all_mount_counts_stayed_at_m1', pass: allStayedAtM1, initialBadges, afterBadges })
+    // Note: mount-badge data (initialBadges/afterBadges) is still
+    // captured above for reference, but deliberately NOT included as a
+    // pass/fail check -- see file header for why.
 
     const houTexTransitioned = initialHouTex?.text.includes('—') && !afterHouTex?.text.includes('—') && afterHouTex?.statusClass?.includes('live')
     manifest.checks.push({ name: 'houtex_transitioned_pre_to_live', pass: !!houTexTransitioned, initial: initialHouTex, after: afterHouTex })
