@@ -1,4 +1,4 @@
-import { onMount, onCleanup, lazy, Suspense, createMemo } from 'solid-js'
+import { onMount, onCleanup, lazy, Suspense, ErrorBoundary, createMemo } from 'solid-js'
 import { AmbientPanel } from './components/AmbientPanel'
 import { DeskCard } from './components/DeskCard'
 import { PickEm } from './components/PickEm'
@@ -73,7 +73,9 @@ export default function App() {
       </section>
       <section class={styles.seasons}>
         <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
-          <Seasons />
+          <ErrorBoundary fallback={err => <div style="font-size:11px;color:#c44;padding:8px 0">{err.message}</div>}>
+            <Seasons />
+          </ErrorBoundary>
         </Suspense>
       </section>
       <section class={styles.ground}>
