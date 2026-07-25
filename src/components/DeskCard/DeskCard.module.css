@@ -315,6 +315,23 @@
   padding: 8px 0;
 }
 
+.emptyNight {
+  padding: 16px 0;
+}
+
+.emptyNightHeadline {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin-bottom: 8px;
+}
+
+.emptyNightQuote {
+  font-size: 13px;
+  color: var(--field-text-primary);
+  line-height: 1.5;
+  font-style: italic;
+}
+
 /* error */
 .error {
   font-size: 12px;
