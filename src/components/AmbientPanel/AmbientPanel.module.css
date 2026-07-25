@@ -127,10 +127,20 @@
   gap: 10px;
 }
 
+.pickList:focus {
+  outline: none;
+}
+
 .pickRow {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  border-radius: 4px;
+  transition: box-shadow 0.1s;
+}
+
+.pickRowFocused {
+  box-shadow: 0 0 0 1px #4a90d9;
 }
 
 .pickHead {
