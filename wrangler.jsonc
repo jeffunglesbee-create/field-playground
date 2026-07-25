@@ -1,0 +1,20 @@
+{
+  // Assets-only Worker: no script, Cloudflare serves dist/ directly.
+  // Matches jubilant-bassoon's pattern of hosting the built client as a
+  // Worker rather than introducing Pages as a second deployment style.
+  //
+  // Deploys the MAIN build (dist/), not dist-artifact/ -- the hosted
+  // version should keep real code-splitting, since lazy()/Suspense
+  // behavior is one of the things this repo actually exists to test.
+  // dist-artifact/'s zero-chunk build stays reserved for the standalone
+  // single-file artifact.
+  //
+  // not_found_handling: the app is a single-page client with no router,
+  // so any unmatched path should still serve index.html rather than 404.
+  "name": "field-playground",
+  "compatibility_date": "2026-07-25",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
