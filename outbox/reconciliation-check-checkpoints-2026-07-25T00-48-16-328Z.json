@@ -1,0 +1,91 @@
+[
+  {
+    "name": "script_started",
+    "t": 1784940496328
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1784940496329
+  },
+  {
+    "name": "dist_confirmed_present",
+    "t": 1784940496329
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1784940496333,
+    "pid": 2353
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1784940496686
+  },
+  {
+    "name": "browser_launched",
+    "t": 1784940497952
+  },
+  {
+    "name": "page_created",
+    "t": 1784940497999
+  },
+  {
+    "name": "routes_registered",
+    "t": 1784940498003
+  },
+  {
+    "name": "page_navigated",
+    "t": 1784940498054
+  },
+  {
+    "name": "gameRow_selector_found",
+    "t": 1784940498105
+  },
+  {
+    "name": "initial_state_read",
+    "t": 1784940498610,
+    "initialBadges": [],
+    "initialHouTex": {
+      "text": "Houston Astros @ Texas Rangers—Globe Life Field",
+      "statusClass": "_statusDot_1sflx_84 _pre_1sflx_93"
+    }
+  },
+  {
+    "name": "initial_screenshot_taken",
+    "t": 1784940498653
+  },
+  {
+    "name": "row_identities_tagged",
+    "t": 1784940498655
+  },
+  {
+    "name": "poll_wait_complete",
+    "t": 1784940514657
+  },
+  {
+    "name": "after_state_read",
+    "t": 1784940514661,
+    "afterBadges": [],
+    "afterHouTex": {
+      "text": "Houston Astros @ Texas Rangers0–1Globe Life Field",
+      "statusClass": "_statusDot_1sflx_84 _live_1sflx_94"
+    },
+    "pollCount": 2
+  },
+  {
+    "name": "after_screenshot_taken",
+    "t": 1784940514716
+  },
+  {
+    "name": "browser_closed",
+    "t": 1784940514745
+  },
+  {
+    "name": "manifest_complete",
+    "t": 1784940514746,
+    "allPass": false
+  },
+  {
+    "name": "script_ending",
+    "t": 1784940514746
+  }
+]
