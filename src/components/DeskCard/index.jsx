@@ -1,6 +1,6 @@
 import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup, untrack, batch } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
-import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk } from '../../data/relay'
+import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk, ambientData } from '../../data/relay'
 import { picks } from '../PickEm'
 import { clearAllOutcomes } from '../../data/outcomes'
 import { showToast } from '../Toast'
@@ -304,7 +304,29 @@ function GameRow(props) {
   )
 }
 
-function SportGroup(props) {
+// Empty-night state. A blank "No games today" is a missed opportunity --
+// the editorial layer (truth_is, contradiction) exists independently of
+// whether there's anything to score, and answers the real product
+// question this forces: what does FIELD actually say on a dark night,
+// not just how does the component degrade structurally.
+function EmptyNight() {
+  const truthIs = () => ambientData()?.truth_is
+  const contradiction = () => ambientData()?.contradiction
+  return (
+    <div class={styles.emptyNight}>
+      <p class={styles.emptyNightHeadline}>No games today.</p>
+      <Show when={truthIs()?.headline}>
+        <p class={styles.emptyNightQuote}>{truthIs().headline}</p>
+      </Show>
+      <Show when={contradiction()}>
+        <p class={styles.emptyNightQuote}>{contradiction()}</p>
+      </Show>
+      <Show when={!truthIs()?.headline && !contradiction()}>
+        <p class={styles.emptyNightQuote}>A quiet night. Sometimes that's the story.</p>
+      </Show>
+    </div>
+  )
+}
   const isCollapsed = () => !!collapsed[props.sport]
   return (
     <div class={styles.sportGroup}>
@@ -374,7 +396,7 @@ function Content() {
         <LiveFilterToggle active={liveOnly} setActive={setLiveOnly} />
       </div>
 
-      <Show when={grouped().length} fallback={<p class={styles.empty}>No games today.</p>}>
+      <Show when={grouped().length} fallback={<EmptyNight />}>
         <div class={styles.gameList}>
           <For each={grouped()}>
             {([sport, games]) => <SportGroup sport={sport} games={games} />}
