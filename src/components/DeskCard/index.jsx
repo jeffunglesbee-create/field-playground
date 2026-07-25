@@ -1,7 +1,8 @@
-import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup, untrack } from 'solid-js'
+import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup, untrack, batch } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
 import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk } from '../../data/relay'
 import { picks } from '../PickEm'
+import { clearAllOutcomes } from '../../data/outcomes'
 import { showToast } from '../Toast'
 import styles from './DeskCard.module.css'
 import shared from '../shared.module.css'
@@ -87,7 +88,19 @@ function DateBrowser() {
   function shiftDay(delta) {
     const d = new Date(currentDate() + 'T00:00:00Z')
     d.setUTCDate(d.getUTCDate() + delta)
-    setCurrentDate(d.toISOString().split('T')[0])
+    // batch: date navigation should reset outcomes (yesterday's editorial
+    // W/L/P marks don't belong on today's slate). Without batch, these
+    // two setters would each fire their own reactive pass -- setCurrentDate
+    // triggers a resource refetch AND a re-render of anything reading it,
+    // clearAllOutcomes separately triggers everything reading outcomes().
+    // batch() collapses both into a single pass. Whether that's actually
+    // visible as a flicker (two skeleton passes) or invisible either way
+    // is exactly the open question -- wrapping it removes the risk
+    // instead of only observing whether it was real.
+    batch(() => {
+      setCurrentDate(d.toISOString().split('T')[0])
+      clearAllOutcomes()
+    })
   }
   return (
     <div class={styles.dateBrowser}>
