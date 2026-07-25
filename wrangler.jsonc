@@ -1,18 +1,25 @@
 {
-  // Assets-only Worker: no script, Cloudflare serves dist/ directly.
-  // Matches jubilant-bassoon's pattern of hosting the built client as a
-  // Worker rather than introducing Pages as a second deployment style.
+  // ⚠️ DELETE THIS FILE. It is redundant with wrangler.toml.
   //
-  // Deploys the MAIN build (dist/), not dist-artifact/ -- the hosted
-  // version should keep real code-splitting, since lazy()/Suspense
-  // behavior is one of the things this repo actually exists to test.
-  // dist-artifact/'s zero-chunk build stays reserved for the standalone
-  // single-file artifact.
+  // Two chat/Claude Code sessions each created a wrangler config in
+  // parallel: this one (.jsonc) and wrangler.toml. Having both is a real
+  // hazard -- wrangler resolves one of them and which one wins is not
+  // obvious from reading the repo, so a future edit to the "wrong" file
+  // would silently do nothing.
   //
-  // not_found_handling: the app is a single-page client with no router,
-  // so any unmatched path should still serve index.html rather than 404.
+  // wrangler.toml is the one to keep: it carries account_id, which
+  // .github/workflows/deploy-playground.yml depends on (that workflow
+  // does not pass accountId to wrangler-action separately). Its path
+  // filter also watches wrangler.toml, not this file.
+  //
+  // Until this file is deleted, it is kept as an EXACT functional mirror
+  // of wrangler.toml so that whichever config wrangler picks, the deploy
+  // is identical and the ambiguity is harmless rather than a live bug.
+  // Chat cannot delete files -- this needs one `git rm wrangler.jsonc`
+  // from Claude Code or Jeff.
   "name": "field-playground",
   "compatibility_date": "2026-07-25",
+  "account_id": "b57e9af57ab46c52ca9215804e689c29",
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
