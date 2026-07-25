@@ -1,4 +1,4 @@
-import { Show, For, createMemo } from 'solid-js'
+import { Show, For, createMemo, createSignal, createEffect } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { ambientData } from '../../data/relay'
 import { outcomes, setOutcome, clearOutcome } from '../../data/outcomes'
@@ -19,25 +19,56 @@ function Skeleton() {
 
 // Compact/expand per pick -- same store-keyed-by-stable-id pattern
 // already proven (collapsed sport groups, watchlist), applied here for
-// real product value rather than as another mechanism test: this
-// pattern is trustworthy now, not a research question anymore.
+// real product value rather than as another mechanism test.
 const [expanded, setExpanded] = createStore({})
 function toggleExpand(gameId) {
   setExpanded(gameId, e => !e)
+}
+
+// Keyboard navigation. focusedIndex is a plain signal, not per-row
+// state -- arrow keys need to know the whole list's shape to move
+// between rows, which a row-local signal couldn't do on its own.
+const [focusedIndex, setFocusedIndex] = createSignal(-1)
+const rowRefs = []
+
+function handlePickListKeyDown(e, count) {
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    setFocusedIndex(i => Math.min((i < 0 ? -1 : i) + 1, count - 1))
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    setFocusedIndex(i => Math.max(i - 1, 0))
+  } else if (e.key === 'Enter' && focusedIndex() >= 0) {
+    e.preventDefault()
+    const row = rowRefs[focusedIndex()]
+    if (row) row.dataset.gameId && toggleExpand(row.dataset.gameId)
+  }
 }
 
 function PickRow(props) {
   const p = () => props.pick
   const result = () => outcomes()[p().game_id] ?? null
   const isExpanded = () => !!expanded[p().game_id]
+  const isFocused = () => focusedIndex() === props.index
 
   const toggle = (val) => {
     if (result() === val) clearOutcome(p().game_id)
     else setOutcome(p().game_id, val)
   }
 
+  let rowEl
+  createEffect(() => {
+    if (isFocused() && rowEl) {
+      rowEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  })
+
   return (
-    <div class={styles.pickRow}>
+    <div
+      class={`${styles.pickRow} ${isFocused() ? styles.pickRowFocused : ''}`}
+      ref={el => { rowEl = el; rowRefs[props.index] = el }}
+      data-game-id={p().game_id}
+    >
       <div
         class={styles.pickHead}
         onClick={() => toggleExpand(p().game_id)}
@@ -81,16 +112,11 @@ function PickRow(props) {
   )
 }
 
-// Pip row -- a "streak" IS a count of consecutive same-outcome games by
-// definition (hot = N consecutive wins, cold = N consecutive losses),
-// so the pip sequence is fully derivable from the existing real data --
-// no invented per-game history needed, just streak.streak repeated
-// pips of the one outcome letter that kind implies.
 function StreakPips(props) {
   const s = () => props.streak
   const letter = () => props.kind === 'hot' ? 'W' : 'L'
   const pipClass = () => props.kind === 'hot' ? styles.pipHot : styles.pipCold
-  const count = () => Math.min(s().streak, 10) // visual cap, real number still shown below
+  const count = () => Math.min(s().streak, 10)
   return (
     <div class={styles.pipTeam}>
       <span class={styles.pipTeamName}>{s().team}</span>
@@ -139,8 +165,6 @@ function StreakBoard(props) {
   )
 }
 
-// truth_is: real field, confirmed live (object: {type, headline,
-// rarity_score, brief}).
 function TruthIsQuote(props) {
   const t = () => props.truthIs
   return (
@@ -152,10 +176,6 @@ function TruthIsQuote(props) {
   )
 }
 
-// sport_of_week: real field, confirmed via relay source
-// (recap.sport_of_week?.value) -- a plain string, not an object.
-// Null on the date checked live, but the source confirms the real
-// shape regardless of what any single day happens to contain.
 function SportOfWeekBanner(props) {
   return (
     <Show when={props.sport}>
@@ -167,10 +187,6 @@ function SportOfWeekBanner(props) {
   )
 }
 
-// contradiction: real field, confirmed via relay source
-// (recap.contradiction?.brief_text) -- a plain string. Surfaced as an
-// explicit warning-toned card instead of buried in prose, since the
-// whole point of the field is flagging editorial tension, not hiding it.
 function ContradictionCard(props) {
   return (
     <Show when={props.contradiction}>
@@ -197,6 +213,8 @@ function Content(props) {
     return { w, l, p, any: w + l + p > 0 }
   })
 
+  const picks = () => d().pick?.ranked ?? []
+
   return (
     <div>
       <header class={styles.header}>
@@ -214,7 +232,7 @@ function Content(props) {
         <p class={styles.morningReport}>{d().morning_report}</p>
       </Show>
 
-      <Show when={d().pick?.ranked?.length}>
+      <Show when={picks().length}>
         <section class={styles.section}>
           <div class={styles.sectionHeader}>
             <h3 class={styles.sectionLabel}>Picks</h3>
@@ -222,9 +240,14 @@ function Content(props) {
               <span class={styles.record}>{record().w}–{record().l}–{record().p}</span>
             </Show>
           </div>
-          <div class={styles.pickList}>
-            <For each={d().pick.ranked}>
-              {pick => <PickRow pick={pick} />}
+          <div
+            class={styles.pickList}
+            tabIndex={0}
+            onKeyDown={e => handlePickListKeyDown(e, picks().length)}
+            onFocus={() => { if (focusedIndex() < 0) setFocusedIndex(0) }}
+          >
+            <For each={picks()}>
+              {(pick, i) => <PickRow pick={pick} index={i()} />}
             </For>
           </div>
         </section>
