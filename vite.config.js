@@ -3,6 +3,11 @@ import solid from 'vite-plugin-solid'
 
 function mockRelay() {
   let contextRequestCount = 0
+  let briefCycle = 0
+  const briefTexts = [
+    'Texas Rangers lead the AL West race and host Houston tonight with Casey Mize on the mound. The Mets visit Philadelphia in a battle of fading wild-card hopefuls. MLS midweek action carries real conference weight: Real Salt Lake host Colorado in a top-four clash, while NY Red Bulls look to extend their unbeaten home run against CF Montréal.',
+    'Houston brings José Urquidy against Texas in a critical divisional matchup — Rangers hold a 2.5-game lead. NY Mets have dropped four straight heading into Philly. WNBA Friday: Phoenix at Seattle in a potential playoff preview, Indiana at Minnesota with the Fever riding three straight wins.',
+  ]
 
   const newspaper = (date) => ({
     ok: true,
@@ -62,6 +67,21 @@ function mockRelay() {
         if (c) {
           res.setHeader('Content-Type', 'application/json')
           return res.end(JSON.stringify(context(c[1])))
+        }
+        if (req.url === '/journalism/brief') {
+          // Rotates every 3 requests to simulate the brief regenerating mid-session.
+          briefCycle = (briefCycle + 1) % 6
+          const idx = briefCycle < 3 ? 0 : 1
+          res.setHeader('Content-Type', 'application/json')
+          return res.end(JSON.stringify({
+            brief: briefTexts[idx],
+            generatedAt: Date.now() - (briefCycle % 3) * 120000,
+            contextHash: idx === 0 ? '-7e3876ad' : '-1a9c4f2b',
+            gameCount: 8,
+            cycleId: idx === 0 ? 'mock-cycle-001' : 'mock-cycle-002',
+            proseScore: idx === 0 ? 98 : 112,
+            clicheCount: idx === 0 ? 1 : 0,
+          }))
         }
         next()
       })

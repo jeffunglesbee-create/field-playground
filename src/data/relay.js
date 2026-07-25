@@ -130,6 +130,19 @@ async function fetchMlsStandings() {
 
 export const [mlsStandings] = createResource(fetchMlsStandings)
 
+// --- Journalism brief: independent polling resource, slower cadence than deskStore ---
+//
+// Not driven by currentDate — the relay always returns today's brief regardless
+// of date param. Polling interval managed by the consuming component (JournalismBrief),
+// not here, same pattern as deskData's refetch interval in App.jsx.
+async function fetchJournalismBrief() {
+  const res = await fetch(`${RELAY_BASE}/journalism/brief`)
+  if (!res.ok) throw new Error(`journalism/brief fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [journalismBrief, { refetch: refetchBrief }] = createResource(fetchJournalismBrief)
+
 // --- Day comparison: first non-singleton resource in this repo ---
 //
 // Every resource above is a single, module-level global instance, driven

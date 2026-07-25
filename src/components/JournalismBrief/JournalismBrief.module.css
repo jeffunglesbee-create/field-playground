@@ -1,0 +1,85 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.age {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.updated {
+  font-size: 10px;
+  color: #4c8;
+  font-weight: 600;
+}
+
+.refreshBtn {
+  margin-left: auto;
+  font-size: 12px;
+  background: none;
+  border: none;
+  color: var(--field-text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.refreshBtn:hover {
+  color: var(--field-text-secondary);
+}
+
+.brief {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--field-text-primary);
+  margin: 0 0 10px 0;
+  transition: opacity 0.2s;
+}
+
+.briefFlash {
+  animation: flash 0.4s ease-out;
+}
+
+@keyframes flash {
+  0%   { opacity: 0.3 }
+  100% { opacity: 1 }
+}
+
+.meta {
+  display: flex;
+  gap: 10px;
+}
+
+.metaItem {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.loading {
+  font-size: 12px;
+  color: var(--field-text-muted);
+}
+
+.error {
+  font-size: 12px;
+  color: #c44;
+}
