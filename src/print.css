@@ -1,0 +1,33 @@
+/* Global print stylesheet -- deliberately NOT a CSS module, since it
+   needs to reach into every component's scoped class names, which a
+   .module.css file structurally can't do from outside that component.
+   Section reordering (picks on top, games below) lives in
+   App.module.css instead, which does own those specific classes. */
+
+@media print {
+  * {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  /* Every card root in this project shares the same #111 background --
+     targeting the common inline/computed pattern via a broad attribute
+     selector isn't reliable across hashed class names, so this resets
+     at the body level and lets each card's own dark background show
+     through as a very light, print-safe tint instead of pure black. */
+  #root > div > section > div {
+    background: #ffffff !important;
+    border-color: #cccccc !important;
+    color: #111111 !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}
