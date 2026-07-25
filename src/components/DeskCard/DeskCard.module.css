@@ -57,13 +57,47 @@
   font-family: monospace;
 }
 
+.controlRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1a1a1a;
+  margin-bottom: 8px;
+}
+
 .tonightsCard {
   font-size: 11px;
   color: var(--field-text-secondary);
-  padding: 6px 0 10px;
-  border-bottom: 1px solid #1a1a1a;
-  margin-bottom: 8px;
   font-variant-numeric: tabular-nums;
+}
+
+.liveFilterBtn {
+  font-size: 9px;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.liveFilterBtn:hover {
+  color: var(--field-text-secondary);
+  border-color: #3a3a3a;
+}
+
+.liveFilterActive {
+  color: #4c8;
+  background: #1a2e1a;
+  border-color: #2a4a2a;
 }
 
 /* game list */
@@ -159,9 +193,6 @@
   50%       { opacity: 0.3; }
 }
 
-/* Already had correct containment before this refactor — left as-is,
-   not moved to the shared .chip primitive since these are plain text
-   truncation, not pill/badge-styled chips like tier/reasonBadge. */
 .matchup {
   font-size: 12px;
   color: var(--field-text-primary);
@@ -187,6 +218,74 @@
   letter-spacing: 0.05em;
   color: var(--field-text-muted);
   text-transform: uppercase;
+}
+
+/* Countdown -- SAMPLE data, tagged visibly, see index.jsx for why. */
+.countdown {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-left: 4px;
+}
+
+.countdownSample {
+  color: #a80;
+  font-size: 8px;
+}
+
+/* Optimistic score edit */
+.scoreClickable {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 1px 3px;
+  margin: -1px -3px;
+}
+
+.scoreClickable:hover {
+  background: #1a1a1a;
+}
+
+.scorePending {
+  background: #241c0a;
+}
+
+.pendingDot {
+  color: #da4;
+  font-size: 14px;
+  line-height: 0;
+}
+
+.scoreEditor {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.scoreInput {
+  width: 26px;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--field-text-primary);
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 3px;
+  padding: 1px 2px;
+  text-align: center;
+}
+
+.scoreSubmitBtn {
+  font-size: 10px;
+  color: #4c8;
+  background: #1a2e1a;
+  border: 1px solid #2a4a2a;
+  border-radius: 3px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  line-height: 1;
 }
 
 .venue {
