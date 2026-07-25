@@ -3,6 +3,7 @@ import { createStore, produce } from 'solid-js/store'
 import { ambientData, deskStore } from '../../data/relay'
 import { outcomes, setOutcome, clearOutcome, annotations, setAnnotation } from '../../data/outcomes'
 import { picks } from '../PickEm'
+import { useTimeOfDay } from '../../data/timeOfDay'
 import styles from './AmbientPanel.module.css'
 import shared from '../shared.module.css'
 
@@ -253,8 +254,24 @@ function ContradictionCard(props) {
   )
 }
 
+// quality_alert is a GLOBAL/aggregate structure (alert_count, alerts[],
+// brief) confirmed via the real live payload -- NOT a per-pick field.
+// Surfaced here as a system-wide indicator, not a per-pick badge the
+// data doesn't actually support.
+function QualityAlertBadge(props) {
+  const qa = () => props.qualityAlert
+  return (
+    <Show when={qa()?.alert_count}>
+      <div class={styles.qualityAlert} title={qa().brief}>
+        ⚡ {qa().alert_count} quality alerts (since {qa().since})
+      </div>
+    </Show>
+  )
+}
+
 function Content(props) {
   const d = () => props.data
+  const timeMode = useTimeOfDay()
 
   const record = createMemo(() => {
     const ranked = d().pick?.ranked ?? []
@@ -297,8 +314,11 @@ function Content(props) {
     <div>
       <header class={styles.header}>
         <span class={styles.label}>Ambient</span>
+        <span class={styles.timeMode} title="morning/midday/evening/late, drives what's emphasized below">{timeMode()}</span>
         <span class={styles.dateMeta}>{d().date} · recap through {d().recap_date}</span>
       </header>
+
+      <QualityAlertBadge qualityAlert={d().quality_alert} />
 
       <SportOfWeekBanner sport={d().sport_of_week} />
 
@@ -311,7 +331,7 @@ function Content(props) {
       </Show>
 
       <Show when={orderedPicks().length}>
-        <section class={styles.section}>
+        <section class={`${styles.section} ${timeMode() === 'morning' ? styles.deemphasized : ''}`}>
           <div class={styles.sectionHeader}>
             <h3 class={styles.sectionLabel}>Picks</h3>
             <Show when={record().any}>
