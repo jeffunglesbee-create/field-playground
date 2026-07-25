@@ -1,5 +1,5 @@
 import { Show, For, createMemo, createSignal, createEffect } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { createStore, produce } from 'solid-js/store'
 import { ambientData } from '../../data/relay'
 import { outcomes, setOutcome, clearOutcome } from '../../data/outcomes'
 import styles from './AmbientPanel.module.css'
@@ -17,17 +17,11 @@ function Skeleton() {
   )
 }
 
-// Compact/expand per pick -- same store-keyed-by-stable-id pattern
-// already proven (collapsed sport groups, watchlist), applied here for
-// real product value rather than as another mechanism test.
 const [expanded, setExpanded] = createStore({})
 function toggleExpand(gameId) {
   setExpanded(gameId, e => !e)
 }
 
-// Keyboard navigation. focusedIndex is a plain signal, not per-row
-// state -- arrow keys need to know the whole list's shape to move
-// between rows, which a row-local signal couldn't do on its own.
 const [focusedIndex, setFocusedIndex] = createSignal(-1)
 const rowRefs = []
 
@@ -43,6 +37,45 @@ function handlePickListKeyDown(e, count) {
     const row = rowRefs[focusedIndex()]
     if (row) row.dataset.gameId && toggleExpand(row.dataset.gameId)
   }
+}
+
+// Drag-to-reorder. Local order lives in a createStore array of game_ids
+// -- NOT the pick objects themselves, which stay owned by ambientData().
+// Reordering mutates via produce() (path-based, in-place-feeling
+// syntax) rather than `setPickOrder([...new array])`, which is the
+// actual thing under test: does <For>, keyed by game_id, keep the same
+// DOM node/component instance for each pick across a produce()-driven
+// reorder, or does it tear everything down and rebuild. produce() still
+// technically replaces array indices under the hood, same as any store
+// write -- the real answer is in whether <For>'s reference-based keying
+// (confirmed elsewhere in this project to key by VALUE reference, not
+// position) sees the same pick objects at new positions as "the same
+// item, moved" or "different items entirely."
+const [pickOrder, setPickOrder] = createStore([])
+let dragIndex = null
+
+function syncPickOrder(realIds) {
+  // Only resync when the underlying SET of picks actually changed (new
+  // day, different slate) -- not on every render, which would stomp any
+  // in-progress manual reorder for no reason.
+  const currentIds = [...pickOrder]
+  const sameSet = currentIds.length === realIds.length && currentIds.every(id => realIds.includes(id))
+  if (!sameSet) {
+    setPickOrder(realIds)
+  }
+}
+
+function handleDragStart(index) {
+  dragIndex = index
+}
+
+function handleDrop(dropIndex) {
+  if (dragIndex === null || dragIndex === dropIndex) return
+  setPickOrder(produce(order => {
+    const [moved] = order.splice(dragIndex, 1)
+    order.splice(dropIndex, 0, moved)
+  }))
+  dragIndex = null
 }
 
 function PickRow(props) {
@@ -68,6 +101,10 @@ function PickRow(props) {
       class={`${styles.pickRow} ${isFocused() ? styles.pickRowFocused : ''}`}
       ref={el => { rowEl = el; rowRefs[props.index] = el }}
       data-game-id={p().game_id}
+      draggable="true"
+      onDragStart={() => handleDragStart(props.index)}
+      onDragOver={e => e.preventDefault()}
+      onDrop={() => handleDrop(props.index)}
     >
       <div
         class={styles.pickHead}
@@ -75,6 +112,7 @@ function PickRow(props) {
         role="button"
         tabIndex={0}
       >
+        <span class={styles.dragHandle} title="drag to reorder">⠿</span>
         <span class={styles.expandIcon}>{isExpanded() ? '▾' : '▸'}</span>
         <span class={`${shared.chip} ${styles.tier} ${styles['tier_' + String(p().tier).toLowerCase()]}`}>
           {p().tier}
@@ -213,7 +251,21 @@ function Content(props) {
     return { w, l, p, any: w + l + p > 0 }
   })
 
-  const picks = () => d().pick?.ranked ?? []
+  const serverPicks = () => d().pick?.ranked ?? []
+
+  createEffect(() => {
+    syncPickOrder(serverPicks().map(p => p.game_id))
+  })
+
+  // Ordered by local pickOrder, falling back to server order for any
+  // pick pickOrder hasn't caught up to yet (avoids a blank frame on
+  // first load before the sync effect above has run).
+  const orderedPicks = createMemo(() => {
+    const byId = {}
+    for (const p of serverPicks()) byId[p.game_id] = p
+    const ids = pickOrder.length ? pickOrder : serverPicks().map(p => p.game_id)
+    return ids.map(id => byId[id]).filter(Boolean)
+  })
 
   return (
     <div>
@@ -232,7 +284,7 @@ function Content(props) {
         <p class={styles.morningReport}>{d().morning_report}</p>
       </Show>
 
-      <Show when={picks().length}>
+      <Show when={orderedPicks().length}>
         <section class={styles.section}>
           <div class={styles.sectionHeader}>
             <h3 class={styles.sectionLabel}>Picks</h3>
@@ -243,10 +295,10 @@ function Content(props) {
           <div
             class={styles.pickList}
             tabIndex={0}
-            onKeyDown={e => handlePickListKeyDown(e, picks().length)}
+            onKeyDown={e => handlePickListKeyDown(e, orderedPicks().length)}
             onFocus={() => { if (focusedIndex() < 0) setFocusedIndex(0) }}
           >
-            <For each={picks()}>
+            <For each={orderedPicks()}>
               {(pick, i) => <PickRow pick={pick} index={i()} />}
             </For>
           </div>
