@@ -27,6 +27,30 @@ ceremony.
 - Anything worth keeping graduates into `jubilant-bassoon` /
   `field-relay-nba` through the normal CC-CMD process. This repo itself
   never becomes a second production surface.
+- **The 5-minute/3-turn diagnostic rule** — same standing discipline as
+  the stricter repos: if a problem isn't resolved within roughly 5
+  minutes or 3 real attempts, stop iterating the same fix and apply
+  actual novel thinking (isolate the variable, question the assumption,
+  change the approach) rather than retry a fourth time. Lighter
+  governance here means no CC-CMD ceremony and no confidence-gate
+  scoring — it was never license to keep re-running a failing approach
+  hoping the next attempt differs from the last three. This is
+  operational discipline, not process weight, and it doesn't get relaxed
+  along with the rest.
+
+  Real case, 2026-07-25: a BroadcastChannel cross-tab sync check hung
+  three separate times in CI — the full combined harness, the same
+  harness with a suspected culprit removed, then a maximally-simplified
+  isolated script with a deliberately short 3-minute ceiling. All three
+  ended the same way: cancelled, not failed, meaning even the diagnostic
+  checkpoint data never survived to be read. Stopped after the third
+  attempt rather than trying a fourth blind variant, and said so plainly
+  — genuine CI limitation, reroute to a real browser (Claude Code's own
+  environment, or two tabs open locally) instead of continuing to guess
+  from here. That's the rule working correctly, not a failure to find
+  the root cause; the discipline is knowing when automated diagnosis has
+  stopped being the productive path, not solving everything from a
+  single vantage point no matter the cost.
 
 ## Mechanical fact worth stating plainly: outbox path differs from jubilant-bassoon
 
