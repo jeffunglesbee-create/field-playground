@@ -1,0 +1,108 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.pushBtn {
+  font-size: 11px;
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  color: var(--field-text-secondary);
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.pushBtn:hover {
+  border-color: #444;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.colLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--field-text-muted);
+  margin-bottom: 5px;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+.slotPos {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 30px;
+  flex-shrink: 0;
+}
+
+.slotText {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slotMount {
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--field-text-muted);
+  flex-shrink: 0;
+  cursor: help;
+}

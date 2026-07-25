@@ -1,0 +1,108 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.scopes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scope {
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scopeLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--field-text-muted);
+}
+
+.pickerRow {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  font-size: 10px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  color: var(--field-text-muted);
+  border-radius: 3px;
+  padding: 2px 7px;
+  cursor: pointer;
+}
+
+.filterBtn:hover {
+  border-color: #444;
+  color: var(--field-text-secondary);
+}
+
+.filterBtn[data-active="true"] {
+  background: #1a2a1a;
+  border-color: #2a5a2a;
+  color: #6a9;
+}
+
+.filterDisplay {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filterKey {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--field-text-muted);
+}
+
+.badge {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+  font-weight: 600;
+}
+
+.filterNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
