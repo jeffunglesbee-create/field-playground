@@ -447,6 +447,35 @@
   padding: 0 3px;
 }
 
+.oddsBlock {
+  margin-top: 2px;
+}
+
+.oddsLine {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.oddsPart {
+  font-size: 10px;
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.oddsNone {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.oddsSource {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  padding-left: 44px;
+  margin-top: 1px;
+}
+
 .empty {
   font-size: 12px;
   color: var(--field-text-muted);
