@@ -1,4 +1,4 @@
-import { Show, For, Switch, Match, createMemo } from 'solid-js'
+import { Show, For, createMemo } from 'solid-js'
 import { ambientData } from '../../data/relay'
 import { outcomes, setOutcome, clearOutcome } from '../../data/outcomes'
 import styles from './AmbientPanel.module.css'
@@ -64,14 +64,6 @@ function PickRow(props) {
   )
 }
 
-/*
-  Streak Board — reads record_streak_board (real win/loss streaks),
-  deliberately NOT streak_board (FIELD's own journalism-quality signal —
-  see Codex: streak-board-metric-mismatch). This is principle #5's first
-  real test, not a hypothetical one: the label says "Streak Board," and
-  it needs to actually mean win/loss streaks for that label to be honest.
-  Naming checked before writing this, not after a screenshot caught it.
-*/
 function StreakChip(props) {
   const s = () => props.streak
   const icon = () => props.kind === 'hot' ? '🔥' : '🧊'
@@ -101,6 +93,23 @@ function StreakBoard(props) {
   )
 }
 
+// truth_is: real field on the newspaper object, confirmed live before
+// building (curl'd /analytics/newspaper -- it's an object, not a plain
+// string: {type, headline, rarity_score, brief}, headline and brief
+// were identical in the sample checked but aren't guaranteed to be).
+// Renders headline specifically -- the shorter, more pull-quote-shaped
+// of the two fields -- as a typeset callout, not buried in prose.
+function TruthIsQuote(props) {
+  const t = () => props.truthIs
+  return (
+    <Show when={t()?.headline}>
+      <blockquote class={styles.truthQuote}>
+        {t().headline}
+      </blockquote>
+    </Show>
+  )
+}
+
 function Content(props) {
   const d = () => props.data
 
@@ -122,6 +131,8 @@ function Content(props) {
         <span class={styles.label}>Ambient</span>
         <span class={styles.dateMeta}>{d().date} · recap through {d().recap_date}</span>
       </header>
+
+      <TruthIsQuote truthIs={d().truth_is} />
 
       <Show when={d().morning_report}>
         <p class={styles.morningReport}>{d().morning_report}</p>
@@ -149,17 +160,22 @@ function Content(props) {
 }
 
 export function AmbientPanel() {
+  // Was: <Switch><Match when={ambientData.loading}>. Same bug class as
+  // DeskCard had, different trigger -- ambientData shares currentDate
+  // with deskData, so navigating dates (not polling, AmbientPanel isn't
+  // in that loop) would flip .loading and unmount the whole panel
+  // unnecessarily on every date click. Fixed the same way: check the
+  // resolved value's truthiness instead.
   return (
     <div class={styles.root}>
-      <Switch>
-        <Match when={ambientData.loading}><Skeleton /></Match>
-        <Match when={ambientData.error}>
-          <p class={styles.error}>{String(ambientData.error)}</p>
-        </Match>
-        <Match when={ambientData()}>
+      <Show when={ambientData.error}>
+        <p class={styles.error}>{String(ambientData.error)}</p>
+      </Show>
+      <Show when={!ambientData.error}>
+        <Show when={ambientData()} fallback={<Skeleton />}>
           {data => <Content data={data()} />}
-        </Match>
-      </Switch>
+        </Show>
+      </Show>
     </div>
   )
 }
