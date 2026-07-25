@@ -87,7 +87,6 @@ function DateBrowser() {
     const d = new Date(currentDate() + 'T00:00:00Z')
     d.setUTCDate(d.getUTCDate() + delta)
     setCurrentDate(d.toISOString().split('T')[0])
-    refetchDesk()
   }
   return (
     <div class={styles.dateBrowser}>
