@@ -256,6 +256,7 @@ function GameRow(props) {
                 </Show>
               }>
                 <span class={styles.pre}>—</span>
+                <Countdown gameId={g().id} />
               </Show>
               <Show when={optimistic()}>
                 <span class={styles.pendingDot} title="optimistic, not yet confirmed by the relay">•</span>
