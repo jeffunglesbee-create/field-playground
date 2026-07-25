@@ -1,0 +1,49 @@
+[
+  {
+    "name": "script_started",
+    "t": 1784947554142
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1784947554142
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1784947554147,
+    "pid": 2446
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1784947554474
+  },
+  {
+    "name": "browser_launched",
+    "t": 1784947556151
+  },
+  {
+    "name": "context_created",
+    "t": 1784947556160
+  },
+  {
+    "name": "page1_created",
+    "t": 1784947556207
+  },
+  {
+    "name": "page1_routes_registered",
+    "t": 1784947556211
+  },
+  {
+    "name": "page1_navigated",
+    "t": 1784947556276
+  },
+  {
+    "name": "CAUGHT_ERROR",
+    "t": 1784947571283,
+    "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('[class*=\"gameRow\"]') to be visible\n",
+    "stack": "page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('[class*=\"gameRow\"]') to be visible\n\n    at main (/home/runner/work/field-playground/field-playground/scripts/verify-broadcast-isolated.mjs:105:17)"
+  },
+  {
+    "name": "script_ending",
+    "t": 1784947571284
+  }
+]
