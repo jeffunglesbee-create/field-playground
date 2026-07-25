@@ -1,0 +1,41 @@
+name: Reconciliation Check V3
+
+# Build-then-serve-static, not spawn-a-dev-server. See
+# scripts/verify-reconciliation.mjs's own header for the full reasoning.
+# Fresh filename (V3) deliberately, same reason V2 was fresh -- ruling out
+# any possibility of GitHub's workflow_dispatch metadata cache serving a
+# stale definition, confirmed as a real (if partial) factor last time.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        timeout-minutes: 1
+      - uses: actions/setup-node@v4
+        timeout-minutes: 1
+        with:
+          node-version: 22
+      - name: npm install
+        timeout-minutes: 2
+        run: npm install
+      - name: npm run build
+        timeout-minutes: 1
+        run: npm run build
+      - name: playwright install
+        timeout-minutes: 2
+        run: npx playwright install chromium
+      - name: run verification script
+        timeout-minutes: 2
+        run: node scripts/verify-reconciliation.mjs
+      - name: Upload manifest + screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reconciliation-check-v3-results
+          path: outbox/reconciliation-check-*
+          if-no-files-found: warn
