@@ -6,6 +6,7 @@ import { Ground } from './components/Ground'
 import { DayComparison } from './components/DayComparison'
 import { SuspenseDemo } from './components/SuspenseDemo'
 import { Agreement } from './components/Agreement'
+import { CrossCheck } from './components/CrossCheck'
 import { CreateRootDemo } from './components/CreateRootDemo'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync } from './data/relay'
@@ -66,6 +67,9 @@ export default function App() {
       </section>
       <section class={styles.agreement}>
         <Agreement />
+      </section>
+      <section class={styles.crossCheck}>
+        <CrossCheck />
       </section>
       <section class={styles.createRootDemo}>
         <CreateRootDemo />
