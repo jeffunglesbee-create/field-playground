@@ -4,6 +4,8 @@ import { DeskCard } from './components/DeskCard'
 import { PickEm } from './components/PickEm'
 import { Seasons } from './components/Seasons'
 import { Ground } from './components/Ground'
+import { DayComparison } from './components/DayComparison'
+import { SuspenseDemo } from './components/SuspenseDemo'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync } from './data/relay'
 import styles from './App.module.css'
@@ -40,6 +42,12 @@ export default function App() {
       </section>
       <section class={styles.ground}>
         <Ground />
+      </section>
+      <section class={styles.dayComparison}>
+        <DayComparison />
+      </section>
+      <section class={styles.suspenseDemo}>
+        <SuspenseDemo />
       </section>
       <ToastLayer />
     </div>
