@@ -1,0 +1,74 @@
+{
+  "timestamp": "2026-07-25T00-43-44-855Z",
+  "checks": [
+    {
+      "name": "all_mount_counts_stayed_at_m1",
+      "pass": false,
+      "initialBadges": [],
+      "afterBadges": []
+    },
+    {
+      "name": "houtex_transitioned_pre_to_live",
+      "pass": true,
+      "initial": {
+        "text": "Houston Astros @ Texas Rangers—Globe Life Field",
+        "statusClass": "_statusDot_1sflx_84 _pre_1sflx_93"
+      },
+      "after": {
+        "text": "Houston Astros @ Texas Rangers0–1Globe Life Field",
+        "statusClass": "_statusDot_1sflx_84 _live_1sflx_94"
+      }
+    },
+    {
+      "name": "dom_node_references_reused_not_remounted",
+      "pass": false,
+      "detail": {
+        "rows": [
+          {
+            "key": "NY Mets @ Philadelphia Phillies",
+            "stillConnected": false,
+            "sameNodeReference": false
+          },
+          {
+            "key": "Houston Astros @ Texas Rangers",
+            "stillConnected": false,
+            "sameNodeReference": false
+          }
+        ],
+        "removedGameRows": []
+      }
+    },
+    {
+      "name": "no_gamerow_nodes_removed_from_dom",
+      "pass": true,
+      "removedGameRows": []
+    }
+  ],
+  "initialBadges": [],
+  "initialHouTexState": {
+    "text": "Houston Astros @ Texas Rangers—Globe Life Field",
+    "statusClass": "_statusDot_1sflx_84 _pre_1sflx_93"
+  },
+  "afterBadges": [],
+  "afterHouTexState": {
+    "text": "Houston Astros @ Texas Rangers0–1Globe Life Field",
+    "statusClass": "_statusDot_1sflx_84 _live_1sflx_94"
+  },
+  "domIdentityCheck": {
+    "rows": [
+      {
+        "key": "NY Mets @ Philadelphia Phillies",
+        "stillConnected": false,
+        "sameNodeReference": false
+      },
+      {
+        "key": "Houston Astros @ Texas Rangers",
+        "stillConnected": false,
+        "sameNodeReference": false
+      }
+    ],
+    "removedGameRows": []
+  },
+  "pollCount": 2,
+  "allPass": false
+}
