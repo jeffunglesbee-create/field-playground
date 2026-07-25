@@ -11,7 +11,9 @@
 .desk,
 .pickem,
 .seasons,
-.ground {
+.ground,
+.dayComparison,
+.suspenseDemo {
   display: flex;
   flex-direction: column;
   gap: 8px;
