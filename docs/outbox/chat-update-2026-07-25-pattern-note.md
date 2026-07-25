@@ -1,46 +1,39 @@
 # chat-update-2026-07-25-pattern-note
 
 **From:** chat (claude.ai)
-**Status:** informational — process observation, not a code issue
+**Status:** informational — process observation, corrected
 **HEAD:** 51c8233 (unchanged — no new commits from this note)
 
 ---
 
-## The pattern, named directly
+## Correction to my own prior version of this note
 
-Two consecutive "pull outbox and verify" checks have each found an
-unexpected `chat-update-*.md` file describing work that had just been
-completed — not new information, a restatement of commits already made.
-This time it's exact: `chat-update-2026-07-25-history-and-modes.md`
-references `HEAD: 51c8233`, which is this session's own commit (the
-build-error fix), and its content matches this session's work almost
-line for line — the same two rejected proposals, the same tier-number
-bug, the same `outcomes.js` extension, the same `History` component,
-even the same accidentally-dropped `function SportGroup` line and its
-fix.
+The original version of this file characterized the repeated
+`chat-update-*.md` files as a documentation-layer bug — "nothing checks
+whether an outbox entry already covers a given HEAD" — and proposed a
+dedup convention. That was wrong, based on incomplete information, and
+worth correcting directly rather than leaving it standing as if it were
+still accurate.
 
-**Verified the actual code is fine.** Only one of each component exists
-(`Agreement`, `History`, `CrossCheck`, etc. — no duplicates), and the
-build is clean at 39 modules at the current real HEAD. Whatever's
-producing duplicate outbox files, it isn't producing duplicate or
-conflicting *code* — this is purely a documentation-layer redundancy,
-worth fixing because it makes the outbox noisier and harder to trust
-over time, not because anything is actually broken.
+**The actual mechanism, explained directly by Jeff:** chat's own
+responses get screenshotted and sent to Claude Code for double-checking.
+Claude Code verifies the work independently and writes the outbox entry
+itself — the `chat-update-*.md` naming and `From: chat (claude.ai)`
+attribution describe *whose work is being checked*, not who wrote the
+file. This is a deliberate verification step, not an accident of two
+sessions colliding.
 
-**Last time** (see `chat-update-2026-07-25-reconciliation.md`) the
-duplication was genuinely useful — a real parallel session had built
-`CrossCheck` and a better Toast redesign that this session's own work
-hadn't done, and reconciling them caught a real semantic bug in
-`Agreement`. This time there's no new content to reconcile — it's the
-same work described twice.
+**What that means for reading these going forward, per Jeff's own
+framing:** "sometimes the double checking reveals something, sometimes
+it's just a double check." Both are legitimate, correct outcomes of the
+same mechanism — a confirming entry (like `history-and-modes.md`,
+matching this session's work near-exactly) isn't redundant, it's the
+audit passing. A diverging entry (like the earlier `CrossCheck`/Toast
+overlap, which caught a real semantic bug in `Agreement`) is the audit
+catching something. Neither should be read as a process problem; both
+are the intended output.
 
-**The actual gap:** nothing checks "does an outbox entry already cover
-this HEAD/this set of commits" before a new session writes its own
-summary. Worth a real convention going forward — before writing a new
-`chat-update-*.md`, check the outbox for an existing entry referencing
-the same or a very close HEAD, and either skip writing a new one or
-explicitly note it supersedes/confirms the prior entry rather than
-silently duplicating it. Not proposing a rule needs to be added to
-`OPERATING-MODE.md` for this specifically yet — one more occurrence
-after this would be the actual signal that it's a durable pattern worth
-writing down there, not just noting inline.
+**Revised takeaway:** keep reading every `chat-update-*.md` closely on
+each outbox check — not to detect duplication, but because the
+confirming ones and the diverging ones look identical until actually
+read, and only reading tells you which kind you've got.
