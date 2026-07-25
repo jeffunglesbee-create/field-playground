@@ -1,7 +1,8 @@
 import { Show, For, createMemo, createSignal, createEffect } from 'solid-js'
 import { createStore, produce } from 'solid-js/store'
-import { ambientData } from '../../data/relay'
-import { outcomes, setOutcome, clearOutcome } from '../../data/outcomes'
+import { ambientData, deskStore } from '../../data/relay'
+import { outcomes, setOutcome, clearOutcome, annotations, setAnnotation } from '../../data/outcomes'
+import { picks } from '../PickEm'
 import styles from './AmbientPanel.module.css'
 import shared from '../shared.module.css'
 
@@ -39,25 +40,10 @@ function handlePickListKeyDown(e, count) {
   }
 }
 
-// Drag-to-reorder. Local order lives in a createStore array of game_ids
-// -- NOT the pick objects themselves, which stay owned by ambientData().
-// Reordering mutates via produce() (path-based, in-place-feeling
-// syntax) rather than `setPickOrder([...new array])`, which is the
-// actual thing under test: does <For>, keyed by game_id, keep the same
-// DOM node/component instance for each pick across a produce()-driven
-// reorder, or does it tear everything down and rebuild. produce() still
-// technically replaces array indices under the hood, same as any store
-// write -- the real answer is in whether <For>'s reference-based keying
-// (confirmed elsewhere in this project to key by VALUE reference, not
-// position) sees the same pick objects at new positions as "the same
-// item, moved" or "different items entirely."
 const [pickOrder, setPickOrder] = createStore([])
 let dragIndex = null
 
 function syncPickOrder(realIds) {
-  // Only resync when the underlying SET of picks actually changed (new
-  // day, different slate) -- not on every render, which would stomp any
-  // in-progress manual reorder for no reason.
   const currentIds = [...pickOrder]
   const sameSet = currentIds.length === realIds.length && currentIds.every(id => realIds.includes(id))
   if (!sameSet) {
@@ -78,15 +64,40 @@ function handleDrop(dropIndex) {
   dragIndex = null
 }
 
+// "What would you have picked?" mode -- editorial Picks section stays
+// collapsed until every one of today's DeskCard games has a PickEm
+// prediction, so seeing which games are recapped as dramatic can't
+// subtly bias what the user would otherwise predict. Once revealed, it
+// stays revealed for the session -- this isn't meant to be a puzzle you
+// re-lock, just a one-way sequencing of "commit, then compare."
+const [manuallyRevealed, setManuallyRevealed] = createSignal(false)
+
+function AnnotationInput(props) {
+  const [draft, setDraft] = createSignal(annotations()[props.gameId] ?? '')
+  return (
+    <div class={styles.annotationRow} onClick={e => e.stopPropagation()}>
+      <input
+        type="text"
+        class={styles.annotationInput}
+        placeholder="note why (optional, private)"
+        value={draft()}
+        onInput={e => setDraft(e.currentTarget.value)}
+        onBlur={() => setAnnotation(props.gameId, draft())}
+      />
+    </div>
+  )
+}
+
 function PickRow(props) {
   const p = () => props.pick
   const result = () => outcomes()[p().game_id] ?? null
   const isExpanded = () => !!expanded[p().game_id]
   const isFocused = () => focusedIndex() === props.index
+  const note = () => annotations()[p().game_id]
 
   const toggle = (val) => {
     if (result() === val) clearOutcome(p().game_id)
-    else setOutcome(p().game_id, val)
+    else setOutcome(p().game_id, val, p().tier)
   }
 
   let rowEl
@@ -119,6 +130,9 @@ function PickRow(props) {
         </span>
         <span class={styles.pickSport}>{p().sport}</span>
         <span class={styles.pickMatchup}>{p().away} @ {p().home}</span>
+        <Show when={note()}>
+          <span class={styles.noteIcon} title={note()}>📝</span>
+        </Show>
         <div class={styles.pickTrailing} onClick={e => e.stopPropagation()}>
           <Show when={p().score}>
             <span class={styles.pickScore}>{p().score}</span>
@@ -141,10 +155,13 @@ function PickRow(props) {
           </div>
         </div>
       </div>
-      <Show when={isExpanded() && p().reasons?.length}>
-        <div class={styles.reasons}>
-          <For each={p().reasons}>{r => <span class={`${shared.chip} ${styles.reasonBadge}`}>{r}</span>}</For>
-        </div>
+      <Show when={isExpanded()}>
+        <Show when={p().reasons?.length}>
+          <div class={styles.reasons}>
+            <For each={p().reasons}>{r => <span class={`${shared.chip} ${styles.reasonBadge}`}>{r}</span>}</For>
+          </div>
+        </Show>
+        <AnnotationInput gameId={p().game_id} />
       </Show>
     </div>
   )
@@ -257,15 +274,24 @@ function Content(props) {
     syncPickOrder(serverPicks().map(p => p.game_id))
   })
 
-  // Ordered by local pickOrder, falling back to server order for any
-  // pick pickOrder hasn't caught up to yet (avoids a blank frame on
-  // first load before the sync effect above has run).
   const orderedPicks = createMemo(() => {
     const byId = {}
     for (const p of serverPicks()) byId[p.game_id] = p
     const ids = pickOrder.length ? pickOrder : serverPicks().map(p => p.game_id)
     return ids.map(id => byId[id]).filter(Boolean)
   })
+
+  // "What would you have picked" gating -- today's real games (from
+  // DeskCard's own deskStore, not editorial picks, since editorial
+  // picks are already a recap, not the set of games available to
+  // predict) vs. how many the user has actually predicted in PickEm.
+  const todaysGames = createMemo(() => [
+    ...(deskStore.games?.regular ?? []),
+    ...(deskStore.games?.postseason ?? []),
+  ])
+  const pickedCount = createMemo(() => todaysGames().filter(g => picks[g.id]).length)
+  const allPicked = createMemo(() => todaysGames().length > 0 && pickedCount() === todaysGames().length)
+  const picksRevealed = createMemo(() => allPicked() || manuallyRevealed())
 
   return (
     <div>
@@ -292,16 +318,31 @@ function Content(props) {
               <span class={styles.record}>{record().w}–{record().l}–{record().p}</span>
             </Show>
           </div>
-          <div
-            class={styles.pickList}
-            tabIndex={0}
-            onKeyDown={e => handlePickListKeyDown(e, orderedPicks().length)}
-            onFocus={() => { if (focusedIndex() < 0) setFocusedIndex(0) }}
+          <Show
+            when={picksRevealed()}
+            fallback={
+              <div class={styles.revealGate}>
+                <p class={styles.revealText}>
+                  Lock your own PickEm picks first ({pickedCount()}/{todaysGames().length}) —
+                  editorial becomes a comparison, not a hint.
+                </p>
+                <button class={styles.revealBtn} onClick={() => setManuallyRevealed(true)}>
+                  show anyway
+                </button>
+              </div>
+            }
           >
-            <For each={orderedPicks()}>
-              {(pick, i) => <PickRow pick={pick} index={i()} />}
-            </For>
-          </div>
+            <div
+              class={styles.pickList}
+              tabIndex={0}
+              onKeyDown={e => handlePickListKeyDown(e, orderedPicks().length)}
+              onFocus={() => { if (focusedIndex() < 0) setFocusedIndex(0) }}
+            >
+              <For each={orderedPicks()}>
+                {(pick, i) => <PickRow pick={pick} index={i()} />}
+              </For>
+            </div>
+          </Show>
         </section>
       </Show>
 
