@@ -22,7 +22,14 @@
 .multiDayStreak,
 .errorBoundaryDemo,
 .drillDown,
-.transitionDemo {
+.transitionDemo,
+.contextDemo,
+.selectorDemo,
+.lazyBoundaryDemo,
+.propsDemo,
+.dateBrowserTransition,
+.computedDemo,
+.indexArrayDemo {
   display: flex;
   flex-direction: column;
   gap: 8px;

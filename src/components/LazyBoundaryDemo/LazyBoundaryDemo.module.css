@@ -1,0 +1,144 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.loadBtn {
+  font-size: 11px;
+  background: #1a1a2a;
+  border: 1px solid #2a2a4a;
+  color: #7a9eff;
+  border-radius: 4px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.loadBtn:hover {
+  border-color: #4a4a8a;
+  color: #aac8ff;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loadingLabel {
+  font-size: 10px;
+  color: #446;
+  font-style: italic;
+}
+
+.panel {
+  background: #0e0e0e;
+  border: 1px solid #1e3a1e;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panelIcon {
+  font-size: 13px;
+  color: #4a8;
+  flex-shrink: 0;
+}
+
+.panelMsg {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+}
+
+.throwBtn {
+  font-size: 11px;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  color: var(--field-text-muted);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.throwBtn:hover {
+  border-color: #c44;
+  color: #c44;
+}
+
+.caught {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1a0a0a;
+  border: 1px solid #4a1a1a;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.caughtIcon {
+  font-size: 13px;
+  color: #c44;
+  flex-shrink: 0;
+}
+
+.caughtMsg {
+  font-size: 11px;
+  color: #c88;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resetBtn {
+  font-size: 11px;
+  background: none;
+  border: 1px solid #4a1a1a;
+  color: var(--field-text-muted);
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.resetBtn:hover {
+  color: var(--field-text-secondary);
+}

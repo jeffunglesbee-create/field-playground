@@ -14,6 +14,13 @@ import { MultiDayStreak } from './components/MultiDayStreak'
 import { ErrorBoundaryDemo } from './components/ErrorBoundaryDemo'
 import { DrillDown } from './components/DrillDown'
 import { TransitionDemo } from './components/TransitionDemo'
+import { ContextDemo } from './components/ContextDemo'
+import { SelectorDemo } from './components/SelectorDemo'
+import { LazyBoundaryDemo } from './components/LazyBoundaryDemo'
+import { PropsDemo } from './components/PropsDemo'
+import { DateBrowserTransition } from './components/DateBrowserTransition'
+import { ComputedDemo } from './components/ComputedDemo'
+import { IndexArrayDemo } from './components/IndexArrayDemo'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { initOutcomesSync } from './data/outcomes'
@@ -89,6 +96,27 @@ export default function App() {
       </section>
       <section class={styles.transitionDemo}>
         <TransitionDemo />
+      </section>
+      <section class={styles.contextDemo}>
+        <ContextDemo />
+      </section>
+      <section class={styles.selectorDemo}>
+        <SelectorDemo />
+      </section>
+      <section class={styles.lazyBoundaryDemo}>
+        <LazyBoundaryDemo />
+      </section>
+      <section class={styles.propsDemo}>
+        <PropsDemo />
+      </section>
+      <section class={styles.dateBrowserTransition}>
+        <DateBrowserTransition />
+      </section>
+      <section class={styles.computedDemo}>
+        <ComputedDemo />
+      </section>
+      <section class={styles.indexArrayDemo}>
+        <IndexArrayDemo />
       </section>
       <ToastLayer />
     </div>

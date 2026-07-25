@@ -1,0 +1,160 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.variantRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.variantKey {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--field-text-muted);
+  margin-right: 2px;
+}
+
+.variantBtn {
+  font-size: 10px;
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  color: var(--field-text-muted);
+  border-radius: 3px;
+  padding: 2px 7px;
+  cursor: pointer;
+}
+
+.variantBtn:hover {
+  border-color: #444;
+}
+
+.variantBtn[data-active="true"] {
+  background: #1a2a3a;
+  border-color: #2a4a6a;
+  color: #6a9eff;
+}
+
+.chipRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.chip {
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  transition: opacity 0.1s;
+}
+
+.chip:hover {
+  opacity: 0.8;
+}
+
+/* size variants */
+.sm { padding: 3px 7px; }
+.md { padding: 5px 10px; }
+.lg { padding: 7px 13px; }
+
+/* color variants */
+.muted {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+}
+
+.primary {
+  background: #0e1a2a;
+  border: 1px solid #1a3a5a;
+}
+
+.accent {
+  background: #1a0e2a;
+  border: 1px solid #3a1a5a;
+}
+
+.chipLabel {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--field-text-muted);
+}
+
+.muted .chipLabel { color: var(--field-text-muted); }
+.primary .chipLabel { color: #4a7aaa; }
+.accent .chipLabel { color: #8a4aaa; }
+
+.chipValue {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--field-text-primary);
+  font-weight: 600;
+}
+
+.lg .chipValue { font-size: 16px; }
+
+.restProof {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 4px;
+}
+
+.restKey {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--field-text-muted);
+}
+
+.restVal {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+}
+
+.restNote {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  font-style: italic;
+}
