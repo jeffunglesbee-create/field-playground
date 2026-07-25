@@ -1,27 +1,15 @@
-// Real browser verification, covering three related claims in one
+// Real browser verification, covering four related claims in one
 // session: (1) docs/EXPERIMENT-live-reconciliation.md's core claim --
 // does deskStore's reconcile() keep GameRow identity stable across a
 // poll, CONFIRMED 2026-07-25 (see that doc for the full chain); (2)
-// collapsible sport groups -- does collapse state (a createStore keyed
-// by sport name) survive the same poll cycle; (3) PickEm -- does a pick
-// resolve from pending to correct/incorrect automatically once
-// deskStore's data marks the game final, with zero manual recheck logic.
+// collapsible sport groups -- does collapse state survive a poll; (3)
+// PickEm -- does a pick resolve pending -> correct/incorrect
+// automatically; (4) game-transition toast -- does a real <Portal>
+// render fire on a live -> final transition detected via createEffect
+// on DERIVED state.
 //
 // Per Rule 90 (VERIFY-ARTIFACT-A): real JSON manifest, falsifiable
 // fields, not a bare pass/fail assertion.
-//
-// 2026-07-25: first combined run found two real bugs -- in this script,
-// not the app. (a) Collapsing the sport group was tested BEFORE the
-// transition/DOM-identity checks -- but <Show when={!isCollapsed()}>
-// genuinely removes rows from the DOM when collapsed, by design, so
-// checking a collapsed group's row identity afterward was never going
-// to find anything. Reordered: transition/identity checks now run
-// first, collapse-testing last, so it can't interfere with unrelated
-// checks. (b) The mock had home_score(1) > away_score(0), meaning Texas
-// Rangers (home) actually won -- but the test picked Houston Astros
-// (away) and asserted "correct." PickEm correctly resolved the pick as
-// wrong given that data; the test's own expectation was backwards, not
-// the app. Fixed the mock so the picked team actually wins.
 
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
@@ -60,9 +48,6 @@ async function waitForServer(url, timeoutMs = 15000) {
   throw new Error(`static server did not come up within ${timeoutMs}ms`)
 }
 
-// Poll 1: hou-tex pregame. Poll 2: hou-tex live, Astros (away) leading
-// 2-1. Poll 3+: final, Astros (away) win 2-1 -- away_score > home_score
-// this time, matching the pick the test actually makes below.
 function mockContextResponse(pollCount) {
   const stage = pollCount >= 3 ? 'final' : pollCount === 2 ? 'live' : 'pre'
   const houTex = {
@@ -193,8 +178,24 @@ async function main() {
     await tagRowIdentities(page)
     checkpoint('row_identities_tagged')
 
-    // PickEm: pick "Houston Astros" (away) while still pregame -- wins
-    // per the mock's final stage, tests the full pending -> correct path.
+    // Watchlist: star the Rangers/Astros row before any polls, tests
+    // whether the star (createStore keyed by game id) survives the same
+    // way collapsed groups already proved it does.
+    const watchButtons = await page.$$('[class*="watchBtn"]')
+    let starredHouTex = false
+    for (const btn of watchButtons) {
+      const row = await btn.evaluateHandle(el => el.closest('[class*="gameRow"]'))
+      const text = await row.evaluate(el => el?.textContent || '')
+      if (text.includes('Texas Rangers')) {
+        await btn.click()
+        starredHouTex = true
+        break
+      }
+    }
+    manifest.starredHouTex = starredHouTex
+    checkpoint('watchlist_star_clicked', { starredHouTex })
+
+    // PickEm: pick "Houston Astros" (away) while still pregame.
     const pickEmButtons = await page.$$('[class*="pickBtn"]')
     let pickedHouTex = false
     for (const btn of pickEmButtons) {
@@ -219,15 +220,23 @@ async function main() {
     manifest.pickStatusAfterPick = pickStatusAfterPick
     checkpoint('pick_status_read_pre_poll', { pickStatusAfterPick })
 
-    // Two poll cycles: first brings hou-tex live, second brings it final.
+    // Poll 1 -> live.
     await page.evaluate(() => new Promise(r => setTimeout(r, 16000)))
     checkpoint('first_poll_wait_complete')
+    // Poll 2 -> final. This is the live->final transition the toast
+    // effect watches for -- check for it right after, before it can
+    // auto-dismiss (5s lifetime in the component).
     await page.evaluate(() => new Promise(r => setTimeout(r, 16000)))
     checkpoint('second_poll_wait_complete')
 
-    // Transition/DOM-identity checks run BEFORE any collapse testing --
-    // collapsing a group removes its rows from the DOM by design, which
-    // would make these checks fail for reasons unrelated to reconcile().
+    const toastPresent = await page.evaluate(() => {
+      const toasts = Array.from(document.querySelectorAll('[class*="toast"]'))
+      return toasts.some(t => t.textContent.includes('Final') && t.textContent.includes('Rangers'))
+    })
+    manifest.toastPresent = toastPresent
+    checkpoint('toast_checked', { toastPresent })
+    await page.screenshot({ path: `outbox/reconciliation-check-toast-${timestamp}.png` })
+
     const afterHouTex = await readHouTexState(page)
     const identityCheck = await checkRowIdentities(page)
     manifest.afterHouTexState = afterHouTex
@@ -246,25 +255,31 @@ async function main() {
     manifest.pickStatusFinal = pickStatusFinal
     checkpoint('pick_status_read_post_poll', { pickStatusFinal })
 
+    const starredStillAfterPoll = await page.evaluate(() => {
+      const rows = Array.from(document.querySelectorAll('[class*="gameRow"]'))
+      for (const row of rows) {
+        if (row.textContent.includes('Texas Rangers')) {
+          const btn = row.querySelector('[class*="watchBtn"]')
+          return btn ? btn.textContent.trim() === '★' : false
+        }
+      }
+      return false
+    })
+    manifest.starredStillAfterPoll = starredStillAfterPoll
+    checkpoint('watchlist_persistence_checked', { starredStillAfterPoll })
+
     await page.screenshot({ path: `outbox/reconciliation-check-after-${timestamp}.png` })
 
-    // Collapse testing LAST, after every other check that needs the
-    // rows actually present in the DOM.
+    // Collapse testing LAST, after every other check that needs rows present.
     await page.click('[class*="sportLabel"]')
     checkpoint('mlb_group_clicked')
-    const collapsedImmediately = await page.evaluate(() => {
-      const rows = document.querySelectorAll('[class*="gameRow"]')
-      return rows.length === 0
-    })
+    const collapsedImmediately = await page.evaluate(() => document.querySelectorAll('[class*="gameRow"]').length === 0)
     manifest.collapsedImmediately = collapsedImmediately
     checkpoint('collapse_checked')
 
     await page.evaluate(() => new Promise(r => setTimeout(r, 16000)))
     checkpoint('third_poll_wait_for_collapse_persistence')
-    const collapsedAfterPoll = await page.evaluate(() => {
-      const rows = document.querySelectorAll('[class*="gameRow"]')
-      return rows.length === 0
-    })
+    const collapsedAfterPoll = await page.evaluate(() => document.querySelectorAll('[class*="gameRow"]').length === 0)
     manifest.collapsedAfterPoll = collapsedAfterPoll
     checkpoint('collapse_persistence_checked', { collapsedImmediately, collapsedAfterPoll })
 
@@ -285,6 +300,9 @@ async function main() {
 
     manifest.checks.push({ name: 'sport_group_collapsed_on_click', pass: !!collapsedImmediately })
     manifest.checks.push({ name: 'collapse_state_survived_poll_cycle', pass: !!collapsedImmediately && !!collapsedAfterPoll })
+
+    manifest.checks.push({ name: 'watchlist_star_survived_poll_cycles', pass: starredHouTex && starredStillAfterPoll })
+    manifest.checks.push({ name: 'transition_toast_fired_via_portal', pass: !!toastPresent })
 
     manifest.allPass = manifest.checks.every(c => c.pass)
     checkpoint('manifest_complete', { allPass: manifest.allPass })
