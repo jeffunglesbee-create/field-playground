@@ -16,7 +16,8 @@
 .suspenseDemo,
 .agreement,
 .crossCheck,
-.createRootDemo {
+.createRootDemo,
+.history {
   display: flex;
   flex-direction: column;
   gap: 8px;
