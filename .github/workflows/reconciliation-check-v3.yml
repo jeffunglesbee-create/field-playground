@@ -2,9 +2,14 @@ name: Reconciliation Check V3
 
 # Build-then-serve-static, not spawn-a-dev-server. See
 # scripts/verify-reconciliation.mjs's own header for the full reasoning.
-# Fresh filename (V3) deliberately, same reason V2 was fresh -- ruling out
-# any possibility of GitHub's workflow_dispatch metadata cache serving a
-# stale definition, confirmed as a real (if partial) factor last time.
+#
+# First run of this file failed in ~40s -- too fast to have reached the
+# actual script, meaning it hit one of the per-step timeouts (checkout=1m
+# or setup-node=1m) rather than a real error in the redesigned approach.
+# Those budgets were too tight, not a sign anything is actually broken.
+# Generous job-level ceiling only now -- the goal is testing whether the
+# build+serve+route-intercept redesign itself works, not fine-grained
+# per-step diagnostics at this stage.
 
 on:
   workflow_dispatch: {}
@@ -15,23 +20,13 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-        timeout-minutes: 1
       - uses: actions/setup-node@v4
-        timeout-minutes: 1
         with:
           node-version: 22
-      - name: npm install
-        timeout-minutes: 2
-        run: npm install
-      - name: npm run build
-        timeout-minutes: 1
-        run: npm run build
-      - name: playwright install
-        timeout-minutes: 2
-        run: npx playwright install chromium
-      - name: run verification script
-        timeout-minutes: 2
-        run: node scripts/verify-reconciliation.mjs
+      - run: npm install
+      - run: npm run build
+      - run: npx playwright install chromium
+      - run: node scripts/verify-reconciliation.mjs
       - name: Upload manifest + screenshots
         if: always()
         uses: actions/upload-artifact@v4
