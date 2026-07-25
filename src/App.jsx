@@ -8,6 +8,7 @@ import { SuspenseDemo } from './components/SuspenseDemo'
 import { Agreement } from './components/Agreement'
 import { CrossCheck } from './components/CrossCheck'
 import { CreateRootDemo } from './components/CreateRootDemo'
+import { History } from './components/History'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync } from './data/relay'
 import shared from './components/shared.module.css'
@@ -73,6 +74,9 @@ export default function App() {
       </section>
       <section class={styles.createRootDemo}>
         <CreateRootDemo />
+      </section>
+      <section class={styles.history}>
+        <History />
       </section>
       <ToastLayer />
     </div>
