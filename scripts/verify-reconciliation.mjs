@@ -1,28 +1,20 @@
-// Real browser verification of docs/EXPERIMENT-live-reconciliation.md's
-// core claim: does deskStore's reconcile() keep GameRow identity stable
-// across real poll cycles, including through a genuine pre->live status
-// transition -- not just for byte-identical unrelated rows.
+// Real browser verification, now covering three related claims in one
+// session: (1) docs/EXPERIMENT-live-reconciliation.md's core claim --
+// does deskStore's reconcile() keep GameRow identity stable across a
+// poll, CONFIRMED 2026-07-25 (see that doc for the full chain); (2)
+// collapsible sport groups -- does collapse state (a createStore keyed
+// by sport name) survive the same poll cycle; (3) PickEm -- does a pick
+// resolve from pending to correct/incorrect automatically once
+// deskStore's data marks the game final, with zero manual recheck logic.
 //
-// Per Rule 90 (VERIFY-ARTIFACT-A): this produces a real JSON manifest
-// with falsifiable fields, not a bare pass/fail assertion.
+// Per Rule 90 (VERIFY-ARTIFACT-A): real JSON manifest, falsifiable
+// fields, not a bare pass/fail assertion.
 //
-// 2026-07-25: full rewrite -- build the real production bundle, serve
-// dist/ with plain Python http.server, use Playwright's page.route() for
-// deterministic mock data. Confirmed working: real DOM node-reference
-// identity check passed for both a changed and an unchanged game after
-// fixing a real bug in DeskCard's own <Switch> (was checking
-// deskData.loading, which flips true on every refetch and was masking
-// deskStore's correct behavior underneath). See
-// docs/EXPERIMENT-live-reconciliation.md for the full resolution chain.
-//
-// Removed the mount-badge check (all_mount_counts_stayed_at_m1) from
-// pass/fail criteria this pass: that debug badge only renders in dev
-// mode (import.meta.env.DEV), and this harness deliberately tests the
-// production build, where it structurally cannot exist -- it was
-// reporting a false negative on an empty array, not a real failure.
-// Badges are still read and included in the manifest for reference; the
-// DOM node-identity check is a strictly stronger version of the same
-// underlying claim and is what actually gates pass/fail now.
+// Design: real production build, served statically via Python
+// http.server, Playwright's page.route() for deterministic mock data
+// across three poll responses (pregame -> live -> final), all in one
+// browser session to avoid three separate CI runs for three related
+// claims that share the same underlying poll mechanism.
 
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
@@ -40,7 +32,7 @@ function checkpoint(name, extra = {}) {
   checkpoints.push({ name, t: Date.now(), ...extra })
   try {
     writeFileSync(checkpointPath, JSON.stringify(checkpoints, null, 2))
-  } catch { /* best effort -- do not let logging itself crash the run */ }
+  } catch { /* best effort */ }
 }
 
 checkpoint('script_started')
@@ -61,15 +53,26 @@ async function waitForServer(url, timeoutMs = 15000) {
   throw new Error(`static server did not come up within ${timeoutMs}ms`)
 }
 
+// Poll 1: hou-tex pregame. Poll 2: hou-tex live (1-0). Poll 3+: hou-tex
+// final (1-0, Astros win as the away team) -- lets PickEm's pending ->
+// resolved transition actually be tested, not just the live transition.
 function mockContextResponse(pollCount) {
-  const houTexLive = pollCount >= 2
+  const stage = pollCount >= 3 ? 'final' : pollCount === 2 ? 'live' : 'pre'
+  const houTex = {
+    id: '2026-07-25-mlb-hou-tex', sport: 'MLB', home: 'Texas Rangers', away: 'Houston Astros',
+    home_score: stage === 'pre' ? null : 1,
+    away_score: stage === 'pre' ? null : 0,
+    venue: 'Globe Life Field',
+    finalized_at: stage === 'final' ? '2026-07-25T05:00:00Z' : null,
+    went_to_ot: null,
+  }
   return {
     ok: true,
     date: '2026-07-25',
     games: {
       regular: [
         { id: '2026-07-25-mlb-nym-phi', sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets', home_score: 4, away_score: 2, venue: 'Citizens Bank Park', finalized_at: '2026-07-25T02:15:00Z', went_to_ot: null },
-        { id: '2026-07-25-mlb-hou-tex', sport: 'MLB', home: 'Texas Rangers', away: 'Houston Astros', home_score: houTexLive ? 1 : null, away_score: houTexLive ? 0 : null, venue: 'Globe Life Field', finalized_at: null, went_to_ot: null },
+        houTex,
       ],
       postseason: [],
     },
@@ -79,10 +82,6 @@ function mockContextResponse(pollCount) {
 
 function mockNewspaperResponse() {
   return { ok: true, date: '2026-07-25', recap_date: '2026-07-24', generated_at: '2026-07-25T06:00:00Z', morning_report: 'Test data.', pick: { ranked: [] } }
-}
-
-async function readMountBadges(page) {
-  return page.evaluate(() => Array.from(document.querySelectorAll('[class*="mountDebug"]')).map(el => el.textContent.trim()))
 }
 
 async function readHouTexState(page) {
@@ -179,48 +178,102 @@ async function main() {
     checkpoint('gameRow_selector_found')
     await page.waitForTimeout(500)
 
-    const initialBadges = await readMountBadges(page)
     const initialHouTex = await readHouTexState(page)
-    manifest.initialBadges = initialBadges
     manifest.initialHouTexState = initialHouTex
-    checkpoint('initial_state_read', { initialBadges, initialHouTex })
+    checkpoint('initial_state_read', { initialHouTex })
     await page.screenshot({ path: `outbox/reconciliation-check-initial-${timestamp}.png` })
-    checkpoint('initial_screenshot_taken')
 
     await tagRowIdentities(page)
     checkpoint('row_identities_tagged')
 
-    await page.evaluate(async () => {
-      await new Promise(r => setTimeout(r, 16000))
+    // Collapsible sport groups: click the MLB label, verify it collapses
+    // (games become hidden) before any poll cycle runs.
+    await page.click('[class*="sportLabel"]')
+    checkpoint('mlb_group_clicked')
+    const collapsedImmediately = await page.evaluate(() => {
+      const rows = document.querySelectorAll('[class*="gameRow"]')
+      return rows.length === 0 || Array.from(rows).every(r => r.offsetParent === null)
     })
-    checkpoint('poll_wait_complete')
+    manifest.collapsedImmediatelyAfterClick = collapsedImmediately
+    checkpoint('collapse_state_checked_pre_poll', { collapsedImmediately })
 
-    const afterBadges = await readMountBadges(page)
+    // PickEm: pick "Houston Astros" (the away team, and the actual
+    // eventual winner per the mock's final stage) while the game is
+    // still pregame -- tests the full pending -> correct transition.
+    const pickEmButtons = await page.$$('[class*="pickBtn"]')
+    let pickedHouTex = false
+    for (const btn of pickEmButtons) {
+      const text = await btn.textContent()
+      if (text && text.trim() === 'Houston Astros') {
+        await btn.click()
+        pickedHouTex = true
+        break
+      }
+    }
+    manifest.pickedHouTexAstros = pickedHouTex
+    checkpoint('pickem_pick_made', { pickedHouTex })
+
+    const pickStatusAfterPick = await page.evaluate(() => {
+      const badges = Array.from(document.querySelectorAll('[class*="statusBadge"]'))
+      for (const b of badges) {
+        const row = b.closest('[class*="pickRow"]')
+        if (row && row.textContent.includes('Texas Rangers')) return b.textContent.trim()
+      }
+      return null
+    })
+    manifest.pickStatusAfterPick = pickStatusAfterPick
+    checkpoint('pick_status_read_pre_poll', { pickStatusAfterPick })
+
+    // Two poll cycles: first brings hou-tex live, second brings it final
+    // with Astros winning -- matches the pick made above.
+    await page.evaluate(() => new Promise(r => setTimeout(r, 16000)))
+    checkpoint('first_poll_wait_complete')
+    await page.evaluate(() => new Promise(r => setTimeout(r, 16000)))
+    checkpoint('second_poll_wait_complete')
+
     const afterHouTex = await readHouTexState(page)
     const identityCheck = await checkRowIdentities(page)
-    manifest.afterBadges = afterBadges
     manifest.afterHouTexState = afterHouTex
     manifest.domIdentityCheck = identityCheck
     manifest.pollCount = pollCount
-    checkpoint('after_state_read', { afterBadges, afterHouTex, pollCount })
-    await page.screenshot({ path: `outbox/reconciliation-check-after-${timestamp}.png` })
-    checkpoint('after_screenshot_taken')
+    checkpoint('after_state_read', { afterHouTex, pollCount })
 
+    const collapsedAfterPolls = await page.evaluate(() => {
+      const rows = document.querySelectorAll('[class*="gameRow"]')
+      return rows.length === 0 || Array.from(rows).every(r => r.offsetParent === null)
+    })
+    manifest.collapsedAfterPolls = collapsedAfterPolls
+    checkpoint('collapse_state_checked_post_poll', { collapsedAfterPolls })
+
+    const pickStatusFinal = await page.evaluate(() => {
+      const badges = Array.from(document.querySelectorAll('[class*="statusBadge"]'))
+      for (const b of badges) {
+        const row = b.closest('[class*="pickRow"]')
+        if (row && row.textContent.includes('Texas Rangers')) return b.textContent.trim()
+      }
+      return null
+    })
+    manifest.pickStatusFinal = pickStatusFinal
+    checkpoint('pick_status_read_post_poll', { pickStatusFinal })
+
+    await page.screenshot({ path: `outbox/reconciliation-check-after-${timestamp}.png` })
     await browser.close()
     checkpoint('browser_closed')
 
-    // Note: mount-badge data (initialBadges/afterBadges) is still
-    // captured above for reference, but deliberately NOT included as a
-    // pass/fail check -- see file header for why.
-
-    const houTexTransitioned = initialHouTex?.text.includes('—') && !afterHouTex?.text.includes('—') && afterHouTex?.statusClass?.includes('live')
-    manifest.checks.push({ name: 'houtex_transitioned_pre_to_live', pass: !!houTexTransitioned, initial: initialHouTex, after: afterHouTex })
+    const houTexTransitioned = initialHouTex?.text.includes('—') && !afterHouTex?.text.includes('—') && (afterHouTex?.statusClass?.includes('live') || afterHouTex?.statusClass?.includes('final'))
+    manifest.checks.push({ name: 'houtex_transitioned_pre_to_live_or_final', pass: !!houTexTransitioned, initial: initialHouTex, after: afterHouTex })
 
     const allNodesReused = identityCheck.rows.length > 0 && identityCheck.rows.every(r => r.stillConnected && r.sameNodeReference)
     manifest.checks.push({ name: 'dom_node_references_reused_not_remounted', pass: allNodesReused, detail: identityCheck })
 
     const noRowsPhysicallyRemoved = identityCheck.removedGameRows.length === 0
     manifest.checks.push({ name: 'no_gamerow_nodes_removed_from_dom', pass: noRowsPhysicallyRemoved, removedGameRows: identityCheck.removedGameRows })
+
+    manifest.checks.push({ name: 'sport_group_collapsed_on_click', pass: !!collapsedImmediately })
+    manifest.checks.push({ name: 'collapse_state_survived_poll_cycles', pass: !!collapsedImmediately === !!collapsedAfterPolls && !!collapsedAfterPolls, collapsedImmediately, collapsedAfterPolls })
+
+    manifest.checks.push({ name: 'pickem_pick_registered', pass: pickedHouTex && pickStatusAfterPick === 'pending', pickStatusAfterPick })
+    manifest.checks.push({ name: 'pickem_resolved_correct_after_final', pass: pickStatusFinal === 'correct', pickStatusFinal })
 
     manifest.allPass = manifest.checks.every(c => c.pass)
     checkpoint('manifest_complete', { allPass: manifest.allPass })
