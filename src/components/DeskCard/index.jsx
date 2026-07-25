@@ -254,6 +254,33 @@ function GameExpansion(props) {
   )
 }
 
+// Drama hierarchy, corrected: the first version of this used a raw
+// drama_peak number to drive a continuous glow, on the assumption no
+// categorical version existed. Wrong -- jubilant-bassoon's real,
+// production index.html has exact functions for this:
+//   dramaTier(score): >=80 'fire', >=60 'hot', >=40 'warm', else none
+//   dramaLabel(score): matching emoji per tier
+// Ported verbatim, same thresholds, not re-derived. Also porting
+// isBlowout (real threshold: margin > 20, or > 36 for AFL specifically
+// -- not replicated here since deskStore's mock data doesn't include
+// AFL). What's NOT a faithful port: the real system's CRUNCH/
+// CLOSE_LATE tiers depend on ESPN's live period + game clock via
+// findESPNScore(), which deskStore doesn't expose in the same form.
+// isCloseLate below is an honest, labeled approximation (live status +
+// close margin) standing in for that, not a claimed exact match.
+function dramaTier(score) {
+  if (score >= 80) return 'fire'
+  if (score >= 60) return 'hot'
+  if (score >= 40) return 'warm'
+  return ''
+}
+function dramaLabel(score) {
+  if (score >= 80) return '🔥'
+  if (score >= 60) return '⚡'
+  if (score >= 40) return '●'
+  return ''
+}
+
 function GameRow(props) {
   const g = () => props.game
   const status = () => gameStatus(g())
@@ -267,12 +294,17 @@ function GameRow(props) {
   const isExpanded = () => !!expandedGames[g().id]
   const isHighlighted = () => highlightedGameId() === g().id
 
-  // Drama hierarchy: real drama_peak number (52, 74, 60... confirmed
-  // live, not an invented high/medium/low category) drives visual
-  // weight directly via a CSS custom property rather than bucketing
-  // into discrete classes -- the relay's signal is continuous, the
-  // styling should be too.
-  const dramaWeight = () => Math.min(1, (g().drama_peak ?? 0) / 80)
+  // Real ported thresholds (dramaTier/dramaLabel), not an invented
+  // continuous scale. isBlowout and isCloseLate use the real relay
+  // fields available here (scores), same exact isBlowout threshold
+  // (margin > 20) the production code uses; isCloseLate is the labeled
+  // approximation described above the function definitions.
+  const dramaPeak = () => g().drama_peak ?? 0
+  const tier = () => dramaTier(dramaPeak())
+  const label = () => dramaLabel(dramaPeak())
+  const margin = () => Math.abs((g().home_score ?? 0) - (g().away_score ?? 0))
+  const isBlowout = () => status() !== 'pre' && margin() > 20
+  const isCloseLate = () => status() === 'live' && margin() <= 5
 
   const secondsSinceFetch = props.secondsSinceFetch
   const isStale = () => status() === 'live' && secondsSinceFetch() > 300
@@ -306,11 +338,11 @@ function GameRow(props) {
   return (
     <div
       ref={rowEl}
-      class={`${styles.gameRow} ${isStale() ? styles.rowStale : ''} ${isHighlighted() ? styles.rowHighlighted : ''}`}
-      style={{ '--drama-weight': dramaWeight() }}
+      class={`${styles.gameRow} ${styles['tier_' + tier()]} ${isBlowout() ? styles.rowBlowout : ''} ${isCloseLate() ? styles.rowCloseLate : ''} ${isStale() ? styles.rowStale : ''} ${isHighlighted() ? styles.rowHighlighted : ''}`}
       data-game-id={g().id}
     >
       <span class={`${styles.statusDot} ${styles[status()]}`} />
+      <Show when={label()}><span class={styles.dramaLabel} title={`drama tier: ${tier()} (peak ${dramaPeak()})`}>{label()}</span></Show>
       <button
         class={`${styles.watchBtn} ${isWatched() ? styles.watchBtnActive : ''}`}
         onClick={() => toggleWatch(g().id)}
