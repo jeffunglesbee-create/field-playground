@@ -17,6 +17,8 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run build
+      - name: build the artifact target (zero-chunk)
+        run: npx vite build --config vite.config.artifact.js
       - run: npx playwright install chromium
       - name: verify the shipped artifact actually renders
         timeout-minutes: 3
