@@ -94,6 +94,17 @@ async function main() {
     checkpoint('page2_settled')
 
     // Mark the outcome as W on page1's AmbientPanel pick, tier included.
+    // The Picks section (and its outcome buttons) stays hidden behind
+    // the "what would you have picked" gate until PickEm picks exist --
+    // bypass it via the real "show anyway" button rather than fake a
+    // PickEm pick, since that's the actual escape hatch a real user has.
+    await page1.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('button'))
+      const revealBtn = buttons.find(b => b.textContent.trim() === 'show anyway')
+      if (revealBtn) revealBtn.click()
+    })
+    checkpoint('reveal_gate_bypassed_on_page1')
+
     const outcomeBtnClicked = await page1.evaluate(() => {
       const buttons = Array.from(document.querySelectorAll('[class*="outcomeBtn"]'))
       const wBtn = buttons.find(b => b.textContent.trim() === 'W')
