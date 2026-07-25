@@ -129,3 +129,28 @@ async function fetchMlsStandings() {
 }
 
 export const [mlsStandings] = createResource(fetchMlsStandings)
+
+// --- Day comparison: first non-singleton resource in this repo ---
+//
+// Every resource above is a single, module-level global instance, driven
+// by the one shared `currentDate` signal. Day comparison needs two
+// INDEPENDENT views (e.g. yesterday and today) alive simultaneously,
+// neither one driven by the shared date-browser signal -- a genuinely
+// different shape than anything else here. createDayContext is a
+// factory: each call creates its OWN signal + resource pair, closed over
+// in the returned object, not exported as a shared module-level binding.
+// Tests whether the pattern used everywhere else (module-level singleton)
+// actually generalizes, or whether multiple independent instances need
+// something structurally different -- it doesn't; createResource itself
+// was never actually singleton-only, everything else here just always
+// called it exactly once at module scope.
+export function createDayContext(initialDate) {
+  const [date, setDate] = createSignal(initialDate)
+  async function fetchDay(d) {
+    const res = await fetch(`${RELAY_BASE}/context/date/${d}`)
+    if (!res.ok) throw new Error(`context fetch failed: ${res.status}`)
+    return res.json()
+  }
+  const [data] = createResource(date, fetchDay)
+  return { date, setDate, data }
+}
