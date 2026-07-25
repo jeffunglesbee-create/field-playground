@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-07-25T01-49-07-519Z",
+  "checks": [
+    {
+      "name": "houtex_transitioned_pre_to_live_or_final",
+      "pass": true,
+      "initial": {
+        "text": "☆Houston Astros @ Texas Rangers—Globe Life Field",
+        "statusClass": "_statusDot_1i2gj_143 _pre_1i2gj_152"
+      },
+      "after": {
+        "text": "★Houston Astros @ Texas Rangers2–1FGlobe Life Field",
+        "statusClass": "_statusDot_1i2gj_143 _final_1i2gj_154"
+      }
+    },
+    {
+      "name": "dom_node_references_reused_not_remounted",
+      "pass": true,
+      "detail": {
+        "rows": [
+          {
+            "key": "NY Mets @ Philadelphia Phillies",
+            "stillConnected": true,
+            "sameNodeReference": true
+          },
+          {
+            "key": "Houston Astros @ Texas Rangers",
+            "stillConnected": true,
+            "sameNodeReference": true
+          }
+        ],
+        "removedGameRows": []
+      }
+    },
+    {
+      "name": "no_gamerow_nodes_removed_from_dom",
+      "pass": true,
+      "removedGameRows": []
+    },
+    {
+      "name": "pickem_pick_registered_as_pending",
+      "pass": true,
+      "pickStatusAfterPick": "pending"
+    },
+    {
+      "name": "pickem_resolved_correct_after_final",
+      "pass": true,
+      "pickStatusFinal": "correct"
+    },
+    {
+      "name": "sport_group_collapsed_on_click",
+      "pass": true
+    },
+    {
+      "name": "collapse_state_survived_poll_cycle",
+      "pass": true
+    },
+    {
+      "name": "watchlist_star_survived_poll_cycles",
+      "pass": true
+    },
+    {
+      "name": "transition_toast_fired_via_portal",
+      "pass": true
+    },
+    {
+      "name": "date_browser_requested_correct_next_date",
+      "pass": true,
+      "nextDateRequested": "2026-07-26",
+      "expectedNextDate": "2026-07-26"
+    },
+    {
+      "name": "date_browser_displayed_date_updated",
+      "pass": false,
+      "displayedDateAfterNav": "2026-07-25 · recap through 2026-07-24",
+      "expectedNextDate": "2026-07-26"
+    }
+  ],
+  "initialDate": "2026-07-25",
+  "initialHouTexState": {
+    "text": "☆Houston Astros @ Texas Rangers—Globe Life Field",
+    "statusClass": "_statusDot_1i2gj_143 _pre_1i2gj_152"
+  },
+  "starredHouTex": true,
+  "pickedHouTexAstros": true,
+  "pickStatusAfterPick": "pending",
+  "toastPresent": true,
+  "afterHouTexState": {
+    "text": "★Houston Astros @ Texas Rangers2–1FGlobe Life Field",
+    "statusClass": "_statusDot_1i2gj_143 _final_1i2gj_154"
+  },
+  "domIdentityCheck": {
+    "rows": [
+      {
+        "key": "NY Mets @ Philadelphia Phillies",
+        "stillConnected": true,
+        "sameNodeReference": true
+      },
+      {
+        "key": "Houston Astros @ Texas Rangers",
+        "stillConnected": true,
+        "sameNodeReference": true
+      }
+    ],
+    "removedGameRows": []
+  },
+  "pollCount": 3,
+  "pickStatusFinal": "correct",
+  "starredStillAfterPoll": true,
+  "collapsedImmediately": true,
+  "collapsedAfterPoll": true,
+  "nextDateRequested": "2026-07-26",
+  "expectedNextDate": "2026-07-26",
+  "newRequestMadeOnClick": true,
+  "displayedDateAfterNav": "2026-07-25 · recap through 2026-07-24",
+  "allPass": false
+}

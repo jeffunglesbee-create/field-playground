@@ -1,0 +1,164 @@
+[
+  {
+    "name": "script_started",
+    "t": 1784944147519
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1784944147520
+  },
+  {
+    "name": "dist_confirmed_present",
+    "t": 1784944147520
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1784944147524,
+    "pid": 2347
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1784944147856
+  },
+  {
+    "name": "browser_launched",
+    "t": 1784944149676
+  },
+  {
+    "name": "page_created",
+    "t": 1784944149729
+  },
+  {
+    "name": "routes_registered",
+    "t": 1784944149735
+  },
+  {
+    "name": "page_navigated",
+    "t": 1784944149784
+  },
+  {
+    "name": "gameRow_selector_found",
+    "t": 1784944149841
+  },
+  {
+    "name": "initial_date_captured",
+    "t": 1784944150342,
+    "initialDate": "2026-07-25"
+  },
+  {
+    "name": "initial_state_read",
+    "t": 1784944150345,
+    "initialHouTex": {
+      "text": "☆Houston Astros @ Texas Rangers—Globe Life Field",
+      "statusClass": "_statusDot_1i2gj_143 _pre_1i2gj_152"
+    }
+  },
+  {
+    "name": "row_identities_tagged",
+    "t": 1784944150388
+  },
+  {
+    "name": "watchlist_star_clicked",
+    "t": 1784944150422,
+    "starredHouTex": true
+  },
+  {
+    "name": "pickem_pick_made",
+    "t": 1784944150469,
+    "pickedHouTex": true
+  },
+  {
+    "name": "pick_status_read_pre_poll",
+    "t": 1784944150470,
+    "pickStatusAfterPick": "pending"
+  },
+  {
+    "name": "first_poll_wait_complete",
+    "t": 1784944166472
+  },
+  {
+    "name": "second_poll_wait_complete",
+    "t": 1784944182474
+  },
+  {
+    "name": "toast_checked",
+    "t": 1784944182475,
+    "toastPresent": true
+  },
+  {
+    "name": "after_state_read",
+    "t": 1784944182520,
+    "afterHouTex": {
+      "text": "★Houston Astros @ Texas Rangers2–1FGlobe Life Field",
+      "statusClass": "_statusDot_1i2gj_143 _final_1i2gj_154"
+    },
+    "pollCount": 3
+  },
+  {
+    "name": "pick_status_read_post_poll",
+    "t": 1784944182521,
+    "pickStatusFinal": "correct"
+  },
+  {
+    "name": "watchlist_persistence_checked",
+    "t": 1784944182522,
+    "starredStillAfterPoll": true
+  },
+  {
+    "name": "mlb_group_clicked",
+    "t": 1784944182600
+  },
+  {
+    "name": "collapse_checked",
+    "t": 1784944182601
+  },
+  {
+    "name": "third_poll_wait_for_collapse_persistence",
+    "t": 1784944198605
+  },
+  {
+    "name": "collapse_persistence_checked",
+    "t": 1784944198606,
+    "collapsedImmediately": true,
+    "collapsedAfterPoll": true
+  },
+  {
+    "name": "mlb_group_reexpanded",
+    "t": 1784944198616
+  },
+  {
+    "name": "next_day_clicked",
+    "t": 1784944198936
+  },
+  {
+    "name": "date_browser_next_checked",
+    "t": 1784944199938,
+    "nextDateRequested": "2026-07-26",
+    "expectedNextDate": "2026-07-26",
+    "requestedDates": [
+      "2026-07-25",
+      "2026-07-25",
+      "2026-07-25",
+      "2026-07-25",
+      "2026-07-26"
+    ]
+  },
+  {
+    "name": "displayed_date_checked",
+    "t": 1784944199939,
+    "displayedDateAfterNav": "2026-07-25 · recap through 2026-07-24"
+  },
+  {
+    "name": "browser_closed",
+    "t": 1784944199965
+  },
+  {
+    "name": "manifest_complete",
+    "t": 1784944199965,
+    "allPass": false
+  },
+  {
+    "name": "script_ending",
+    "t": 1784944199966
+  }
+]
