@@ -4,6 +4,7 @@ import { DeskCard } from './components/DeskCard'
 import { PickEm } from './components/PickEm'
 import { Seasons } from './components/Seasons'
 import { Ground } from './components/Ground'
+import { ToastLayer } from './components/Toast'
 import { refetchDesk } from './data/relay'
 import styles from './App.module.css'
 
@@ -38,6 +39,7 @@ export default function App() {
       <section class={styles.ground}>
         <Ground />
       </section>
+      <ToastLayer />
     </div>
   )
 }
