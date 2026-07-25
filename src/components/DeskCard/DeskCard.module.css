@@ -175,7 +175,7 @@
    background is the ambient one. */
 .gameRow {
   display: grid;
-  grid-template-columns: 8px 14px 16px 1fr auto auto auto auto;
+  grid-template-columns: 8px 14px 16px minmax(50px, 1fr) auto minmax(0, 80px) auto auto;
   align-items: center;
   gap: 6px;
   padding: 4px 0;
@@ -351,7 +351,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100px;
+  max-width: 80px;
 }
 
 .dismissBtn {
