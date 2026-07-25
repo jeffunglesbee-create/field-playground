@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-07-25T22-07-10-441Z",
+  "checks": [
+    {
+      "name": "root_has_rendered_children",
+      "pass": true,
+      "rootChildCount": 1
+    },
+    {
+      "name": "multiple_sections_rendered",
+      "pass": true,
+      "sectionCount": 36
+    },
+    {
+      "name": "no_uncaught_page_errors",
+      "pass": true,
+      "pageErrors": []
+    }
+  ],
+  "mainJs": "dist/assets/index-YdfbKEUy.js",
+  "cssFiles": [
+    "dist/assets/index-Db0UpTqu.css",
+    "dist/assets/index-DpjuJ6fd.css"
+  ],
+  "htmlBytes": 216416,
+  "rootChildCount": 1,
+  "sectionCount": 36,
+  "bodyTextSample": "AMBIENT\nLATE\n2026-07-25 · recap through 2026-07-24\n⚡ 12 quality alerts (since 2026-07-18)\nTHE EDITORIAL CLAIM\n\n4 unusual finishes — led by Rockies beat Brewers 5-2 as a +208 underdog.\n\nThe truth is that baseball thrives on the unexpected, as evidenced by four unusual finishes last night, highlighted by the Rockies stunning the Brewers as +208 underdogs. Elsewhere, the Yankees secured a gritty 1-0 victory over the Phillies in a classic pitching duel, while the Braves edged the Orioles in a high-scoring 7-6 thriller that kept fans on the edge of their seats. Meanwhile, Ben Kohles continues to co",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "allPass": true
+}
