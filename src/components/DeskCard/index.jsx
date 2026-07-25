@@ -1,5 +1,5 @@
 import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { createStore, reconcile } from 'solid-js/store'
 import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk } from '../../data/relay'
 import { showToast } from '../Toast'
 import styles from './DeskCard.module.css'
@@ -28,27 +28,35 @@ const NON_MATCHUP_SPORTS = new Set(['golf'])
 const mountCounts = {}
 
 // Collapsible sport groups -- CONFIRMED 2026-07-25, real browser
-// verification, survives real poll cycles. Store keyed by sport name
-// (stable string, immune to grouped()'s reference churn).
+// verification, survives real poll cycles.
 const [collapsed, setCollapsed] = createStore({})
 function toggleGroup(sport) {
   setCollapsed(sport, c => !c)
 }
 
-// Watchlist. Same underlying question as collapsed groups above -- does
-// this survive a poll -- but worth being precise about a SHARPER version
-// of that lesson: a plain createSignal(new Set()) would NOT work here
-// even though it might look like it should. Calling .add()/.delete() on
-// the SAME Set object mutates it in place without creating a new
-// reference, and SolidJS signals only notify subscribers on an actual
-// setter call with a value SolidJS considers changed -- mutating the
-// existing Set silently, with no setter call, fires no update at all.
-// createStore's proxy-based approach doesn't have this trap: setWatched
-// below is a real setter call every time, keyed by a stable game id
-// (immune to reference churn) the same way collapsed/sport already is.
+// Watchlist -- CONFIRMED live. createStore keyed by id, not a
+// createSignal(new Set()), which would silently fail to notify on
+// .add()/.delete() (mutates without a setter call).
 const [watched, setWatched] = createStore({})
 function toggleWatch(id) {
   setWatched(id, w => !w)
+}
+
+// Optimistic score edit. Local override keyed by game id, shown instead
+// of deskStore's real value while pending. The actual point being
+// tested: what does "reconcile" mean when LOCAL state and SERVER state
+// can genuinely disagree, not just when they're both deriving from the
+// same source. Answer implemented here: server truth always wins the
+// moment a real poll lands, whether or not it matched the guess --
+// cleared inside DeskCard's own effect below (needs a component-level
+// reactive root, not module top-level, same reason initUrlDateSync
+// lives in App.jsx's onMount rather than bare in relay.js).
+const [optimisticScores, setOptimisticScores] = createStore({})
+const [editingGameId, setEditingGameId] = createSignal(null)
+
+function submitOptimisticScore(gameId, homeScore, awayScore) {
+  setOptimisticScores(gameId, { home_score: homeScore, away_score: awayScore, pendingAt: Date.now() })
+  setEditingGameId(null)
 }
 
 function StaleIndicator() {
@@ -110,12 +118,47 @@ function TonightsCard(props) {
   )
 }
 
+// "What's live now" filter -- pure derived memo, zero new fetching.
+// Flips back to the full list when nothing is live, per spec.
+function LiveFilterToggle(props) {
+  return (
+    <button
+      class={`${styles.liveFilterBtn} ${props.active() ? styles.liveFilterActive : ''}`}
+      onClick={() => props.setActive(a => !a)}
+    >
+      {props.active() ? '● live only' : 'live only'}
+    </button>
+  )
+}
+
+function ScoreEditor(props) {
+  const g = () => props.game
+  let homeRef, awayRef
+  return (
+    <span class={styles.scoreEditor} onClick={e => e.stopPropagation()}>
+      <input ref={homeRef} type="number" class={styles.scoreInput} value={g().home_score ?? 0} />
+      <span>-</span>
+      <input ref={awayRef} type="number" class={styles.scoreInput} value={g().away_score ?? 0} />
+      <button
+        class={styles.scoreSubmitBtn}
+        onClick={() => submitOptimisticScore(g().id, Number(homeRef.value), Number(awayRef.value))}
+      >
+        ✓
+      </button>
+    </span>
+  )
+}
+
 function GameRow(props) {
   const g = () => props.game
   const status = () => gameStatus(g())
   const isIndividual = () => NON_MATCHUP_SPORTS.has(g().sport)
-  const scoreStr = () => `${g().away_score}–${g().home_score}`
   const isWatched = () => !!watched[g().id]
+  const optimistic = () => optimisticScores[g().id]
+  const displayHome = () => optimistic()?.home_score ?? g().home_score
+  const displayAway = () => optimistic()?.away_score ?? g().away_score
+  const scoreStr = () => `${displayAway()}–${displayHome()}`
+  const isEditing = () => editingGameId() === g().id
 
   onMount(() => {
     const id = g().id
@@ -125,14 +168,6 @@ function GameRow(props) {
     }
   })
 
-  // Game-state transition toast. on(status, ...) gives access to the
-  // PREVIOUS value on every re-run, not just the current one -- required
-  // to detect an actual transition (live -> final) rather than firing on
-  // every re-render regardless of whether status changed. Tests whether
-  // an effect on DERIVED state (gameStatus() is computed, not a raw
-  // signal) behaves as cleanly as an effect on a plain signal would --
-  // it does, since status() still participates in the same reactive
-  // graph deskStore's fields do.
   createEffect(on(status, (curr, prev) => {
     if (prev === 'live' && (curr === 'final' || curr === 'final_ot')) {
       const label = isIndividual() ? `${g().home} — ${g().away}` : `${g().away} @ ${g().home}`
@@ -164,17 +199,30 @@ function GameRow(props) {
             </span>
           }
         >
-          <Show when={status() === 'pre'} fallback={
-            <Show when={status() === 'live'} fallback={
-              <>
-                <span class={styles.finalScore}>{scoreStr()}</span>
-                <span class={styles.badge}>{status() === 'final_ot' ? 'F/OT' : 'F'}</span>
-              </>
-            }>
-              <span class={styles.liveScore}>{scoreStr()}</span>
-            </Show>
+          <Show when={isEditing()} fallback={
+            <span
+              class={`${styles.scoreClickable} ${optimistic() ? styles.scorePending : ''}`}
+              onClick={() => status() !== 'pre' && setEditingGameId(g().id)}
+              title={status() !== 'pre' ? 'click to correct (optimistic, reconciles on next poll)' : ''}
+            >
+              <Show when={status() === 'pre'} fallback={
+                <Show when={status() === 'live'} fallback={
+                  <>
+                    <span class={styles.finalScore}>{scoreStr()}</span>
+                    <span class={styles.badge}>{status() === 'final_ot' ? 'F/OT' : 'F'}</span>
+                  </>
+                }>
+                  <span class={styles.liveScore}>{scoreStr()}</span>
+                </Show>
+              }>
+                <span class={styles.pre}>—</span>
+              </Show>
+              <Show when={optimistic()}>
+                <span class={styles.pendingDot} title="optimistic, not yet confirmed by the relay">•</span>
+              </Show>
+            </span>
           }>
-            <span class={styles.pre}>—</span>
+            <ScoreEditor game={g()} />
           </Show>
         </Show>
       </span>
@@ -212,14 +260,35 @@ function SportGroup(props) {
 }
 
 function Content() {
+  const [liveOnly, setLiveOnly] = createSignal(false)
+
+  // Server truth wins the moment a real poll lands, whether or not the
+  // optimistic guess matched -- this effect needs a real reactive root,
+  // which is why it lives here (inside a component) rather than at
+  // relay.js's module top-level, same reasoning as initUrlDateSync.
+  createEffect(on(deskLastFetchedAt, (fetchedAt, prevFetchedAt) => {
+    if (prevFetchedAt !== undefined && fetchedAt !== prevFetchedAt) {
+      setOptimisticScores(reconcile({}))
+    }
+  }, { defer: true }))
+
   const allGames = createMemo(() => [
     ...(deskStore.games?.regular ?? []),
     ...(deskStore.games?.postseason ?? []),
   ])
 
+  const hasLiveGames = createMemo(() => allGames().some(g => gameStatus(g) === 'live'))
+
+  // Flips back to full list when nothing is live, per spec -- checking
+  // hasLiveGames() rather than just trusting the toggle avoids an empty
+  // list the moment the last live game goes final.
+  const visibleGames = createMemo(() =>
+    liveOnly() && hasLiveGames() ? allGames().filter(g => gameStatus(g) === 'live') : allGames()
+  )
+
   const grouped = createMemo(() => {
     const map = {}
-    for (const g of allGames()) {
+    for (const g of visibleGames()) {
       if (!map[g.sport]) map[g.sport] = []
       map[g.sport].push(g)
     }
@@ -234,7 +303,10 @@ function Content() {
         <StaleIndicator />
       </header>
 
-      <TonightsCard games={allGames} />
+      <div class={styles.controlRow}>
+        <TonightsCard games={allGames} />
+        <LiveFilterToggle active={liveOnly} setActive={setLiveOnly} />
+      </div>
 
       <Show when={grouped().length} fallback={<p class={styles.empty}>No games today.</p>}>
         <div class={styles.gameList}>
