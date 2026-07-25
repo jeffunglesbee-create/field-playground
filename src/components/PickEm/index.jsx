@@ -84,11 +84,13 @@ function PickRow(props) {
   )
 }
 
+const NON_MATCHUP_SPORTS = new Set(['golf', 'pga', 'atp', 'wta'])
+
 export function PickEm() {
   const allGames = createMemo(() => [
     ...(deskStore.games?.regular ?? []),
     ...(deskStore.games?.postseason ?? []),
-  ])
+  ].filter(g => !NON_MATCHUP_SPORTS.has(g.sport?.toLowerCase())))
 
   const record = createMemo(() => {
     let correct = 0, incorrect = 0
@@ -100,6 +102,15 @@ export function PickEm() {
     return { correct, incorrect }
   })
 
+  const grouped = createMemo(() => {
+    const map = {}
+    for (const g of allGames()) {
+      if (!map[g.sport]) map[g.sport] = []
+      map[g.sport].push(g)
+    }
+    return Object.entries(map)
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -109,9 +120,16 @@ export function PickEm() {
         </Show>
       </header>
       <Show when={allGames().length} fallback={<p class={styles.empty}>No games today.</p>}>
-        <div class={styles.pickList}>
-          <For each={allGames()}>{game => <PickRow game={game} />}</For>
-        </div>
+        <For each={grouped()}>
+          {([sport, games]) => (
+            <div class={styles.sportGroup}>
+              <div class={styles.sportLabel}>{sport}</div>
+              <div class={styles.pickList}>
+                <For each={games}>{game => <PickRow game={game} />}</For>
+              </div>
+            </div>
+          )}
+        </For>
       </Show>
     </div>
   )

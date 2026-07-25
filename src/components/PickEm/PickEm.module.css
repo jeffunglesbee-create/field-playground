@@ -26,6 +26,25 @@
   font-variant-numeric: tabular-nums;
 }
 
+.sportGroup {
+  margin-bottom: 14px;
+}
+
+.sportGroup:last-child {
+  margin-bottom: 0;
+}
+
+.sportLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  padding: 4px 0;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #1e1e1e;
+}
+
 .pickList {
   display: flex;
   flex-direction: column;
