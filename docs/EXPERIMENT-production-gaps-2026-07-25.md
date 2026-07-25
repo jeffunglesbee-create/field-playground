@@ -10,12 +10,51 @@ five, each composing local state with server-driven `deskStore`
 differently:
 
 ## Date browser
-`currentDate`/`setCurrentDate` already existed as infrastructure with no
-UI. Added `‹ [date] ›` controls in `DeskCard`'s header, calling
-`setCurrentDate` + `refetchDesk`.
+Added `‹ [date] ›` controls in `DeskCard`'s header.
 
-**CONFIRMED live**, after two real bugs found and fixed in the *test*,
-not the app:
+**CONFIRMED live**, after two real test bugs found and fixed (too-short
+wait, then an ambiguous cross-component selector reading AmbientPanel's
+date instead of DeskCard's — full detail preserved below).
+
+**Also confirmed: URL-persisted date and BroadcastChannel cross-tab
+sync** — both already built and wired by Claude Code independently
+(found reading `relay.js` fresh, before duplicating the work).
+
+- `url_date_param_used_on_initial_load`: confirmed via an isolated
+  script — opening `?d=2026-08-01` correctly seeds the app to that date.
+- BroadcastChannel: confirmed via a real two-page browser test, real
+  fetch-count instrumentation. One date change on page 2 produced
+  exactly one propagated update to page 1 — `page1: 4→6`, `page2: 4→6`,
+  then flat for a full 4-second sampling window. No runaway, no echo
+  loop. The original hypothesis (a possible ping-pong between the two
+  pages) is refuted by real data, not just an absence of a hang.
+
+**The real story behind getting there, worth keeping in full:** this
+took four failed CI attempts before a real answer, and they were two
+genuinely different problems, not one:
+
+1. **First two attempts hung to a JOB-level timeout.** Searched this
+   project's own history rather than guess a fifth time — found the
+   real, established pattern for CI diagnosis here, and a specific
+   mechanical fact: a job-level `timeout-minutes` force-kills the entire
+   job, including an `if: always()` commit-back step. A step-level
+   timeout on just the risky step fails gracefully instead, letting
+   later steps still run. That fix alone turned an unbounded hang with
+   zero recoverable data into a normal, readable failure.
+2. **With real diagnostics finally working, attempts 3 and 4 revealed
+   the actual bug — in the test, not the app.** The isolated
+   BroadcastChannel script's mock deliberately returned zero games (it
+   only cared about date-sync), but the test waited on
+   `[class*="gameRow"]` — an element that cannot exist without games.
+   Not a race condition, not a timing issue: a test guaranteed to fail
+   by its own construction, and it took real console/page-error capture
+   plus a body-text dump to see that plainly instead of inferring a
+   cause from a bare timeout. Fixed by waiting on `[class*="dateBrowser"]`
+   instead, which renders regardless of game count. Fifth attempt: clean
+   pass.
+
+Full detail on the date-browser-specific test bugs, unchanged from
+before:
 1. First pass: `date_browser_displayed_date_updated` failed. Checked
    whether the 1s post-click wait was simply too short (cheaper
    hypothesis to rule out first) — extended to 3s, same failure.
@@ -27,9 +66,7 @@ not the app:
    renders first in `App.jsx` — `querySelector` was silently grabbing
    AmbientPanel's stale element the whole time, not DeskCard's. Scoped
    to `[class*="dateBrowser"] [class*="dateMeta"]` — only DeskCard has
-   that wrapper. Re-ran: `date_browser_requested_correct_next_date: true`,
-   `date_browser_displayed_date_updated: true`, `displayedDateAfterNav:
-   "2026-07-26"` — exact match to the expected next date.
+   that wrapper.
 
 Also worth noting as a real, still-open (non-blocking) observation:
 `shiftDay` calls both `setCurrentDate(...)` (which already triggers
@@ -65,7 +102,7 @@ watches derived state, fires on a real `live -> final` transition.
 
 **CONFIRMED live:** `transition_toast_fired_via_portal: true`.
 
-## Full manifest (final run, all five confirmed)
+## Full manifest (main harness, final run)
 ```
 allPass: true
 houtex_transitioned_pre_to_live_or_final: true
@@ -80,4 +117,5 @@ transition_toast_fired_via_portal: true
 date_browser_requested_correct_next_date: true
 date_browser_displayed_date_updated: true
 ```
-Eleven checks, one browser session, one production build, real DOM.
+Plus, separately: `url_date_param_used_on_initial_load: true` and
+BroadcastChannel's `fetch_counts_stabilized_not_runaway: true`.
