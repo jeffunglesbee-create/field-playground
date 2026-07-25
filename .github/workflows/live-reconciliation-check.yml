@@ -1,94 +1,23 @@
-name: Live Reconciliation Check
+name: Live Reconciliation Check (SUPERSEDED)
 
-# Closes the gap docs/EXPERIMENT-live-reconciliation.md left open: chat's
-# own sandbox can't download a real browser (Chromium blocked from
-# storage.googleapis.com there, confirmed by trying) and a Node-only
-# harness proved unreliable for testing SolidJS's actual reactive
-# scheduler. GHA has real, unrestricted egress -- same reasoning as
-# rule-gha-for-sandbox-egress-blocks elsewhere in this project, applied
-# here for the first time in field-playground specifically.
+# Superseded 2026-07-25 by reconciliation-check-v3.yml -- see
+# docs/EXPERIMENT-live-reconciliation.md for the full reason: this
+# workflow's design (spawn `npm run dev` as a background process, poll
+# for readiness) was inherently fragile in CI and never got past a
+# consistent early failure. V3's build+serve-static+page.route() design
+# is the proven, working replacement.
 #
-# 2026-07-24: three runs failed/hung, three different mitigations tried
-# (job timeout, dropping --with-deps, per-step timeouts) -- none revealed
-# WHICH step, since chat has no GHA log access and outbox/ stayed
-# completely empty every time (the failure happens before
-# scripts/verify-reconciliation.mjs ever starts). Three iterations
-# without new information is exactly the point to stop guessing.
-#
-# Novel approach instead of a fourth guess: make the workflow leave its
-# own breadcrumbs. Every step now writes a progress marker + its actual
-# captured stdout/stderr to outbox/reconciliation-check-progress.txt,
-# via `if: always()` steps that run regardless of which prior step
-# failed. The existing upload-artifact step (already `if: always()`)
-# picks these up even on a hard failure -- so whatever kills this run
-# next should be visible after the fact, not another opaque failure.
+# No delete capability from chat's current toolset, so this is neutered
+# instead of removed: push trigger dropped (it was firing on every
+# commit to main for no reason), job replaced with a no-op. Real cleanup
+# (actual file deletion) is a small follow-up for whoever next has
+# direct repo access outside this constraint.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch: {}
 
 jobs:
-  reconciliation-check:
+  noop:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
-        timeout-minutes: 2
-
-      - name: breadcrumb — checkout done, environment snapshot
-        if: always()
-        run: |
-          mkdir -p outbox
-          echo "=== checkout step reached: $(date -u) ===" > outbox/reconciliation-check-progress.txt
-          echo "runner: $(uname -a)" >> outbox/reconciliation-check-progress.txt
-          echo "disk:" >> outbox/reconciliation-check-progress.txt
-          df -h >> outbox/reconciliation-check-progress.txt
-          echo "repo contents:" >> outbox/reconciliation-check-progress.txt
-          ls -la >> outbox/reconciliation-check-progress.txt
-
-      - uses: actions/setup-node@v4
-        timeout-minutes: 2
-        with:
-          node-version: 22
-
-      - name: breadcrumb — setup-node done
-        if: always()
-        run: |
-          echo "=== setup-node step reached: $(date -u) ===" >> outbox/reconciliation-check-progress.txt
-          node --version >> outbox/reconciliation-check-progress.txt 2>&1 || echo "node --version FAILED" >> outbox/reconciliation-check-progress.txt
-          npm --version >> outbox/reconciliation-check-progress.txt 2>&1 || echo "npm --version FAILED" >> outbox/reconciliation-check-progress.txt
-
-      - name: npm install
-        timeout-minutes: 3
-        run: npm install 2>&1 | tee -a outbox/reconciliation-check-progress.txt
-
-      - name: breadcrumb — npm install done
-        if: always()
-        run: |
-          echo "=== npm install step reached: $(date -u) ===" >> outbox/reconciliation-check-progress.txt
-          ls node_modules/.bin/ 2>&1 | head -20 >> outbox/reconciliation-check-progress.txt || echo "no node_modules/.bin" >> outbox/reconciliation-check-progress.txt
-
-      - name: playwright install (chromium only, no --with-deps)
-        timeout-minutes: 3
-        run: npx playwright install chromium --verbose 2>&1 | tee -a outbox/reconciliation-check-progress.txt
-
-      - name: breadcrumb — playwright install done
-        if: always()
-        run: echo "=== playwright install step reached: $(date -u) ===" >> outbox/reconciliation-check-progress.txt
-
-      - name: run verification script
-        timeout-minutes: 2
-        run: node scripts/verify-reconciliation.mjs
-
-      - name: breadcrumb — script step reached
-        if: always()
-        run: echo "=== verification script step reached: $(date -u) ===" >> outbox/reconciliation-check-progress.txt
-
-      - name: Upload manifest + screenshots + progress log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reconciliation-check-results
-          path: outbox/reconciliation-check-*
-          if-no-files-found: warn
+      - run: echo "Superseded by reconciliation-check-v3.yml — see docs/EXPERIMENT-live-reconciliation.md"
