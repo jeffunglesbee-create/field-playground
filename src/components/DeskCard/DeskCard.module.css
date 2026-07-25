@@ -62,6 +62,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
   padding-bottom: 8px;
   border-bottom: 1px solid #1a1a1a;
   margin-bottom: 8px;
@@ -100,7 +101,22 @@
   border-color: #2a4a2a;
 }
 
-/* game list */
+.resetBtn {
+  font-size: 9px;
+  font-family: inherit;
+  color: var(--field-text-muted);
+  background: none;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.resetBtn:hover {
+  color: var(--field-text-secondary);
+  border-color: #4a90d9;
+}
+
 .gameList {
   display: flex;
   flex-direction: column;
@@ -139,21 +155,41 @@
   flex-shrink: 0;
 }
 
+.liveIndicator {
+  color: #4c8;
+  font-size: 7px;
+  animation: blink 1.4s ease-in-out infinite;
+}
+
 .groupCount {
   margin-left: auto;
   font-variant-numeric: tabular-nums;
   opacity: 0.7;
 }
 
-/* 6th column (mountDebug) only ever renders in dev mode -- see
-   src/components/DeskCard/index.jsx. Harmless extra "auto" track in
-   production, since Show never mounts a 6th child there. */
 .gameRow {
   display: grid;
-  grid-template-columns: 8px 16px 1fr auto auto auto;
+  grid-template-columns: 8px 16px 1fr auto auto auto auto;
   align-items: center;
   gap: 6px;
   padding: 4px 0;
+  border-radius: 4px;
+  transition: background 0.3s, opacity 0.3s, box-shadow 0.3s;
+  /* Drama hierarchy: --drama-weight (0-1) set inline per row from the
+     real drama_peak number. A subtle warm glow scales with it directly
+     rather than bucketing into discrete tiers -- continuous signal,
+     continuous styling. */
+  background: rgba(218, 136, 68, calc(var(--drama-weight, 0) * 0.08));
+  box-shadow: inset 2px 0 0 rgba(218, 136, 68, calc(var(--drama-weight, 0) * 0.5));
+}
+
+.rowStale {
+  opacity: 0.55;
+}
+
+.rowHighlighted {
+  background: rgba(74, 144, 217, 0.15) !important;
+  box-shadow: inset 2px 0 0 #4a90d9 !important;
 }
 
 .watchBtn {
@@ -181,8 +217,6 @@
   flex-shrink: 0;
 }
 
-/* Dots, not text -- dark tones are fine here, contrast requirements
-   are a text concern, not a decorative-indicator one. */
 .statusDot.pre      { background: #2a2a2a; }
 .statusDot.live     { background: #4c8; animation: blink 1.4s ease-in-out infinite; }
 .statusDot.final    { background: #3a3a3a; }
@@ -199,6 +233,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 
 .scoreArea {
@@ -220,7 +255,6 @@
   text-transform: uppercase;
 }
 
-/* Countdown -- SAMPLE data, tagged visibly, see index.jsx for why. */
 .countdown {
   font-size: 10px;
   color: var(--field-text-muted);
@@ -233,7 +267,6 @@
   font-size: 8px;
 }
 
-/* Optimistic score edit */
 .scoreClickable {
   display: flex;
   align-items: center;
@@ -295,11 +328,68 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px;
+  max-width: 100px;
 }
 
-/* Dev-only reconciliation debug indicator -- see index.jsx. Should
-   always read m1 no matter how many poll cycles have run. */
+.dismissBtn {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  opacity: 0.4;
+}
+
+.dismissBtn:hover {
+  opacity: 1;
+  color: #e66;
+}
+
+/* Tell-me-more expansion */
+.gameExpansion {
+  grid-column: 1 / -1;
+  padding: 8px 0 4px 24px;
+  border-top: 1px dashed #1e1e1e;
+  margin-top: 4px;
+}
+
+.expansionLabel {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 24px;
+  margin-bottom: 8px;
+}
+
+.sparkBar {
+  flex: 1;
+  background: linear-gradient(180deg, #da4, #843);
+  border-radius: 1px;
+  min-width: 2px;
+}
+
+.expansionRow {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+  margin-bottom: 3px;
+}
+
+.expansionKey {
+  color: var(--field-text-muted);
+  text-transform: uppercase;
+  font-size: 9px;
+  margin-right: 4px;
+}
+
 .mountDebug {
   font-size: 8px;
   font-family: monospace;
@@ -332,7 +422,6 @@
   font-style: italic;
 }
 
-/* error */
 .error {
   font-size: 12px;
   color: #c44;
