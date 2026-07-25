@@ -327,6 +327,8 @@ function EmptyNight() {
     </div>
   )
 }
+
+function SportGroup(props) {
   const isCollapsed = () => !!collapsed[props.sport]
   return (
     <div class={styles.sportGroup}>
