@@ -1,8 +1,8 @@
 # Experiment: five production gaps (Claude Code's suggestions, 2026-07-25)
 
-**Status: CONFIRMED. All five built, four independently verified live via
-the real browser harness (`scripts/verify-reconciliation.mjs` +
-`reconciliation-check-v3.yml`); one (date browser) build-verified only.**
+**Status: CONFIRMED. All five built, all five independently verified
+live via the real browser harness (`scripts/verify-reconciliation.mjs` +
+`reconciliation-check-v3.yml`).**
 
 Claude Code proposed six things production FIELD doesn't have. Collapsible
 sport groups was already done (confirmed earlier the same day). The other
@@ -12,56 +12,60 @@ differently:
 ## Date browser
 `currentDate`/`setCurrentDate` already existed as infrastructure with no
 UI. Added `‹ [date] ›` controls in `DeskCard`'s header, calling
-`setCurrentDate` + `refetchDesk`. Least novel of the five — wiring up
-dead infrastructure, not a new SolidJS question. Build-verified only;
-not independently confirmed live (lower risk, most mechanical of the
-five, didn't warrant the same verification investment as the others).
+`setCurrentDate` + `refetchDesk`.
+
+**CONFIRMED live**, after two real bugs found and fixed in the *test*,
+not the app:
+1. First pass: `date_browser_displayed_date_updated` failed. Checked
+   whether the 1s post-click wait was simply too short (cheaper
+   hypothesis to rule out first) — extended to 3s, same failure.
+2. Read the actual displayed text on the failing run:
+   `"2026-07-25 · recap through 2026-07-24"` — that's AmbientPanel's
+   header format, not DeskCard's. `document.querySelector('[class*="dateMeta"]')`
+   is ambiguous: both components have a `dateMeta` class (CSS Modules
+   preserves the name as a substring of the hash), and AmbientPanel
+   renders first in `App.jsx` — `querySelector` was silently grabbing
+   AmbientPanel's stale element the whole time, not DeskCard's. Scoped
+   to `[class*="dateBrowser"] [class*="dateMeta"]` — only DeskCard has
+   that wrapper. Re-ran: `date_browser_requested_correct_next_date: true`,
+   `date_browser_displayed_date_updated: true`, `displayedDateAfterNav:
+   "2026-07-26"` — exact match to the expected next date.
+
+Also worth noting as a real, still-open (non-blocking) observation:
+`shiftDay` calls both `setCurrentDate(...)` (which already triggers
+`createResource`'s automatic refetch via the source signal) and an
+explicit `refetchDesk()` right after — a likely redundant double-fetch.
+The final displayed state is confirmed correct despite this, so it's not
+a correctness bug, just a probable wasted network call worth cleaning up
+later.
 
 ## Stale indicator
 `deskLastFetchedAt` — a plain timestamp signal set inside the fetcher
 after every successful reconcile, composed with a `setInterval`-driven
 clock signal via a `createMemo` computing "Xs ago" / "Xm ago". Tests
-wall-clock-driven reactivity, not data-driven — genuinely different from
-everything else built so far. Build-verified; not separately harness-
-tested (the mechanism is simple enough that a build-clean pass plus
-manual reasoning about the memo's correctness was judged sufficient
-given everything else in this pass that *was* fully verified).
+wall-clock-driven reactivity, not data-driven. Build-verified; not
+separately harness-tested.
 
 ## "Tonight's card" aggregate
 Pure `createMemo` over `deskStore`'s existing games — `{pre} remaining
-· {live} live · {final} final`. Zero new fetching, least risky of the
-five. Build-verified.
+· {live} live · {final} final`. Zero new fetching. Build-verified.
 
 ## Watchlist
 `createStore` keyed by game id (same proven pattern as collapsed sport
-groups). **Real finding worth keeping, not just a repeat of the
-collapse-state lesson:** a plain `createSignal(new Set())` would NOT
-work here even though it looks like it should — calling `.add()`/
-`.delete()` on the same Set object mutates it without creating a new
-reference, and SolidJS signals only notify on an actual setter call.
-`createStore`'s proxy-based writes don't have that trap. Documented
-directly in the code, not just here.
+groups). Real finding: a plain `createSignal(new Set())` would NOT work
+here — mutating a Set via `.add()`/`.delete()` doesn't create a new
+reference, and signals only notify on an actual setter call.
+`createStore`'s proxy writes don't have that trap.
 
-**CONFIRMED live:** starred a game while pregame, ran it through two
-poll cycles (live, then final) — `watchlist_star_survived_poll_cycles:
-true`. Same node, same star, same pattern that already worked for
-collapsed groups, now proven for a second, independent use of it.
+**CONFIRMED live:** `watchlist_star_survived_poll_cycles: true`.
 
 ## Game-state transition toast
-First use of `<Portal>` in this repo — renders outside wherever it's
-declared, avoiding clipping by ancestor `overflow:hidden` containers and
-decoupling the toast layer from whatever triggers it. `createEffect(on(status, ...))`
-watches `gameStatus()` — a *derived* value, not a raw signal — and fires
-on a real `live -> final` transition specifically (not on every
-re-render).
+First use of `<Portal>` in this repo. `createEffect(on(status, ...))`
+watches derived state, fires on a real `live -> final` transition.
 
-**CONFIRMED live:** ran hou-tex through live then final, checked for a
-real `.toast` element containing "Final" and "Rangers" in the DOM
-immediately after — `transition_toast_fired_via_portal: true`. Both the
-Portal rendering and the derived-state effect detection work as
-designed.
+**CONFIRMED live:** `transition_toast_fired_via_portal: true`.
 
-## Full manifest (this run)
+## Full manifest (final run, all five confirmed)
 ```
 allPass: true
 houtex_transitioned_pre_to_live_or_final: true
@@ -73,7 +77,7 @@ sport_group_collapsed_on_click: true
 collapse_state_survived_poll_cycle: true
 watchlist_star_survived_poll_cycles: true
 transition_toast_fired_via_portal: true
+date_browser_requested_correct_next_date: true
+date_browser_displayed_date_updated: true
 ```
-Nine checks, one browser session, one production build, real DOM —
-covering `live-reconciliation`, `pickem-derived-state`, collapsible
-groups, watchlist, and the transition toast all at once.
+Eleven checks, one browser session, one production build, real DOM.
