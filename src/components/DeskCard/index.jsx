@@ -315,8 +315,73 @@ function GameExpansion(props) {
         <div class={styles.expansionRow}><span class={styles.expansionKey}>crew</span> {g().crew}</div>
       </Show>
       <Show when={g().opening_odds || g().closing_odds}>
-        <div class={styles.expansionRow}>
-          <span class={styles.expansionKey}>odds</span> {g().opening_odds ?? '—'} → {g().closing_odds ?? '—'}
+        <OddsRow opening={g().opening_odds} closing={g().closing_odds} />
+      </Show>
+    </div>
+  )
+}
+
+// Odds arrive as a JSON payload (string or object) shaped like:
+//   {source, captured_at, _oddsProof:{...}, moneyline:{home,away},
+//    spread:{home,away}, total:{over,under}}
+// Previously this rendered the whole blob verbatim -- unreadable, and it
+// leaked internal fields (_oddsProof, adapterId) into the UI. Parsed
+// into the three lines that actually mean something, with the source and
+// capture time kept as a small caption since provenance is genuinely
+// useful here. Defensive on shape: relay may send a string or an object,
+// and any field may be absent -- nothing is invented when it's missing.
+function parseOdds(raw) {
+  if (!raw) return null
+  let o = raw
+  if (typeof raw === 'string') {
+    try { o = JSON.parse(raw) } catch { return null }
+  }
+  if (!o || typeof o !== 'object') return null
+  const fmt = v => (typeof v === 'number' ? (v > 0 ? `+${v}` : String(v)) : null)
+  return {
+    source: o.source ?? null,
+    capturedAt: o.captured_at ?? null,
+    ml: o.moneyline ? { home: fmt(o.moneyline.home), away: fmt(o.moneyline.away) } : null,
+    spread: o.spread ? { home: fmt(o.spread.home), away: fmt(o.spread.away) } : null,
+    total: o.total ?? null,
+  }
+}
+
+function OddsLine(props) {
+  const o = () => parseOdds(props.value)
+  return (
+    <Show when={o()} fallback={<span class={styles.oddsNone}>—</span>}>
+      <span class={styles.oddsLine}>
+        <Show when={o().ml}>
+          <span class={styles.oddsPart}>ML {o().ml.away} / {o().ml.home}</span>
+        </Show>
+        <Show when={o().spread}>
+          <span class={styles.oddsPart}>SPR {o().spread.away} / {o().spread.home}</span>
+        </Show>
+        <Show when={o().total}>
+          <span class={styles.oddsPart}>O/U {o().total.over ?? o().total.under}</span>
+        </Show>
+      </span>
+    </Show>
+  )
+}
+
+function OddsRow(props) {
+  const src = () => parseOdds(props.opening) ?? parseOdds(props.closing)
+  return (
+    <div class={styles.oddsBlock}>
+      <div class={styles.expansionRow}>
+        <span class={styles.expansionKey}>open</span>
+        <OddsLine value={props.opening} />
+      </div>
+      <div class={styles.expansionRow}>
+        <span class={styles.expansionKey}>close</span>
+        <OddsLine value={props.closing} />
+      </div>
+      <Show when={src()?.source}>
+        <div class={styles.oddsSource}>
+          {src().source}
+          <Show when={src().capturedAt}> · captured {String(src().capturedAt).slice(11, 16)}Z</Show>
         </div>
       </Show>
     </div>
@@ -459,7 +524,6 @@ function GameRow(props) {
                 </Show>
               }>
                 <span class={styles.pre}>—</span>
-                <Countdown gameId={g().id} />
               </Show>
               <Show when={optimistic()}>
                 <span class={styles.pendingDot} title="optimistic, not yet confirmed by the relay">•</span>
