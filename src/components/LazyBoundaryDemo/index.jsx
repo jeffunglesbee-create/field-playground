@@ -1,4 +1,5 @@
-import { lazy, createSignal, ErrorBoundary, Show, Suspense } from 'solid-js'
+import { createSignal, ErrorBoundary, Show, Suspense } from 'solid-js'
+import { HeavyPanelLazy as HeavyPanel } from '../../lazyModules'
 import styles from './LazyBoundaryDemo.module.css'
 import shared from '../shared.module.css'
 
@@ -20,8 +21,6 @@ import shared from '../shared.module.css'
 // They compose because lazy() returns a component that suspends on first
 // render (Suspense picks it up), but once loaded, it behaves like a normal
 // component (ErrorBoundary picks up throws inside it).
-
-const HeavyPanel = lazy(() => import('./HeavyPanel'))
 
 export function LazyBoundaryDemo() {
   const [mounted, setMounted] = createSignal(false)
