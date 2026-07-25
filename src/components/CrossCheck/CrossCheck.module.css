@@ -1,0 +1,79 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.row {
+  padding: 6px 0;
+  border-bottom: 1px solid #181818;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.matchup {
+  display: block;
+  font-size: 12px;
+  color: var(--field-text-primary);
+  margin-bottom: 5px;
+}
+
+.signals {
+  display: flex;
+  gap: 14px;
+}
+
+.signal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.signalLabel {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+}
+
+.signalValue {
+  font-size: 10px;
+  color: var(--field-text-primary);
+}
+
+/* Visual identity only — containment from shared.module.css's .chip. */
+.out_w    { color: #4c8; }
+.out_l    { color: #c55; }
+.out_p    { color: #888; }
+.outNone  { color: var(--field-text-muted); }
+.pickSet  { color: #da4; }
