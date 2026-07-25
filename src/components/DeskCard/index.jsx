@@ -1,6 +1,7 @@
-import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup } from 'solid-js'
+import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup, untrack } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
 import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk } from '../../data/relay'
+import { picks } from '../PickEm'
 import { showToast } from '../Toast'
 import styles from './DeskCard.module.css'
 import shared from '../shared.module.css'
@@ -210,7 +211,19 @@ function GameRow(props) {
   createEffect(on(status, (curr, prev) => {
     if (prev === 'live' && (curr === 'final' || curr === 'final_ot')) {
       const label = isIndividual() ? `${g().home} — ${g().away}` : `${g().away} @ ${g().home}`
-      showToast(`Final: ${label} ${scoreStr()}`, 'live')
+      // untrack: reads picks ONCE, right now, without subscribing this
+      // effect to future pick changes. Every other signal read in this
+      // repo (including status() just above) intentionally re-runs when
+      // its source changes -- this is the first place that intentionally
+      // does NOT want that. The toast is a snapshot of "how many picks
+      // you'd made when this game went final," not a live count that
+      // should keep changing after the toast has already rendered. If
+      // this read weren't wrapped, making a new pick after the toast
+      // fired would re-run this whole effect block unnecessarily --
+      // status() is already the only thing this effect should react to.
+      const pickCountAtFinal = untrack(() => Object.keys(picks).length)
+      const pickNote = pickCountAtFinal > 0 ? ` (${pickCountAtFinal} picks made so far)` : ''
+      showToast(`Final: ${label} ${scoreStr()}${pickNote}`, 'live')
     }
   }, { defer: true }))
 
