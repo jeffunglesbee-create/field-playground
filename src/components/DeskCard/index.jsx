@@ -25,44 +25,53 @@ function gameStatus(g) {
   return 'live'
 }
 
-// NON_MATCHUP_SPORTS is imported from PickEm, not redefined here --
-// this used to be a separate local copy (just ['golf']) that silently
-// diverged when PickEm's set was expanded to include pga/atp/wta,
-// found via a real cross-file check after a Claude Code fix landed. A
-// shared import can't drift the same way a second copy can.
-
 const mountCounts = {}
 
-// Collapsible sport groups -- CONFIRMED 2026-07-25, real browser
-// verification, survives real poll cycles.
 const [collapsed, setCollapsed] = createStore({})
 function toggleGroup(sport) {
   setCollapsed(sport, c => !c)
 }
 
-// Watchlist -- CONFIRMED live. createStore keyed by id, not a
-// createSignal(new Set()), which would silently fail to notify on
-// .add()/.delete() (mutates without a setter call).
 const [watched, setWatched] = createStore({})
 function toggleWatch(id) {
   setWatched(id, w => !w)
 }
 
-// Optimistic score edit. Local override keyed by game id, shown instead
-// of deskStore's real value while pending. The actual point being
-// tested: what does "reconcile" mean when LOCAL state and SERVER state
-// can genuinely disagree, not just when they're both deriving from the
-// same source. Answer implemented here: server truth always wins the
-// moment a real poll lands, whether or not it matched the guess --
-// cleared inside DeskCard's own effect below (needs a component-level
-// reactive root, not module top-level, same reason initUrlDateSync
-// lives in App.jsx's onMount rather than bare in relay.js).
 const [optimisticScores, setOptimisticScores] = createStore({})
 const [editingGameId, setEditingGameId] = createSignal(null)
 
 function submitOptimisticScore(gameId, homeScore, awayScore) {
   setOptimisticScores(gameId, { home_score: homeScore, away_score: awayScore, pendingAt: Date.now() })
   setEditingGameId(null)
+}
+
+// Prose-as-navigation target. AmbientPanel's morning_report links team
+// names to real games; clicking one sets this, DeskCard reads it to
+// highlight the matching row. Exported so a completely separate
+// component tree (AmbientPanel isn't a parent of DeskCard, they're
+// siblings under App) can drive DeskCard's own local visual state --
+// same cross-tree-write pattern already proven safe elsewhere in this
+// project (BroadcastChannel writing to signals from outside the
+// component tree entirely), just via a direct import instead of an
+// external browser event.
+export const [highlightedGameId, setHighlightedGameId] = createSignal(null)
+
+// Tell-me-more expansion. Per-game, multiple independently expandable --
+// same store-keyed-by-id pattern proven everywhere else (collapsed
+// groups, watchlist, AmbientPanel's pick expand).
+const [expandedGames, setExpandedGames] = createStore({})
+function toggleGameExpand(id) {
+  setExpandedGames(id, e => !e)
+}
+
+// Dismiss / focus mode. Local only, per spec -- DeskCard as an
+// attention-management surface, not a complete record.
+const [dismissed, setDismissed] = createStore({})
+function dismissGame(id) {
+  setDismissed(id, true)
+}
+function resetDismissed() {
+  setDismissed(reconcile({}))
 }
 
 function StaleIndicator() {
@@ -88,19 +97,27 @@ function StaleIndicator() {
   )
 }
 
+// Freshness-as-ambient-signal: how many seconds since the last poll,
+// shared by every row (all rows share the same deskLastFetchedAt) --
+// computed once here, passed down, rather than each row running its
+// own identical interval.
+function useSecondsSinceFetch() {
+  const [now, setNow] = createSignal(Date.now())
+  onMount(() => {
+    const handle = setInterval(() => setNow(Date.now()), 5000)
+    onCleanup(() => clearInterval(handle))
+  })
+  return () => {
+    const fetchedAt = deskLastFetchedAt()
+    if (!fetchedAt) return 0
+    return Math.floor((now() - fetchedAt) / 1000)
+  }
+}
+
 function DateBrowser() {
   function shiftDay(delta) {
     const d = new Date(currentDate() + 'T00:00:00Z')
     d.setUTCDate(d.getUTCDate() + delta)
-    // batch: date navigation should reset outcomes (yesterday's editorial
-    // W/L/P marks don't belong on today's slate). Without batch, these
-    // two setters would each fire their own reactive pass -- setCurrentDate
-    // triggers a resource refetch AND a re-render of anything reading it,
-    // clearAllOutcomes separately triggers everything reading outcomes().
-    // batch() collapses both into a single pass. Whether that's actually
-    // visible as a flicker (two skeleton passes) or invisible either way
-    // is exactly the open question -- wrapping it removes the risk
-    // instead of only observing whether it was real.
     batch(() => {
       setCurrentDate(d.toISOString().split('T')[0])
       clearAllOutcomes()
@@ -135,8 +152,6 @@ function TonightsCard(props) {
   )
 }
 
-// "What's live now" filter -- pure derived memo, zero new fetching.
-// Flips back to the full list when nothing is live, per spec.
 function LiveFilterToggle(props) {
   return (
     <button
@@ -166,26 +181,12 @@ function ScoreEditor(props) {
   )
 }
 
-// Countdown -- SAMPLE, not real. Checked both field-relay-nba's source
-// AND the live /context/date response before building: start_time
-// appears in several internal upstream-parsing paths but does not
-// survive to the actual game object this endpoint returns (confirmed
-// keys: id, sport, league, date, home, away, scores, venue, streams,
-// note, tags, crew, local_note, created_at, odds, drama fields,
-// espn_event_id, went_to_ot, finalized_at -- no start time). Rather
-// than invent one, this renders a clearly-labeled sample countdown for
-// pregame games using a synthetic target computed client-side, tagged
-// as sample directly in the UI, same honest pattern as Seasons'
-// NFL/EPL cards.
 function Countdown(props) {
   const [now, setNow] = createSignal(Date.now())
   onMount(() => {
     const handle = setInterval(() => setNow(Date.now()), 60000)
     onCleanup(() => clearInterval(handle))
   })
-  // Synthetic target: a stable, deterministic offset derived from the
-  // game id (not Math.random(), so it doesn't reshuffle every render) --
-  // purely illustrative of the wall-clock-composed-with-a-target pattern.
   const target = createMemo(() => {
     const seed = String(props.gameId).split('').reduce((a, c) => a + c.charCodeAt(0), 0)
     return Date.now() + ((seed % 240) + 15) * 60000
@@ -206,6 +207,53 @@ function Countdown(props) {
   )
 }
 
+// Real drama_arc sparkline -- confirmed live: a long array of numeric
+// drama values sampled across the game, not invented. Downsampled to a
+// manageable number of bars for a compact row rather than plotting
+// every point.
+function DramaSparkline(props) {
+  const bars = createMemo(() => {
+    const arc = props.arc
+    if (!Array.isArray(arc) || arc.length === 0) return []
+    const targetBars = 30
+    const step = Math.max(1, Math.floor(arc.length / targetBars))
+    const sampled = []
+    for (let i = 0; i < arc.length; i += step) sampled.push(arc[i])
+    const max = Math.max(...sampled, 1)
+    return sampled.map(v => Math.max(4, Math.round((v / max) * 100)))
+  })
+  return (
+    <Show when={bars().length}>
+      <div class={styles.sparkline}>
+        <For each={bars()}>{h => <div class={styles.sparkBar} style={{ height: `${h}%` }} />}</For>
+      </div>
+    </Show>
+  )
+}
+
+function GameExpansion(props) {
+  const g = () => props.game
+  return (
+    <div class={styles.gameExpansion}>
+      <Show when={g().drama_arc}>
+        <div class={styles.expansionLabel}>drama over time (peak {g().drama_peak})</div>
+        <DramaSparkline arc={g().drama_arc} />
+      </Show>
+      <Show when={g().note}>
+        <div class={styles.expansionRow}><span class={styles.expansionKey}>note</span> {g().note}</div>
+      </Show>
+      <Show when={g().crew}>
+        <div class={styles.expansionRow}><span class={styles.expansionKey}>crew</span> {g().crew}</div>
+      </Show>
+      <Show when={g().opening_odds || g().closing_odds}>
+        <div class={styles.expansionRow}>
+          <span class={styles.expansionKey}>odds</span> {g().opening_odds ?? '—'} → {g().closing_odds ?? '—'}
+        </div>
+      </Show>
+    </div>
+  )
+}
+
 function GameRow(props) {
   const g = () => props.game
   const status = () => gameStatus(g())
@@ -216,6 +264,27 @@ function GameRow(props) {
   const displayAway = () => optimistic()?.away_score ?? g().away_score
   const scoreStr = () => `${displayAway()}–${displayHome()}`
   const isEditing = () => editingGameId() === g().id
+  const isExpanded = () => !!expandedGames[g().id]
+  const isHighlighted = () => highlightedGameId() === g().id
+
+  // Drama hierarchy: real drama_peak number (52, 74, 60... confirmed
+  // live, not an invented high/medium/low category) drives visual
+  // weight directly via a CSS custom property rather than bucketing
+  // into discrete classes -- the relay's signal is continuous, the
+  // styling should be too.
+  const dramaWeight = () => Math.min(1, (g().drama_peak ?? 0) / 80)
+
+  const secondsSinceFetch = props.secondsSinceFetch
+  const isStale = () => status() === 'live' && secondsSinceFetch() > 300
+
+  let rowEl
+  createEffect(() => {
+    if (isHighlighted() && rowEl) {
+      rowEl.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      const timeout = setTimeout(() => setHighlightedGameId(null), 2500)
+      onCleanup(() => clearTimeout(timeout))
+    }
+  })
 
   onMount(() => {
     const id = g().id
@@ -228,16 +297,6 @@ function GameRow(props) {
   createEffect(on(status, (curr, prev) => {
     if (prev === 'live' && (curr === 'final' || curr === 'final_ot')) {
       const label = isIndividual() ? `${g().home} — ${g().away}` : `${g().away} @ ${g().home}`
-      // untrack: reads picks ONCE, right now, without subscribing this
-      // effect to future pick changes. Every other signal read in this
-      // repo (including status() just above) intentionally re-runs when
-      // its source changes -- this is the first place that intentionally
-      // does NOT want that. The toast is a snapshot of "how many picks
-      // you'd made when this game went final," not a live count that
-      // should keep changing after the toast has already rendered. If
-      // this read weren't wrapped, making a new pick after the toast
-      // fired would re-run this whole effect block unnecessarily --
-      // status() is already the only thing this effect should react to.
       const pickCountAtFinal = untrack(() => Object.keys(picks).length)
       const pickNote = pickCountAtFinal > 0 ? ` (${pickCountAtFinal} picks made so far)` : ''
       showToast(`Final: ${label} ${scoreStr()}${pickNote}`, 'live')
@@ -245,7 +304,12 @@ function GameRow(props) {
   }, { defer: true }))
 
   return (
-    <div class={styles.gameRow}>
+    <div
+      ref={rowEl}
+      class={`${styles.gameRow} ${isStale() ? styles.rowStale : ''} ${isHighlighted() ? styles.rowHighlighted : ''}`}
+      style={{ '--drama-weight': dramaWeight() }}
+      data-game-id={g().id}
+    >
       <span class={`${styles.statusDot} ${styles[status()]}`} />
       <button
         class={`${styles.watchBtn} ${isWatched() ? styles.watchBtnActive : ''}`}
@@ -254,7 +318,7 @@ function GameRow(props) {
       >
         {isWatched() ? '★' : '☆'}
       </button>
-      <span class={styles.matchup}>
+      <span class={styles.matchup} onClick={() => toggleGameExpand(g().id)} role="button" tabIndex={0}>
         <Show when={isIndividual()} fallback={<>{g().away} @ {g().home}</>}>
           {g().home} — {g().away}
         </Show>
@@ -299,20 +363,19 @@ function GameRow(props) {
       <Show when={g().venue}>
         <span class={styles.venue}>{g().venue}</span>
       </Show>
+      <button class={styles.dismissBtn} onClick={() => dismissGame(g().id)} aria-label="dismiss" title="not interested in this one">✕</button>
       <Show when={import.meta.env.DEV}>
         <span class={styles.mountDebug} title="mount count -- should never exceed 1 if reconciliation is working">
           m{mountCounts[g().id] || 1}
         </span>
       </Show>
+      <Show when={isExpanded()}>
+        <GameExpansion game={g()} />
+      </Show>
     </div>
   )
 }
 
-// Empty-night state. A blank "No games today" is a missed opportunity --
-// the editorial layer (truth_is, contradiction) exists independently of
-// whether there's anything to score, and answers the real product
-// question this forces: what does FIELD actually say on a dark night,
-// not just how does the component degrade structurally.
 function EmptyNight() {
   const truthIs = () => ambientData()?.truth_is
   const contradiction = () => ambientData()?.contradiction
@@ -344,10 +407,11 @@ function SportGroup(props) {
       >
         <span class={styles.collapseIcon}>{isCollapsed() ? '▸' : '▾'}</span>
         {props.sport}
+        <Show when={props.isLive}><span class={styles.liveIndicator}>●</span></Show>
         <span class={styles.groupCount}>{props.games.length}</span>
       </div>
       <Show when={!isCollapsed()}>
-        <For each={props.games}>{game => <GameRow game={game} />}</For>
+        <For each={props.games}>{game => <GameRow game={game} secondsSinceFetch={props.secondsSinceFetch} />}</For>
       </Show>
     </div>
   )
@@ -355,11 +419,8 @@ function SportGroup(props) {
 
 function Content() {
   const [liveOnly, setLiveOnly] = createSignal(false)
+  const secondsSinceFetch = useSecondsSinceFetch()
 
-  // Server truth wins the moment a real poll lands, whether or not the
-  // optimistic guess matched -- this effect needs a real reactive root,
-  // which is why it lives here (inside a component) rather than at
-  // relay.js's module top-level, same reasoning as initUrlDateSync.
   createEffect(on(deskLastFetchedAt, (fetchedAt, prevFetchedAt) => {
     if (prevFetchedAt !== undefined && fetchedAt !== prevFetchedAt) {
       setOptimisticScores(reconcile({}))
@@ -373,20 +434,29 @@ function Content() {
 
   const hasLiveGames = createMemo(() => allGames().some(g => gameStatus(g) === 'live'))
 
-  // Flips back to full list when nothing is live, per spec -- checking
-  // hasLiveGames() rather than just trusting the toggle avoids an empty
-  // list the moment the last live game goes final.
   const visibleGames = createMemo(() =>
-    liveOnly() && hasLiveGames() ? allGames().filter(g => gameStatus(g) === 'live') : allGames()
+    (liveOnly() && hasLiveGames() ? allGames().filter(g => gameStatus(g) === 'live') : allGames())
+      .filter(g => !dismissed[g.id])
   )
 
+  const dismissedCount = createMemo(() => Object.keys(dismissed).length)
+
+  // Sport spotlight: whichever sport has live games right now floats to
+  // the top, derived purely from the polling store -- no manual input.
+  // Sports tied on "has live games" keep the relay's own relative order
+  // via the array index at time of grouping.
   const grouped = createMemo(() => {
     const map = {}
     for (const g of visibleGames()) {
       if (!map[g.sport]) map[g.sport] = []
       map[g.sport].push(g)
     }
-    return Object.entries(map)
+    return Object.entries(map).sort(([, gamesA], [, gamesB]) => {
+      const liveA = gamesA.some(g => gameStatus(g) === 'live')
+      const liveB = gamesB.some(g => gameStatus(g) === 'live')
+      if (liveA === liveB) return 0
+      return liveA ? -1 : 1
+    })
   })
 
   return (
@@ -400,12 +470,22 @@ function Content() {
       <div class={styles.controlRow}>
         <TonightsCard games={allGames} />
         <LiveFilterToggle active={liveOnly} setActive={setLiveOnly} />
+        <Show when={dismissedCount()}>
+          <button class={styles.resetBtn} onClick={resetDismissed}>reset ({dismissedCount()} hidden)</button>
+        </Show>
       </div>
 
       <Show when={grouped().length} fallback={<EmptyNight />}>
         <div class={styles.gameList}>
           <For each={grouped()}>
-            {([sport, games]) => <SportGroup sport={sport} games={games} />}
+            {([sport, games]) => (
+              <SportGroup
+                sport={sport}
+                games={games}
+                isLive={games.some(g => gameStatus(g) === 'live')}
+                secondsSinceFetch={secondsSinceFetch}
+              />
+            )}
           </For>
         </div>
       </Show>
