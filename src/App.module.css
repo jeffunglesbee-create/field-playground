@@ -18,7 +18,8 @@
 .crossCheck,
 .createRootDemo,
 .history,
-.journalismBrief {
+.journalismBrief,
+.multiDayStreak {
   display: flex;
   flex-direction: column;
   gap: 8px;
