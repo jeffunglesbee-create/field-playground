@@ -25,7 +25,7 @@ function loadPicks() {
   }
 }
 
-const [picks, setPicks] = createStore(loadPicks())
+export const [picks, setPicks] = createStore(loadPicks())
 
 // Persist on every change. This is plain browser localStorage in a real
 // standalone Vite app -- not a Claude.ai sandboxed artifact, where
