@@ -35,6 +35,9 @@ export const [ambientData, { refetch: refetchAmbient }] = createResource(current
 // the fetcher. reconcile() diffs incoming data against existing store state
 // by "id" and only touches what actually changed -- unaffected games keep
 // their existing object identity, so GameRow never remounts for them.
+//
+// CONFIRMED 2026-07-25 via real DOM node-identity checks in a real browser
+// -- see the experiment doc's full resolution chain.
 export const [deskStore, setDeskStore] = createStore({
   date: null,
   games: { regular: [], postseason: [] },
@@ -43,11 +46,18 @@ export const [deskStore, setDeskStore] = createStore({
   standings: [],
 })
 
+// Stale indicator: a plain timestamp signal, updated on every successful
+// reconcile. Not derived from the resource itself (createResource doesn't
+// expose "when did this last resolve" directly) -- set explicitly inside
+// the fetcher, right after reconcile() succeeds.
+export const [deskLastFetchedAt, setDeskLastFetchedAt] = createSignal(null)
+
 async function fetchDeskReconciled(date) {
   const res = await fetch(`${RELAY_BASE}/context/date/${date}`)
   if (!res.ok) throw new Error(`context fetch failed: ${res.status}`)
   const json = await res.json()
   setDeskStore(reconcile(json))
+  setDeskLastFetchedAt(Date.now())
   // The resource's own value is just a "did this succeed" signal now --
   // real data lives in deskStore, which is what components should read.
   return true
