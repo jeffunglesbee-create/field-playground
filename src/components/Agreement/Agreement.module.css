@@ -1,0 +1,84 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 5px 0;
+  border-bottom: 1px solid #181818;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.matchup {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  flex: 1 1 auto;
+  min-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Visual identity only — containment from shared.module.css's .chip. */
+.verdictBadge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.ed_w { background: #1a2e1a; color: #4c8; }
+.ed_l { background: #2e1a1a; color: #c55; }
+.ed_p { background: #1e1e1e; color: #888; }
+
+.pe_correct   { background: #1a2e1a; color: #4c8; }
+.pe_incorrect { background: #2e1a1a; color: #c55; }
+
+.agreeFlag {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.agree    { color: #4c8; }
+.disagree { color: #e77; }
+
+.pushNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
