@@ -1,20 +1,18 @@
 // Isolated, instrumented check for a specific hypothesis: does the
 // BroadcastChannel date-sync between two pages create an echo loop?
-// Each page's initBroadcastDateSync() re-posts to the channel whenever
-// currentDate changes -- including changes that arrived FROM the
-// channel. The guard (incoming !== currentDate()) should prevent a
-// bounce-back, but if there's any timing gap between the signal write
-// and that comparison, two pages could ping-pong a date change forever
-// -- and since currentDate also drives data-fetching, each bounce would
-// trigger new fetches on both pages.
 //
-// 2026-07-25: two prior runs hung to the JOB's own timeout ceiling,
-// which force-kills everything including the commit-back step -- fixed
-// in the workflow (step-level timeout on just the script step instead).
-// Also adding per-stage checkpoint writes here, same proven pattern as
-// the main reconciliation harness: written synchronously after every
-// stage, so even a hard process kill mid-run leaves evidence behind,
-// not just an end-of-script write a kill would prevent entirely.
+// 2026-07-25: two prior runs hung to the JOB's own timeout ceiling --
+// fixed via a step-level timeout instead (see the workflow file). With
+// that fixed, got a real, reproducible error twice in a row: page1's
+// OWN initial load never rendered any gameRow within 15s -- before any
+// second page or BroadcastChannel activity at all. Not the hypothesis
+// under test; something more basic. Two changes this pass: (1) route
+// registration here used Promise.all (concurrent) -- the proven-working
+// main harness registers routes sequentially (one `await` at a time).
+// Matched that instead of leaving it as an unexplained difference from
+// the only pattern actually confirmed reliable. (2) Added direct
+// console/pageerror listeners so if this fails again, the manifest
+// shows the actual browser-side error, not just "timed out."
 
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
@@ -55,23 +53,33 @@ async function waitForServer(url, timeoutMs = 15000) {
   throw new Error(`static server did not come up within ${timeoutMs}ms`)
 }
 
-function mockRoutes(page, counter) {
-  return Promise.all([
-    page.route('**/context/date/**', route => {
-      counter.count++
-      const url = route.request().url()
-      const match = url.match(/\/context\/date\/([^/?]+)/)
-      const date = match ? match[1] : 'unknown'
-      counter.dates.push(date)
-      route.fulfill({ json: { ok: true, date, games: { regular: [], postseason: [] }, briefs: [], series: [], standings: [] } })
-    }),
-    page.route('**/analytics/newspaper/**', route => route.fulfill({
-      json: { ok: true, date: '2026-07-25', recap_date: '2026-07-24', generated_at: '', morning_report: '', pick: { ranked: [] } },
-    })),
-    page.route('**/wc/standings**', route => route.fulfill({ json: { groups: {} } })),
-    page.route('**/mlb-stats/standings**', route => route.fulfill({ json: { records: [] } })),
-    page.route('**/mls/stats/**', route => route.fulfill({ json: { tables: [{ entries: [] }] } })),
-  ])
+// Sequential now, matching the main harness exactly -- was Promise.all.
+async function mockRoutes(page, counter) {
+  await page.route('**/context/date/**', route => {
+    counter.count++
+    const url = route.request().url()
+    const match = url.match(/\/context\/date\/([^/?]+)/)
+    const date = match ? match[1] : 'unknown'
+    counter.dates.push(date)
+    route.fulfill({ json: { ok: true, date, games: { regular: [], postseason: [] }, briefs: [], series: [], standings: [] } })
+  })
+  await page.route('**/analytics/newspaper/**', route => route.fulfill({
+    json: { ok: true, date: '2026-07-25', recap_date: '2026-07-24', generated_at: '', morning_report: '', pick: { ranked: [] } },
+  }))
+  await page.route('**/wc/standings**', route => route.fulfill({ json: { groups: {} } }))
+  await page.route('**/mlb-stats/standings**', route => route.fulfill({ json: { records: [] } }))
+  await page.route('**/mls/stats/**', route => route.fulfill({ json: { tables: [{ entries: [] }] } }))
+}
+
+function attachDiagnostics(page, label, counter) {
+  counter.consoleErrors = []
+  counter.pageErrors = []
+  page.on('console', msg => {
+    if (msg.type() === 'error') counter.consoleErrors.push(msg.text())
+  })
+  page.on('pageerror', err => {
+    counter.pageErrors.push(String(err))
+  })
 }
 
 async function main() {
@@ -98,15 +106,26 @@ async function main() {
 
     const page1 = await context.newPage()
     checkpoint('page1_created')
+    attachDiagnostics(page1, 'page1', counter1)
     await mockRoutes(page1, counter1)
     checkpoint('page1_routes_registered')
     await page1.goto(SERVE_URL, { timeout: 15000 })
     checkpoint('page1_navigated')
-    await page1.waitForSelector('[class*="gameRow"]', { timeout: 15000 })
-    checkpoint('page1_settled')
+    try {
+      await page1.waitForSelector('[class*="gameRow"]', { timeout: 15000 })
+      checkpoint('page1_settled')
+    } catch (e) {
+      checkpoint('page1_render_timeout', {
+        consoleErrors: counter1.consoleErrors,
+        pageErrors: counter1.pageErrors,
+        bodyText: await page1.evaluate(() => document.body.innerText.slice(0, 500)).catch(() => 'EVAL_FAILED'),
+      })
+      throw e
+    }
 
     const page2 = await context.newPage()
     checkpoint('page2_created')
+    attachDiagnostics(page2, 'page2', counter2)
     await mockRoutes(page2, counter2)
     checkpoint('page2_routes_registered')
     await page2.goto(SERVE_URL, { timeout: 15000 })
