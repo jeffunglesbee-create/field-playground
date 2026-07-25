@@ -1,4 +1,4 @@
-import { For, Show, createMemo } from 'solid-js'
+import { For, Show, createMemo, createResource } from 'solid-js'
 import { outcomes, pickMeta } from '../../data/outcomes'
 import styles from './History.module.css'
 
@@ -156,6 +156,84 @@ function PickCalendar() {
   )
 }
 
+const RELAY_BASE = import.meta.env.DEV ? '' : 'https://field-relay-nba.jeffunglesbee.workers.dev'
+
+async function fetchStreakBoardForDate(date) {
+  const res = await fetch(`${RELAY_BASE}/analytics/newspaper/${date}`)
+  if (!res.ok) return null
+  const json = await res.json()
+  return json.record_streak_board ?? null
+}
+
+function lastNDates(n) {
+  const dates = []
+  const today = new Date()
+  for (let i = 0; i < n; i++) {
+    const d = new Date(today)
+    d.setUTCDate(d.getUTCDate() - i)
+    dates.push(d.toISOString().split('T')[0])
+  }
+  return dates
+}
+
+// Multi-day streak across the relay -- NOT the relay's own
+// record_streak_board (that's a single-day snapshot, already rendered
+// in StreakBoard). This is client-computed from 7 SEPARATE
+// createResource calls at 7 different dates, alive concurrently --
+// scaling past DayComparison's two independent contexts to seven. For
+// each team, counts how many of the last 7 days it appeared in that
+// day's own "hot" list -- a real cross-day pattern the relay itself
+// never assembles, built entirely client-side from repeated single-day
+// snapshots.
+function MultiDayStreak() {
+  const dates = lastNDates(7)
+  // Seven independent resource instances, not one resource over an
+  // array -- each date genuinely gets its own async context, same
+  // pattern as createDayContext but not wrapped in that factory since
+  // this needs all seven alive at once rather than two swappable ones.
+  const resources = dates.map(date => {
+    const [data] = createResource(() => date, fetchStreakBoardForDate)
+    return { date, data }
+  })
+
+  const allLoaded = createMemo(() => resources.every(r => !r.data.loading))
+
+  const teamAppearances = createMemo(() => {
+    const counts = {}
+    for (const r of resources) {
+      const board = r.data()
+      if (!board?.hot) continue
+      for (const s of board.hot) {
+        counts[s.team] = (counts[s.team] || 0) + 1
+      }
+    }
+    return Object.entries(counts)
+      .filter(([, count]) => count >= 2) // appeared hot on at least 2 of 7 days
+      .sort(([, a], [, b]) => b - a)
+  })
+
+  return (
+    <section class={styles.section}>
+      <h3 class={styles.sectionLabel}>Multi-Day Streak (7-day window)</h3>
+      <p class={styles.note}>client-computed across 7 concurrent fetches, not the relay's own single-day signal</p>
+      <Show when={allLoaded()} fallback={<p class={styles.empty}>Loading 7 days…</p>}>
+        <Show when={teamAppearances().length} fallback={<p class={styles.empty}>No team appeared hot on 2+ of the last 7 days.</p>}>
+          <div class={styles.streakDaysList}>
+            <For each={teamAppearances()}>
+              {([team, count]) => (
+                <div class={styles.streakDaysRow}>
+                  <span class={styles.streakDaysTeam}>{team}</span>
+                  <span class={styles.streakDaysCount}>hot on {count}/7 days</span>
+                </div>
+              )}
+            </For>
+          </div>
+        </Show>
+      </Show>
+    </section>
+  )
+}
+
 export function History() {
   return (
     <div class={styles.root}>
@@ -166,6 +244,7 @@ export function History() {
       <TierCalibration />
       <MultiDayRecord />
       <PickCalendar />
+      <MultiDayStreak />
     </div>
   )
 }
