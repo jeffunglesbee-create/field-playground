@@ -169,15 +169,19 @@ export function createDayContext(initialDate) {
 }
 
 // Editorial picks (AmbientPanel's ranked list, the newspaper's top pick)
-// encode their implied winner in a "score" string ("2–1" = home 2, away 1,
-// home favored), not an explicit side field. Shared by CompareToRelay and
-// MultiDateTrend -- both independently parsed this before it was pulled out
-// here, so keep them pointed at one implementation rather than two copies
-// that can silently diverge.
+// encode their implied winner in a "score" string ("2–1" = away 2, home 1),
+// not an explicit side field -- same away-home ordering as DeskCard's own
+// `${displayAway()}–${displayHome()}` scoreStr. Confirmed against the mock:
+// por-sea has home: Seattle, away: Portland, score: '2–1', and the mock's
+// own morning_report says "Portland holding on at Seattle" -- Portland (away)
+// won, which only matches if the first number is away's. Shared by
+// CompareToRelay and MultiDateTrend -- both independently parsed this before
+// it was pulled out here, so keep them pointed at one implementation rather
+// than two copies that can silently diverge.
 export function impliedSide(scoreStr) {
   const m = String(scoreStr ?? '').match(/(\d+)\D+(\d+)/)
   if (!m) return null
-  const [homeNum, awayNum] = [Number(m[1]), Number(m[2])]
+  const [awayNum, homeNum] = [Number(m[1]), Number(m[2])]
   if (homeNum === awayNum) return null
   return homeNum > awayNum ? 'home' : 'away'
 }
