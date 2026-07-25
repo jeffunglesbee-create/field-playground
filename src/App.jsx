@@ -11,6 +11,9 @@ import { CreateRootDemo } from './components/CreateRootDemo'
 import { History } from './components/History'
 import { JournalismBrief } from './components/JournalismBrief'
 import { MultiDayStreak } from './components/MultiDayStreak'
+import { ErrorBoundaryDemo } from './components/ErrorBoundaryDemo'
+import { DrillDown } from './components/DrillDown'
+import { TransitionDemo } from './components/TransitionDemo'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { initOutcomesSync } from './data/outcomes'
@@ -77,6 +80,15 @@ export default function App() {
       </section>
       <section class={styles.multiDayStreak}>
         {streakTeam() && <MultiDayStreak baseDate={currentDate()} team={streakTeam()} />}
+      </section>
+      <section class={styles.errorBoundaryDemo}>
+        <ErrorBoundaryDemo />
+      </section>
+      <section class={styles.drillDown}>
+        <DrillDown />
+      </section>
+      <section class={styles.transitionDemo}>
+        <TransitionDemo />
       </section>
       <ToastLayer />
     </div>
