@@ -1,6 +1,6 @@
 import { onMount, onCleanup, lazy, Suspense, ErrorBoundary, createMemo } from 'solid-js'
 import { AmbientPanel } from './components/AmbientPanel'
-import { DeskCard } from './components/DeskCard'
+import { DeskCard, initExtendedUrlSync } from './components/DeskCard'
 import { PickEm } from './components/PickEm'
 import { Ground } from './components/Ground'
 import { DayComparison } from './components/DayComparison'
@@ -21,6 +21,11 @@ import { PropsDemo } from './components/PropsDemo'
 import { DateBrowserTransition } from './components/DateBrowserTransition'
 import { ComputedDemo } from './components/ComputedDemo'
 import { IndexArrayDemo } from './components/IndexArrayDemo'
+import { PickStreak } from './components/PickStreak'
+import { Calibration } from './components/Calibration'
+import { CompareToRelay } from './components/CompareToRelay'
+import { LocalNoteLayer } from './components/LocalNoteLayer'
+import { MultiDateTrend } from './components/MultiDateTrend'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { initOutcomesSync } from './data/outcomes'
@@ -38,6 +43,7 @@ export default function App() {
     initUrlDateSync()
     initBroadcastDateSync()
     initOutcomesSync()
+    initExtendedUrlSync()
   })
 
   // MultiDayStreak needs a real team name to track -- dynamically read
@@ -119,6 +125,21 @@ export default function App() {
       </section>
       <section class={styles.indexArrayDemo}>
         <IndexArrayDemo />
+      </section>
+      <section class={styles.pickStreak}>
+        <PickStreak />
+      </section>
+      <section class={styles.calibration}>
+        <Calibration />
+      </section>
+      <section class={styles.compareToRelay}>
+        <CompareToRelay />
+      </section>
+      <section class={styles.localNoteLayer}>
+        <LocalNoteLayer />
+      </section>
+      <section class={styles.multiDateTrend}>
+        <MultiDateTrend />
       </section>
       <ToastLayer />
     </div>

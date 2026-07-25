@@ -1,0 +1,140 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.matchup {
+  font-size: 11px;
+  color: var(--field-text-primary);
+}
+
+.overrideTag {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #7a9eff;
+  background: #1a1a2a;
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.noteDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.noteText {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noteEmpty {
+  color: var(--field-text-muted);
+  font-style: italic;
+}
+
+.editHint {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.noteDisplay:hover .editHint {
+  opacity: 1;
+}
+
+.editRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.noteInput {
+  flex: 1;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--field-text-primary);
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 3px;
+  padding: 3px 6px;
+}
+
+.saveBtn {
+  font-size: 10px;
+  background: #1a2e1a;
+  border: 1px solid #2a4a2a;
+  color: #4c8;
+  border-radius: 3px;
+  padding: 3px 7px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.cancelBtn {
+  font-size: 10px;
+  background: none;
+  border: 1px solid #2a2a2a;
+  color: var(--field-text-muted);
+  border-radius: 3px;
+  padding: 3px 7px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
