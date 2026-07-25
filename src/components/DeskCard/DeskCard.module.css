@@ -7,9 +7,10 @@
 
 .header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .label {
@@ -20,9 +21,49 @@
   color: var(--field-text-secondary);
 }
 
+.dateBrowser {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.dateBtn {
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--field-text-secondary);
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 3px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.dateBtn:hover {
+  color: var(--field-text-primary);
+  border-color: #3a3a3a;
+}
+
 .dateMeta {
   font-size: 11px;
   color: var(--field-text-muted);
+}
+
+.staleIndicator {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  font-family: monospace;
+}
+
+.tonightsCard {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+  padding: 6px 0 10px;
+  border-bottom: 1px solid #1a1a1a;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* game list */
@@ -70,15 +111,33 @@
   opacity: 0.7;
 }
 
-/* 5th column (mountDebug) only ever renders in dev mode -- see
+/* 6th column (mountDebug) only ever renders in dev mode -- see
    src/components/DeskCard/index.jsx. Harmless extra "auto" track in
-   production, since Show never mounts a 5th child there. */
+   production, since Show never mounts a 6th child there. */
 .gameRow {
   display: grid;
-  grid-template-columns: 8px 1fr auto auto auto;
+  grid-template-columns: 8px 16px 1fr auto auto auto;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 4px 0;
+}
+
+.watchBtn {
+  font-size: 11px;
+  background: none;
+  border: none;
+  color: var(--field-text-muted);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.watchBtn:hover {
+  color: var(--field-text-secondary);
+}
+
+.watchBtnActive {
+  color: #da4;
 }
 
 .statusDot {
