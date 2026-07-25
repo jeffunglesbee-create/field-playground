@@ -1,38 +1,18 @@
-name: Reconciliation Check V2
+name: Reconciliation Check V2 (SUPERSEDED)
 
-# Fresh filename, deliberately -- testing whether GitHub's workflow_dispatch
-# metadata cache was serving a stale version of live-reconciliation-check.yml
-# despite repeated edits. Same documented indexing-lag pattern found in this
-# project's own history (field-relay-nba, 2026-07-21: a workflow_dispatch
-# trigger kept returning stale behavior after edits until enough time/a
-# fresh trigger forced re-indexing). If this fresh file succeeds where the
-# repeatedly-edited one kept failing at the same ~2-3min mark, that confirms
-# staleness was the real cause, not anything in the script or YAML content
-# itself (both already verified clean).
+# Superseded 2026-07-25 by reconciliation-check-v3.yml. V2 existed to
+# test one specific hypothesis (was a stale GitHub Actions workflow_dispatch
+# cache the cause of repeated CI failures) -- it was, partially, but V2's
+# own design (spawned dev server) still hit a different hang later in the
+# same run. See docs/EXPERIMENT-live-reconciliation.md for the full chain.
+#
+# No delete capability from chat's current toolset -- neutered instead.
 
 on:
   workflow_dispatch: {}
 
 jobs:
-  test:
+  noop:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - run: echo "checkout ok, HEAD is $(git rev-parse HEAD)"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: node --version && npm --version
-      - run: npm install
-      - run: echo "npm install ok"
-      - run: npx playwright install chromium
-      - run: echo "playwright install ok"
-      - run: node scripts/verify-reconciliation.mjs
-      - name: Upload manifest + screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reconciliation-check-v2-results
-          path: outbox/reconciliation-check-*
-          if-no-files-found: warn
+      - run: echo "Superseded by reconciliation-check-v3.yml — see docs/EXPERIMENT-live-reconciliation.md"
