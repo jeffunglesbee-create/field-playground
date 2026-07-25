@@ -1,0 +1,88 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  margin-bottom: 10px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.column {
+  min-width: 0;
+}
+
+.columnHeader {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  padding-bottom: 3px;
+  border-bottom: 1px solid #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.columnDate {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.loading {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.gameList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 6px 1fr auto;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.dot.pre      { background: #2a2a2a; }
+.dot.live     { background: #4c8; }
+.dot.final    { background: #3a3a3a; }
+.dot.final_ot { background: #3a3a3a; }
+
+.matchup {
+  color: var(--field-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score {
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
