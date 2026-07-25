@@ -1,4 +1,4 @@
-import { onMount, onCleanup, lazy, Suspense } from 'solid-js'
+import { onMount, onCleanup, lazy, Suspense, createMemo } from 'solid-js'
 import { AmbientPanel } from './components/AmbientPanel'
 import { DeskCard } from './components/DeskCard'
 import { PickEm } from './components/PickEm'
@@ -10,29 +10,15 @@ import { CrossCheck } from './components/CrossCheck'
 import { CreateRootDemo } from './components/CreateRootDemo'
 import { History } from './components/History'
 import { JournalismBrief } from './components/JournalismBrief'
+import { MultiDayStreak } from './components/MultiDayStreak'
 import { ToastLayer } from './components/Toast'
-import { refetchDesk, initUrlDateSync, initBroadcastDateSync } from './data/relay'
+import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { initOutcomesSync } from './data/outcomes'
 import shared from './components/shared.module.css'
 import styles from './App.module.css'
 
-// Live reconciliation experiment (docs/EXPERIMENT-live-reconciliation.md):
-// poll the same fetcher on an interval, without touching currentDate, so
-// DeskCard sees real score/status updates over time instead of only once
-// at initial load. 15s matches the "good citizen" cadence already noted
-// for this relay elsewhere in this project -- roughly the real client's
-// own polling interval, not tighter.
 const POLL_INTERVAL_MS = 15000
 
-// lazy(): first code-splitting test in this repo. Seasons is a
-// reasonable candidate -- it's one of the larger components (tabs for
-// MLB/MLS/World Cup, real relay calls) and isn't needed for the
-// above-the-fold content. The actual questions: does <Suspense>'s
-// fallback show while the chunk itself is loading (a genuinely
-// different moment than "the resource inside it is loading," which is
-// what every other Suspense/skeleton pattern here has tested), and does
-// Vite's dev-mode HMR still work correctly on a lazy-loaded component
-// during local iteration.
 const Seasons = lazy(() => import('./components/Seasons').then(m => ({ default: m.Seasons })))
 
 export default function App() {
@@ -43,6 +29,11 @@ export default function App() {
     initBroadcastDateSync()
     initOutcomesSync()
   })
+
+  // MultiDayStreak needs a real team name to track -- dynamically read
+  // from today's own first regular-season game rather than hardcoded,
+  // so this doesn't silently break the moment the slate changes.
+  const streakTeam = createMemo(() => deskStore.games?.regular?.[0]?.home ?? null)
 
   return (
     <div class={styles.layout}>
@@ -83,6 +74,9 @@ export default function App() {
       </section>
       <section class={styles.journalismBrief}>
         <JournalismBrief />
+      </section>
+      <section class={styles.multiDayStreak}>
+        {streakTeam() && <MultiDayStreak baseDate={currentDate()} team={streakTeam()} />}
       </section>
       <ToastLayer />
     </div>
