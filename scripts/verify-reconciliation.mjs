@@ -316,7 +316,14 @@ async function main() {
     checkpoint('date_browser_next_checked', { nextDateRequested, expectedNextDate, requestedDates })
 
     const displayedDateAfterNav = await page.evaluate(() => {
-      const el = document.querySelector('[class*="dateMeta"]')
+      // Scoped to dateBrowser specifically -- a bare [class*="dateMeta"]
+      // is ambiguous: AmbientPanel has its own dateMeta class too (CSS
+      // Modules preserves the name as a substring of the hash), and
+      // AmbientPanel renders first in App.jsx, so an unscoped
+      // querySelector silently grabbed AmbientPanel's (stale, since its
+      // mock doesn't echo the requested date the way context/date's
+      // does) element instead of DeskCard's.
+      const el = document.querySelector('[class*="dateBrowser"] [class*="dateMeta"]')
       return el ? el.textContent.trim() : null
     })
     manifest.displayedDateAfterNav = displayedDateAfterNav
