@@ -25,6 +25,31 @@
   color: var(--field-text-muted);
 }
 
+.timeMode {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  background: #1a1a1a;
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.qualityAlert {
+  font-size: 10px;
+  color: #da4;
+  background: #241c0a;
+  border: 1px solid #3a2a10;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-bottom: 12px;
+}
+
+.deemphasized {
+  opacity: 0.55;
+}
+
 .sportOfWeek {
   display: flex;
   align-items: center;
