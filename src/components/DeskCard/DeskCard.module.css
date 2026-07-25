@@ -303,18 +303,6 @@
   text-transform: uppercase;
 }
 
-.countdown {
-  font-size: 10px;
-  color: var(--field-text-muted);
-  font-variant-numeric: tabular-nums;
-  margin-left: 4px;
-}
-
-.countdownSample {
-  color: #a80;
-  font-size: 8px;
-}
-
 .scoreClickable {
   display: flex;
   align-items: center;

@@ -250,32 +250,6 @@ function ScoreEditor(props) {
   )
 }
 
-function Countdown(props) {
-  const [now, setNow] = createSignal(Date.now())
-  onMount(() => {
-    const handle = setInterval(() => setNow(Date.now()), 60000)
-    onCleanup(() => clearInterval(handle))
-  })
-  const target = createMemo(() => {
-    const seed = String(props.gameId).split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-    return Date.now() + ((seed % 240) + 15) * 60000
-  })
-  const label = createMemo(() => {
-    const diffMs = target() - now()
-    if (diffMs <= 0) return null
-    const h = Math.floor(diffMs / 3600000)
-    const m = Math.floor((diffMs % 3600000) / 60000)
-    return h > 0 ? `${h}h ${m}m` : `${m}m`
-  })
-  return (
-    <Show when={label()}>
-      <span class={styles.countdown} title="SAMPLE — start_time not present in the real relay response">
-        {label()} <span class={styles.countdownSample}>(sample)</span>
-      </span>
-    </Show>
-  )
-}
-
 // Real drama_arc sparkline -- confirmed live: a long array of numeric
 // drama values sampled across the game, not invented. Downsampled to a
 // manageable number of bars for a compact row rather than plotting
