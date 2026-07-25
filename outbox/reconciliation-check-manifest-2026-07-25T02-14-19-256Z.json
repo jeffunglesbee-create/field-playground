@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-07-25T02-14-19-256Z",
+  "checks": [],
+  "initialDate": "2026-07-25",
+  "initialHouTexState": {
+    "text": "☆Houston Astros @ Texas Rangers—Globe Life Field",
+    "statusClass": "_statusDot_1i2gj_143 _pre_1i2gj_152"
+  },
+  "starredHouTex": true,
+  "pickedHouTexAstros": true,
+  "pickStatusAfterPick": "pending",
+  "toastPresent": false,
+  "afterHouTexState": {
+    "text": "★Houston Astros @ Texas Rangers2–1FGlobe Life Field",
+    "statusClass": "_statusDot_1i2gj_143 _final_1i2gj_154"
+  },
+  "domIdentityCheck": {
+    "rows": [
+      {
+        "key": "NY Mets @ Philadelphia Phillies",
+        "stillConnected": true,
+        "sameNodeReference": true
+      },
+      {
+        "key": "Houston Astros @ Texas Rangers",
+        "stillConnected": true,
+        "sameNodeReference": true
+      }
+    ],
+    "removedGameRows": []
+  },
+  "pollCount": 6,
+  "pickStatusFinal": "correct",
+  "starredStillAfterPoll": true,
+  "collapsedImmediately": true,
+  "collapsedAfterPoll": true,
+  "nextDateRequested": "2026-07-26",
+  "expectedNextDate": "2026-07-26",
+  "newRequestMadeOnClick": true,
+  "displayedDateAfterNav": "2026-07-26",
+  "urlDateParam": "2026-07-26",
+  "dateAfterUrlReload": "2026-08-01",
+  "error": "Error: Please use browser.newContext()",
+  "serverOutput": "127.0.0.1 - - [25/Jul/2026 02:14:19] \"GET / HTTP/1.1\" 200 -\n127.0.0.1 - - [25/Jul/2026 02:14:19] \"GET / HTTP/1.1\" 200 -\n127.0.0.1 - - [25/Jul/2026 02:14:19] \"GET /assets/index-C8o7spUC.js HTTP/1.1\" 200 -\n127.0.0.1 - - [25/Jul/2026 02:14:19] \"GET /assets/index-D53h-H-H.css HTTP/1.1\" 200 -\n127.0.0.1 - - [25/Jul/2026 02:15:12] \"GET /?d=2026-08-01 HTTP/1.1\" 200 -\n127.0.0.1 - - [25/Jul/2026 02:15:12] \"GET /assets/index-C8o7spUC.js HTTP/1.1\" 200 -\n127.0.0.1 - - [25/Jul/2026 02:15:12] \"GET /assets/index-D53h-H-H.css HTTP/1.1\" 200 -\n"
+}

@@ -1,0 +1,185 @@
+[
+  {
+    "name": "script_started",
+    "t": 1784945659256
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1784945659257
+  },
+  {
+    "name": "dist_confirmed_present",
+    "t": 1784945659257
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1784945659262,
+    "pid": 2410
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1784945659590
+  },
+  {
+    "name": "browser_launched",
+    "t": 1784945659737
+  },
+  {
+    "name": "page_created",
+    "t": 1784945659790
+  },
+  {
+    "name": "routes_registered",
+    "t": 1784945659795
+  },
+  {
+    "name": "page_navigated",
+    "t": 1784945659857
+  },
+  {
+    "name": "gameRow_selector_found",
+    "t": 1784945659922
+  },
+  {
+    "name": "initial_date_captured",
+    "t": 1784945660423,
+    "initialDate": "2026-07-25"
+  },
+  {
+    "name": "initial_state_read",
+    "t": 1784945660426,
+    "initialHouTex": {
+      "text": "☆Houston Astros @ Texas Rangers—Globe Life Field",
+      "statusClass": "_statusDot_1i2gj_143 _pre_1i2gj_152"
+    }
+  },
+  {
+    "name": "row_identities_tagged",
+    "t": 1784945660475
+  },
+  {
+    "name": "watchlist_star_clicked",
+    "t": 1784945660511,
+    "starredHouTex": true
+  },
+  {
+    "name": "pickem_pick_made",
+    "t": 1784945660558,
+    "pickedHouTex": true
+  },
+  {
+    "name": "pick_status_read_pre_poll",
+    "t": 1784945660559,
+    "pickStatusAfterPick": "pending"
+  },
+  {
+    "name": "first_poll_wait_complete",
+    "t": 1784945676561
+  },
+  {
+    "name": "second_poll_wait_complete",
+    "t": 1784945692563
+  },
+  {
+    "name": "toast_checked",
+    "t": 1784945692565,
+    "toastPresent": false
+  },
+  {
+    "name": "after_state_read",
+    "t": 1784945692612,
+    "afterHouTex": {
+      "text": "★Houston Astros @ Texas Rangers2–1FGlobe Life Field",
+      "statusClass": "_statusDot_1i2gj_143 _final_1i2gj_154"
+    },
+    "pollCount": 6
+  },
+  {
+    "name": "pick_status_read_post_poll",
+    "t": 1784945692613,
+    "pickStatusFinal": "correct"
+  },
+  {
+    "name": "watchlist_persistence_checked",
+    "t": 1784945692614,
+    "starredStillAfterPoll": true
+  },
+  {
+    "name": "mlb_group_clicked",
+    "t": 1784945692688
+  },
+  {
+    "name": "collapse_checked",
+    "t": 1784945692689
+  },
+  {
+    "name": "third_poll_wait_for_collapse_persistence",
+    "t": 1784945708690
+  },
+  {
+    "name": "collapse_persistence_checked",
+    "t": 1784945708692,
+    "collapsedImmediately": true,
+    "collapsedAfterPoll": true
+  },
+  {
+    "name": "mlb_group_reexpanded",
+    "t": 1784945708704
+  },
+  {
+    "name": "next_day_clicked",
+    "t": 1784945709026
+  },
+  {
+    "name": "date_browser_next_checked",
+    "t": 1784945712029,
+    "nextDateRequested": "2026-07-26",
+    "expectedNextDate": "2026-07-26",
+    "requestedDates": [
+      "2026-07-25",
+      "2026-07-25",
+      "2026-07-24",
+      "2026-07-25",
+      "2026-07-25",
+      "2026-07-25",
+      "2026-07-25",
+      "2026-07-26",
+      "2026-07-26",
+      "2026-08-01",
+      "2026-08-01",
+      "2026-07-31",
+      "2026-08-01"
+    ]
+  },
+  {
+    "name": "displayed_date_checked",
+    "t": 1784945712031,
+    "displayedDateAfterNav": "2026-07-26"
+  },
+  {
+    "name": "url_date_param_checked",
+    "t": 1784945712031,
+    "urlAfterNav": "http://localhost:4173/?d=2026-07-26",
+    "urlDateParam": "2026-07-26"
+  },
+  {
+    "name": "reloaded_with_explicit_url_date",
+    "t": 1784945712062
+  },
+  {
+    "name": "url_reload_date_checked",
+    "t": 1784945712587,
+    "dateAfterUrlReload": "2026-08-01",
+    "reloadTargetDate": "2026-08-01"
+  },
+  {
+    "name": "CAUGHT_ERROR",
+    "t": 1784945712587,
+    "error": "Error: Please use browser.newContext()",
+    "stack": "Error: Please use browser.newContext()\n    at _BrowserContext.newPage (/home/runner/work/field-playground/field-playground/node_modules/playwright-core/lib/coreBundle.js:60775:17)\n    at main (file:///home/runner/work/field-playground/field-playground/scripts/verify-reconciliation.mjs:358:33)"
+  },
+  {
+    "name": "script_ending",
+    "t": 1784945712588
+  }
+]
