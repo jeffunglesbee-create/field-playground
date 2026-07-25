@@ -28,13 +28,12 @@ import { LocalNoteLayer } from './components/LocalNoteLayer'
 import { MultiDateTrend } from './components/MultiDateTrend'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
+import { SeasonsLazy as Seasons } from './lazyModules'
 import { initOutcomesSync } from './data/outcomes'
 import shared from './components/shared.module.css'
 import styles from './App.module.css'
 
 const POLL_INTERVAL_MS = 15000
-
-const Seasons = lazy(() => import('./components/Seasons').then(m => ({ default: m.Seasons })))
 
 export default function App() {
   onMount(() => {
