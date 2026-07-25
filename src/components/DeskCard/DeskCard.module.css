@@ -167,20 +167,43 @@
   opacity: 0.7;
 }
 
+/* Drama hierarchy: real ported tiers (fire/hot/warm), exact thresholds
+   from jubilant-bassoon's dramaTier() -- 80/60/40. No rule needed for
+   the empty/below-40 tier; the base .gameRow background already
+   applies. Subtle, since this is still a background wash, not a border
+   -- the emoji label (below) is the primary legible signal, the
+   background is the ambient one. */
 .gameRow {
   display: grid;
-  grid-template-columns: 8px 16px 1fr auto auto auto auto;
+  grid-template-columns: 8px 14px 16px 1fr auto auto auto auto;
   align-items: center;
   gap: 6px;
   padding: 4px 0;
   border-radius: 4px;
   transition: background 0.3s, opacity 0.3s, box-shadow 0.3s;
-  /* Drama hierarchy: --drama-weight (0-1) set inline per row from the
-     real drama_peak number. A subtle warm glow scales with it directly
-     rather than bucketing into discrete tiers -- continuous signal,
-     continuous styling. */
-  background: rgba(218, 136, 68, calc(var(--drama-weight, 0) * 0.08));
-  box-shadow: inset 2px 0 0 rgba(218, 136, 68, calc(var(--drama-weight, 0) * 0.5));
+}
+
+.tier_fire { background: rgba(255, 100, 40, 0.09); }
+.tier_hot  { background: rgba(218, 136, 68, 0.07); }
+.tier_warm { background: rgba(218, 136, 68, 0.04); }
+
+.dramaLabel {
+  font-size: 11px;
+  text-align: center;
+}
+
+/* isBlowout: real ported threshold (margin > 20). A blowout dims
+   rather than glows -- the opposite signal from drama tier, and the
+   two CAN coexist (a game can peak dramatic early, then blow open). */
+.rowBlowout {
+  opacity: 0.65;
+}
+
+/* isCloseLate: honest approximation (live + margin<=5), not a claimed
+   exact match to the real CRUNCH tier's period/clock logic -- see the
+   code comment above GameRow for what's exact vs. approximated. */
+.rowCloseLate {
+  box-shadow: inset 2px 0 0 #da4;
 }
 
 .rowStale {
