@@ -75,45 +75,60 @@
   color: var(--field-text-primary);
 }
 
+/* Quality-as-texture: --quality-sharpness (0.4-1) set inline from
+   quality_alert's real alert_count. Lower = softer rendering via a
+   slight blur and reduced weight, ambient rather than a warning. */
 .morningReport {
   font-size: 13px;
   line-height: 1.6;
   color: var(--field-text-primary);
   margin-bottom: 16px;
+  filter: blur(calc((1 - var(--quality-sharpness, 1)) * 0.4px));
+  font-weight: calc(400 + var(--quality-sharpness, 1) * 30);
 }
 
-.truthQuote {
-  font-size: 15px;
-  line-height: 1.4;
-  font-weight: 600;
-  color: var(--field-text-primary);
-  border-left: 2px solid #da4;
-  padding: 2px 0 2px 12px;
-  margin: 0 0 14px 0;
-  font-style: normal;
+/* Prose-as-navigation: real team names, matched from today's own
+   deskStore games, wrapped in clickable spans. */
+.teamLink {
+  color: #4a90d9;
+  cursor: pointer;
+  border-bottom: 1px dotted #4a90d9;
 }
 
-.contradictionCard {
-  background: #241414;
-  border: 1px solid #4a2a2a;
-  border-radius: 6px;
-  padding: 8px 10px;
+.teamLink:hover {
+  color: #6ab0f9;
+}
+
+/* truth_is vs contradiction as an explicit two-sided card. */
+.tensionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
-.contradictionLabel {
+.tensionSide {
+  border-left: 2px solid #da4;
+  padding: 2px 0 2px 12px;
+}
+
+.tensionCounter {
+  border-left-color: #e77;
+}
+
+.tensionLabel {
   display: block;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #e77;
-  margin-bottom: 4px;
+  color: var(--field-text-muted);
+  margin-bottom: 2px;
 }
 
-.contradictionText {
-  font-size: 12px;
-  line-height: 1.5;
+.tensionText {
+  font-size: 13px;
+  line-height: 1.4;
   color: var(--field-text-primary);
 }
 
@@ -204,15 +219,6 @@
   text-transform: uppercase;
 }
 
-/* tier colour overrides -- tier is a real NUMBER in the live data
-   (confirmed: tier: 2), not a letter. The original .tier_a/.tier_b/
-   .tier_c classes never matched anything real -- every tier badge has
-   been rendering with the plain grey .tier base style, no color coding
-   at all, since this was first built. Numeric classes now. Assuming
-   lower number = higher tier (1 = best), matching the common "tier 1"
-   convention -- this direction isn't independently confirmed by the
-   relay, just the most reasonable reading, so styling stays modest
-   rather than overconfident about what the scale actually means. */
 .tier_1 { background: #1a2e1a; color: #4c8; }
 .tier_2 { background: #2a2a1a; color: #aa8; }
 .tier_3 { background: #2a1a1a; color: #a66; }
@@ -332,9 +338,6 @@
 .streakHot  { background: #1a1410; border-color: #3a2a1a; color: #d97; }
 .streakCold { background: #10161a; border-color: #1a2a3a; color: #7ad; }
 
-/* Pip row — alternative visualization, W/L pips per team, count derived
-   directly from the same real streak number the chip above already
-   uses (a streak IS N consecutive same-outcome games by definition). */
 .pipBoard {
   display: flex;
   flex-direction: column;
