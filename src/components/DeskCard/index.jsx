@@ -149,6 +149,46 @@ function ScoreEditor(props) {
   )
 }
 
+// Countdown -- SAMPLE, not real. Checked both field-relay-nba's source
+// AND the live /context/date response before building: start_time
+// appears in several internal upstream-parsing paths but does not
+// survive to the actual game object this endpoint returns (confirmed
+// keys: id, sport, league, date, home, away, scores, venue, streams,
+// note, tags, crew, local_note, created_at, odds, drama fields,
+// espn_event_id, went_to_ot, finalized_at -- no start time). Rather
+// than invent one, this renders a clearly-labeled sample countdown for
+// pregame games using a synthetic target computed client-side, tagged
+// as sample directly in the UI, same honest pattern as Seasons'
+// NFL/EPL cards.
+function Countdown(props) {
+  const [now, setNow] = createSignal(Date.now())
+  onMount(() => {
+    const handle = setInterval(() => setNow(Date.now()), 60000)
+    onCleanup(() => clearInterval(handle))
+  })
+  // Synthetic target: a stable, deterministic offset derived from the
+  // game id (not Math.random(), so it doesn't reshuffle every render) --
+  // purely illustrative of the wall-clock-composed-with-a-target pattern.
+  const target = createMemo(() => {
+    const seed = String(props.gameId).split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+    return Date.now() + ((seed % 240) + 15) * 60000
+  })
+  const label = createMemo(() => {
+    const diffMs = target() - now()
+    if (diffMs <= 0) return null
+    const h = Math.floor(diffMs / 3600000)
+    const m = Math.floor((diffMs % 3600000) / 60000)
+    return h > 0 ? `${h}h ${m}m` : `${m}m`
+  })
+  return (
+    <Show when={label()}>
+      <span class={styles.countdown} title="SAMPLE — start_time not present in the real relay response">
+        {label()} <span class={styles.countdownSample}>(sample)</span>
+      </span>
+    </Show>
+  )
+}
+
 function GameRow(props) {
   const g = () => props.game
   const status = () => gameStatus(g())
