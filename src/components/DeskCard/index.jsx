@@ -1,6 +1,7 @@
-import { Show, For, createMemo, onMount } from 'solid-js'
+import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup } from 'solid-js'
 import { createStore } from 'solid-js/store'
-import { deskData, deskStore } from '../../data/relay'
+import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk } from '../../data/relay'
+import { showToast } from '../Toast'
 import styles from './DeskCard.module.css'
 import shared from '../shared.module.css'
 
@@ -22,36 +23,91 @@ function gameStatus(g) {
   return 'live'
 }
 
-// Individual-athlete sports (golf confirmed live; may not be the only
-// one) don't have a home/away TEAM matchup at all -- checked the real
-// relay payload rather than guess: sport is 'golf' (lowercase), home
-// holds the tournament name, away holds the round label ("R2"),
-// away_score is genuinely, permanently null, and there's already a
-// real human-readable summary in `note` ("Ben Kohles -11") that this
-// component wasn't reading at all. This is what produced the literal
-// "null–11" text -- away_score interpolated as the string "null", not
-// a missing-data edge case, a wrong data-model assumption.
 const NON_MATCHUP_SPORTS = new Set(['golf'])
 
-// Live-reconciliation instrumentation (EXPERIMENT-live-reconciliation.md):
-// a real, per-id mount counter, not a console.log someone has to remember to
-// open devtools for. If reconciliation is working, every game's count stays
-// at 1 across every poll cycle, forever, no matter how many times its score
-// changes. If it climbs, GameRow is remounting instead of updating in place.
 const mountCounts = {}
 
-// Collapsible sport groups (Claude Code's suggestion, 2026-07-24). The real
-// risk: `grouped()` below does Object.entries(map), producing brand-new
-// [sport, games] tuple references on every poll -- <For> keys by reference
-// by default (same fact the live-reconciliation experiment already
-// confirmed), so a signal owned locally inside SportGroup would get wiped
-// every 15s along with the remount. Fix: expansion state lives here, in a
-// module-level store keyed by sport NAME (a stable string, immune to
-// grouped()'s reference churn), not inside the component that re-renders.
+// Collapsible sport groups -- CONFIRMED 2026-07-25, real browser
+// verification, survives real poll cycles. Store keyed by sport name
+// (stable string, immune to grouped()'s reference churn).
 const [collapsed, setCollapsed] = createStore({})
-
 function toggleGroup(sport) {
   setCollapsed(sport, c => !c)
+}
+
+// Watchlist. Same underlying question as collapsed groups above -- does
+// this survive a poll -- but worth being precise about a SHARPER version
+// of that lesson: a plain createSignal(new Set()) would NOT work here
+// even though it might look like it should. Calling .add()/.delete() on
+// the SAME Set object mutates it in place without creating a new
+// reference, and SolidJS signals only notify subscribers on an actual
+// setter call with a value SolidJS considers changed -- mutating the
+// existing Set silently, with no setter call, fires no update at all.
+// createStore's proxy-based approach doesn't have this trap: setWatched
+// below is a real setter call every time, keyed by a stable game id
+// (immune to reference churn) the same way collapsed/sport already is.
+const [watched, setWatched] = createStore({})
+function toggleWatch(id) {
+  setWatched(id, w => !w)
+}
+
+function StaleIndicator() {
+  const [now, setNow] = createSignal(Date.now())
+  onMount(() => {
+    const handle = setInterval(() => setNow(Date.now()), 15000)
+    onCleanup(() => clearInterval(handle))
+  })
+  const label = createMemo(() => {
+    const fetchedAt = deskLastFetchedAt()
+    if (!fetchedAt) return null
+    const seconds = Math.floor((now() - fetchedAt) / 1000)
+    if (seconds < 30) return 'just now'
+    if (seconds < 60) return `${seconds}s ago`
+    return `${Math.floor(seconds / 60)}m ago`
+  })
+  return (
+    <Show when={label()}>
+      <span class={styles.staleIndicator} title="time since the last successful poll">
+        ↻ {label()}
+      </span>
+    </Show>
+  )
+}
+
+function DateBrowser() {
+  function shiftDay(delta) {
+    const d = new Date(currentDate() + 'T00:00:00Z')
+    d.setUTCDate(d.getUTCDate() + delta)
+    setCurrentDate(d.toISOString().split('T')[0])
+    refetchDesk()
+  }
+  return (
+    <div class={styles.dateBrowser}>
+      <button class={styles.dateBtn} onClick={() => shiftDay(-1)} aria-label="previous day">‹</button>
+      <span class={styles.dateMeta}>{deskStore.date}</span>
+      <button class={styles.dateBtn} onClick={() => shiftDay(1)} aria-label="next day">›</button>
+    </div>
+  )
+}
+
+function TonightsCard(props) {
+  const summary = createMemo(() => {
+    let live = 0, final = 0, pre = 0
+    for (const g of props.games()) {
+      const s = gameStatus(g)
+      if (s === 'live') live++
+      else if (s === 'final' || s === 'final_ot') final++
+      else pre++
+    }
+    return { live, final, pre, total: props.games().length }
+  })
+  return (
+    <Show when={summary().total}>
+      <div class={styles.tonightsCard}>
+        {summary().pre} remaining · {summary().live} live · {summary().final} final
+      </div>
+    </Show>
+  )
 }
 
 function GameRow(props) {
@@ -59,6 +115,7 @@ function GameRow(props) {
   const status = () => gameStatus(g())
   const isIndividual = () => NON_MATCHUP_SPORTS.has(g().sport)
   const scoreStr = () => `${g().away_score}–${g().home_score}`
+  const isWatched = () => !!watched[g().id]
 
   onMount(() => {
     const id = g().id
@@ -68,9 +125,31 @@ function GameRow(props) {
     }
   })
 
+  // Game-state transition toast. on(status, ...) gives access to the
+  // PREVIOUS value on every re-run, not just the current one -- required
+  // to detect an actual transition (live -> final) rather than firing on
+  // every re-render regardless of whether status changed. Tests whether
+  // an effect on DERIVED state (gameStatus() is computed, not a raw
+  // signal) behaves as cleanly as an effect on a plain signal would --
+  // it does, since status() still participates in the same reactive
+  // graph deskStore's fields do.
+  createEffect(on(status, (curr, prev) => {
+    if (prev === 'live' && (curr === 'final' || curr === 'final_ot')) {
+      const label = isIndividual() ? `${g().home} — ${g().away}` : `${g().away} @ ${g().home}`
+      showToast(`Final: ${label} ${scoreStr()}`, 'live')
+    }
+  }, { defer: true }))
+
   return (
     <div class={styles.gameRow}>
       <span class={`${styles.statusDot} ${styles[status()]}`} />
+      <button
+        class={`${styles.watchBtn} ${isWatched() ? styles.watchBtnActive : ''}`}
+        onClick={() => toggleWatch(g().id)}
+        aria-label={isWatched() ? 'remove from watchlist' : 'add to watchlist'}
+      >
+        {isWatched() ? '★' : '☆'}
+      </button>
       <span class={styles.matchup}>
         <Show when={isIndividual()} fallback={<>{g().away} @ {g().home}</>}>
           {g().home} — {g().away}
@@ -151,8 +230,11 @@ function Content() {
     <div>
       <header class={styles.header}>
         <span class={styles.label}>Desk</span>
-        <span class={styles.dateMeta}>{deskStore.date}</span>
+        <DateBrowser />
+        <StaleIndicator />
       </header>
+
+      <TonightsCard games={allGames} />
 
       <Show when={grouped().length} fallback={<p class={styles.empty}>No games today.</p>}>
         <div class={styles.gameList}>
@@ -166,15 +248,6 @@ function Content() {
 }
 
 export function DeskCard() {
-  // Was: <Switch><Match when={deskData.loading}>. createResource's
-  // .loading flips true on EVERY refetch by default, not just the first
-  // load -- meaning Content (and every GameRow inside it) was unmounting
-  // and remounting on every single poll, regardless of whether
-  // deskStore's own reconcile() was working correctly underneath. This
-  // masked the real answer this whole experiment exists to measure.
-  // Fixed: check deskData() (the resolved VALUE) instead of .loading.
-  // The value stays truthy across a refetch -- Content only unmounts on
-  // the genuine first load, before any data has ever resolved.
   return (
     <div class={styles.root}>
       <Show when={deskData.error}>
