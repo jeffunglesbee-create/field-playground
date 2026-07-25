@@ -1,0 +1,54 @@
+[
+  {
+    "name": "script_started",
+    "t": 1785001487274
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1785001487274
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1785001487279,
+    "pid": 2409
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1785001487613
+  },
+  {
+    "name": "browser_launched",
+    "t": 1785001488445
+  },
+  {
+    "name": "page1_settled",
+    "t": 1785001488649
+  },
+  {
+    "name": "page2_settled",
+    "t": 1785001488826
+  },
+  {
+    "name": "outcome_marked_on_page1",
+    "t": 1785001488832,
+    "outcomeBtnClicked": false
+  },
+  {
+    "name": "page2_history_checked",
+    "t": 1785001490335,
+    "page2RunningTotal": null
+  },
+  {
+    "name": "browser_closed",
+    "t": 1785001490459
+  },
+  {
+    "name": "manifest_complete",
+    "t": 1785001490459,
+    "allPass": false
+  },
+  {
+    "name": "script_ending",
+    "t": 1785001490459
+  }
+]
