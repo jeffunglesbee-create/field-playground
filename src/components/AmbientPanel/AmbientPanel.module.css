@@ -25,6 +25,31 @@
   color: var(--field-text-muted);
 }
 
+.sportOfWeek {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #2a2410, #1a1a10);
+  border: 1px solid #4a3a10;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 14px;
+}
+
+.sportOfWeekLabel {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #da4;
+}
+
+.sportOfWeekValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--field-text-primary);
+}
+
 .morningReport {
   font-size: 13px;
   line-height: 1.6;
@@ -41,6 +66,30 @@
   padding: 2px 0 2px 12px;
   margin: 0 0 14px 0;
   font-style: normal;
+}
+
+.contradictionCard {
+  background: #241414;
+  border: 1px solid #4a2a2a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 14px;
+}
+
+.contradictionLabel {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e77;
+  margin-bottom: 4px;
+}
+
+.contradictionText {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--field-text-primary);
 }
 
 /* picks */
@@ -89,6 +138,15 @@
   align-items: center;
   gap: 7px;
   flex-wrap: wrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.expandIcon {
+  font-size: 8px;
+  width: 8px;
+  color: var(--field-text-muted);
+  flex-shrink: 0;
 }
 
 /* Visual identity only — containment comes from shared.module.css's
@@ -204,15 +262,12 @@
   padding: 1px 6px;
 }
 
-/* Streak Board — reads record_streak_board (real win/loss streaks).
-   streakChip is visual identity only, same pattern as tier/reasonBadge:
-   containment comes from shared.module.css's .chip, composed in the
-   component from the moment this was written, not added after a gap
-   was found. */
+/* Streak Board — reads record_streak_board (real win/loss streaks). */
 .streakRow {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+  margin-bottom: 8px;
 }
 
 .streakChip {
@@ -225,6 +280,55 @@
 
 .streakHot  { background: #1a1410; border-color: #3a2a1a; color: #d97; }
 .streakCold { background: #10161a; border-color: #1a2a3a; color: #7ad; }
+
+/* Pip row — alternative visualization, W/L pips per team, count derived
+   directly from the same real streak number the chip above already
+   uses (a streak IS N consecutive same-outcome games by definition). */
+.pipBoard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pipTeam {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pipTeamName {
+  font-size: 10px;
+  color: var(--field-text-secondary);
+  min-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pipRow {
+  display: flex;
+  gap: 2px;
+}
+
+.pip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  font-size: 7px;
+  font-weight: 700;
+  border-radius: 2px;
+}
+
+.pipHot  { background: #2a1a10; color: #d97; }
+.pipCold { background: #10202a; color: #7ad; }
+
+.pipOverflow {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  margin-left: 2px;
+}
 
 /* error */
 .error {
