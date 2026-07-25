@@ -1,5 +1,15 @@
 name: Broadcast Isolated Check
 
+# Two prior runs of this workflow hung to the job's own timeout ceiling
+# with zero diagnostic data recovered -- traced the real cause via this
+# project's own history (not guessed): a JOB-level timeout force-kills
+# the entire job, including the "commit outbox back" step, even though
+# that step has if: always(). A STEP-level timeout on just the script
+# step fails that one step gracefully instead -- GHA doesn't cancel
+# sibling steps on a normal step failure, so the commit step still runs
+# and whatever partial checkpoint/manifest data exists at the moment of
+# the timeout actually gets preserved and becomes readable.
+
 on:
   workflow_dispatch: {}
 
@@ -9,7 +19,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,8 +28,10 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npx playwright install chromium
-      - run: node scripts/verify-broadcast-isolated.mjs
+      - name: run verification script
+        timeout-minutes: 2
         continue-on-error: true
+        run: node scripts/verify-broadcast-isolated.mjs
       - name: Commit outbox results back to the repo
         if: always()
         run: |
