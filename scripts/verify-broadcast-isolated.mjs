@@ -112,7 +112,7 @@ async function main() {
     await page1.goto(SERVE_URL, { timeout: 15000 })
     checkpoint('page1_navigated')
     try {
-      await page1.waitForSelector('[class*="gameRow"]', { timeout: 15000 })
+      await page1.waitForSelector('[class*="dateBrowser"]', { timeout: 15000 })
       checkpoint('page1_settled')
     } catch (e) {
       checkpoint('page1_render_timeout', {
@@ -130,7 +130,7 @@ async function main() {
     checkpoint('page2_routes_registered')
     await page2.goto(SERVE_URL, { timeout: 15000 })
     checkpoint('page2_navigated')
-    await page2.waitForSelector('[class*="gameRow"]', { timeout: 15000 })
+    await page2.waitForSelector('[class*="dateBrowser"]', { timeout: 15000 })
     checkpoint('page2_settled')
 
     await new Promise(r => setTimeout(r, 1000))
