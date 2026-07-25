@@ -1,0 +1,56 @@
+[
+  {
+    "name": "script_started",
+    "t": 1784948097315
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1784948097316
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1784948097320,
+    "pid": 2407
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1784948097655
+  },
+  {
+    "name": "browser_launched",
+    "t": 1784948097801
+  },
+  {
+    "name": "context_created",
+    "t": 1784948097812
+  },
+  {
+    "name": "page1_created",
+    "t": 1784948097859
+  },
+  {
+    "name": "page1_routes_registered",
+    "t": 1784948097866
+  },
+  {
+    "name": "page1_navigated",
+    "t": 1784948097924
+  },
+  {
+    "name": "page1_render_timeout",
+    "t": 1784948112929,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "bodyText": "AMBIENT\n2026-07-25 · recap through 2026-07-24\nDESK\n‹\n2026-07-25\n›\n↻ just now\nlive only\n\nNo games today.\n\nPICK'EM\n\nNo games today.\n\nSEASONS\nMLB\nLIVE, DERIVED\n\nLoading…\n\nMLS\nLIVE\n\nLoading…\n\nWORLD CUP\nLIVE, CONCLUDED 7/19\n\nLoading…\n\nNFL / EPL\nSAMPLE — NO SOURCE FOUND\nKansas City Chiefs\nCLINCHED DIVISION\n#1 seed locked\nDenver Broncos\nPLAYOFF BUBBLE\n#7 seed · 1 game cushion\nLas Vegas Raiders\nELIMINATED\nno playoff path\nSunderland\nPROMOTION RACE\n3rd · 4 pts off automatic\nSouthampton\nRELEGATION BATTLE\n1"
+  },
+  {
+    "name": "CAUGHT_ERROR",
+    "t": 1784948112929,
+    "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('[class*=\"gameRow\"]') to be visible\n",
+    "stack": "page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('[class*=\"gameRow\"]') to be visible\n\n    at main (/home/runner/work/field-playground/field-playground/scripts/verify-broadcast-isolated.mjs:115:19)"
+  },
+  {
+    "name": "script_ending",
+    "t": 1784948112930
+  }
+]

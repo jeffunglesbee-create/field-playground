@@ -1,0 +1,5 @@
+{
+  "timestamp": "2026-07-25T02-54-57-315Z",
+  "checks": [],
+  "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('[class*=\"gameRow\"]') to be visible\n"
+}
