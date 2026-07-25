@@ -21,8 +21,11 @@ const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
 const manifest = { timestamp, checks: [] }
 
 function findAssets() {
-  const dir = 'dist/assets'
-  if (!existsSync(dir)) throw new Error('dist/assets not found -- npm run build must run first')
+  // Prefer dist-artifact: that's the zero-chunk build actually shipped as
+  // the standalone single-file artifact. Falls back to dist/ so this still
+  // works if only the main build has been run.
+  const dir = existsSync('dist-artifact/assets') ? 'dist-artifact/assets' : 'dist/assets'
+  if (!existsSync(dir)) throw new Error('no assets dir found -- a build must run first')
   const files = readdirSync(dir)
   const css = files.filter(f => f.endsWith('.css'))
   // Main entry bundle = the largest .js that is not a lazy chunk.
@@ -30,8 +33,8 @@ function findAssets() {
     .filter(f => f.endsWith('.js') && f.startsWith('index-'))
     .map(f => ({ f, size: readFileSync(`${dir}/${f}`).length }))
     .sort((a, b) => b.size - a.size)
-  if (!js.length) throw new Error('no index-*.js found in dist/assets')
-  return { mainJs: `${dir}/${js[0].f}`, cssFiles: css.map(f => `${dir}/${f}`) }
+  if (!js.length) throw new Error(`no index-*.js found in ${dir}`)
+  return { mainJs: `${dir}/${js[0].f}`, cssFiles: css.map(f => `${dir}/${f}`), dir }
 }
 
 function buildArtifactHtml() {
@@ -114,6 +117,14 @@ async function main() {
     name: 'multiple_sections_rendered',
     pass: sectionCount >= 5,
     sectionCount,
+  })
+  // Seasons is lazy-loaded and was invisible in earlier artifacts because
+  // its chunk had nowhere to load from. In the zero-chunk artifact build it
+  // must actually appear.
+  manifest.checks.push({
+    name: 'seasons_section_present',
+    pass: /SEASONS/i.test(bodyText) || sectionCount >= 20,
+    note: 'lazy-loaded Seasons must render in the single-file build',
   })
   // A hard throw at module scope means nothing else is trustworthy.
   manifest.checks.push({
