@@ -1,0 +1,26 @@
+# Cloudflare Worker serving the built playground as static assets.
+#
+# Matches how jubilant-bassoon is already hosted in this account (a
+# Worker serving a built client), rather than introducing Pages as a
+# second, differently-maintained pattern.
+#
+# Deploys dist/ -- the MAIN build, not dist-artifact/. That's
+# deliberate: the zero-chunk artifact build exists only because a
+# single inlined HTML file has nowhere to fetch a chunk from. Over
+# HTTP, chunks work fine, so the hosted version keeps real
+# code-splitting intact -- meaning the lazy()/Suspense experiments are
+# genuinely exercised here in a way the artifact can't exercise them.
+#
+# account_id is not a secret (it's an identifier, not a credential) and
+# is kept here so the only value needing GitHub secrets is the API
+# token itself.
+
+name = "field-playground"
+compatibility_date = "2026-07-25"
+account_id = "b57e9af57ab46c52ca9215804e689c29"
+
+[assets]
+directory = "./dist"
+# Client-side app with no server routes: any unmatched path should serve
+# index.html rather than 404, so deep links and refreshes work.
+not_found_handling = "single-page-application"
