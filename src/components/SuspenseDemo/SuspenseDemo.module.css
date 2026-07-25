@@ -1,0 +1,58 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.panes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pane {
+  min-width: 0;
+}
+
+.paneLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  margin-bottom: 6px;
+}
+
+.snippet {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  line-height: 1.5;
+}
+
+.row {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  padding: 2px 0;
+}
