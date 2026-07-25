@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-07-25T02-25-21-872Z",
+  "checks": [
+    {
+      "name": "url_date_param_used_on_initial_load",
+      "pass": true,
+      "requestedDate": "2026-08-01",
+      "expectedDate": "2026-08-01"
+    }
+  ],
+  "requestedDate": "2026-08-01",
+  "expectedDate": "2026-08-01",
+  "allPass": true
+}
