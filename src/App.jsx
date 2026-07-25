@@ -5,7 +5,7 @@ import { PickEm } from './components/PickEm'
 import { Seasons } from './components/Seasons'
 import { Ground } from './components/Ground'
 import { ToastLayer } from './components/Toast'
-import { refetchDesk } from './data/relay'
+import { refetchDesk, initUrlDateSync, initBroadcastDateSync } from './data/relay'
 import styles from './App.module.css'
 
 // Live reconciliation experiment (docs/EXPERIMENT-live-reconciliation.md):
@@ -20,6 +20,8 @@ export default function App() {
   onMount(() => {
     const handle = setInterval(() => { refetchDesk() }, POLL_INTERVAL_MS)
     onCleanup(() => clearInterval(handle))
+    initUrlDateSync()
+    initBroadcastDateSync()
   })
 
   return (
