@@ -415,6 +415,11 @@ async function main() {
     manifest.checks.push({ name: 'date_browser_requested_correct_next_date', pass: nextDateRequested === expectedNextDate, nextDateRequested, expectedNextDate })
     manifest.checks.push({ name: 'date_browser_displayed_date_updated', pass: displayedDateAfterNav === expectedNextDate, displayedDateAfterNav, expectedNextDate })
 
+    manifest.checks.push({ name: 'url_reflects_current_date_after_navigation', pass: urlDateParam === expectedNextDate, urlDateParam, expectedNextDate })
+    manifest.checks.push({ name: 'url_date_param_used_on_load', pass: dateAfterUrlReload === reloadTargetDate, dateAfterUrlReload, reloadTargetDate })
+
+    manifest.checks.push({ name: 'broadcast_channel_syncs_second_tab', pass: !!page1DateAfterBroadcast && page1DateAfterBroadcast === page2DateAfterOwnClick, page1DateAfterBroadcast, page2DateAfterOwnClick })
+
     manifest.allPass = manifest.checks.every(c => c.pass)
     checkpoint('manifest_complete', { allPass: manifest.allPass })
     console.log(`Result: ${manifest.allPass ? 'ALL PASS ✓' : 'FAILURES DETECTED ✗'}`)
