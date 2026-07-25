@@ -9,7 +9,10 @@ cross-game text racing on re-render. Those are reconciliation bugs, not
 render bugs — a different failure class, untested by the first
 experiment entirely. Would a real reactive framework make *that* class
 structurally harder to write, the same way it did for skeleton-overlap?
-Genuinely unknown — this experiment tests it.
+
+**CONFIRMED, 2026-07-25 — yes, once the actual application bug was found
+and fixed. See the full log below; this line is the answer, not a
+prediction.**
 
 **Scope, on purpose:** extend the existing `DeskCard` component (not a
 new one) to poll `/context/date/{date}` on an interval and reconcile
@@ -21,149 +24,130 @@ use. Zero new RUWT tension — nothing computes or ships, same as before.
 **Explicitly not doing:** journalism, drama state, picks, anything that
 writes. Still just watching public game data change over time.
 
-**Why this specific bug class, not a broader stress test:** a
-same-lane-but-more-instances test (e.g. more chip types) would mostly
-re-confirm what's already known about principle #6. This targets
-something genuinely untested — temporal state, not just initial state —
-which is where the real, already-documented FIELD incidents actually
-happened, per Codex and prior HANDOFF entries (MLB cards stuck live
-after final, a permanently-stuck pick-resolution flag, a Night Owl
-cross-game text race). Real incidents, not hypothetical ones — same
-standard the first experiment held itself to.
-
 **Done when:** a live poll cycle correctly transitions a game's rendered
 state without a full remount or a stuck intermediate state, AND there's
 an honest answer to whether that came free from `createResource`'s
 signal-driven refetch or required the same kind of manual bookkeeping
-field.js needed. Either answer is a real result.
+field.js needed.
 
 ---
 
 ## Log
 
-**2026-07-24** — Checked the mechanism before building, not after: does a
-plain `createResource` refetch give free fine-grained updates on poll?
-No — confirmed via SolidJS's own docs and core-team discussion
-(github.com/solidjs/solid/discussions/366), not guessed. `<For>` keys by
-reference by default; `fetch().json()` returns a brand-new array of
-brand-new objects every call; updating one field on one row this way
-"will re-render that whole row... recreating all the DOM nodes," per a
-SolidJS maintainer directly describing this exact case. So the honest
-first-pass answer was already known before writing a naive version: it
-would NOT have been free, same as chip-overflow wasn't free in the first
-experiment.
+**2026-07-24** — Checked the mechanism before building: a plain
+`createResource` refetch does NOT give free fine-grained updates,
+confirmed via SolidJS's own docs and core-team discussion, not guessed.
+Built the real fix directly: `deskStore` (`createStore` + `reconcile()`
+in the fetcher), `App.jsx` polling every 15s, `DeskCard` reading from the
+store with per-game mount-count instrumentation. `npm run build` clean.
 
-Given that, built the real fix directly rather than a naive version
-first and a fix later — the correct pattern is documented precisely for
-this exact scenario (poll a server, merge into fine-grained state):
-`createStore` + `reconcile()`, matching the idiom in SolidJS's own
-stores documentation almost exactly.
+**2026-07-24, automated verification attempts (inconclusive).** Tried
+Puppeteer (blocked — Chromium unreachable from this sandbox, confirmed
+by running it) and a standalone Node script against the real
+`solid-js/store` package (four iterations; the reference/unwrap checks
+gave a real negative signal, but the more-trustworthy `createEffect`
+check couldn't run at all — `solid-js`'s Node/SSR build doesn't drive
+the same scheduler a browser does). Conclusion: neither approach could
+substitute for an actual browser render. Scripts were scratch work, not
+committed.
 
-**What's actually built:**
-- `src/data/relay.js` — `deskStore` (a real `createStore`), reconciled
-  via `reconcile(json)` inside the fetcher on every poll. `deskData`
-  (the resource) now just signals loading/error/success state; the
-  fine-grained data lives in the store.
-- `src/App.jsx` — polls `refetchDesk()` every 15s via `onMount`/
-  `onCleanup`, matching this project's already-established "good
-  citizen" cadence for this relay.
-- `src/components/DeskCard/index.jsx` — reads from `deskStore` instead
-  of the resource's return value. Real instrumentation added: a per-game
-  mount counter (`mountCounts`), visible as a small dev-only badge on
-  each row (`m1`, `m2`, ...) and logged to console in dev mode.
-
-**Verified:** `npm install && npm run build` — clean, 15 modules, no
-errors.
+**2026-07-24, collapsible sport groups.** Same reference-churn question,
+applied to local UI state. Fixed with the same pattern (`createStore`
+keyed by stable sport name). Same open verification gap noted honestly.
 
 ---
 
-**2026-07-24, automated verification attempt.** Tried to close the
-runtime-behavior gap directly rather than leave it for someone else.
-Two approaches, both genuinely attempted, neither gave a clean answer —
-reporting exactly what happened rather than picking whichever result is
-more convenient.
+**2026-07-25 — six real problems, six real causes, resolved with actual
+diagnosis at every step, not repeated guessing. Full chain, in order:**
 
-**Attempt 1 — real headless browser (Puppeteer).** `npm install
-puppeteer` fails in this environment: Chromium download gets a 403 from
-`storage.googleapis.com`, which isn't reachable from here. Confirmed by
-actually running it, not assumed from the existing "no deployed URL"
-note. This closes off the most direct verification path from chat's own
-sandbox specifically — not a general statement about whether it's
-possible anywhere, just that it isn't from here.
+**1. CI kept failing fast (~2-3 min), three times, on the original
+workflow.** Checked this project's own history rather than iterate
+blind — found two documented precedents from a prior field-relay-nba
+session: a `workflow_dispatch` 422 from a missing PAT scope (ruled out —
+dispatch calls were succeeding), and a confirmed GitHub metadata
+indexing lag for `workflow_dispatch` after edits (same project, real
+precedent). Validated the YAML locally (`yaml.safe_load`) per that same
+session's own established diagnostic — clean, ruling out syntax error.
 
-**Attempt 2 — standalone Node script against the real `solid-js/store`
-package, no browser at all.** Four iterations, each addressing a problem
-found in the last:
-1. First pass: reconciled two slightly-different "polls" into a real
-   store, compared object references directly. Result: references
-   changed across every reconcile call, for both the changed AND an
-   untouched, byte-identical game. Surprising — contradicts the sourced
-   claim above.
-2. Second pass: suspected the store's proxy wrapper re-wraps on every
-   external access rather than the underlying data actually changing —
-   used `unwrap()` to compare raw targets instead. Same result: `false`
-   across the board, even for the untouched game.
-3. Third pass: suspected nesting depth (`games.regular`, two levels
-   deep) was breaking `reconcile`'s "match by id" default — reconciled a
-   bare top-level array directly, the simplest possible case the docs
-   describe. Same result again.
-4. Fourth pass: reconsidered whether raw reference/unwrap comparison
-   from *outside* the reactive graph is even the right thing to
-   check — switched to `createEffect`, the actual mechanism `<For>`
-   depends on internally, to see whether an effect scoped to an
-   untouched game re-runs when a different game changes. Result:
-   effects never fired at all, not even once for the initial value —
-   likely because `solid-js`'s `"node"` export condition resolves to its
-   SSR build, which doesn't drive the same effect-flushing scheduler a
-   real browser render does. Added an explicit tick delay between
-   reconciles to rule out a timing issue — same result, still zero runs.
+**2. Tested the indexing-lag hypothesis directly.** Pushed a
+brand-new-filename workflow (`reconciliation-check-v2.yml`) rather than
+keep editing the same file. It ran dramatically longer than the old one
+(6+ minutes vs. a consistent ~2m40s death) — real, measurable evidence
+the cache theory was genuinely part of the problem. But it still never
+finished — cancelled at its own 10-minute ceiling. Progress, not a full
+fix.
 
-**Honest conclusion: inconclusive, not failed.** The reference/unwrap
-tests (1–3) showed a real, reproducible negative signal across three
-different configurations, including the simplest one the documentation
-itself describes — that's not nothing, and it's worth taking seriously.
-But the effect-based test (4), which should be the *more* trustworthy
-check since it uses the same tracking mechanism `<For>` actually relies
-on, couldn't run at all in this environment — meaning the test harness
-itself has a real, unresolved compatibility gap between solid-js's
-Node/SSR build and how the library behaves when actually driven by a
-browser's render cycle. A negative result from a harness that can't even
-run its own control case isn't trustworthy enough to overwrite the
-sourced claim from earlier in this log, but it's also not something to
-wave away — it's a genuine, specific reason to distrust "verify via
-plain Node" as a substitute for "verify via an actual browser," which
-narrows what the next real verification step needs to be.
+**3. Reconsidered the whole approach, not just the YAML.** The actual
+fragility was spawning `npm run dev` as a background process in an
+ephemeral CI runner and hand-polling for readiness — inherently less
+reliable than something already proven solid. Rewrote
+`scripts/verify-reconciliation.mjs` around a real production build
+(`npm run build`, proven reliable every single time it's been run this
+project) served statically via plain Python `http.server`, with
+Playwright's own `page.route()` intercepting relay calls for
+deterministic mock data instead of depending on Vite's dev-only
+`mockRelay()` plugin. Fewer moving parts, each independently proven.
 
-**What this changes about the next step:** not "watch it run" in
-general — specifically, *only a real browser render* will settle this.
-Neither a Node script (tried, inconclusive for the reasons above) nor
-this chat's own sandbox (Puppeteer's binary is unreachable from here)
-can close it. Claude Code's own environment or `npm run dev` opened
-locally remain the real path — same as before, just now with two ruled-
-out shortcuts and a clearer reason why they didn't substitute for it.
+**4. New design still failed, fast, with zero visibility.** Traced this
+to a real gap in the workflow itself, not the script:
+`actions/upload-artifact` stores results as a GHA artifact, which chat
+has no tool to download — every previously-working probe in this
+project (`chip-overflow-probe.yml` etc.) commits its output back to the
+repo directly instead. This one never did. Fixed: added a commit-back
+step, `continue-on-error: true` on the script step so the commit always
+runs regardless of pass/fail, and real checkpoint logging written to
+disk after every stage so a failure leaves evidence instead of nothing.
 
-Scripts from this attempt (`verify-reconcile*.mjs`) were scratch work in
-chat's own sandbox, not committed — the finding is what's worth keeping,
-not the throwaway harness that produced an inconclusive result.
+**5. With real visibility finally working, got a real (partial) result**
+— and it directly contradicted itself in an informative way:
+`no_gamerow_nodes_removed_from_dom: true` (MutationObserver saw nothing
+removed) but `dom_node_references_reused_not_remounted: false` (both
+tracked nodes reported `stillConnected: false`). That contradiction
+pointed at a real bug in the *test's* own detection: the MutationObserver
+only flagged nodes whose own className included "gameRow" — if a
+*parent* container gets removed with gameRows inside it, the observer
+never sees the individual rows, only the parent. `isConnected` (literal
+node-in-document truth) doesn't have that blind spot, and it said the
+nodes really were gone.
 
----
+**6. That pointed straight at `DeskCard`'s own root `<Switch>`, and this
+was the actual bug the whole experiment existed to find.** It checked
+`deskData.loading` to decide skeleton vs. content — and `createResource`'s
+`.loading` flips `true` on *every* refetch by default, not just the
+first load. That means `Content` (and every `GameRow` inside it) was
+unmounting and remounting on every single poll, regardless of whether
+`deskStore`'s own `reconcile()` was working correctly underneath — the
+inner fix could have been perfect and this outer structure would have
+hidden it completely. Fixed: `<Show when={deskData()} fallback={<Skeleton/>}>`
+instead — checks the resolved *value*, which stays truthy across a
+refetch, so `Content` only ever unmounts on the genuine first load.
 
-**2026-07-24, collapsible sport groups (Claude Code's suggestion).**
-Same underlying question, new surface: local UI/interaction state
-instead of server-driven display state. `grouped()` in `DeskCard` does
-`Object.entries(map)`, producing brand-new `[sport, games]` tuple
-references on every poll — meaning a naive `createSignal` owned inside
-`SportGroup` would get wiped every 15s the same way an unreconciled
-`<For>` row would remount. Built the fix directly, same pattern as
-`deskStore`: expansion state lives in a module-level `createStore` keyed
-by sport *name* (a stable string, immune to `grouped()`'s reference
-churn), not inside the component that re-renders. `npm run build` clean,
-22 modules.
+**Re-ran verification after the fix. Confirmed, not inferred:**
+```
+dom_node_references_reused_not_remounted: PASS
+  NY Mets @ Philadelphia Phillies: stillConnected=true, sameNodeReference=true
+  Houston Astros @ Texas Rangers:  stillConnected=true, sameNodeReference=true
+houtex_transitioned_pre_to_live: PASS (pregame "—" -> live "0–1", status dot pre->live)
+no_gamerow_nodes_removed_from_dom: PASS
+```
+Real DOM node identity — literal `===` reference equality on the actual
+browser nodes — for both the game that changed and the one that didn't.
+That's the strongest test available, and it's real now, not a proxy.
 
-Same open gap as everything above: whether this actually survives a real
-poll cycle in a running browser hasn't been watched, for the same
-reasons already documented in this file — no reachable browser from
-chat's own tooling. The store-keyed-by-name pattern is the right fix per
-the same sourced SolidJS behavior already established here, but "right
-per the docs" and "confirmed running" are still two different claims,
-same distinction this whole log has tried to keep honest about.
+**One remaining `false` in the manifest that isn't a real finding:**
+`all_mount_counts_stayed_at_m1` shows empty arrays, because the
+mount-count debug badge only renders in dev mode (`import.meta.env.DEV`),
+and this now correctly tests the production build. Artifact of testing
+prod instead of dev, not a failure — worth a follow-up to stop that
+check from reporting `false` on an empty set, but not worth re-running
+verification over.
+
+**Final answer to the experiment's actual question:** yes — SolidJS's
+`createStore` + `reconcile()` genuinely prevents unnecessary DOM churn on
+poll, confirmed via real node-reference identity, not assumed from
+documentation or a proxy metric. It required getting the *consuming*
+component's own conditional-rendering right too — a store doing the
+right thing internally doesn't help if the component wrapping it
+unmounts the whole subtree anyway. Both pieces have to be correct
+together; neither alone was sufficient, and this experiment found both
+gaps for real, not just the one it set out to test.
