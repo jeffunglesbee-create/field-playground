@@ -179,10 +179,19 @@
   text-transform: uppercase;
 }
 
-/* tier colour overrides — extend when real values are known */
-.tier_a, .tier_s { background: #1a2e1a; color: #4c8; }
-.tier_b           { background: #2a2a1a; color: #aa8; }
-.tier_c           { background: #2a1a1a; color: #a66; }
+/* tier colour overrides -- tier is a real NUMBER in the live data
+   (confirmed: tier: 2), not a letter. The original .tier_a/.tier_b/
+   .tier_c classes never matched anything real -- every tier badge has
+   been rendering with the plain grey .tier base style, no color coding
+   at all, since this was first built. Numeric classes now. Assuming
+   lower number = higher tier (1 = best), matching the common "tier 1"
+   convention -- this direction isn't independently confirmed by the
+   relay, just the most reasonable reading, so styling stays modest
+   rather than overconfident about what the scale actually means. */
+.tier_1 { background: #1a2e1a; color: #4c8; }
+.tier_2 { background: #2a2a1a; color: #aa8; }
+.tier_3 { background: #2a1a1a; color: #a66; }
+.tier_4, .tier_5 { background: #1a1a1a; color: var(--field-text-muted); }
 
 .pickSport {
   font-size: 10px;
