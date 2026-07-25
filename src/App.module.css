@@ -13,7 +13,9 @@
 .seasons,
 .ground,
 .dayComparison,
-.suspenseDemo {
+.suspenseDemo,
+.agreement,
+.createRootDemo {
   display: flex;
   flex-direction: column;
   gap: 8px;
