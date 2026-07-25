@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-07-25T17-47-23-165Z",
+  "checks": [
+    {
+      "name": "outcome_marked_successfully_on_page1",
+      "pass": true
+    },
+    {
+      "name": "page2_history_reflects_cross_tab_outcome",
+      "pass": true,
+      "page2RunningTotal": "running total: 1-0-0"
+    }
+  ],
+  "outcomeBtnClicked": true,
+  "page2RunningTotal": "running total: 1-0-0",
+  "allPass": true
+}
