@@ -1,4 +1,4 @@
-import { Show, For, Switch, Match, createMemo, onMount } from 'solid-js'
+import { Show, For, createMemo, onMount } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { deskData, deskStore } from '../../data/relay'
 import styles from './DeskCard.module.css'
@@ -85,22 +85,18 @@ function GameRow(props) {
             </span>
           }
         >
-          <Switch>
-            <Match when={status() === 'pre'}>
-              <span class={styles.pre}>—</span>
-            </Match>
-            <Match when={status() === 'live'}>
+          <Show when={status() === 'pre'} fallback={
+            <Show when={status() === 'live'} fallback={
+              <>
+                <span class={styles.finalScore}>{scoreStr()}</span>
+                <span class={styles.badge}>{status() === 'final_ot' ? 'F/OT' : 'F'}</span>
+              </>
+            }>
               <span class={styles.liveScore}>{scoreStr()}</span>
-            </Match>
-            <Match when={status() === 'final'}>
-              <span class={styles.finalScore}>{scoreStr()}</span>
-              <span class={styles.badge}>F</span>
-            </Match>
-            <Match when={status() === 'final_ot'}>
-              <span class={styles.finalScore}>{scoreStr()}</span>
-              <span class={styles.badge}>F/OT</span>
-            </Match>
-          </Switch>
+            </Show>
+          }>
+            <span class={styles.pre}>—</span>
+          </Show>
         </Show>
       </span>
       <Show when={g().venue}>
@@ -170,17 +166,25 @@ function Content() {
 }
 
 export function DeskCard() {
+  // Was: <Switch><Match when={deskData.loading}>. createResource's
+  // .loading flips true on EVERY refetch by default, not just the first
+  // load -- meaning Content (and every GameRow inside it) was unmounting
+  // and remounting on every single poll, regardless of whether
+  // deskStore's own reconcile() was working correctly underneath. This
+  // masked the real answer this whole experiment exists to measure.
+  // Fixed: check deskData() (the resolved VALUE) instead of .loading.
+  // The value stays truthy across a refetch -- Content only unmounts on
+  // the genuine first load, before any data has ever resolved.
   return (
     <div class={styles.root}>
-      <Switch>
-        <Match when={deskData.loading}><Skeleton /></Match>
-        <Match when={deskData.error}>
-          <p class={styles.error}>{String(deskData.error)}</p>
-        </Match>
-        <Match when={deskData()}>
+      <Show when={deskData.error}>
+        <p class={styles.error}>{String(deskData.error)}</p>
+      </Show>
+      <Show when={!deskData.error}>
+        <Show when={deskData()} fallback={<Skeleton />}>
           <Content />
-        </Match>
-      </Switch>
+        </Show>
+      </Show>
     </div>
   )
 }
