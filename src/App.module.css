@@ -15,6 +15,7 @@
 .dayComparison,
 .suspenseDemo,
 .agreement,
+.crossCheck,
 .createRootDemo {
   display: flex;
   flex-direction: column;
