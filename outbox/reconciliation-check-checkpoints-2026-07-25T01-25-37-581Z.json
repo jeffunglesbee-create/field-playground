@@ -1,0 +1,133 @@
+[
+  {
+    "name": "script_started",
+    "t": 1784942737582
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1784942737582
+  },
+  {
+    "name": "dist_confirmed_present",
+    "t": 1784942737582
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1784942737587,
+    "pid": 2399
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1784942737915
+  },
+  {
+    "name": "browser_launched",
+    "t": 1784942739678
+  },
+  {
+    "name": "page_created",
+    "t": 1784942739730
+  },
+  {
+    "name": "routes_registered",
+    "t": 1784942739736
+  },
+  {
+    "name": "page_navigated",
+    "t": 1784942739781
+  },
+  {
+    "name": "gameRow_selector_found",
+    "t": 1784942739841
+  },
+  {
+    "name": "initial_state_read",
+    "t": 1784942740345,
+    "initialHouTex": {
+      "text": "☆Houston Astros @ Texas Rangers—Globe Life Field",
+      "statusClass": "_statusDot_1i2gj_143 _pre_1i2gj_152"
+    }
+  },
+  {
+    "name": "row_identities_tagged",
+    "t": 1784942740393
+  },
+  {
+    "name": "watchlist_star_clicked",
+    "t": 1784942740430,
+    "starredHouTex": true
+  },
+  {
+    "name": "pickem_pick_made",
+    "t": 1784942740477,
+    "pickedHouTex": true
+  },
+  {
+    "name": "pick_status_read_pre_poll",
+    "t": 1784942740479,
+    "pickStatusAfterPick": "pending"
+  },
+  {
+    "name": "first_poll_wait_complete",
+    "t": 1784942756480
+  },
+  {
+    "name": "second_poll_wait_complete",
+    "t": 1784942772482
+  },
+  {
+    "name": "toast_checked",
+    "t": 1784942772484,
+    "toastPresent": true
+  },
+  {
+    "name": "after_state_read",
+    "t": 1784942772528,
+    "afterHouTex": {
+      "text": "★Houston Astros @ Texas Rangers2–1FGlobe Life Field",
+      "statusClass": "_statusDot_1i2gj_143 _final_1i2gj_154"
+    },
+    "pollCount": 3
+  },
+  {
+    "name": "pick_status_read_post_poll",
+    "t": 1784942772529,
+    "pickStatusFinal": "correct"
+  },
+  {
+    "name": "watchlist_persistence_checked",
+    "t": 1784942772530,
+    "starredStillAfterPoll": true
+  },
+  {
+    "name": "mlb_group_clicked",
+    "t": 1784942772608
+  },
+  {
+    "name": "collapse_checked",
+    "t": 1784942772609
+  },
+  {
+    "name": "third_poll_wait_for_collapse_persistence",
+    "t": 1784942788610
+  },
+  {
+    "name": "collapse_persistence_checked",
+    "t": 1784942788612,
+    "collapsedImmediately": true,
+    "collapsedAfterPoll": true
+  },
+  {
+    "name": "browser_closed",
+    "t": 1784942788635
+  },
+  {
+    "name": "manifest_complete",
+    "t": 1784942788635,
+    "allPass": true
+  },
+  {
+    "name": "script_ending",
+    "t": 1784942788636
+  }
+]
