@@ -1,0 +1,144 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.section {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.sectionLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  margin-bottom: 8px;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+/* Tier calibration */
+.tierList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tierRow {
+  display: grid;
+  grid-template-columns: 50px 40px 1fr 32px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.tierNum {
+  color: var(--field-text-primary);
+}
+
+.tierRecord {
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.hitRateTrack {
+  height: 4px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.hitRateFill {
+  height: 100%;
+  background: linear-gradient(90deg, #e66, #da4, #4c8);
+  border-radius: 2px;
+}
+
+.hitRatePct {
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Multi-day record */
+.dayList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.dayRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.dayDate {
+  color: var(--field-text-secondary);
+}
+
+.dayRecord {
+  color: var(--field-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.runningTotal {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4c8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pick calendar */
+.calendarStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.calPip {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.cal_good  { background: #4c8; }
+.cal_bad   { background: #e66; }
+.cal_split { background: #da4; }
+.cal_empty { background: #1e1e1e; }
