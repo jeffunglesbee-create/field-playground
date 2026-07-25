@@ -12,15 +12,20 @@ import shared from '../shared.module.css'
 // live-polled result). Untested territory until now -- every prior
 // derived value in this repo read at most two sources.
 //
-// "Agreement" here means: does the user's subjective editorial verdict
-// (W = good pick, L = bad pick) match PickEm's own objective
-// correct/incorrect computation for that same game? Editorial W/L
-// doesn't imply a specific team the way a PickEm pick does -- W means
-// "this recommendation was worth it," not "the home team won" -- so
-// agreement is checked against PickEm's own already-correct verdict,
-// not by inventing a team-implication editorial data was never meant to
-// carry. Only shown for games where BOTH a PickEm pick AND an editorial
-// outcome exist -- nothing invented for games missing either.
+// CORRECTED 2026-07-25, after reading CrossCheck's reasoning (a
+// companion component built the same day, same three sources). The
+// first version of this mapped editorial-W to "good" and PickEm-correct
+// to "good" and compared them as an unqualified agree/disagree verdict.
+// That quietly assumed a dramatic, worthwhile game correlates with the
+// user's predicted team winning -- which isn't actually confirmed by
+// what these fields mean. A great game can easily be one where the
+// picked team lost in a close finish; that's not a "disagreement," it's
+// two genuinely different questions being compared as if they were one.
+// Reframed: this now explicitly labels itself as a correlation question
+// ("does a good editorial pick correlate with your predicted team
+// winning") rather than an assertion that the two should match. See
+// CrossCheck for the more conservative sibling view -- the same three
+// sources shown side by side, with no correlation claimed at all.
 
 function gameStatus(g) {
   if (g.home_score === null) return 'pre'
@@ -58,16 +63,17 @@ export function Agreement() {
       const pickEmVerdict = pickEmCorrectness(game, myPick) // 'correct' | 'incorrect' | null (not final yet)
       if (!pickEmVerdict) continue // game not final yet, nothing to compare
 
+      // "correlates" not "agrees" -- see the header note above.
       const editorialGood = editorialVerdict === 'W'
       const pickEmGood = pickEmVerdict === 'correct'
-      const agree = editorialVerdict === 'P' ? null : editorialGood === pickEmGood
+      const correlates = editorialVerdict === 'P' ? null : editorialGood === pickEmGood
 
       rows.push({
         gameId: ep.game_id,
         matchup: `${ep.away} @ ${ep.home}`,
         editorialVerdict,
         pickEmVerdict,
-        agree,
+        correlates,
       })
     }
     return rows
@@ -77,7 +83,7 @@ export function Agreement() {
     <div class={styles.root}>
       <header class={styles.header}>
         <span class={styles.label}>Agreement</span>
-        <span class={styles.note}>editorial verdict vs. your PickEm pick, three sources joined</span>
+        <span class={styles.note}>correlation, not an assertion these should match — see CrossCheck for raw signals</span>
       </header>
       <Show when={joined().length} fallback={<p class={styles.empty}>No overlapping, finalized picks yet.</p>}>
         <For each={joined()}>
@@ -90,9 +96,9 @@ export function Agreement() {
               <span class={`${shared.chip} ${styles.verdictBadge} ${styles['pe_' + row.pickEmVerdict]}`}>
                 pe: {row.pickEmVerdict}
               </span>
-              <Show when={row.agree !== null} fallback={<span class={styles.pushNote}>push</span>}>
-                <span class={`${styles.agreeFlag} ${row.agree ? styles.agree : styles.disagree}`}>
-                  {row.agree ? '✓ agree' : '✗ differ'}
+              <Show when={row.correlates !== null} fallback={<span class={styles.pushNote}>push</span>}>
+                <span class={`${styles.agreeFlag} ${row.correlates ? styles.agree : styles.disagree}`}>
+                  {row.correlates ? '✓ correlates' : '✗ diverges'}
                 </span>
               </Show>
             </div>
