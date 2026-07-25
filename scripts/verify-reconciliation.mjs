@@ -337,17 +337,16 @@ async function main() {
     manifest.urlDateParam = urlDateParam
     checkpoint('url_date_param_checked', { urlAfterNav, urlDateParam })
 
-    // Reload with a DIFFERENT date in the URL directly -- tests
-    // initialDateFromUrl(), not just the sync-back direction already
-    // covered above.
-    const reloadTargetDate = '2026-08-01'
-    await page.goto(`${SERVE_URL}/?d=${reloadTargetDate}`, { timeout: 15000 })
-    checkpoint('reloaded_with_explicit_url_date')
-    await page.waitForSelector('[class*="gameRow"]', { timeout: 15000 })
-    await page.waitForTimeout(500)
-    const dateAfterUrlReload = requestedDates[requestedDates.length - 1]
-    manifest.dateAfterUrlReload = dateAfterUrlReload
-    checkpoint('url_reload_date_checked', { dateAfterUrlReload, reloadTargetDate })
+    // url_date_param_used_on_load (does ?d= on initial load correctly
+    // seed currentDate) is checked separately -- see
+    // scripts/verify-url-load.mjs. A mid-script full page.goto() reload
+    // here was the likely cause of an 8-minute job-timeout cancellation
+    // with zero checkpoint data recovered (GHA kills the whole job on a
+    // hard timeout, including the commit-back step, so continue-on-error
+    // on the script step doesn't help when the JOB itself hits its
+    // ceiling). Isolating that specific check to its own minimal script
+    // keeps this one's blast radius smaller and makes a future failure
+    // here actually diagnosable again.
 
     // BroadcastChannel: a second real page in the SAME browser context
     // (context.newPage(), not a second browser -- BroadcastChannel is
