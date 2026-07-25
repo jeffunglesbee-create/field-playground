@@ -22,4 +22,9 @@ export function clearOutcome(gameId) {
   localStorage.setItem(KEY, JSON.stringify(next))
 }
 
+export function clearAllOutcomes() {
+  setOutcomesSignal({})
+  localStorage.setItem(KEY, JSON.stringify({}))
+}
+
 export { outcomes }
