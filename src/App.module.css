@@ -29,7 +29,12 @@
 .propsDemo,
 .dateBrowserTransition,
 .computedDemo,
-.indexArrayDemo {
+.indexArrayDemo,
+.pickStreak,
+.calibration,
+.compareToRelay,
+.localNoteLayer,
+.multiDateTrend {
   display: flex;
   flex-direction: column;
   gap: 8px;

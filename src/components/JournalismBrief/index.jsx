@@ -15,7 +15,12 @@ export function JournalismBrief() {
   const [prevCycleId, setPrevCycleId] = createSignal(null)
   const [freshlyUpdated, setFreshlyUpdated] = createSignal(false)
 
-  const data = () => journalismBrief()
+  // Reads the resource only when it's NOT in error state -- calling the
+  // accessor while errored throws (same posture as Seasons/DayComparison/
+  // MultiDayStreak). Previously this called journalismBrief() unconditionally,
+  // and the JSX below read it in a sibling <Show> rather than nesting inside
+  // an "!error" check, so an errored resource still threw on every render.
+  const data = () => (journalismBrief.error ? undefined : journalismBrief())
 
   const age = createMemo(() => {
     const d = data()
@@ -60,17 +65,19 @@ export function JournalismBrief() {
       <Show when={journalismBrief.error}>
         <p class={styles.error}>{String(journalismBrief.error)}</p>
       </Show>
-      <Show when={data()} fallback={<p class={styles.loading}>Loading…</p>}>
-        <p class={`${styles.brief} ${freshlyUpdated() ? styles.briefFlash : ''}`}>
-          {data().brief}
-        </p>
-        <footer class={styles.meta}>
-          <span class={styles.metaItem} title="prose quality score">q{data().proseScore}</span>
-          <Show when={data().clicheCount > 0}>
-            <span class={styles.metaItem} title="cliché count">{data().clicheCount} cliché{data().clicheCount > 1 ? 's' : ''}</span>
-          </Show>
-          <span class={styles.metaItem} title="game count">{data().gameCount} games</span>
-        </footer>
+      <Show when={!journalismBrief.error}>
+        <Show when={data()} fallback={<p class={styles.loading}>Loading…</p>}>
+          <p class={`${styles.brief} ${freshlyUpdated() ? styles.briefFlash : ''}`}>
+            {data().brief}
+          </p>
+          <footer class={styles.meta}>
+            <span class={styles.metaItem} title="prose quality score">q{data().proseScore}</span>
+            <Show when={data().clicheCount > 0}>
+              <span class={styles.metaItem} title="cliché count">{data().clicheCount} cliché{data().clicheCount > 1 ? 's' : ''}</span>
+            </Show>
+            <span class={styles.metaItem} title="game count">{data().gameCount} games</span>
+          </footer>
+        </Show>
       </Show>
     </div>
   )

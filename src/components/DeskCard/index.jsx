@@ -27,15 +27,68 @@ function gameStatus(g) {
 
 const mountCounts = {}
 
-const [collapsed, setCollapsed] = createStore({})
+export const [collapsed, setCollapsed] = createStore({})
 function toggleGroup(sport) {
   setCollapsed(sport, c => !c)
 }
 
-const [watched, setWatched] = createStore({})
+// Hoisted to module scope (was local to Content()) so it can round-trip
+// through the URL the same way watched/collapsed do -- a signal that only
+// exists inside one function's closure can't be read from initExtendedUrlSync.
+export const [liveOnly, setLiveOnly] = createSignal(false)
+
+// Multi-key URL sync. relay.js's initUrlDateSync already round-trips
+// currentDate through ?d=. This extends the same idea to three more
+// independent signals -- watched, liveOnly, collapsed -- all inside ONE
+// createEffect rather than one effect per signal. Three separate effects
+// each doing read-current-URL -> set-one-param -> replaceState would
+// still be correct (JS is single-threaded; Solid runs effects one after
+// another, never concurrently, so each would see the previous one's
+// write) but there's no reason to couple three independent signals'
+// effect-scheduling order together -- one effect that tracks all three
+// keeps every param write atomic with the others in the same tick.
+export function initExtendedUrlSync() {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const watchParam = params.get('watch')
+    if (watchParam) {
+      for (const id of watchParam.split(',').filter(Boolean)) setWatched(id, true)
+    }
+    if (params.get('live') === '1') setLiveOnly(true)
+    const collapsedParam = params.get('collapsed')
+    if (collapsedParam) {
+      for (const sport of collapsedParam.split(',').filter(Boolean)) setCollapsed(sport, true)
+    }
+  } catch { /* window/location unavailable (SSR, tests) */ }
+
+  createEffect(() => {
+    const watchedIds = Object.keys(watched).filter(id => watched[id])
+    const collapsedSports = Object.keys(collapsed).filter(s => collapsed[s])
+    const isLiveOnly = liveOnly()
+    try {
+      const url = new URL(window.location.href)
+      if (watchedIds.length) url.searchParams.set('watch', watchedIds.join(',')); else url.searchParams.delete('watch')
+      if (isLiveOnly) url.searchParams.set('live', '1'); else url.searchParams.delete('live')
+      if (collapsedSports.length) url.searchParams.set('collapsed', collapsedSports.join(',')); else url.searchParams.delete('collapsed')
+      window.history.replaceState({}, '', url)
+    } catch { /* best effort */ }
+  })
+}
+
+// Exported so a standalone playground surface (ThresholdAlert isn't a
+// separate component here -- see the alertThreshold signal below and the
+// GameRow effect that reads it -- but WatchlistAlert-style consumers
+// elsewhere could read the same watchlist without duplicating it).
+export const [watched, setWatched] = createStore({})
 function toggleWatch(id) {
   setWatched(id, w => !w)
 }
+
+// Score-differential threshold alert: purely a derived condition over
+// data that's already polling (deskStore), no new fetch. A watched, live
+// game that closes to within N points fires a toast exactly once, on the
+// crossing -- not on every poll while it stays close.
+const [alertThreshold, setAlertThreshold] = createSignal(5)
 
 const [optimisticScores, setOptimisticScores] = createStore({})
 const [editingGameId, setEditingGameId] = createSignal(null)
@@ -160,6 +213,22 @@ function LiveFilterToggle(props) {
     >
       {props.active() ? '● live only' : 'live only'}
     </button>
+  )
+}
+
+function AlertThresholdControl() {
+  return (
+    <label class={styles.alertControl} title="toast when a ★ watched live game's margin closes to this many points or fewer">
+      <span class={styles.alertLabel}>alert ≤</span>
+      <input
+        type="number"
+        min="0"
+        max="99"
+        class={styles.alertInput}
+        value={alertThreshold()}
+        onInput={e => setAlertThreshold(Math.min(99, Math.max(0, Number(e.currentTarget.value) || 0)))}
+      />
+    </label>
   )
 }
 
@@ -335,6 +404,15 @@ function GameRow(props) {
     }
   }, { defer: true }))
 
+  createEffect(on(margin, (curr, prev) => {
+    if (!isWatched() || isIndividual() || status() !== 'live') return
+    const threshold = alertThreshold()
+    if (prev > threshold && curr <= threshold) {
+      const label = `${g().away} @ ${g().home}`
+      showToast(`${label} within ${threshold}: ${scoreStr()}`, 'live')
+    }
+  }, { defer: true }))
+
   return (
     <div
       ref={rowEl}
@@ -450,7 +528,6 @@ function SportGroup(props) {
 }
 
 function Content() {
-  const [liveOnly, setLiveOnly] = createSignal(false)
   const secondsSinceFetch = useSecondsSinceFetch()
 
   createEffect(on(deskLastFetchedAt, (fetchedAt, prevFetchedAt) => {
@@ -502,6 +579,7 @@ function Content() {
       <div class={styles.controlRow}>
         <TonightsCard games={allGames} />
         <LiveFilterToggle active={liveOnly} setActive={setLiveOnly} />
+        <AlertThresholdControl />
         <Show when={dismissedCount()}>
           <button class={styles.resetBtn} onClick={resetDismissed}>reset ({dismissedCount()} hidden)</button>
         </Show>

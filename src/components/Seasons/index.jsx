@@ -112,7 +112,14 @@ function mlbTeamState(t) {
 function MlbSection() {
   const [active, setActive] = createSignal(201)
 
-  const records = createMemo(() => mlbStandings()?.records ?? [])
+  // Resources throw when READ in error state -- but a createMemo whose
+  // computation throws on its first run doesn't reliably re-throw on
+  // later reads; it can settle into a stale `undefined` instead, which
+  // then crashes something downstream with an opaque "reading .length
+  // of undefined" rather than the real fetch error. Checking `.error`
+  // BEFORE calling the accessor avoids ever invoking it while errored --
+  // same posture AmbientPanel/DeskCard already take with `.error`.
+  const records = createMemo(() => mlbStandings.error ? [] : (mlbStandings()?.records ?? []))
 
   const tabs = createMemo(() =>
     records()
@@ -155,7 +162,7 @@ function MlbSection() {
         <span class={styles.sectionSubLabel}>MLB</span>
         <span class={styles.liveTag}>LIVE, DERIVED</span>
       </div>
-      <Show when={records().length} fallback={<p class={styles.empty}>Loading…</p>}>
+      <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : 'Loading…'}</p>}>
         <Tabs tabs={tabs()} active={active} setActive={setActive} />
         <div class={styles.cardGrid}>
           <For each={active() === 'wc' ? wildCardTeams() : divisionTeams()}>
@@ -172,7 +179,7 @@ function MlsSection() {
   const [active, setActive] = createSignal('East')
   const tabs = [{ key: 'East', label: 'Eastern' }, { key: 'West', label: 'Western' }]
 
-  const entries = createMemo(() => mlsStandings()?.tables?.[0]?.entries ?? [])
+  const entries = createMemo(() => mlsStandings.error ? [] : (mlsStandings()?.tables?.[0]?.entries ?? []))
 
   const conferenceTeams = createMemo(() => {
     const set = active() === 'East' ? MLS_EASTERN : MLS_WESTERN
@@ -192,7 +199,7 @@ function MlsSection() {
         <span class={styles.sectionSubLabel}>MLS</span>
         <span class={styles.liveTag}>LIVE</span>
       </div>
-      <Show when={entries().length} fallback={<p class={styles.empty}>Loading…</p>}>
+      <Show when={entries().length} fallback={<p class={styles.empty}>{mlsStandings.error ? 'Unable to load MLS standings.' : 'Loading…'}</p>}>
         <Tabs tabs={tabs} active={active} setActive={setActive} />
         <For each={conferenceTeams()}>{team => <TableRow team={team} />}</For>
       </Show>
@@ -203,7 +210,7 @@ function MlsSection() {
 // --- World Cup section: 12 tabs (one per group), full tables now that
 // tabs give room -- no longer trimmed to winners-only. ---
 function WcSection() {
-  const groups = createMemo(() => wcStandings()?.groups ?? {})
+  const groups = createMemo(() => wcStandings.error ? {} : (wcStandings()?.groups ?? {}))
   const [active, setActive] = createSignal('A')
   const tabs = createMemo(() => Object.keys(groups()).map(g => ({ key: g, label: g })))
 
@@ -220,7 +227,7 @@ function WcSection() {
         <span class={styles.sectionSubLabel}>World Cup</span>
         <span class={styles.liveTag}>LIVE, CONCLUDED 7/19</span>
       </div>
-      <Show when={tabs().length} fallback={<p class={styles.empty}>Loading…</p>}>
+      <Show when={tabs().length} fallback={<p class={styles.empty}>{wcStandings.error ? 'Unable to load World Cup standings.' : 'Loading…'}</p>}>
         <Tabs tabs={tabs()} active={active} setActive={setActive} />
         <For each={groupTeams()}>{team => <TableRow team={team} />}</For>
       </Show>

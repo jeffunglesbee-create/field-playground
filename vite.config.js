@@ -34,12 +34,17 @@ function mockRelay() {
   const context = (date) => {
     contextRequestCount++
     const houTexLive = contextRequestCount >= 2
+    // Same variation strategy as houTexLive: nym-phi's local_note changes
+    // after the first poll, so LocalNoteLayer's "override goes stale when
+    // the relay's own value moves" behavior is actually exercisable in dev,
+    // not just asserted in a comment.
+    const nymPhiNote = contextRequestCount >= 2 ? 'Editor updated: doubleheader nightcap' : 'Getaway day, bullpen game'
     return {
       ok: true,
       date,
       games: {
         regular: [
-          { id: `${date}-mlb-nym-phi`, sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets',        home_score: 4,    away_score: 2,    venue: 'Citizens Bank Park',        finalized_at: `${date}T02:15:00Z`, went_to_ot: null },
+          { id: `${date}-mlb-nym-phi`, sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets',        home_score: 4,    away_score: 2,    venue: 'Citizens Bank Park',        finalized_at: `${date}T02:15:00Z`, went_to_ot: null, local_note: nymPhiNote },
           { id: `${date}-mlb-bos-nyy`, sport: 'MLB', home: 'NY Yankees',            away: 'Boston Red Sox', home_score: 3,    away_score: 2,    venue: 'Yankee Stadium',            finalized_at: null,                went_to_ot: null },
           { id: `${date}-mlb-hou-tex`, sport: 'MLB', home: 'Texas Rangers',          away: 'Houston Astros', home_score: houTexLive ? 1 : null, away_score: houTexLive ? 0 : null, venue: 'Globe Life Field',          finalized_at: null,                went_to_ot: null },
           { id: `${date}-mls-col-slc`, sport: 'MLS', home: 'Real Salt Lake',         away: 'Colorado Rapids',home_score: null, away_score: null, venue: 'America First Field',       finalized_at: null,                went_to_ot: null },

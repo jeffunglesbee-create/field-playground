@@ -109,7 +109,7 @@ export function PropsDemo() {
       <div class={styles.restProof}>
         <span class={styles.restKey}>onClick last fired:</span>
         <span class={styles.restVal}>{clickedLabel() ?? '—'}</span>
-        <span class={styles.restNote}>(forwarded via {...rest})</span>
+        <span class={styles.restNote}>(forwarded via {'{...rest}'})</span>
       </div>
     </div>
   )

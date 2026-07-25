@@ -3,6 +3,7 @@ import { createSignal, createEffect } from 'solid-js'
 const KEY = 'field-pick-outcomes'
 const META_KEY = 'field-pick-meta'
 const NOTE_KEY = 'field-pick-notes'
+const CONFIDENCE_KEY = 'field-pick-confidence'
 
 function load(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key) ?? JSON.stringify(fallback)) }
@@ -23,6 +24,14 @@ const [outcomes, setOutcomesSignal] = createSignal(load(KEY, {}))
 const [pickMeta, setPickMetaSignal] = createSignal(load(META_KEY, {}))
 
 const [annotations, setAnnotationsSignal] = createSignal(load(NOTE_KEY, {}))
+
+// confidence: gameId -> integer 0-100, "how sure were you this pick would
+// hit" captured AFTER the outcome is known (retroactive, not at pick time --
+// see Calibration component). Kept as its own map for the same reason
+// pickMeta is separate from outcomes: outcomes' bare W/L/P shape is read
+// directly by four existing call sites, and confidence is optional data
+// that doesn't exist for picks marked before this feature shipped.
+const [confidence, setConfidenceSignal] = createSignal(load(CONFIDENCE_KEY, {}))
 
 export function setOutcome(gameId, result, tier) {
   const next = { ...outcomes(), [gameId]: result }
@@ -47,6 +56,20 @@ export function clearOutcome(gameId) {
 export function clearAllOutcomes() {
   setOutcomesSignal({})
   localStorage.setItem(KEY, JSON.stringify({}))
+}
+
+export function setConfidence(gameId, pct) {
+  const clamped = Math.max(0, Math.min(100, Math.round(pct)))
+  const next = { ...confidence(), [gameId]: clamped }
+  setConfidenceSignal(next)
+  localStorage.setItem(CONFIDENCE_KEY, JSON.stringify(next))
+}
+
+export function clearConfidence(gameId) {
+  const next = { ...confidence() }
+  delete next[gameId]
+  setConfidenceSignal(next)
+  localStorage.setItem(CONFIDENCE_KEY, JSON.stringify(next))
 }
 
 export function setAnnotation(gameId, text) {
@@ -91,11 +114,15 @@ export function initOutcomesSync() {
       setPickMetaSignal(d.meta)
       localStorage.setItem(META_KEY, JSON.stringify(d.meta))
     }
+    if (d.confidence && JSON.stringify(d.confidence) !== JSON.stringify(confidence())) {
+      setConfidenceSignal(d.confidence)
+      localStorage.setItem(CONFIDENCE_KEY, JSON.stringify(d.confidence))
+    }
   }
 
   createEffect(() => {
-    syncChannel?.postMessage({ outcomes: outcomes(), meta: pickMeta() })
+    syncChannel?.postMessage({ outcomes: outcomes(), meta: pickMeta(), confidence: confidence() })
   })
 }
 
-export { outcomes, pickMeta, annotations }
+export { outcomes, pickMeta, annotations, confidence }

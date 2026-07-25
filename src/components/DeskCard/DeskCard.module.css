@@ -101,6 +101,31 @@
   border-color: #2a4a2a;
 }
 
+.alertControl {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.alertLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.alertInput {
+  width: 30px;
+  font-family: inherit;
+  font-size: 10px;
+  color: var(--field-text-primary);
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 3px;
+  padding: 2px 3px;
+  text-align: center;
+}
+
 .resetBtn {
   font-size: 9px;
   font-family: inherit;
