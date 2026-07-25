@@ -1,0 +1,111 @@
+[
+  {
+    "name": "script_started",
+    "t": 1784940921879
+  },
+  {
+    "name": "checking_dist_exists",
+    "t": 1784940921880
+  },
+  {
+    "name": "dist_confirmed_present",
+    "t": 1784940921880
+  },
+  {
+    "name": "static_server_spawned",
+    "t": 1784940921884,
+    "pid": 2428
+  },
+  {
+    "name": "static_server_responding",
+    "t": 1784940922216
+  },
+  {
+    "name": "browser_launched",
+    "t": 1784940925625
+  },
+  {
+    "name": "page_created",
+    "t": 1784940925679
+  },
+  {
+    "name": "routes_registered",
+    "t": 1784940925684
+  },
+  {
+    "name": "page_navigated",
+    "t": 1784940925735
+  },
+  {
+    "name": "gameRow_selector_found",
+    "t": 1784940925788
+  },
+  {
+    "name": "initial_state_read",
+    "t": 1784940926291,
+    "initialHouTex": {
+      "text": "Houston Astros @ Texas Rangers—Globe Life Field",
+      "statusClass": "_statusDot_1sflx_84 _pre_1sflx_93"
+    }
+  },
+  {
+    "name": "row_identities_tagged",
+    "t": 1784940926340
+  },
+  {
+    "name": "mlb_group_clicked",
+    "t": 1784940926358
+  },
+  {
+    "name": "collapse_state_checked_pre_poll",
+    "t": 1784940926359,
+    "collapsedImmediately": true
+  },
+  {
+    "name": "pickem_pick_made",
+    "t": 1784940926406,
+    "pickedHouTex": true
+  },
+  {
+    "name": "pick_status_read_pre_poll",
+    "t": 1784940926408,
+    "pickStatusAfterPick": "pending"
+  },
+  {
+    "name": "first_poll_wait_complete",
+    "t": 1784940942410
+  },
+  {
+    "name": "second_poll_wait_complete",
+    "t": 1784940958411
+  },
+  {
+    "name": "after_state_read",
+    "t": 1784940958415,
+    "afterHouTex": null,
+    "pollCount": 3
+  },
+  {
+    "name": "collapse_state_checked_post_poll",
+    "t": 1784940958416,
+    "collapsedAfterPolls": true
+  },
+  {
+    "name": "pick_status_read_post_poll",
+    "t": 1784940958417,
+    "pickStatusFinal": "incorrect"
+  },
+  {
+    "name": "browser_closed",
+    "t": 1784940958479
+  },
+  {
+    "name": "manifest_complete",
+    "t": 1784940958479,
+    "allPass": false
+  },
+  {
+    "name": "script_ending",
+    "t": 1784940958480
+  }
+]
