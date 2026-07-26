@@ -1,9 +1,10 @@
-/* Moved verbatim from Seasons.module.css so Seasons, PickEm and
-   DayComparison share one definition rather than three that drift.
-   Seasons' own copies of .tabBar/.tab/.tab:hover/.tabActive are now
-   dead and should be deleted from that file -- kept there for the
-   moment only because a CSS Module's unused classes are inert, not
-   because they're still doing anything. */
+/* Moved verbatim from the Seasons component's own module.css (that
+   component is now StandingRoom, merged with StandingsDrawer
+   2026-07-26) so it, PickEm, and DayComparison share one definition
+   rather than three that drift. The donor's own local .tabBar/.tab/
+   .tab:hover/.tabActive copies were finally deleted in that same merge
+   -- this comment used to note them as dead-but-not-yet-removed; that's
+   done now, not just documented. */
 
 .tabBar {
   display: flex;
@@ -39,7 +40,7 @@
   border-color: #3a3a3a;
 }
 
-/* Optional per-tab count. Seasons doesn't pass one; PickEm and
+/* Optional per-tab count. StandingRoom doesn't pass one; PickEm and
    DayComparison do, since "how many games are in this tab" is the
    thing you actually want before clicking it. */
 .tabCount {

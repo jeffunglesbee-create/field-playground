@@ -28,7 +28,7 @@ export function MultiDayStreak(props) {
 
   const teamName = () => props.team
 
-  // Same posture as Seasons/DayComparison: a resource throws when read in
+  // Same posture as StandingRoom/DayComparison: a resource throws when read in
   // error state, and `?.`/`??` only guard the loading case -- checking
   // `.error` before calling the accessor avoids ever invoking it while errored.
   const results = createMemo(() =>

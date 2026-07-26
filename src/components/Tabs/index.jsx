@@ -21,7 +21,7 @@ import styles from './Tabs.module.css'
 // props-are-getters discipline the rest of this repo follows.
 //
 // `tabs` may be a plain array OR an accessor: <For> unwraps a function
-// source, so both work. Seasons passes an accessor (its tab list is
+// source, so both work. StandingRoom passes an accessor (its tab list is
 // derived from live standings); PickEm/DayComparison pass static arrays.
 //
 // `id` (optional, defaults to "tabs") namespaces this instance's
@@ -42,10 +42,11 @@ import styles from './Tabs.module.css'
 // DOM at all -- a real dangling reference, not a hidden one. Per WAI-ARIA,
 // `aria-controls` is optional/informative (unlike `aria-selected`, which
 // is required); omitting it when there's no live target to point at is
-// correct, not a compromise. Seasons/PickEm/DayComparison/Stats don't
-// pass `hasPanel` -- they've never rendered a matching tabpanel element,
-// so leaving them opted out preserves their exact pre-existing behavior
-// rather than emitting a reference to something that was never there.
+// correct, not a compromise. StandingRoom/PickEm/DayComparison/Stats
+// don't pass `hasPanel` -- they've never rendered a matching tabpanel
+// element, so leaving them opted out preserves their exact pre-existing
+// behavior rather than emitting a reference to something that was never
+// there.
 export function tabId(id, key) { return `${id ?? 'tabs'}-tab-${key}` }
 export function panelId(id, key) { return `${id ?? 'tabs'}-panel-${key}` }
 

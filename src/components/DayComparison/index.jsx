@@ -16,7 +16,7 @@ function yesterdayOf(dateStr) {
 }
 
 function DayColumn(props) {
-  // Same posture as Seasons: a resource throws when read in error state, and
+  // Same posture as StandingRoom: a resource throws when read in error state, and
   // `?.`/`??` only guard the loading case, not the error case -- checking
   // `.error` before calling the accessor avoids ever invoking it while errored.
   const games = createMemo(() => {

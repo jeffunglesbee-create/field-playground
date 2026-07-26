@@ -16,7 +16,7 @@ export function JournalismBrief() {
   const [freshlyUpdated, setFreshlyUpdated] = createSignal(false)
 
   // Reads the resource only when it's NOT in error state -- calling the
-  // accessor while errored throws (same posture as Seasons/DayComparison/
+  // accessor while errored throws (same posture as StandingRoom/DayComparison/
   // MultiDayStreak). Previously this called journalismBrief() unconditionally,
   // and the JSX below read it in a sibling <Show> rather than nesting inside
   // an "!error" check, so an errored resource still threw on every render.

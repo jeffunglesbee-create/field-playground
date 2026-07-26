@@ -38,7 +38,6 @@ import { Presence } from './components/Presence'
 import { ScoreFeed } from './components/ScoreFeed'
 import { ReactivePerfPanel } from './components/ReactivePerfPanel'
 import { Multiview } from './components/Multiview'
-import { StandingsDrawer } from './components/StandingsDrawer'
 import { ReorderCost } from './components/ReorderCost'
 import { TeamAffinitySync } from './components/TeamAffinitySync'
 import { WeatherPoll } from './components/WeatherPoll'
@@ -46,7 +45,7 @@ import { VenueGeocodeRace } from './components/VenueGeocodeRace'
 import { ToastLayer } from './components/Toast'
 import { Tabs, tabId, panelId } from './components/Tabs'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
-import { SeasonsLazy as Seasons } from './lazyModules'
+import { StandingRoomLazy as StandingRoom } from './lazyModules'
 import { initOutcomesSync } from './data/outcomes'
 import { initScoreEvents } from './data/scoreEvents'
 import { initPresence } from './data/presence'
@@ -78,7 +77,7 @@ const POLL_INTERVAL_MS = 15000
 const TOP_NAV_ID = 'app'
 
 const TOP_TABS = [
-  { key: 'games', label: 'Games', count: 9 },
+  { key: 'games', label: 'Games', count: 8 },
   { key: 'picks', label: 'Picks', count: 7 },
   { key: 'stats', label: 'Stats', count: 4 },
   { key: 'journalism', label: 'Journalism', count: 1 },
@@ -108,8 +107,8 @@ function sectionFallback(err, reset) {
 // .error) threw on render, and with only ONE ErrorBoundary wrapping the
 // entire app, that one throw blanked all 54 sections -- not just its
 // own. The WeatherPoll bug itself is fixed (check .error before ever
-// calling the resource accessor, same pattern as Seasons/DrillDown/
-// StandingsDrawer), but the architecture that let one section's failure
+// calling the resource accessor, same pattern as StandingRoom/
+// DrillDown), but the architecture that let one section's failure
 // take down every other section is the actual root cause worth fixing
 // too. Every section below now gets its OWN boundary: a future bug
 // anywhere degrades to that one section showing its error message, with
@@ -172,8 +171,8 @@ export default function App() {
 
         {/* Unmounting an inactive tab's sections (rather than hiding them
             with CSS) is deliberate, not incidental -- it's the same
-            pattern Seasons/PickEm/DayComparison/Stats already use for
-            their own internal tabs, proven live in this repo. Every
+            pattern StandingRoom/PickEm/DayComparison/Stats already use
+            for their own internal tabs, proven live in this repo. Every
             polling loop below (WeatherPoll's own setInterval,
             JournalismBrief's 5m cadence, etc.) genuinely stops via its own
             onCleanup while its tab isn't active, and resumes correctly on
@@ -183,9 +182,9 @@ export default function App() {
             Multiview/ReorderCost's counters, LazyBoundaryDemo's already-
             loaded chunk), not just its poll loop -- switching away and
             back genuinely resets a section to its initial state. That's
-            the same tradeoff Seasons/PickEm/DayComparison/Stats already
-            accepted for their own tabs, worth naming here so it doesn't
-            read as a bug later. */}
+            the same tradeoff StandingRoom/PickEm/DayComparison/Stats
+            already accepted for their own tabs, worth naming here so it
+            doesn't read as a bug later. */}
         <div
           class={styles.tabbedContent}
           role="tabpanel"
@@ -210,9 +209,6 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.pollDeltaFeed}>
               <PollDeltaFeed />
-            </SafeSection>
-            <SafeSection class={styles.standingsDrawer}>
-              <StandingsDrawer />
             </SafeSection>
             <SafeSection class={styles.localNoteLayer}>
               <LocalNoteLayer />
@@ -247,9 +243,9 @@ export default function App() {
           </Show>
 
           <Show when={activeTab() === 'stats'}>
-            <SafeSection class={styles.seasons}>
+            <SafeSection class={styles.standingRoom}>
               <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
-                <Seasons />
+                <StandingRoom />
               </Suspense>
             </SafeSection>
             <SafeSection class={styles.stats}>

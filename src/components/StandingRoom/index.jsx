@@ -1,7 +1,22 @@
 import { For, Show, createMemo, createSignal } from 'solid-js'
-import { wcStandings, mlbStandings, mlsStandings } from '../../data/relay'
-import styles from './Seasons.module.css'
+import { wcStandings, mlbStandings, mlsStandings, deskStore } from '../../data/relay'
+import { Tabs } from '../Tabs'
+import styles from './StandingRoom.module.css'
 import shared from '../shared.module.css'
+
+// StandingRoom -- formerly two separate top-level sections, Seasons and
+// StandingsDrawer, which read the exact same live resources
+// (mlbStandings/mlsStandings) to answer two genuinely different
+// questions -- "what does the whole league table look like" (League
+// Tables, below) vs "how are the two teams in THIS specific game doing"
+// (Today's Games, further down). Split across two App sections despite
+// being the same underlying information, same data source, same
+// "standings" subject. Merged 2026-07-26 into one component with a view
+// toggle rather than deleting either mechanism: League Tables'
+// division/conference/group browsing and Today's Games' lazy per-row
+// join (computed only when a row is expanded, zero new fetch --
+// StandingsDrawer's whole reason to exist) are both real, distinct, and
+// worth keeping. What moved is presentation, not data.
 
 // MLB division ID -> name. Not in the API response (only numeric division
 // IDs) -- verified against real live team rosters per division before
@@ -49,23 +64,6 @@ const SAMPLE_TEAMS = [
   { name: 'Southampton',   sport: 'EPL', state: 'relegation_battle',label: 'Relegation Battle',  urgency: 0.9, detail: '18th · 2 pts from safety' },
   { name: 'Arsenal',       sport: 'EPL', state: 'mid_table',        label: 'Mid-Table',          urgency: 0.1, detail: '9th · nothing at stake' },
 ]
-
-function Tabs(props) {
-  return (
-    <div class={styles.tabBar}>
-      <For each={props.tabs}>
-        {tab => (
-          <button
-            class={`${styles.tab} ${props.active() === tab.key ? styles.tabActive : ''}`}
-            onClick={() => props.setActive(tab.key)}
-          >
-            {tab.label}
-          </button>
-        )}
-      </For>
-    </div>
-  )
-}
 
 // Card format, back from the compact-row version -- state badge, urgency
 // bar, detail line, one team per card.
@@ -163,7 +161,7 @@ function MlbSection() {
         <span class={styles.liveTag}>LIVE, DERIVED</span>
       </div>
       <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : 'Loading…'}</p>}>
-        <Tabs tabs={tabs()} active={active} setActive={setActive} />
+        <Tabs id="standing-room-mlb" tabs={tabs()} active={active} setActive={setActive} />
         <div class={styles.cardGrid}>
           <For each={active() === 'wc' ? wildCardTeams() : divisionTeams()}>
             {team => <TeamCard team={team} />}
@@ -200,7 +198,7 @@ function MlsSection() {
         <span class={styles.liveTag}>LIVE</span>
       </div>
       <Show when={entries().length} fallback={<p class={styles.empty}>{mlsStandings.error ? 'Unable to load MLS standings.' : 'Loading…'}</p>}>
-        <Tabs tabs={tabs} active={active} setActive={setActive} />
+        <Tabs id="standing-room-mls" tabs={tabs} active={active} setActive={setActive} />
         <For each={conferenceTeams()}>{team => <TableRow team={team} />}</For>
       </Show>
     </section>
@@ -228,31 +226,166 @@ function WcSection() {
         <span class={styles.liveTag}>LIVE, CONCLUDED 7/19</span>
       </div>
       <Show when={tabs().length} fallback={<p class={styles.empty}>{wcStandings.error ? 'Unable to load World Cup standings.' : 'Loading…'}</p>}>
-        <Tabs tabs={tabs()} active={active} setActive={setActive} />
+        <Tabs id="standing-room-wc" tabs={tabs()} active={active} setActive={setActive} />
         <For each={groupTeams()}>{team => <TableRow team={team} />}</For>
       </Show>
     </section>
   )
 }
 
-export function Seasons() {
+// --- Today's Games: StandingsDrawer's own mechanism, absorbed verbatim.
+// Production's gamecard has a collapsible "▼ Standings" control per game.
+// This is a lazy per-row JOIN, not a new fetch: mlbStandings/mlsStandings
+// are the exact same already-resident resources League Tables (above)
+// already holds, cross-referenced here against deskStore's own game list
+// by team name. A createMemo (or any derived accessor) is never evaluated
+// until something actually reads it -- before a row is ever expanded,
+// this row's lookup literally never runs, no cost, and there is nothing
+// here that could trigger a network request even if it did (both source
+// resources are already fetched). Distinct from DrillDown (a genuinely
+// NEW chained fetch, resource B sourced from resource A) -- this proves
+// the complementary case: an ad-hoc join across two ALREADY-LIVE
+// resources needs zero fetch machinery, just a lookup gated by whether
+// anyone asked for it yet.
+function allGames() {
+  return [...(deskStore.games?.regular ?? []), ...(deskStore.games?.postseason ?? [])]
+}
+
+function gameStatus(g) {
+  if (g.home_score === null) return 'pre'
+  if (g.finalized_at) return g.went_to_ot ? 'final_ot' : 'final'
+  return 'live'
+}
+
+function mlbLine(teamName) {
+  if (mlbStandings.error) return null
+  const rec = (mlbStandings()?.records ?? []).flatMap(r => r.teamRecords ?? []).find(t => t.team.name === teamName)
+  if (!rec) return null
+  const gb = rec.gamesBack === '-' ? 'leads division' : `${rec.gamesBack} GB`
+  return `${gb} · WC ${rec.wildCardGamesBack} · ${rec.streak?.streakCode ?? ''}`
+}
+
+function mlsLine(teamName) {
+  if (mlsStandings.error) return null
+  const rec = (mlsStandings()?.tables?.[0]?.entries ?? []).find(t => t.team === teamName)
+  if (!rec) return null
+  return `${rec.wins}-${rec.draws}-${rec.losses} · GD ${rec.goals_difference > 0 ? '+' : ''}${rec.goals_difference} · ${rec.points} pts`
+}
+
+// {supported, line} rather than overloading null/undefined -- "this
+// sport has no standings source wired into this playground at all" and
+// "this specific team wasn't found in an otherwise-supported sport's
+// current standings" are genuinely different states and read the same
+// way if collapsed into one nullable value.
+function standingInfo(sport, teamName) {
+  if (sport === 'MLB') return { supported: true, line: mlbLine(teamName) }
+  if (sport === 'MLS') return { supported: true, line: mlsLine(teamName) }
+  return { supported: false, line: null }
+}
+
+function GameDrawerRow(props) {
+  const [expanded, setExpanded] = createSignal(false)
+  const g = () => props.game
+
+  // Plain accessors, not createMemo -- createMemo computes its initial
+  // value EAGERLY at creation (confirmed against SolidJS's own docs, not
+  // assumed), so a memo here would run standingInfo()'s mlbLine/mlsLine
+  // scan for every row the moment <For> mounts it, regardless of whether
+  // that row is ever expanded. That directly contradicts this section's
+  // whole reason to exist -- "before a row is ever expanded, this row's
+  // lookup literally never runs." A plain function only runs when
+  // actually called, which only happens inside the `expanded()` Show
+  // below -- genuine lazy evaluation, not memoized-but-still-eager.
+  const homeInfo = () => standingInfo(g().sport, g().home)
+  const awayInfo = () => standingInfo(g().sport, g().away)
+
+  return (
+    <div class={styles.drawerRow}>
+      <button
+        type="button"
+        class={styles.drawerRowHead}
+        onClick={() => setExpanded(e => !e)}
+        aria-expanded={expanded()}
+      >
+        <span class={`${styles.dot} ${styles[gameStatus(g())]}`} />
+        <span class={styles.matchup}>{g().away} @ {g().home}</span>
+        <span class={styles.chevron}>{expanded() ? '▾' : '▸'}</span>
+      </button>
+      <Show when={expanded()}>
+        <div class={styles.drawer}>
+          <Show
+            when={homeInfo().supported}
+            fallback={<p class={styles.noSource}>No standings source wired for {g().sport} in this playground.</p>}
+          >
+            <div class={styles.teamLine}>
+              <span class={styles.drawerTeamName}>{g().home}</span>
+              <span class={styles.teamDetail}>{homeInfo().line ?? 'not found in current standings'}</span>
+            </div>
+            <div class={styles.teamLine}>
+              <span class={styles.drawerTeamName}>{g().away}</span>
+              <span class={styles.teamDetail}>{awayInfo().line ?? 'not found in current standings'}</span>
+            </div>
+          </Show>
+        </div>
+      </Show>
+    </div>
+  )
+}
+
+function TodaysGamesSection() {
+  const games = createMemo(allGames)
+
+  return (
+    <section class={styles.realSection}>
+      <div class={styles.realHeader}>
+        <span class={styles.sectionSubLabel}>Today's Games</span>
+        <span class={styles.liveTag}>PER-GAME JOIN, ZERO NEW FETCH</span>
+      </div>
+      <p class={styles.drawerNote}>
+        Same wcStandings/mlbStandings/mlsStandings resources League Tables already holds live —
+        joined here against each real game's own home/away team names, computed only when a row
+        is expanded. No new request; the data is already resident.
+      </p>
+      <Show when={games().length} fallback={<p class={styles.empty}>No games today.</p>}>
+        <div class={styles.drawerRowList}>
+          <For each={games()}>{g => <GameDrawerRow game={g} />}</For>
+        </div>
+      </Show>
+    </section>
+  )
+}
+
+const VIEW_TABS = [
+  { key: 'leagues', label: 'League Tables' },
+  { key: 'today', label: "Today's Games" },
+]
+
+export function StandingRoom() {
+  const [view, setView] = createSignal('leagues')
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
-        <span class={styles.label}>Seasons</span>
+        <span class={styles.label}>Standing Room</span>
       </header>
-      <MlbSection />
-      <MlsSection />
-      <WcSection />
-      <section class={styles.sampleSection}>
-        <div class={styles.realHeader}>
-          <span class={styles.sectionSubLabel}>NFL / EPL</span>
-          <span class={styles.sampleTag}>SAMPLE — no source found</span>
-        </div>
-        <div class={styles.cardGrid}>
-          <For each={SAMPLE_TEAMS}>{team => <TeamCard team={team} />}</For>
-        </div>
-      </section>
+      <Tabs id="standing-room-view" tabs={VIEW_TABS} active={view} setActive={setView} />
+      <Show when={view() === 'leagues'}>
+        <MlbSection />
+        <MlsSection />
+        <WcSection />
+        <section class={styles.sampleSection}>
+          <div class={styles.realHeader}>
+            <span class={styles.sectionSubLabel}>NFL / EPL</span>
+            <span class={styles.sampleTag}>SAMPLE — no source found</span>
+          </div>
+          <div class={styles.cardGrid}>
+            <For each={SAMPLE_TEAMS}>{team => <TeamCard team={team} />}</For>
+          </div>
+        </section>
+      </Show>
+      <Show when={view() === 'today'}>
+        <TodaysGamesSection />
+      </Show>
     </div>
   )
 }
