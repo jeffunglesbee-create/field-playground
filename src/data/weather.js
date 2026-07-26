@@ -111,6 +111,12 @@ async function fetchWeather(venues) {
   if (!venues || venues.length === 0) return { venues: [] }
   const settled = await Promise.allSettled(venues.map(fetchOneVenue))
   const results = settled.filter(r => r.status === 'fulfilled').map(r => r.value)
+  // Empty results with a non-empty venue list means every single fetch
+  // failed (total outage), not "no eligible venues" -- resolving to
+  // { venues: [] } here would make WeatherPoll show the misleading
+  // "no outdoor venues" empty state instead of its real error state.
+  // Only genuinely zero eligible venues should reach that empty state.
+  if (results.length === 0) throw new Error('all venue weather requests failed')
   return { venues: results }
 }
 
