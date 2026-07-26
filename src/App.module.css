@@ -7,6 +7,7 @@
   align-items: flex-start;
 }
 
+.healthPanel,
 .ambient,
 .desk,
 .pickem,
@@ -34,7 +35,12 @@
 .calibration,
 .compareToRelay,
 .localNoteLayer,
-.multiDateTrend {
+.multiDateTrend,
+.undoStackDemo,
+.workerBridgeDemo,
+.pollDeltaFeed,
+.replayDemo,
+.latencyHistogram {
   display: flex;
   flex-direction: column;
   gap: 8px;
