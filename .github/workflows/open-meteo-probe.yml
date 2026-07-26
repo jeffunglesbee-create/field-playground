@@ -1,21 +1,19 @@
 name: Open-Meteo Probe
 
 # CI-as-proxy. The chat sandbox's egress allowlist does not include
-# api.open-meteo.com, so a direct curl from there returns 403 -- that's
+# api.open-meteo.com, so a direct curl from there returns 403 -- that is
 # the sandbox refusing, NOT Open-Meteo rejecting. GitHub Actions runners
 # are not egress-restricted, so the runner fetches it and commits the
-# result back for chat to read.
+# result back for chat to read. Documented pattern (STANDARDS.md,
+# established May 2026 for probing Baseball Savant).
 #
-# This is the documented CI-as-proxy pattern (STANDARDS.md, established
-# May 2026 for probing Baseball Savant). Reused rather than reinvented.
-#
-# What this needs to answer, specifically:
-#   1. Is Open-Meteo reachable and key-free? (prior research says yes)
-#   2. Does it return access-control-allow-origin: * ? That's the
-#      load-bearing fact -- CORS-open means the BROWSER can call it
+# Questions this must answer:
+#   1. Is Open-Meteo reachable without an API key?
+#   2. Does it send access-control-allow-origin: * ? That is the
+#      load-bearing fact -- CORS-open means the browser can call it
 #      directly and no relay proxy is needed, which is why no /weather
 #      route exists on field-relay-nba.
-#   3. What does the real payload look like for a real venue?
+#   3. What is the real payload shape for a real venue?
 
 on:
   workflow_dispatch: {}
@@ -33,47 +31,29 @@ jobs:
       - name: Probe Open-Meteo (Comerica Park, Detroit)
         timeout-minutes: 2
         continue-on-error: true
+        env:
+          URL: "https://api.open-meteo.com/v1/forecast?latitude=42.3390&longitude=-83.0485&hourly=temperature_2m,precipitation_probability,wind_speed_10m,weather_code&forecast_days=1&temperature_unit=fahrenheit&wind_speed_unit=mph"
         run: |
           mkdir -p outbox
           OUT=outbox/open-meteo-probe.txt
-          URL="https://api.open-meteo.com/v1/forecast?latitude=42.3390&longitude=-83.0485&hourly=temperature_2m,precipitation_probability,wind_speed_10m,weather_code&forecast_days=1&temperature_unit=fahrenheit&wind_speed_unit=mph"
-
-          {
-            echo "probe_at: $(date -u +%FT%TZ)"
-            echo "url: $URL"
-            echo ""
-            echo "=== RESPONSE HEADERS (CORS is the point) ==="
-          } > "$OUT"
-
-          curl -sS -D - -o /tmp/body.json -w "\nhttp_code: %{http_code}\n" "$URL" \
-            | grep -iE "^HTTP/|access-control-allow-origin|content-type|http_code" >> "$OUT" 2>&1 || true
-
-          {
-            echo ""
-            echo "=== KEY REQUIRED? (no key was sent above) ==="
-            echo "if http_code is 200, no API key is required"
-            echo ""
-            echo "=== BODY (first 1200 chars) ==="
-          } >> "$OUT"
-          head -c 1200 /tmp/body.json >> "$OUT" 2>&1 || echo "(no body)" >> "$OUT"
-
+          echo "probe_at: $(date -u +%FT%TZ)" > "$OUT"
+          echo "url: $URL" >> "$OUT"
           echo "" >> "$OUT"
-          echo "=== PARSED SHAPE ===" >> "$OUT"
-          python3 -c "
-import json
-try:
-    d = json.load(open('/tmp/body.json'))
-    print('top-level keys:', list(d.keys()))
-    h = d.get('hourly', {})
-    print('hourly variables:', list(h.keys()))
-    u = d.get('hourly_units', {})
-    print('units:', u)
-    t = h.get('temperature_2m') or []
-    print('sample temps (first 6 hours):', t[:6])
-    print('timezone:', d.get('timezone'), '| elevation:', d.get('elevation'))
-except Exception as e:
-    print('parse failed:', e)
-" >> "$OUT" 2>&1 || true
+          echo "=== HEADERS (CORS is the point; no API key was sent) ===" >> "$OUT"
+          curl -sS -D /tmp/hdr.txt -o /tmp/body.json -w "http_code: %{http_code}\n" "$URL" >> "$OUT" 2>&1 || true
+          grep -iE "^HTTP/|access-control-allow-origin|content-type" /tmp/hdr.txt >> "$OUT" 2>&1 || true
+          echo "" >> "$OUT"
+          echo "=== PARSED SHAPE (jq) ===" >> "$OUT"
+          jq -r '"top-level keys: \(keys|join(", "))"' /tmp/body.json >> "$OUT" 2>&1 || true
+          jq -r '"hourly vars: \(.hourly|keys|join(", "))"' /tmp/body.json >> "$OUT" 2>&1 || true
+          jq -r '"units: \(.hourly_units|tostring)"' /tmp/body.json >> "$OUT" 2>&1 || true
+          jq -r '"timezone: \(.timezone) | elevation: \(.elevation)"' /tmp/body.json >> "$OUT" 2>&1 || true
+          jq -r '"first 6 temps: \(.hourly.temperature_2m[0:6]|tostring)"' /tmp/body.json >> "$OUT" 2>&1 || true
+          jq -r '"first 6 precip%: \(.hourly.precipitation_probability[0:6]|tostring)"' /tmp/body.json >> "$OUT" 2>&1 || true
+          jq -r '"first 6 wind: \(.hourly.wind_speed_10m[0:6]|tostring)"' /tmp/body.json >> "$OUT" 2>&1 || true
+          echo "" >> "$OUT"
+          echo "=== RAW BODY (first 800 chars) ===" >> "$OUT"
+          head -c 800 /tmp/body.json >> "$OUT" 2>&1 || true
 
       - name: Commit probe result
         if: always()
