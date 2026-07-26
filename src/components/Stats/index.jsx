@@ -1,5 +1,7 @@
 import { For, Show, createMemo, createSignal } from 'solid-js'
 import { wcStandings, mlbStandings, mlsStandings } from '../../data/relay'
+import { PARK_FACTORS } from '../../data/parkFactors'
+import { UMPIRE_WATCH, UMP_WATCH_THRESHOLD } from '../../data/umpireWatch'
 import { Tabs } from '../Tabs'
 import styles from './Stats.module.css'
 
@@ -29,6 +31,17 @@ import styles from './Stats.module.css'
 // a per-division/per-conference table. That recomposition (a createMemo
 // flattening three independent resources into one ranked list) is new to
 // this repo; nothing here fabricates data production doesn't serve.
+//
+// Park factor and ump watch (added 2026-07-26, on direct request to check
+// FIELD_Handoff for real values): both are static baked JS constants
+// inside jubilant-bassoon/index.html (PARK_FACTORS, UMPIRE_ABS_RATINGS --
+// confirmed via CODE_MAP.json), not served over any field-relay-nba route,
+// so they can't be live resources like weather.js's Open-Meteo fetch --
+// see src/data/parkFactors.js and src/data/umpireWatch.js for the full
+// source trail. Neither dataset overlaps this repo's own 3-team MLB mock
+// slate (Phillies/Yankees/Rangers), so these render as a small reference
+// leaderboard of confirmed real values, explicitly labeled as such rather
+// than presented as if they described today's games.
 
 function parseStreak(code) {
   const m = String(code ?? '').match(/^([WL])(\d+)$/)
@@ -98,10 +111,44 @@ function MlbLeaders() {
   const winStreaks = streaksOfKind('win')
   const lossStreaks = streaksOfKind('loss')
 
+  const parkFactorLeaders = () =>
+    [...PARK_FACTORS]
+      .sort((a, b) => b.runsPct - a.runsPct)
+      .map(p => ({
+        name: p.venue,
+        metric: `${p.runsPct > 0 ? '+' : ''}${p.runsPct}% runs${p.badge ? ` · ${p.badge}` : ''}`,
+        detail: [
+          { label: 'team', value: p.team },
+          { label: 'hr factor', value: p.hrFactor ?? 'not confirmed' },
+        ],
+      }))
+
+  const umpWatchLeaders = () =>
+    [...UMPIRE_WATCH]
+      .sort((a, b) => b.rate - a.rate)
+      .map(u => ({
+        name: u.name,
+        metric: `${Math.round(u.rate * 100)}% overturn${u.rate >= UMP_WATCH_THRESHOLD ? ' · UMP WATCH' : ''}`,
+        detail: [
+          { label: 'record', value: u.record ?? 'not confirmed' },
+          { label: 'weakness', value: u.weakness },
+        ],
+      }))
+
   return (
     <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : 'Loading…'}</p>}>
       <LeaderboardSection title="Longest active win streaks" rows={winStreaks} emptyText="No active win streaks." />
       <LeaderboardSection title="Longest active losing streaks" rows={lossStreaks} emptyText="No active losing streaks." />
+      <LeaderboardSection
+        title="Park factor -- confirmed real values, not today's slate"
+        rows={parkFactorLeaders}
+        emptyText="No data."
+      />
+      <LeaderboardSection
+        title="Ump watch -- confirmed real values, ≥65% overturn flagged"
+        rows={umpWatchLeaders}
+        emptyText="No data."
+      />
     </Show>
   )
 }
