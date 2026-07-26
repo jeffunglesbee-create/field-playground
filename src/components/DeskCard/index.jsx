@@ -389,6 +389,51 @@ function dramaLabel(score) {
   return ''
 }
 
+// Countdown to first pitch/kickoff. Reads the REAL start_time field --
+// no synthetic value, no (sample) label.
+//
+// History worth keeping: this first shipped with a hash-derived fake
+// time labeled "(sample)" because start_time isn't in /context/date
+// yet. It was then deleted outright, which was also wrong -- the
+// feature was asked for, only the fabricated data wasn't. This is the
+// version that should have existed from the start: render when there's
+// a real timestamp, render nothing when there isn't.
+//
+// start_time is not in the relay response TODAY. field-relay-nba's
+// CC-CMD-2026-07-25-start-time-persistence adds the column and persists
+// the value that /archive/game already receives and discards. The
+// moment that ships, this lights up on its own with zero client change,
+// because it's driven by the field's presence rather than a flag.
+function Countdown(props) {
+  const [now, setNow] = createSignal(Date.now())
+  onMount(() => {
+    const handle = setInterval(() => setNow(Date.now()), 30000)
+    onCleanup(() => clearInterval(handle))
+  })
+  const label = createMemo(() => {
+    const raw = props.startTime
+    if (!raw) return null
+    const target = new Date(raw).getTime()
+    if (Number.isNaN(target)) return null
+    const diffMs = target - now()
+    if (diffMs <= 0) return null
+    const totalMin = Math.floor(diffMs / 60000)
+    const h = Math.floor(totalMin / 60)
+    const m = totalMin % 60
+    return { text: h > 0 ? `${h}h ${m}m` : `${m}m`, soon: totalMin <= 30 }
+  })
+  return (
+    <Show when={label()}>
+      <span
+        class={`${styles.countdown} ${label().soon ? styles.countdownSoon : ''}`}
+        title={`starts ${new Date(props.startTime).toLocaleString()}`}
+      >
+        {label().text}
+      </span>
+    </Show>
+  )
+}
+
 function GameRow(props) {
   const g = () => props.game
   const status = () => gameStatus(g())
@@ -498,6 +543,7 @@ function GameRow(props) {
                 </Show>
               }>
                 <span class={styles.pre}>—</span>
+                <Countdown startTime={g().start_time} />
               </Show>
               <Show when={optimistic()}>
                 <span class={styles.pendingDot} title="optimistic, not yet confirmed by the relay">•</span>
