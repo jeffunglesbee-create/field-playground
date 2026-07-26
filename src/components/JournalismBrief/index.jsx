@@ -17,6 +17,7 @@ const POLL_MS = 5 * 60 * 1000
 //    it answers "did the real content genuinely change" using only a real field.
 export function JournalismBrief() {
   const [prevVerdict, setPrevVerdict] = createSignal(null)
+  const [prevDate, setPrevDate] = createSignal(null)
   const [freshlyUpdated, setFreshlyUpdated] = createSignal(false)
 
   // Reads the resource only when it's NOT in error state -- calling the
@@ -26,6 +27,7 @@ export function JournalismBrief() {
 
   const verdict = createMemo(() => data()?.pick?.brief ?? null)
   const stars = createMemo(() => data()?.night_stars ?? null)
+  const briefDate = createMemo(() => data()?.date ?? null)
 
   const age = createMemo(() => {
     const generatedAt = data()?.generated_at
@@ -37,16 +39,24 @@ export function JournalismBrief() {
   })
 
   // Detect when the relay genuinely regenerated the slate verdict, not just a
-  // refetch that returned the same content.
+  // refetch that returned the same content -- and NOT a date change. The
+  // resource is keyed on currentDate, so navigating to a different day
+  // reloads it; the new day's first verdict will almost always differ from
+  // the old day's stored one, which would otherwise flash "updated" for a
+  // date change rather than a genuine same-slate regeneration. Only flash
+  // when the date the verdict belongs to hasn't moved.
   createMemo(() => {
     const text = verdict()
+    const date = briefDate()
     if (text === null) return
-    const prev = prevVerdict()
-    if (prev !== null && prev !== text) {
+    const prevText = prevVerdict()
+    const prevD = prevDate()
+    if (prevD === date && prevText !== null && prevText !== text) {
       setFreshlyUpdated(true)
       setTimeout(() => setFreshlyUpdated(false), 4000)
     }
     setPrevVerdict(text)
+    setPrevDate(date)
   })
 
   onMount(() => {
