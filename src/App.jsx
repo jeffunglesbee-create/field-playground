@@ -44,7 +44,7 @@ import { TeamAffinitySync } from './components/TeamAffinitySync'
 import { WeatherPoll } from './components/WeatherPoll'
 import { VenueGeocodeRace } from './components/VenueGeocodeRace'
 import { ToastLayer } from './components/Toast'
-import { Tabs } from './components/Tabs'
+import { Tabs, tabId, panelId } from './components/Tabs'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { SeasonsLazy as Seasons } from './lazyModules'
 import { initOutcomesSync } from './data/outcomes'
@@ -75,6 +75,8 @@ const POLL_INTERVAL_MS = 15000
 // can't satisfy for two components that would otherwise land in
 // different tabs (Journalism and Games). Keeping this trio always-on
 // preserves that behavior with zero print.css changes needed.
+const TOP_NAV_ID = 'app'
+
 const TOP_TABS = [
   { key: 'games', label: 'Games', count: 9 },
   { key: 'picks', label: 'Picks', count: 7 },
@@ -165,7 +167,7 @@ export default function App() {
         </div>
 
         <nav class={styles.tabNav}>
-          <Tabs tabs={TOP_TABS} active={activeTab} setActive={setActiveTab} />
+          <Tabs id={TOP_NAV_ID} tabs={TOP_TABS} active={activeTab} setActive={setActiveTab} />
         </nav>
 
         {/* Unmounting an inactive tab's sections (rather than hiding them
@@ -176,8 +178,20 @@ export default function App() {
             JournalismBrief's 5m cadence, etc.) genuinely stops via its own
             onCleanup while its tab isn't active, and resumes correctly on
             remount -- fewer live polls for content nobody's looking at,
-            not a cosmetic hide. */}
-        <div class={styles.tabbedContent}>
+            not a cosmetic hide. The same unmount also drops each
+            section's own local state (ScoreFeed's filter selection,
+            Multiview/ReorderCost's counters, LazyBoundaryDemo's already-
+            loaded chunk), not just its poll loop -- switching away and
+            back genuinely resets a section to its initial state. That's
+            the same tradeoff Seasons/PickEm/DayComparison/Stats already
+            accepted for their own tabs, worth naming here so it doesn't
+            read as a bug later. */}
+        <div
+          class={styles.tabbedContent}
+          role="tabpanel"
+          id={panelId(TOP_NAV_ID, activeTab())}
+          aria-labelledby={tabId(TOP_NAV_ID, activeTab())}
+        >
           <Show when={activeTab() === 'games'}>
             <SafeSection class={styles.drillDown}>
               <DrillDown />

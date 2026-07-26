@@ -111,6 +111,14 @@
     padding: 0;
   }
 
+  /* .spine is display:flex for screen (side-by-side cards); print needs
+     it block so .ambient/.desk stack vertically instead of sharing a
+     row. Without this, "picks on top, games below" degrades to "picks
+     next to games" the moment .spine sits between .layout and them. */
+  .spine {
+    display: block;
+  }
+
   .tabNav,
   .tabbedContent {
     display: none;
