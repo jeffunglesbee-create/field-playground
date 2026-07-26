@@ -32,7 +32,7 @@ const OM_BASE = 'https://api.open-meteo.com/v1/forecast'
 // positive on this repo's own venue list -- "Red Bull Arena" contains
 // "arena" but is an outdoor MLS stadium. An explicit table for this
 // repo's small, closed venue set avoids that bug entirely.
-const VENUE_COORDS = {
+export const VENUE_COORDS = {
   'Citizens Bank Park': [39.9061, -75.1665],
   'Yankee Stadium': [40.8296, -73.9262],
   'Globe Life Field': [32.7511, -97.0832],
@@ -41,15 +41,20 @@ const VENUE_COORDS = {
   "Dick's Sporting Goods Park": [39.8092, -104.6936],
 }
 
+// Every real venue name in today's game list, known-coordinate or not --
+// exported for VenueGeocodeRace, which needs the FULL set (including the
+// 2 indoor venues this module deliberately has no entry for) to compare
+// against live geocoding results honestly.
+export const allVenues = createMemo(() => {
+  const games = [...(deskStore.games?.regular ?? []), ...(deskStore.games?.postseason ?? [])]
+  return [...new Set(games.map(g => g.venue).filter(Boolean))]
+})
+
 // Unique, known-coordinate outdoor venues from today's real game list --
 // recomputes whenever deskStore's games change (date navigation, poll),
 // the same "derive real values instead of hardcoding" pattern App.jsx's
 // streakTeam memo already uses for MultiDayStreak.
-const outdoorVenues = createMemo(() => {
-  const games = [...(deskStore.games?.regular ?? []), ...(deskStore.games?.postseason ?? [])]
-  const names = [...new Set(games.map(g => g.venue).filter(Boolean))]
-  return names.filter(v => VENUE_COORDS[v])
-})
+const outdoorVenues = createMemo(() => allVenues().filter(v => VENUE_COORDS[v]))
 
 // In-memory per-coordinate cache, keyed like production's wxCache
 // (rounded lat_lon) -- multiple venues that round to the same key would
@@ -64,6 +69,10 @@ const WX_TTL_MS = 2 * 60 * 60 * 1000
 
 function describeConditions(current) {
   if (!current) return 'unknown'
+  // precipitation includes snow, so it must be checked BEFORE the rain
+  // fallback below -- otherwise snow (rain === 0, precipitation > 0)
+  // gets mislabeled "rain".
+  if (current.snowfall > 0) return 'snow'
   if (current.rain > 2) return 'heavy rain'
   if (current.rain > 0 || current.precipitation > 0) return 'rain'
   if (current.wind_speed_10m > 20) return 'windy'
@@ -77,7 +86,7 @@ async function fetchOneVenue(venue) {
   if (cached && Date.now() - cached.fetchedAt < WX_TTL_MS) {
     return { venue, ...cached.data }
   }
-  const url = `${OM_BASE}?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,rain,is_day,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`
+  const url = `${OM_BASE}?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,rain,snowfall,is_day,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`
   const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
   if (!res.ok) throw new Error(`open-meteo fetch failed: ${res.status}`)
   const json = await res.json()
@@ -89,9 +98,19 @@ async function fetchOneVenue(venue) {
   return { venue, ...data }
 }
 
+// Promise.all would reject the ENTIRE batch on a single venue's failure,
+// hiding every other venue's successful result behind one transient
+// error -- allSettled means one bad venue degrades to just that venue
+// missing from the list, not the whole poll going blank. Failures aren't
+// separately cached (unlike successes): this repo's realistic worst-case
+// load -- one browser tab polling 6 venues every 45s, ~8 req/min -- is
+// nowhere near Open-Meteo's free-tier limits (600/min), so caching a
+// failure state would add real complexity for a request-budget risk
+// that doesn't actually exist at this scale.
 async function fetchWeather(venues) {
   if (!venues || venues.length === 0) return { venues: [] }
-  const results = await Promise.all(venues.map(fetchOneVenue))
+  const settled = await Promise.allSettled(venues.map(fetchOneVenue))
+  const results = settled.filter(r => r.status === 'fulfilled').map(r => r.value)
   return { venues: results }
 }
 

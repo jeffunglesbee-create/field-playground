@@ -33,6 +33,19 @@
   margin: 0 0 8px 0;
 }
 
+.attribution {
+  display: block;
+  font-size: 9px;
+  color: var(--field-text-muted);
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
+.attribution:hover {
+  color: var(--field-text-secondary);
+  text-decoration: underline;
+}
+
 .pollCount {
   font-size: 10px;
   color: var(--field-text-muted);

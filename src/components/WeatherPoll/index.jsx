@@ -28,9 +28,12 @@ export function WeatherPoll() {
       <p class={styles.note}>
         Its own resource, its own setInterval, running alongside deskData's shared 15s poll rather
         than sharing it — real venues from the selected date's outdoor slate, fetched live from
-        Open-Meteo (no key, no rate limit, CORS-open) so the independent cadence is provable
-        against real, changing weather, not a fabricated jitter.
+        Open-Meteo (no key, CORS-open, free-tier rate limited) so the independent cadence is
+        provable against real, changing weather, not a fabricated jitter.
       </p>
+      <a class={styles.attribution} href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
+        Weather data by Open-Meteo.com (CC BY 4.0)
+      </a>
       <div class={styles.pollCount}>independently polled {weatherPollCount()} time{weatherPollCount() === 1 ? '' : 's'}</div>
       <Show when={weatherData.error}>
         <p class={styles.empty}>Unable to load weather{weatherData.error?.message ? `: ${weatherData.error.message}` : ''}.</p>
@@ -39,7 +42,7 @@ export function WeatherPoll() {
         <Show when={weatherData()} fallback={<p class={styles.empty}>Loading…</p>}>
           <Show
             when={weatherData().venues.length > 0}
-            fallback={<p class={styles.empty}>No outdoor venues with known coordinates in today's slate.</p>}
+            fallback={<p class={styles.empty}>No outdoor venues with known coordinates in the selected date's slate.</p>}
           >
             <div class={styles.venueList}>
               <For each={weatherData().venues}>
