@@ -30,23 +30,36 @@
   font-size: 11px;
   color: var(--field-text-muted);
   line-height: 1.5;
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
 }
 
-.attribution {
-  display: block;
-  font-size: 9px;
-  color: var(--field-text-muted);
-  text-decoration: none;
+.note code {
+  font-family: inherit;
+  background: #1a1a1a;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.runBtn {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #d4a92e;
+  background: #1a1608;
+  border: 1px solid #3a3010;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
   margin-bottom: 10px;
 }
 
-.attribution:hover {
-  color: var(--field-text-secondary);
-  text-decoration: underline;
+.runBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
-.pollCount {
+.tally {
   font-size: 10px;
   color: var(--field-text-muted);
   font-variant-numeric: tabular-nums;
@@ -59,13 +72,13 @@
   margin: 0;
 }
 
-.venueList {
+.rowList {
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-.venueRow {
+.row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -73,6 +86,7 @@
   border: 1px solid #1e1e1e;
   border-radius: 5px;
   padding: 5px 9px;
+  flex-wrap: wrap;
 }
 
 .venueName {
@@ -85,15 +99,22 @@
   white-space: nowrap;
 }
 
-.venueTemp {
-  font-size: 11px;
-  color: #d4a92e;
+.hit,
+.miss,
+.pending {
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
 
-.venueCondition {
-  font-size: 10px;
+.hit {
+  color: #4c8;
+}
+
+.miss {
+  color: #c66;
+}
+
+.pending {
   color: var(--field-text-muted);
-  flex-shrink: 0;
 }

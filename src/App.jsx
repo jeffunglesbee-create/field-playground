@@ -42,6 +42,7 @@ import { StandingsDrawer } from './components/StandingsDrawer'
 import { ReorderCost } from './components/ReorderCost'
 import { TeamAffinitySync } from './components/TeamAffinitySync'
 import { WeatherPoll } from './components/WeatherPoll'
+import { VenueGeocodeRace } from './components/VenueGeocodeRace'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { SeasonsLazy as Seasons } from './lazyModules'
@@ -249,6 +250,9 @@ export default function App() {
         </SafeSection>
         <SafeSection class={styles.weatherPoll}>
           <WeatherPoll />
+        </SafeSection>
+        <SafeSection class={styles.venueGeocodeRace}>
+          <VenueGeocodeRace />
         </SafeSection>
         <ErrorBoundary fallback={sectionFallback}>
           <ToastLayer />
