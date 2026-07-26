@@ -20,8 +20,10 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 // one small module means there is only ever one App.jsx, which cannot
 // drift from itself.
 //
-// `App.artifact.jsx`, `main.artifact.jsx`, and `index.artifact.html` are
-// now dead and safe to delete (chat has no delete capability).
+// `App.artifact.jsx`, `main.artifact.jsx`, `index.artifact.html`, and
+// `LazyBoundaryDemo/index.artifact.jsx` were dead code left over from
+// that duplication (the chat session that made this fix had no delete
+// capability) and have since been removed.
 //
 // mockRelay is deliberately omitted: it only runs via configureServer, a
 // dev-server hook that's inert during `vite build` anyway. Production
