@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-07-26T15-16-32-331Z",
+  "checks": [
+    {
+      "name": "root_has_rendered_children",
+      "pass": true,
+      "rootChildCount": 1
+    },
+    {
+      "name": "multiple_sections_rendered",
+      "pass": false,
+      "sectionCount": 0
+    },
+    {
+      "name": "seasons_section_present",
+      "pass": false,
+      "note": "lazy-loaded Seasons must render in the single-file build"
+    },
+    {
+      "name": "no_uncaught_page_errors",
+      "pass": true,
+      "pageErrors": []
+    }
+  ],
+  "mainJs": "dist-artifact/assets/index-C9O7IvI2.js",
+  "cssFiles": [
+    "dist-artifact/assets/index-p2u3dvz6.css"
+  ],
+  "htmlBytes": 327209,
+  "rootChildCount": 1,
+  "sectionCount": 0,
+  "bodyTextSample": "Something broke: weather fetch failed: 403",
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "pageErrors": [],
+  "allPass": false
+}
