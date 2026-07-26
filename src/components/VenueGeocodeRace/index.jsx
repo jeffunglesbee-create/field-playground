@@ -31,14 +31,22 @@ async function geocodeOne(venue) {
   const json = await res.json()
   const hit = json.results?.[0]
   return hit
-    ? { venue, hit: true, lat: hit.latitude, lon: hit.longitude, featureCode: hit.feature_code ?? null, matchedName: hit.name }
-    : { venue, hit: false }
+    ? { venue, hit: true, failed: false, lat: hit.latitude, lon: hit.longitude, featureCode: hit.feature_code ?? null, matchedName: hit.name }
+    : { venue, hit: false, failed: false }
 }
 
+// A rejected request (network denial, timeout, non-2xx) is NOT the same
+// thing as a genuine "geocoder found nothing" -- the former means the
+// question was never actually answered for that venue. Collapsing both
+// into hit: false would make a total outage (e.g. this sandbox's own
+// egress block on geocoding-api.open-meteo.com) misreport as "0/N
+// geocoding hits" when the real story is "0/N requests even completed."
+// failed: true keeps that distinction visible instead of silently
+// treating a request failure as if it were data.
 async function raceAll(venues) {
   if (!venues || venues.length === 0) return []
   const settled = await Promise.allSettled(venues.map(geocodeOne))
-  return settled.map((r, i) => r.status === 'fulfilled' ? r.value : { venue: venues[i], hit: false, error: String(r.reason) })
+  return settled.map((r, i) => r.status === 'fulfilled' ? r.value : { venue: venues[i], hit: false, failed: true, error: String(r.reason) })
 }
 
 export function VenueGeocodeRace() {
@@ -52,6 +60,7 @@ export function VenueGeocodeRace() {
 
   const staticHits = () => allVenues().filter(v => VENUE_COORDS[v]).length
   const geocodeHits = () => (geocodeResults() ?? []).filter(r => r.hit).length
+  const geocodeFailed = () => (geocodeResults() ?? []).filter(r => r.failed).length
 
   return (
     <div class={styles.root}>
@@ -74,6 +83,9 @@ export function VenueGeocodeRace() {
         <div class={styles.tally}>
           static table: {staticHits()}/{allVenues().length} ·{' '}
           live geocoding: <Show when={!geocodeResults.loading} fallback="…">{geocodeHits()}/{allVenues().length}</Show>
+          <Show when={!geocodeResults.loading && geocodeFailed() > 0}>
+            {' '}({geocodeFailed()} request{geocodeFailed() === 1 ? '' : 's'} failed, not counted as misses)
+          </Show>
         </div>
         <Show when={geocodeResults.error}>
           <p class={styles.empty}>Geocoding race failed{geocodeResults.error?.message ? `: ${geocodeResults.error.message}` : ''}.</p>
@@ -94,8 +106,10 @@ export function VenueGeocodeRace() {
                       when={!geocodeResults.loading}
                       fallback={<span class={styles.pending}>geocoding: …</span>}
                     >
-                      <span classList={{ [styles.hit]: !!geoResult()?.hit, [styles.miss]: !geoResult()?.hit }}>
-                        geocode: {geoResult()?.hit ? `${geoResult().lat.toFixed(4)}, ${geoResult().lon.toFixed(4)} (${geoResult().featureCode ?? '?'})` : 'miss'}
+                      <span classList={{ [styles.hit]: !!geoResult()?.hit, [styles.miss]: !geoResult()?.hit && !geoResult()?.failed, [styles.pending]: !!geoResult()?.failed }}>
+                        geocode: {geoResult()?.hit
+                          ? `${geoResult().lat.toFixed(4)}, ${geoResult().lon.toFixed(4)} (${geoResult().featureCode ?? '?'})`
+                          : geoResult()?.failed ? 'request failed' : 'miss'}
                       </span>
                     </Show>
                   </div>
