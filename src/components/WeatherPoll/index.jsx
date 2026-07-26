@@ -27,8 +27,8 @@ export function WeatherPoll() {
       </header>
       <p class={styles.note}>
         Its own resource, its own setInterval, running alongside deskData's shared 15s poll rather
-        than sharing it — real venues from today's slate, temps drift slightly each request so the
-        independent cadence is provable, not just asserted.
+        than sharing it — real venues from the selected date's slate, temps drift slightly each
+        request so the independent cadence is provable, not just asserted.
       </p>
       <div class={styles.pollCount}>independently polled {weatherPollCount()} time{weatherPollCount() === 1 ? '' : 's'}</div>
       <Show

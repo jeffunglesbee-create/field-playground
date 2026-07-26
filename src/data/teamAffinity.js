@@ -82,6 +82,19 @@ export function initTeamAffinitySync() {
   channel.postMessage({ type: 'request' })
 
   createEffect(() => {
-    channel.postMessage({ type: 'update', team: myTeam() })
+    // Same principle as the 'request' reply above, and the same class of
+    // bug the reply-side fix already caught -- a fresh tab's own FIRST
+    // effect run fires with myTeam()===null, and broadcasting that
+    // unconditionally would clobber every other tab's already-correct
+    // theirTeam back to null the moment this tab opens, with no real
+    // change to report. Accepted tradeoff: a tab that explicitly clears
+    // an existing pick (selects "none" after having picked something)
+    // also goes silent rather than announcing the clear, so peers keep
+    // showing that tab's last REAL pick instead of reverting to unknown
+    // -- reasonable "last known good" semantics, not a bug, for a signal
+    // with no server to distinguish "nothing yet" from "explicitly
+    // cleared."
+    const team = myTeam()
+    if (team) channel.postMessage({ type: 'update', team })
   })
 }
