@@ -142,7 +142,12 @@ async function main() {
     await page.waitForTimeout(2000) // let lazy chunks + resources settle
 
     const secs = await page.evaluate(() => document.querySelectorAll('section').length)
-    const text = await page.evaluate(() => document.body.innerText.slice(0, 1500))
+    // FULL text, not a slice. A previous version searched only the first
+    // 1500 chars, so a heading below the truncation read as absent and
+    // seasons_section_present reported false on a healthy build. The
+    // truncated copy is kept for the manifest sample only, never for
+    // assertions.
+    const text = await page.evaluate(() => document.body.innerText)
     if (secs > maxSections) maxSections = secs
     if (/SEASONS/i.test(text)) sawSeasons = true
 
