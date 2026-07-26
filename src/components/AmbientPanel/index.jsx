@@ -266,9 +266,9 @@ function QualityAlertBadge(props) {
   )
 }
 
-// Prose as navigation. Scans morning_report for real team names (from
-// today's own deskStore games, not a fixed list) and wraps matches in
-// clickable spans -- tapping one highlights the matching DeskCard row
+// Prose as navigation. Scans the active report text for real team names
+// (from today's own deskStore games, not a fixed list) and wraps matches
+// in clickable spans -- tapping one highlights the matching DeskCard row
 // via the exported setHighlightedGameId, a signal DeskCard itself owns
 // and reads. Editorial copy becomes a navigation layer into the
 // structured game grid, not just static text describing it.
@@ -352,6 +352,24 @@ function Content(props) {
     return Math.max(0.4, 1 - count * 0.05)
   })
 
+  // timeMode() was computed and displayed as a label from the start, but
+  // the actual prose shown never changed with it -- always morning_report,
+  // regardless of hour. The real newspaper payload has three narrative
+  // fields (morning_report/preview/late), one short of timeMode's four
+  // buckets (morning/midday/evening/late); "late" matches its own field
+  // name directly, and "midday"/"evening" both lean on preview's
+  // forward-looking framing rather than reusing morning_report, which
+  // reads stale well past the morning. Each mode falls back through the
+  // other two real fields rather than showing nothing when its first
+  // choice is absent that cycle.
+  const reportText = createMemo(() => {
+    const data = d()
+    const mode = timeMode()
+    if (mode === 'morning') return data.morning_report ?? data.preview ?? data.late ?? null
+    if (mode === 'late') return data.late ?? data.morning_report ?? data.preview ?? null
+    return data.preview ?? data.morning_report ?? data.late ?? null
+  })
+
   return (
     <div>
       <header class={styles.header}>
@@ -366,8 +384,8 @@ function Content(props) {
 
       <TensionCard truthIs={d().truth_is} contradiction={d().contradiction} />
 
-      <Show when={d().morning_report}>
-        <ProseReport text={d().morning_report} games={todaysGames} qualitySharpness={qualitySharpness()} />
+      <Show when={reportText()}>
+        <ProseReport text={reportText()} games={todaysGames} qualitySharpness={qualitySharpness()} />
       </Show>
 
       <Show when={orderedPicks().length}>

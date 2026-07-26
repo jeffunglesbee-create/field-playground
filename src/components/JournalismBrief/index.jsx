@@ -7,42 +7,46 @@ const POLL_MS = 5 * 60 * 1000
 // Two things this component tests that nothing else in the repo does:
 // 1. A resource on its own polling cadence (5m), independent of deskStore's 15s
 //    cycle -- both live simultaneously in the same app, never stepping on each other.
-// 2. Detecting content regeneration via cycleId diff. The relay regenerates the
-//    brief when game context changes (new scores, games starting). cycleId is the
-//    stable signal for "this is a new brief" -- not generatedAt, which could update
-//    for other reasons.
+// 2. Detecting content regeneration via real content equality, not a synthetic id.
+//    The real /analytics/newspaper/{date} payload (confirmed via a live probe,
+//    2026-07-26 -- see relay.js's own comment on this resource) has no cycleId
+//    field at all; that field, along with the "brief"/proseScore/clicheCount this
+//    component used to render, only ever existed in a fabricated dev mock behind
+//    a route -- /journalism/brief -- that was never real on field-relay-nba.
+//    Comparing pick.brief's actual text between polls is the honest replacement:
+//    it answers "did the real content genuinely change" using only a real field.
 export function JournalismBrief() {
-  const [prevCycleId, setPrevCycleId] = createSignal(null)
+  const [prevVerdict, setPrevVerdict] = createSignal(null)
   const [freshlyUpdated, setFreshlyUpdated] = createSignal(false)
 
   // Reads the resource only when it's NOT in error state -- calling the
   // accessor while errored throws (same posture as StandingRoom/DayComparison/
-  // MultiDayStreak). Previously this called journalismBrief() unconditionally,
-  // and the JSX below read it in a sibling <Show> rather than nesting inside
-  // an "!error" check, so an errored resource still threw on every render.
+  // MultiDayStreak).
   const data = () => (journalismBrief.error ? undefined : journalismBrief())
 
+  const verdict = createMemo(() => data()?.pick?.brief ?? null)
+  const stars = createMemo(() => data()?.night_stars ?? null)
+
   const age = createMemo(() => {
-    const d = data()
-    if (!d?.generatedAt) return null
-    const s = Math.floor((Date.now() - d.generatedAt) / 1000)
+    const generatedAt = data()?.generated_at
+    if (!generatedAt) return null
+    const s = Math.floor((Date.now() - new Date(generatedAt).getTime()) / 1000)
     if (s < 60) return 'just now'
     if (s < 3600) return `${Math.floor(s / 60)}m ago`
     return `${Math.floor(s / 3600)}h ago`
   })
 
-  // Detect when the relay genuinely regenerated the brief, not just a refetch
-  // that returned the same content. cycleId is stable across polls of the same
-  // generation; a new one means real new content.
+  // Detect when the relay genuinely regenerated the slate verdict, not just a
+  // refetch that returned the same content.
   createMemo(() => {
-    const d = data()
-    if (!d?.cycleId) return
-    const prev = prevCycleId()
-    if (prev && prev !== d.cycleId) {
+    const text = verdict()
+    if (text === null) return
+    const prev = prevVerdict()
+    if (prev !== null && prev !== text) {
       setFreshlyUpdated(true)
       setTimeout(() => setFreshlyUpdated(false), 4000)
     }
-    setPrevCycleId(d.cycleId)
+    setPrevVerdict(text)
   })
 
   onMount(() => {
@@ -67,16 +71,26 @@ export function JournalismBrief() {
       </Show>
       <Show when={!journalismBrief.error}>
         <Show when={data()} fallback={<p class={styles.loading}>Loading…</p>}>
-          <p class={`${styles.brief} ${freshlyUpdated() ? styles.briefFlash : ''}`}>
-            {data().brief}
-          </p>
-          <footer class={styles.meta}>
-            <span class={styles.metaItem} title="prose quality score">q{data().proseScore}</span>
-            <Show when={data().clicheCount > 0}>
-              <span class={styles.metaItem} title="cliché count">{data().clicheCount} cliché{data().clicheCount > 1 ? 's' : ''}</span>
+          <Show
+            when={verdict() || stars()}
+            fallback={<p class={styles.loading}>No slate verdict this cycle.</p>}
+          >
+            <Show when={verdict()}>
+              <p class={`${styles.brief} ${freshlyUpdated() ? styles.briefFlash : ''}`}>
+                {verdict()}
+              </p>
             </Show>
-            <span class={styles.metaItem} title="game count">{data().gameCount} games</span>
-          </footer>
+            <Show when={stars()}>
+              <footer class={styles.stars}>
+                <span class={styles.starRating} title={`${stars().starScore} / 10`}>
+                  {'★'.repeat(stars().stars)}{'☆'.repeat(Math.max(0, 5 - stars().stars))}
+                </span>
+                <span class={styles.starDetail}>
+                  {stars().dramaGames} drama · {stars().closeGames} close · {stars().walkoffs} walkoff{stars().walkoffs === 1 ? '' : 's'}
+                </span>
+              </footer>
+            </Show>
+          </Show>
         </Show>
       </Show>
     </div>
