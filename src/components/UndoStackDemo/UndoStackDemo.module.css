@@ -1,0 +1,151 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.field {
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.fieldHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.fieldLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--field-text-muted);
+}
+
+.depths {
+  display: flex;
+  gap: 4px;
+}
+
+.depthChip {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  background: #1a1a1a;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.counterRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.counterValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--field-text-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 30px;
+  text-align: center;
+}
+
+.textInput {
+  width: 100%;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--field-text-primary);
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 5px 8px;
+  margin-bottom: 6px;
+}
+
+.fieldButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.stepBtn {
+  font-size: 11px;
+  font-family: inherit;
+  background: #1a1a2a;
+  border: 1px solid #2a2a4a;
+  color: #7a9eff;
+  border-radius: 4px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+.stepBtn:hover:not(:disabled) {
+  border-color: #4a4a8a;
+}
+
+.stepBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.logSection {
+  border-top: 1px solid #1a1a1a;
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.logLabel {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--field-text-muted);
+  margin-bottom: 5px;
+}
+
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.logEntry {
+  font-size: 10px;
+  color: var(--field-text-secondary);
+  font-family: monospace;
+}

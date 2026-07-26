@@ -1,5 +1,6 @@
 import { createSignal, createResource, createEffect } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
+import './fetchTiming' // side effect: installs the fetch-timing wrapper before any fetcher below runs
 
 const RELAY_BASE = import.meta.env.DEV
   ? ''
@@ -94,10 +95,20 @@ export const [deskStore, setDeskStore] = createStore({
 // reconcile.
 export const [deskLastFetchedAt, setDeskLastFetchedAt] = createSignal(null)
 
+// Raw poll response recording, for ReplayDemo -- capped ring buffer so a
+// long session can't leak memory. Records the RAW response, pre-reconcile:
+// replay's whole point is re-driving a reactive graph through the actual
+// sequence of snapshots that occurred, not a reconstruction built from
+// deskStore's already-reconciled current state (which has thrown away
+// everything but the latest values).
+const MAX_RECORDINGS = 50
+export const [pollRecordings, setPollRecordings] = createSignal([])
+
 async function fetchDeskReconciled(date) {
   const res = await fetch(`${RELAY_BASE}/context/date/${date}`)
   if (!res.ok) throw new Error(`context fetch failed: ${res.status}`)
   const json = await res.json()
+  setPollRecordings(r => [...r, { at: Date.now(), date, json }].slice(-MAX_RECORDINGS))
   setDeskStore(reconcile(json))
   setDeskLastFetchedAt(Date.now())
   return true

@@ -26,6 +26,11 @@ import { Calibration } from './components/Calibration'
 import { CompareToRelay } from './components/CompareToRelay'
 import { LocalNoteLayer } from './components/LocalNoteLayer'
 import { MultiDateTrend } from './components/MultiDateTrend'
+import { UndoStackDemo } from './components/UndoStackDemo'
+import { WorkerBridgeDemo } from './components/WorkerBridgeDemo'
+import { PollDeltaFeed } from './components/PollDeltaFeed'
+import { ReplayDemo } from './components/ReplayDemo'
+import { LatencyHistogram } from './components/LatencyHistogram'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { SeasonsLazy as Seasons } from './lazyModules'
@@ -144,6 +149,21 @@ export default function App() {
         </section>
         <section class={styles.multiDateTrend}>
           <MultiDateTrend />
+        </section>
+        <section class={styles.undoStackDemo}>
+          <UndoStackDemo />
+        </section>
+        <section class={styles.workerBridgeDemo}>
+          <WorkerBridgeDemo />
+        </section>
+        <section class={styles.pollDeltaFeed}>
+          <PollDeltaFeed />
+        </section>
+        <section class={styles.replayDemo}>
+          <ReplayDemo />
+        </section>
+        <section class={styles.latencyHistogram}>
+          <LatencyHistogram />
         </section>
         <ToastLayer />
       </div>
