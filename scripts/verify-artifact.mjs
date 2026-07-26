@@ -124,7 +124,8 @@ async function main() {
   const tabCount = await tabLocator.count()
   const tabResults = []
   let maxSections = sectionCount
-  let sawSeasons = /SEASONS/i.test(bodyText)
+  let deadSections = 0
+  const deadSectionMessages = []
 
   for (let i = 0; i < tabCount; i++) {
     // Re-resolve each iteration: activating a tab remounts panels, so a
@@ -142,19 +143,36 @@ async function main() {
     await page.waitForTimeout(2000) // let lazy chunks + resources settle
 
     const secs = await page.evaluate(() => document.querySelectorAll('section').length)
-    // FULL text, not a slice. A previous version searched only the first
-    // 1500 chars, so a heading below the truncation read as absent and
-    // seasons_section_present reported false on a healthy build. The
-    // truncated copy is kept for the manifest sample only, never for
-    // assertions.
-    const text = await page.evaluate(() => document.body.innerText)
     if (secs > maxSections) maxSections = secs
-    if (/SEASONS/i.test(text)) sawSeasons = true
+
+    // Detect DEAD SECTIONS structurally, not by name.
+    //
+    // App.jsx's per-section ErrorBoundary fallback renders a "Retry"
+    // button. Its presence means a section threw and its subtree was
+    // replaced -- exactly the WeatherPoll failure, which the old
+    // whole-tab check could not see because sibling sections still
+    // rendered and the tab looked healthy.
+    //
+    // This replaces a check that asserted a component LABEL was present.
+    // That broke TWICE in one day for reasons unrelated to app health:
+    // first the type-based tab reorg (the label moved behind a tab),
+    // then the Seasons -> StandingRoom merge (the label ceased to
+    // exist). A structural marker cannot be invalidated by a rename.
+    const dead = await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'))
+        .filter(b => b.textContent.trim() === 'Retry')
+      return btns.map(b => (b.parentElement?.textContent ?? '').replace('Retry', '').trim().slice(0, 160))
+    })
+    if (dead.length) {
+      deadSections += dead.length
+      for (const m of dead) if (!deadSectionMessages.includes(m)) deadSectionMessages.push(m)
+    }
 
     tabResults.push({
       tab: label,
       clicked,
       sections: secs,
+      deadSections: dead.length,
       // A tab mounting nothing is the real regression signal -- that
       // panel's subtree died while others survived.
       rendered: secs > 0,
@@ -169,7 +187,8 @@ async function main() {
   manifest.tabResults = tabResults
   manifest.tabCount = tabResults.length
   manifest.maxSectionsInAnyTab = maxSections
-  manifest.seasonsFoundInSomeTab = sawSeasons
+  manifest.deadSectionCount = deadSections
+  manifest.deadSectionMessages = deadSectionMessages
 
   manifest.rootChildCount = rootChildCount
   manifest.sectionCount = sectionCount
@@ -202,14 +221,16 @@ async function main() {
     pass: tabResults.length > 0 && tabResults.every(t => t.rendered),
     tabResults,
   })
-  // Seasons is lazy-loaded and was invisible in earlier artifacts because
-  // its chunk had nowhere to load from. It now lives behind a tab, so it
-  // must be found by activating tabs -- NOT by a section-count proxy,
-  // which is what made this check silently wrong after the reorg.
+  // No section may be showing an ErrorBoundary fallback. This is the
+  // check that would have caught the WeatherPoll incident at the section
+  // level rather than only when it took the whole app down -- a single
+  // dead section is invisible to every other assertion here.
   manifest.checks.push({
-    name: 'seasons_section_present',
-    pass: sawSeasons,
-    note: 'lazy-loaded Seasons must render in the single-file build; found by walking tabs',
+    name: 'no_dead_sections',
+    pass: deadSections === 0,
+    deadSectionCount: deadSections,
+    deadSectionMessages,
+    note: 'a rendered Retry button means a section threw and its subtree was replaced',
   })
   // A hard throw at module scope means nothing else is trustworthy.
   manifest.checks.push({
