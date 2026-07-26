@@ -40,8 +40,21 @@ jobs:
           echo "url: $URL" >> "$OUT"
           echo "" >> "$OUT"
           echo "=== HEADERS (CORS is the point; no API key was sent) ===" >> "$OUT"
-          curl -sS -D /tmp/hdr.txt -o /tmp/body.json -w "http_code: %{http_code}\n" "$URL" >> "$OUT" 2>&1 || true
-          grep -iE "^HTTP/|access-control-allow-origin|content-type" /tmp/hdr.txt >> "$OUT" 2>&1 || true
+          curl -sS -D /tmp/hdr.txt -o /tmp/body.json -w "http_code: %{http_code}\n" -H "Origin: https://field-playground.jeffunglesbee.workers.dev" "$URL" >> "$OUT" 2>&1 || true
+          grep -iE "^HTTP/|access-control-|content-type|vary" /tmp/hdr.txt >> "$OUT" 2>&1 || true
+          echo "" >> "$OUT"
+          echo "=== CORS VERDICT (simple GET with Origin) ===" >> "$OUT"
+          if grep -qi "access-control-allow-origin" /tmp/hdr.txt; then
+            grep -i "access-control-allow-origin" /tmp/hdr.txt >> "$OUT"
+            echo "VERDICT: CORS-OPEN -- browser can call this directly, no relay proxy needed" >> "$OUT"
+          else
+            echo "VERDICT: NO access-control-allow-origin header returned" >> "$OUT"
+            echo "  -> browser WOULD BLOCK a direct client-side call; a relay proxy IS required" >> "$OUT"
+          fi
+          echo "" >> "$OUT"
+          echo "=== PREFLIGHT (OPTIONS, as a browser would send for a non-simple request) ===" >> "$OUT"
+          curl -sS -X OPTIONS -D /tmp/pre.txt -o /dev/null -w "preflight_http_code: %{http_code}\n" -H "Origin: https://field-playground.jeffunglesbee.workers.dev" -H "Access-Control-Request-Method: GET" "$URL" >> "$OUT" 2>&1 || true
+          grep -iE "^HTTP/|access-control-" /tmp/pre.txt >> "$OUT" 2>&1 || echo "  (no access-control-* headers on preflight)" >> "$OUT"
           echo "" >> "$OUT"
           echo "=== PARSED SHAPE (jq) ===" >> "$OUT"
           jq -r '"top-level keys: \(keys|join(", "))"' /tmp/body.json >> "$OUT" 2>&1 || true
