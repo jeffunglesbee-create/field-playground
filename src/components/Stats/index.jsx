@@ -136,9 +136,11 @@ function MlbLeaders() {
       }))
 
   return (
-    <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : 'Loading…'}</p>}>
-      <LeaderboardSection title="Longest active win streaks" rows={winStreaks} emptyText="No active win streaks." />
-      <LeaderboardSection title="Longest active losing streaks" rows={lossStreaks} emptyText="No active losing streaks." />
+    <>
+      <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : 'Loading…'}</p>}>
+        <LeaderboardSection title="Longest active win streaks" rows={winStreaks} emptyText="No active win streaks." />
+        <LeaderboardSection title="Longest active losing streaks" rows={lossStreaks} emptyText="No active losing streaks." />
+      </Show>
       <LeaderboardSection
         title="Park factor -- confirmed real values, not today's slate"
         rows={parkFactorLeaders}
@@ -149,7 +151,7 @@ function MlbLeaders() {
         rows={umpWatchLeaders}
         emptyText="No data."
       />
-    </Show>
+    </>
   )
 }
 
