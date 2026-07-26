@@ -49,10 +49,18 @@ const POLL_INTERVAL_MS = 15000
 // dynamic import for Vite to chunk in this build target.
 const Seasons = lazy(() => Promise.resolve({ default: SeasonsComponent }))
 
-function sectionFallback(err) {
+function sectionFallback(err, reset) {
   return (
     <div style="font-size:11px;color:#c44;padding:8px 0;white-space:pre-wrap">
       {err?.message ?? String(err)}
+      <br />
+      <button
+        type="button"
+        onClick={reset}
+        style="margin-top:6px;font-size:10px;color:#c44;background:transparent;border:1px solid #c44;border-radius:4px;padding:3px 8px;cursor:pointer"
+      >
+        Retry
+      </button>
     </div>
   )
 }
