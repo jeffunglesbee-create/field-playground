@@ -1,4 +1,4 @@
-probe_at: 2026-07-26T16:32:07Z
+probe_at: 2026-07-26T16:33:23Z
 base: https://geocoding-api.open-meteo.com/v1/search
 
 Testing whether geocoding-by-name can replace this repo's hand-maintained
@@ -38,6 +38,12 @@ http_code: 200
 === "Target Center" ===
 http_code: 200
 0 results (no .results key)
+
+=== CORS check (geocoding-api is a DIFFERENT host than api.open-meteo.com --
+the forecast endpoint's open CORS policy doesn't automatically apply here) ===
+http_code: 200
+access-control-allow-origin: *
+VERDICT: CORS-OPEN on geocoding-api.open-meteo.com too -- browser can call it directly
 
 === VERDICT ===
 Read the results above by hand: does each real venue resolve to a
