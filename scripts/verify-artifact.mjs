@@ -96,6 +96,53 @@ async function main() {
   const bodyText = await page.evaluate(() => document.body.innerText.slice(0, 600))
   const sectionCount = await page.evaluate(() => document.querySelectorAll('section').length)
 
+  // --- Walk every top-level tab ---
+  //
+  // The app groups surfaces behind type-based top-level tabs, so only the
+  // active tab's panel is mounted. The previous version of this script
+  // asserted against a flat layout where all ~56 sections rendered at
+  // once; after the reorg that assumption was simply wrong, and the
+  // script reported allPass:false on a perfectly healthy build. The old
+  // `sectionCount >= 20` fallback for Seasons was the specific culprit.
+  //
+  // Walking the tabs is not just a fix -- it's better coverage than
+  // before. Each tab mounts its own subtree, so this now exercises code
+  // paths the flat check never reached, and a component that throws only
+  // when its tab is activated is now caught rather than missed.
+  const tabButtons = await page.$('[role="tablist"] > [role="tab"]')
+  const tabResults = []
+  let maxSections = sectionCount
+  let sawSeasons = /SEASONS/i.test(bodyText)
+
+  for (let i = 0; i < tabButtons.length; i++) {
+    // Re-query each iteration: activating a tab remounts the panel, so
+    // handles captured before the click can go stale.
+    const btns = await page.$('[role="tablist"] > [role="tab"]')
+    if (!btns[i]) break
+    const label = (await btns[i].textContent() ?? '').trim()
+    await btns[i].click()
+    await page.waitForTimeout(2500) // let lazy chunks + resources settle
+
+    const secs = await page.evaluate(() => document.querySelectorAll('section').length)
+    const text = await page.evaluate(() => document.body.innerText.slice(0, 1200))
+    if (secs > maxSections) maxSections = secs
+    if (/SEASONS/i.test(text)) sawSeasons = true
+
+    tabResults.push({
+      tab: label,
+      sections: secs,
+      // A tab that mounts nothing is the real regression signal here --
+      // it means that panel's subtree died while others survived.
+      rendered: secs > 0,
+      pageErrorsSoFar: pageErrors.length,
+    })
+  }
+
+  manifest.tabResults = tabResults
+  manifest.tabCount = tabResults.length
+  manifest.maxSectionsInAnyTab = maxSections
+  manifest.seasonsFoundInSomeTab = sawSeasons
+
   manifest.rootChildCount = rootChildCount
   manifest.sectionCount = sectionCount
   manifest.bodyTextSample = bodyText
@@ -112,19 +159,29 @@ async function main() {
     rootChildCount,
   })
   // Sections are the app's top-level layout units -- more than a couple
-  // means the tree survived, not just an error message.
+  // means the tree survived, not just an error message. Threshold is per
+  // TAB now, not for the whole app, since tabs mount one panel at a time.
   manifest.checks.push({
     name: 'multiple_sections_rendered',
     pass: sectionCount >= 5,
     sectionCount,
   })
+  // Every top-level tab must mount something. A tab rendering zero
+  // sections means that panel's subtree died -- the per-section
+  // ErrorBoundary case, which the old whole-app check couldn't see.
+  manifest.checks.push({
+    name: 'every_tab_renders_content',
+    pass: tabResults.length > 0 && tabResults.every(t => t.rendered),
+    tabResults,
+  })
   // Seasons is lazy-loaded and was invisible in earlier artifacts because
-  // its chunk had nowhere to load from. In the zero-chunk artifact build it
-  // must actually appear.
+  // its chunk had nowhere to load from. It now lives behind a tab, so it
+  // must be found by activating tabs -- NOT by a section-count proxy,
+  // which is what made this check silently wrong after the reorg.
   manifest.checks.push({
     name: 'seasons_section_present',
-    pass: /SEASONS/i.test(bodyText) || sectionCount >= 20,
-    note: 'lazy-loaded Seasons must render in the single-file build',
+    pass: sawSeasons,
+    note: 'lazy-loaded Seasons must render in the single-file build; found by walking tabs',
   })
   // A hard throw at module scope means nothing else is trustworthy.
   manifest.checks.push({
