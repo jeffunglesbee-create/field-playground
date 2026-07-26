@@ -1,0 +1,85 @@
+name: Open-Meteo Probe
+
+# CI-as-proxy. The chat sandbox's egress allowlist does not include
+# api.open-meteo.com, so a direct curl from there returns 403 -- that's
+# the sandbox refusing, NOT Open-Meteo rejecting. GitHub Actions runners
+# are not egress-restricted, so the runner fetches it and commits the
+# result back for chat to read.
+#
+# This is the documented CI-as-proxy pattern (STANDARDS.md, established
+# May 2026 for probing Baseball Savant). Reused rather than reinvented.
+#
+# What this needs to answer, specifically:
+#   1. Is Open-Meteo reachable and key-free? (prior research says yes)
+#   2. Does it return access-control-allow-origin: * ? That's the
+#      load-bearing fact -- CORS-open means the BROWSER can call it
+#      directly and no relay proxy is needed, which is why no /weather
+#      route exists on field-relay-nba.
+#   3. What does the real payload look like for a real venue?
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe Open-Meteo (Comerica Park, Detroit)
+        timeout-minutes: 2
+        continue-on-error: true
+        run: |
+          mkdir -p outbox
+          OUT=outbox/open-meteo-probe.txt
+          URL="https://api.open-meteo.com/v1/forecast?latitude=42.3390&longitude=-83.0485&hourly=temperature_2m,precipitation_probability,wind_speed_10m,weather_code&forecast_days=1&temperature_unit=fahrenheit&wind_speed_unit=mph"
+
+          {
+            echo "probe_at: $(date -u +%FT%TZ)"
+            echo "url: $URL"
+            echo ""
+            echo "=== RESPONSE HEADERS (CORS is the point) ==="
+          } > "$OUT"
+
+          curl -sS -D - -o /tmp/body.json -w "\nhttp_code: %{http_code}\n" "$URL" \
+            | grep -iE "^HTTP/|access-control-allow-origin|content-type|http_code" >> "$OUT" 2>&1 || true
+
+          {
+            echo ""
+            echo "=== KEY REQUIRED? (no key was sent above) ==="
+            echo "if http_code is 200, no API key is required"
+            echo ""
+            echo "=== BODY (first 1200 chars) ==="
+          } >> "$OUT"
+          head -c 1200 /tmp/body.json >> "$OUT" 2>&1 || echo "(no body)" >> "$OUT"
+
+          echo "" >> "$OUT"
+          echo "=== PARSED SHAPE ===" >> "$OUT"
+          python3 -c "
+import json
+try:
+    d = json.load(open('/tmp/body.json'))
+    print('top-level keys:', list(d.keys()))
+    h = d.get('hourly', {})
+    print('hourly variables:', list(h.keys()))
+    u = d.get('hourly_units', {})
+    print('units:', u)
+    t = h.get('temperature_2m') or []
+    print('sample temps (first 6 hours):', t[:6])
+    print('timezone:', d.get('timezone'), '| elevation:', d.get('elevation'))
+except Exception as e:
+    print('parse failed:', e)
+" >> "$OUT" 2>&1 || true
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "open-meteo-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet || git commit -m "chore: open-meteo probe result [skip ci]"
+          git push
