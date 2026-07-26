@@ -1,0 +1,49 @@
+/* Moved verbatim from Seasons.module.css so Seasons, PickEm and
+   DayComparison share one definition rather than three that drift.
+   Seasons' own copies of .tabBar/.tab/.tab:hover/.tabActive are now
+   dead and should be deleted from that file -- kept there for the
+   moment only because a CSS Module's unused classes are inert, not
+   because they're still doing anything. */
+
+.tabBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.tab {
+  font-size: 9px;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--field-text-muted);
+  background: #161616;
+  border: 1px solid #232323;
+  border-radius: 4px;
+  padding: 3px 7px;
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tab:hover {
+  color: var(--field-text-secondary);
+  border-color: #333;
+}
+
+.tabActive {
+  color: var(--field-text-primary);
+  background: #1e1e1e;
+  border-color: #3a3a3a;
+}
+
+/* Optional per-tab count. Seasons doesn't pass one; PickEm and
+   DayComparison do, since "how many games are in this tab" is the
+   thing you actually want before clicking it. */
+.tabCount {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.65;
+  font-size: 8px;
+}
