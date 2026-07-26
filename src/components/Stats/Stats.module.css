@@ -1,0 +1,129 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 8px 0;
+}
+
+.sectionLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--field-text-muted);
+  margin: 12px 0 6px 0;
+}
+
+.sectionLabel:first-child {
+  margin-top: 0;
+}
+
+.leaderList {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.leaderRow {
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.leaderMain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  padding: 5px 9px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.leaderMain:hover {
+  background: #131313;
+}
+
+.leaderRank {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.leaderName {
+  font-size: 12px;
+  color: var(--field-text-primary);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderMetric {
+  font-size: 11px;
+  color: #7a9eff;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.leaderDetail {
+  padding: 2px 9px 7px 31px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+}
+
+.detailLabel {
+  color: var(--field-text-muted);
+}
+
+.detailValue {
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
