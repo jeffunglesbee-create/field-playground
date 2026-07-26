@@ -109,34 +109,57 @@ async function main() {
   // before. Each tab mounts its own subtree, so this now exercises code
   // paths the flat check never reached, and a component that throws only
   // when its tab is activated is now caught rather than missed.
-  const tabButtons = await page.$('[role="tablist"] > [role="tab"]')
+  // Uses the locator API rather than the query-selector-all shorthand.
+  // Real bug this replaces: an earlier version called page dot-dollar
+  // (single) instead of the double form, because the doubled character
+  // was mangled to a single one in a patch. A single query returns ONE
+  // element handle, not an array -- so .length was undefined, the loop
+  // never executed, and the manifest silently reported 0 tabs walked on
+  // a healthy build. locator().count() has no such ambiguity.
+  //
+  // Deliberately NOT scoped to the top-level nav: the inner tab bars
+  // (Seasons, PickEm, DayComparison, Stats) each mount their own subtree
+  // and are worth walking too.
+  const tabLocator = page.locator('[role="tab"]')
+  const tabCount = await tabLocator.count()
   const tabResults = []
   let maxSections = sectionCount
   let sawSeasons = /SEASONS/i.test(bodyText)
 
-  for (let i = 0; i < tabButtons.length; i++) {
-    // Re-query each iteration: activating a tab remounts the panel, so
-    // handles captured before the click can go stale.
-    const btns = await page.$('[role="tablist"] > [role="tab"]')
-    if (!btns[i]) break
-    const label = (await btns[i].textContent() ?? '').trim()
-    await btns[i].click()
-    await page.waitForTimeout(2500) // let lazy chunks + resources settle
+  for (let i = 0; i < tabCount; i++) {
+    // Re-resolve each iteration: activating a tab remounts panels, so a
+    // handle captured earlier can go stale.
+    const btn = page.locator('[role="tab"]').nth(i)
+    let label = ''
+    let clicked = true
+    try {
+      label = ((await btn.textContent()) ?? '').trim()
+      await btn.click({ timeout: 3000 })
+    } catch {
+      // A tab detached by a sibling's remount is recorded, not fatal.
+      clicked = false
+    }
+    await page.waitForTimeout(2000) // let lazy chunks + resources settle
 
     const secs = await page.evaluate(() => document.querySelectorAll('section').length)
-    const text = await page.evaluate(() => document.body.innerText.slice(0, 1200))
+    const text = await page.evaluate(() => document.body.innerText.slice(0, 1500))
     if (secs > maxSections) maxSections = secs
     if (/SEASONS/i.test(text)) sawSeasons = true
 
     tabResults.push({
       tab: label,
+      clicked,
       sections: secs,
-      // A tab that mounts nothing is the real regression signal here --
-      // it means that panel's subtree died while others survived.
+      // A tab mounting nothing is the real regression signal -- that
+      // panel's subtree died while others survived.
       rendered: secs > 0,
       pageErrorsSoFar: pageErrors.length,
     })
   }
+
+  // Diagnostic: zero here means the SELECTOR or API call is wrong, not
+  // the app. Recorded explicitly so that failure mode is never silent.
+  manifest.tabButtonsFound = tabCount
 
   manifest.tabResults = tabResults
   manifest.tabCount = tabResults.length
