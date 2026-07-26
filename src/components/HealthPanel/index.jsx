@@ -82,6 +82,7 @@ function useWorkerCheck() {
       settled = true
       clearTimeout(timeout)
       setStatus('fail')
+      worker.terminate()
     }
     // Empty prev/next -- the round trip itself is what's under test, not
     // the diff logic (that's WorkerBridgeDemo's job).
