@@ -64,6 +64,57 @@ function mockRelay() {
     }
   }
 
+  // Standings mocks -- none of these three existed before Stats needed
+  // them, and neither did Seasons ever get one: RELAY_BASE is '' in dev,
+  // so /wc/standings, /mlb-stats/standings, and /mls/stats/.../standings
+  // all 404'd against nothing but Vite itself, meaning Seasons has always
+  // rendered its error fallback in local dev, never real data. Field
+  // names below match exactly what Seasons/index.jsx already parses
+  // (MLB_DIVISION_NAMES ids, mlbTeamState's divisionRank/gamesBack/
+  // wildCardGamesBack/streak.streakCode, MLS_EASTERN/MLS_WESTERN's exact
+  // team-name strings, WcSection's won/drawn/lost/gd/points) -- not new
+  // shapes invented for this fixture, the same ones already relied upon.
+  function mlbTeam(name, divisionRank, gamesBack, wildCardGamesBack, streakCode) {
+    return { team: { name }, divisionRank: String(divisionRank), gamesBack, wildCardGamesBack, streak: { streakCode } }
+  }
+  const mlbStandingsMock = {
+    records: [
+      { division: { id: 201 }, teamRecords: [mlbTeam('New York Yankees', 1, '-', '-', 'W6'), mlbTeam('Boston Red Sox', 2, '3.5', '1.0', 'L1'), mlbTeam('Baltimore Orioles', 5, '14.0', '11.5', 'L2')] },
+      { division: { id: 202 }, teamRecords: [mlbTeam('Cleveland Guardians', 1, '-', '-', 'W2'), mlbTeam('Minnesota Twins', 2, '2.0', '0.5', 'L1'), mlbTeam('Kansas City Royals', 4, '9.0', '6.5', 'W1')] },
+      { division: { id: 200 }, teamRecords: [mlbTeam('Houston Astros', 1, '-', '-', 'W8'), mlbTeam('Seattle Mariners', 2, '4.0', '2.0', 'W3'), mlbTeam('Athletics', 5, '16.5', '14.0', 'L5')] },
+      { division: { id: 204 }, teamRecords: [mlbTeam('Philadelphia Phillies', 1, '-', '-', 'W4'), mlbTeam('New York Mets', 2, '1.5', '-', 'W1'), mlbTeam('Miami Marlins', 5, '19.0', '16.5', 'L3')] },
+      { division: { id: 205 }, teamRecords: [mlbTeam('Milwaukee Brewers', 1, '-', '-', 'L2'), mlbTeam('Chicago Cubs', 2, '2.5', '1.0', 'W2'), mlbTeam('Cincinnati Reds', 5, '13.0', '10.5', 'L7')] },
+      { division: { id: 203 }, teamRecords: [mlbTeam('Los Angeles Dodgers', 1, '-', '-', 'W3'), mlbTeam('San Diego Padres', 2, '3.0', '0.5', 'W1'), mlbTeam('San Francisco Giants', 4, '8.0', '5.5', 'L1')] },
+    ],
+  }
+
+  function mlsTeam(team, wins, draws, losses, goals_difference, points) {
+    return { team, wins, draws, losses, goals_difference, points }
+  }
+  const mlsStandingsMock = {
+    tables: [{
+      entries: [
+        mlsTeam('Inter Miami CF', 14, 5, 3, 22, 47),
+        mlsTeam('Columbus Crew', 11, 6, 5, 9, 39),
+        mlsTeam('D.C. United', 5, 4, 13, -18, 19),
+        mlsTeam('Los Angeles Football Club', 13, 7, 2, 19, 46),
+        mlsTeam('Seattle Sounders FC', 10, 8, 4, 7, 38),
+        mlsTeam('St. Louis CITY SC', 4, 6, 12, -15, 18),
+      ],
+    }],
+  }
+
+  function wcTeam(team, won, drawn, lost, gd, points) {
+    return { team, won, drawn, lost, gd, points }
+  }
+  const wcStandingsMock = {
+    groups: {
+      A: [wcTeam('Qatar', 3, 0, 0, 7, 9), wcTeam('Ecuador', 1, 1, 1, 1, 4), wcTeam('Senegal', 1, 0, 2, -2, 3), wcTeam('Netherlands', 0, 1, 2, -6, 1)],
+      B: [wcTeam('England', 2, 1, 0, 4, 7), wcTeam('USA', 1, 2, 0, 2, 5), wcTeam('Iran', 1, 0, 2, -3, 3), wcTeam('Wales', 0, 1, 2, -3, 1)],
+      C: [wcTeam('Argentina', 2, 0, 1, 3, 6), wcTeam('Poland', 1, 2, 0, 0, 5), wcTeam('Mexico', 1, 1, 1, -1, 4), wcTeam('Saudi Arabia', 1, 0, 2, -2, 3)],
+    },
+  }
+
   return {
     name: 'mock-relay',
     configureServer(server) {
@@ -77,6 +128,18 @@ function mockRelay() {
         if (c) {
           res.setHeader('Content-Type', 'application/json')
           return res.end(JSON.stringify(context(c[1])))
+        }
+        if (req.url === '/wc/standings') {
+          res.setHeader('Content-Type', 'application/json')
+          return res.end(JSON.stringify(wcStandingsMock))
+        }
+        if (req.url?.startsWith('/mlb-stats/standings')) {
+          res.setHeader('Content-Type', 'application/json')
+          return res.end(JSON.stringify(mlbStandingsMock))
+        }
+        if (req.url?.startsWith('/mls/stats/competitions/')) {
+          res.setHeader('Content-Type', 'application/json')
+          return res.end(JSON.stringify(mlsStandingsMock))
         }
         if (req.url === '/journalism/brief') {
           // Rotates every 3 requests to simulate the brief regenerating mid-session.

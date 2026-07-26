@@ -2,6 +2,7 @@ import { onMount, onCleanup, lazy, Suspense, ErrorBoundary, createMemo } from 's
 import { AmbientPanel } from './components/AmbientPanel'
 import { DeskCard, initExtendedUrlSync } from './components/DeskCard'
 import { PickEm } from './components/PickEm'
+import { Stats } from './components/Stats'
 import { Ground } from './components/Ground'
 import { DayComparison } from './components/DayComparison'
 import { SuspenseDemo } from './components/SuspenseDemo'
@@ -89,6 +90,9 @@ export default function App() {
               <Seasons />
             </ErrorBoundary>
           </Suspense>
+        </section>
+        <section class={styles.stats}>
+          <Stats />
         </section>
         <section class={styles.ground}>
           <Ground />
