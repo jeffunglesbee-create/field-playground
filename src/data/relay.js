@@ -145,16 +145,33 @@ export const [mlsStandings] = createResource(fetchMlsStandings)
 
 // --- Journalism brief: independent polling resource, slower cadence than deskStore ---
 //
-// Not driven by currentDate — the relay always returns today's brief regardless
-// of date param. Polling interval managed by the consuming component (JournalismBrief),
-// not here, same pattern as deskData's refetch interval in App.jsx.
-async function fetchJournalismBrief() {
-  const res = await fetch(`${RELAY_BASE}/journalism/brief`)
-  if (!res.ok) throw new Error(`journalism/brief fetch failed: ${res.status}`)
+// Fetches the exact same /analytics/newspaper/{date} route ambientData
+// already holds -- deliberately a SEPARATE resource+poll loop, not a read
+// of ambientData directly, to keep proving what this section always
+// proved: two independently-cadenced resources against the same real
+// relay endpoint coexist correctly (polling interval managed by the
+// consuming component, JournalismBrief, same pattern as deskData's
+// interval in App.jsx).
+//
+// What changed 2026-07-26: the endpoint. This used to fetch /journalism/
+// brief, a route confirmed to never have existed on field-relay-nba --
+// zero hits searching its source for "journalism", "brief", or "/brief",
+// and zero mentions across field-relay-nba's own HANDOFF.md (dozens of
+// real session close-outs, several documenting the newspaper bundle's
+// actual field list in detail). /analytics/newspaper/{date} IS
+// documented there explicitly, and its live shape was reconfirmed via a
+// direct probe today. The old fake route's mock in vite.config.js
+// invented a brief string, a cycleId, and a proseScore that never
+// existed anywhere real -- this component was only ever testing "a
+// resource that polls on its own schedule," never real journalism
+// content. Now it's both.
+async function fetchJournalismBrief(date) {
+  const res = await fetch(`${RELAY_BASE}/analytics/newspaper/${date}`)
+  if (!res.ok) throw new Error(`newspaper fetch failed: ${res.status}`)
   return res.json()
 }
 
-export const [journalismBrief, { refetch: refetchBrief }] = createResource(fetchJournalismBrief)
+export const [journalismBrief, { refetch: refetchBrief }] = createResource(currentDate, fetchJournalismBrief)
 
 // --- Day comparison: first non-singleton resource in this repo ---
 //

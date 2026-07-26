@@ -15,12 +15,38 @@ function mockRelay() {
     recap_date: '2026-07-23',
     generated_at: `${date}T06:00:00Z`,
     morning_report: 'A full Thursday slate closed with Portland holding on at Seattle — a Cascadia rivalry match that delivered late, keeping the Western Conference standings compressed heading into the weekend. The WNBA double-header produced a finish worth the late watch; Las Vegas’ road win moved them into clearer seeding position. Tonight’s MLS card carries real weight in both conferences.',
+    // Real field, distinct from morning_report -- forward-looking framing
+    // for the midday/evening timeMode buckets (see AmbientPanel's
+    // reportText memo). Anchored to this repo's own mock slate, not
+    // invented team names.
+    preview: 'Houston brings its bullpen depth into Arlington for the finale against Texas, while Philadelphia looks to bounce back at home against a Mets club still finding its footing. Both MLS sides carry real conference weight into tonight’s midweek card.',
+    late: 'A full slate wraps with Portland holding on late in Seattle and the WNBA doubleheader delivering a finish worth the wait — Las Vegas’ road win moved them into clearer seeding position.',
     pick: {
+      type: 'go',
+      score: 3.4,
+      reason: 'top game scored 3.4 — clears the 3.0 watch-bar',
+      // Real field, currently unsurfaced anywhere in this repo before
+      // JournalismBrief's rebuild (2026-07-26) -- the editorial verdict
+      // line, distinct from the ranked list itself.
+      brief: 'Rivalry night carries the slate — Seattle–Portland is the one worth clearing your evening for.',
       ranked: [
         { game_id: '2026-07-23-mls-por-sea', sport: 'MLS', home: 'Seattle Sounders', away: 'Portland Timbers', score: '2–1', tier: 'A', reasons: ['rivalry', 'prime time', 'late winner'] },
         { game_id: '2026-07-23-wnba-las-chi', sport: 'WNBA', home: 'Chicago Sky', away: 'Las Vegas Aces', score: '88–79', tier: 'B', reasons: ['postseason/elimination', 'road favorite'] },
         { game_id: '2026-07-23-mls-atl-col', sport: 'MLS', home: 'Columbus Crew', away: 'Atlanta United', score: '1–1', tier: 'C', reasons: ['home form'] },
       ],
+    },
+    // Real field, same shape confirmed via a live probe of
+    // /analytics/newspaper/{date} on 2026-07-26 (see relay.js's own
+    // comment on the journalismBrief resource).
+    night_stars: {
+      stars: 4,
+      starScore: 7.8,
+      dramaGames: 2,
+      closeGames: 3,
+      extras: 1,
+      walkoffs: 1,
+      totalGames: 8,
+      degraded: false,
     },
   })
 
