@@ -23,6 +23,10 @@
   gap: 12px;
 }
 
+.singleColumn {
+  display: block;
+}
+
 .column {
   min-width: 0;
 }
