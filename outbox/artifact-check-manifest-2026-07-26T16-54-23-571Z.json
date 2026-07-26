@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-07-26T16-54-23-571Z",
+  "checks": [
+    {
+      "name": "root_has_rendered_children",
+      "pass": true,
+      "rootChildCount": 1
+    },
+    {
+      "name": "multiple_sections_rendered",
+      "pass": true,
+      "sectionCount": 56
+    },
+    {
+      "name": "seasons_section_present",
+      "pass": true,
+      "note": "lazy-loaded Seasons must render in the single-file build"
+    },
+    {
+      "name": "no_uncaught_page_errors",
+      "pass": true,
+      "pageErrors": []
+    }
+  ],
+  "mainJs": "dist-artifact/assets/index-BZ9k2LCh.js",
+  "cssFiles": [
+    "dist-artifact/assets/index-ClFq1H__.css"
+  ],
+  "htmlBytes": 335655,
+  "rootChildCount": 1,
+  "sectionCount": 56,
+  "bodyTextSample": "HEALTH PANEL\nPASS\n\nSame primitives as the mechanism demos above, run unattended on mount instead of waiting for a button press. A demo needs a human to trigger it; a health check runs itself.\n\n✓\nreactive root disposal\npass\n✓\nerror boundary catch\npass\n✓\nweb worker round-trip\npass\nFETCH HEALTH\n41 requests · 0 failed · avg 857ms\nPOLL FRESHNESS\n4s since last successful poll\nAMBIENT\nEVENING\n2026-07-26 · recap through 2026-07-25\n⚡ 12 quality alerts (since 2026-07-19)\nTHE EDITORIAL CLAIM\n\n13 unusual finishes — led by Blue Jays shut out Red Sox 6-0.\n\nQuiet night across the slate for 2026-07-25. Tomorr",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "allPass": true
+}
