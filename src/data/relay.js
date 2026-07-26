@@ -116,7 +116,9 @@ async function fetchDeskReconciled(date) {
 
 export const [deskData, { refetch: refetchDesk }] = createResource(currentDate, fetchDeskReconciled)
 
-// --- Seasons: real structured standings sources ---
+// --- Standings: real structured standings sources, shared live by
+// StandingRoom, Stats, and (before their 2026-07-26 merge into
+// StandingRoom) Seasons and StandingsDrawer separately ---
 async function fetchWcStandings() {
   const res = await fetch(`${RELAY_BASE}/wc/standings`)
   if (!res.ok) throw new Error(`wc/standings fetch failed: ${res.status}`)

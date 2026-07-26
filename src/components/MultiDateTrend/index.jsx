@@ -35,7 +35,7 @@ export function MultiDateTrend() {
 
   const allLoaded = createMemo(() => entries.every(e => !e.ctx.data.loading && !e.topPick.loading))
 
-  // Same posture as Seasons/DayComparison/MultiDayStreak: a resource throws
+  // Same posture as StandingRoom/DayComparison/MultiDayStreak: a resource throws
   // when read in error state -- checking `.error` before calling either
   // accessor means one failed day's fetch can't blank the whole panel.
   const trend = createMemo(() =>

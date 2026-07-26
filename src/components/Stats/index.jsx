@@ -26,8 +26,8 @@ import styles from './Stats.module.css'
 // production's own carry-forward note warns about ("this session
 // repeatedly proved that assuming a data shape from a name is wrong").
 // What IS real and tested here: the same wcStandings/mlbStandings/
-// mlsStandings resources Seasons already proves live, recomposed into a
-// genuinely different shape -- a ranked CROSS-GAME leaderboard instead of
+// mlsStandings resources StandingRoom already proves live, recomposed
+// into a genuinely different shape -- a ranked CROSS-GAME leaderboard instead of
 // a per-division/per-conference table. That recomposition (a createMemo
 // flattening three independent resources into one ranked list) is new to
 // this repo; nothing here fabricates data production doesn't serve.
@@ -222,7 +222,7 @@ export function Stats() {
         <span class={styles.sublabel}>cross-game leaderboards, not per-division tables</span>
       </header>
       <p class={styles.note}>
-        Same standings data as Seasons, recomposed: ranked across every division/conference/group
+        Same standings data as Standing Room, recomposed: ranked across every division/conference/group
         instead of shown per-group. Production's real Stats tab also includes per-game scouting
         reports and sport-specific novel metrics sourced from endpoints not yet verified reachable
         from this playground — this tests the leaderboard-recomposition pattern only.

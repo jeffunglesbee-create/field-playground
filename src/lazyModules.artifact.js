@@ -1,5 +1,5 @@
 import { lazy } from 'solid-js'
-import { Seasons } from './components/Seasons'
+import { StandingRoom } from './components/StandingRoom'
 import HeavyPanel from './components/LazyBoundaryDemo/HeavyPanel'
 
 // Artifact-build swap target for lazyModules.js, wired via resolve.alias
@@ -14,7 +14,7 @@ import HeavyPanel from './components/LazyBoundaryDemo/HeavyPanel'
 // emits no chunk -- which is the whole point, since a standalone
 // single-file HTML has nowhere to fetch a chunk from. The real symptom
 // this fixes: "Unable to preload CSS for /assets/index-*.css" and a
-// permanently-absent Seasons section in the artifact.
+// permanently-absent StandingRoom section in the artifact.
 
-export const SeasonsLazy = lazy(() => Promise.resolve({ default: Seasons }))
+export const StandingRoomLazy = lazy(() => Promise.resolve({ default: StandingRoom }))
 export const HeavyPanelLazy = lazy(() => Promise.resolve({ default: HeavyPanel }))
