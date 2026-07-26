@@ -37,12 +37,18 @@ import { CommandPalette } from './components/CommandPalette'
 import { Presence } from './components/Presence'
 import { ScoreFeed } from './components/ScoreFeed'
 import { ReactivePerfPanel } from './components/ReactivePerfPanel'
+import { Multiview } from './components/Multiview'
+import { StandingsDrawer } from './components/StandingsDrawer'
+import { ReorderCost } from './components/ReorderCost'
+import { TeamAffinitySync } from './components/TeamAffinitySync'
+import { WeatherPoll } from './components/WeatherPoll'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { SeasonsLazy as Seasons } from './lazyModules'
 import { initOutcomesSync } from './data/outcomes'
 import { initScoreEvents } from './data/scoreEvents'
 import { initPresence } from './data/presence'
+import { initTeamAffinitySync } from './data/teamAffinity'
 import shared from './components/shared.module.css'
 import styles from './App.module.css'
 
@@ -58,6 +64,7 @@ export default function App() {
     initExtendedUrlSync()
     initScoreEvents()
     initPresence()
+    initTeamAffinitySync()
   })
 
   // MultiDayStreak needs a real team name to track -- dynamically read
@@ -189,6 +196,21 @@ export default function App() {
         </section>
         <section class={styles.reactivePerfPanel}>
           <ReactivePerfPanel />
+        </section>
+        <section class={styles.multiview}>
+          <Multiview />
+        </section>
+        <section class={styles.standingsDrawer}>
+          <StandingsDrawer />
+        </section>
+        <section class={styles.reorderCost}>
+          <ReorderCost />
+        </section>
+        <section class={styles.teamAffinitySync}>
+          <TeamAffinitySync />
+        </section>
+        <section class={styles.weatherPoll}>
+          <WeatherPoll />
         </section>
         <ToastLayer />
         <CommandPalette />

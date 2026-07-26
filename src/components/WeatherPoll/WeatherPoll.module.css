@@ -1,0 +1,86 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  line-height: 1.5;
+  margin: 0 0 8px 0;
+}
+
+.pollCount {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 10px;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0;
+}
+
+.venueList {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.venueRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 5px;
+  padding: 5px 9px;
+}
+
+.venueName {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.venueTemp {
+  font-size: 11px;
+  color: #d4a92e;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.venueCondition {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  flex-shrink: 0;
+}
