@@ -68,6 +68,35 @@ jobs:
           echo "=== RAW BODY (first 800 chars) ===" >> "$OUT"
           head -c 800 /tmp/body.json >> "$OUT" 2>&1 || true
 
+      - name: Probe Open-Meteo Geocoding (real + indoor venue names from this repo's mock slate)
+        timeout-minutes: 2
+        continue-on-error: true
+        run: |
+          OUT=outbox/open-meteo-geocoding-probe.txt
+          echo "probe_at: $(date -u +%FT%TZ)" > "$OUT"
+          echo "base: https://geocoding-api.open-meteo.com/v1/search" >> "$OUT"
+          echo "" >> "$OUT"
+          echo "Testing whether geocoding-by-name can replace this repo's hand-maintained" >> "$OUT"
+          echo "VENUE_COORDS table, and whether it can tell indoor from outdoor -- the" >> "$OUT"
+          echo "prediction from docs/outbox/chat-update-2026-07-26-weather-endpoint-investigation.md" >> "$OUT"
+          echo "is that it CANNOT know dome status, only resolve a name to coordinates." >> "$OUT"
+          echo "" >> "$OUT"
+          for NAME in "Citizens Bank Park" "Yankee Stadium" "Globe Life Field" "America First Field" "Red Bull Arena" "Dick's Sporting Goods Park" "Footprint Center" "Target Center"; do
+            echo "=== \"$NAME\" ===" >> "$OUT"
+            ENCODED=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$NAME")
+            URL="https://geocoding-api.open-meteo.com/v1/search?name=${ENCODED}&count=3&language=en&format=json"
+            curl -sS -o /tmp/geo.json -w "http_code: %{http_code}\n" "$URL" >> "$OUT" 2>&1 || true
+            jq -r 'if .results then (.results | length | tostring) + " result(s)" else "0 results (no .results key)" end' /tmp/geo.json >> "$OUT" 2>&1 || echo "  (jq parse failed)" >> "$OUT"
+            jq -r '.results[]? | "  - \(.name) (\(.admin1 // "?"), \(.country_code // "?")) at \(.latitude), \(.longitude) -- feature_code: \(.feature_code // "?")"' /tmp/geo.json >> "$OUT" 2>&1 || true
+            echo "" >> "$OUT"
+          done
+          echo "=== VERDICT ===" >> "$OUT"
+          echo "Read the results above by hand: does each real venue resolve to a" >> "$OUT"
+          echo "plausible coordinate? Does anything in the response (feature_code," >> "$OUT"
+          echo "elevation, name) distinguish an indoor arena from an outdoor stadium?" >> "$OUT"
+          echo "If not, the prediction holds and a table stays required for the" >> "$OUT"
+          echo "outdoor/indoor flag even if geocoding replaces the coordinate lookup." >> "$OUT"
+
       - name: Commit probe result
         if: always()
         run: |
