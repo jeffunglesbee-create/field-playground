@@ -1,4 +1,4 @@
-import { For } from 'solid-js'
+import { For, Show } from 'solid-js'
 import styles from './Tabs.module.css'
 
 // Shared tab primitive, extracted from Seasons' local copy.
@@ -20,9 +20,9 @@ import styles from './Tabs.module.css'
 // re-evaluates when it changes, not the whole bar. That's the same
 // props-are-getters discipline the rest of this repo follows.
 //
-// `tabs` may be a plain array OR an accessor: <For> handles both because
-// it unwraps a function source. Seasons passes tabs() (already resolved),
-// PickEm/DayComparison pass static arrays.
+// `tabs` may be a plain array OR an accessor: <For> unwraps a function
+// source, so both work. Seasons passes an accessor (its tab list is
+// derived from live standings); PickEm/DayComparison pass static arrays.
 export function Tabs(props) {
   return (
     <div class={styles.tabBar} role="tablist">
@@ -44,7 +44,3 @@ export function Tabs(props) {
     </div>
   )
 }
-
-// Re-exported so consumers don't need a second import for the Show used
-// above in their own tab-content blocks.
-import { Show } from 'solid-js'
