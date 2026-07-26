@@ -1,0 +1,138 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 4px 16px 14px;
+}
+
+.summary {
+  cursor: pointer;
+  padding: 10px 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary::before {
+  content: '▸';
+  color: var(--field-text-muted);
+  font-size: 10px;
+  margin-right: 2px;
+}
+
+.root[open] .summary::before {
+  content: '▾';
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.summaryStat {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-family: monospace;
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.totalsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.totalChip {
+  font-size: 10px;
+  color: var(--field-text-secondary);
+  background: #1a1a1a;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.resetBtn {
+  font-size: 10px;
+  font-family: inherit;
+  color: var(--field-text-muted);
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 3px 9px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.resetBtn:hover {
+  border-color: #3a3a3a;
+  color: var(--field-text-secondary);
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.columnLabel {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--field-text-muted);
+  margin-bottom: 2px;
+}
+
+.perfRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  background: #0e0e0e;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+
+.perfRowLabel {
+  color: var(--field-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perfRowCount {
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}

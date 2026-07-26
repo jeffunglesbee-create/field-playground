@@ -40,7 +40,10 @@
 .workerBridgeDemo,
 .pollDeltaFeed,
 .replayDemo,
-.latencyHistogram {
+.latencyHistogram,
+.presence,
+.scoreFeed,
+.reactivePerfPanel {
   display: flex;
   flex-direction: column;
   gap: 8px;
