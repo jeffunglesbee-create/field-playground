@@ -44,7 +44,12 @@
 .latencyHistogram,
 .presence,
 .scoreFeed,
-.reactivePerfPanel {
+.reactivePerfPanel,
+.multiview,
+.standingsDrawer,
+.reorderCost,
+.teamAffinitySync,
+.weatherPoll {
   display: flex;
   flex-direction: column;
   gap: 8px;

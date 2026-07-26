@@ -79,10 +79,10 @@ function mockRelay() {
   }
   const mlbStandingsMock = {
     records: [
-      { division: { id: 201 }, teamRecords: [mlbTeam('New York Yankees', 1, '-', '-', 'W6'), mlbTeam('Boston Red Sox', 2, '3.5', '1.0', 'L1'), mlbTeam('Baltimore Orioles', 5, '14.0', '11.5', 'L2')] },
+      { division: { id: 201 }, teamRecords: [mlbTeam('NY Yankees', 1, '-', '-', 'W6'), mlbTeam('Boston Red Sox', 2, '3.5', '1.0', 'L1'), mlbTeam('Baltimore Orioles', 5, '14.0', '11.5', 'L2')] },
       { division: { id: 202 }, teamRecords: [mlbTeam('Cleveland Guardians', 1, '-', '-', 'W2'), mlbTeam('Minnesota Twins', 2, '2.0', '0.5', 'L1'), mlbTeam('Kansas City Royals', 4, '9.0', '6.5', 'W1')] },
-      { division: { id: 200 }, teamRecords: [mlbTeam('Houston Astros', 1, '-', '-', 'W8'), mlbTeam('Seattle Mariners', 2, '4.0', '2.0', 'W3'), mlbTeam('Athletics', 5, '16.5', '14.0', 'L5')] },
-      { division: { id: 204 }, teamRecords: [mlbTeam('Philadelphia Phillies', 1, '-', '-', 'W4'), mlbTeam('New York Mets', 2, '1.5', '-', 'W1'), mlbTeam('Miami Marlins', 5, '19.0', '16.5', 'L3')] },
+      { division: { id: 200 }, teamRecords: [mlbTeam('Houston Astros', 1, '-', '-', 'W8'), mlbTeam('Seattle Mariners', 2, '4.0', '2.0', 'W3'), mlbTeam('Texas Rangers', 3, '6.5', '3.0', 'L2'), mlbTeam('Athletics', 5, '16.5', '14.0', 'L5')] },
+      { division: { id: 204 }, teamRecords: [mlbTeam('Philadelphia Phillies', 1, '-', '-', 'W4'), mlbTeam('NY Mets', 2, '1.5', '-', 'W1'), mlbTeam('Miami Marlins', 5, '19.0', '16.5', 'L3')] },
       { division: { id: 205 }, teamRecords: [mlbTeam('Milwaukee Brewers', 1, '-', '-', 'L2'), mlbTeam('Chicago Cubs', 2, '2.5', '1.0', 'W2'), mlbTeam('Cincinnati Reds', 5, '13.0', '10.5', 'L7')] },
       { division: { id: 203 }, teamRecords: [mlbTeam('Los Angeles Dodgers', 1, '-', '-', 'W3'), mlbTeam('San Diego Padres', 2, '3.0', '0.5', 'W1'), mlbTeam('San Francisco Giants', 4, '8.0', '5.5', 'L1')] },
     ],
@@ -91,15 +91,26 @@ function mockRelay() {
   function mlsTeam(team, wins, draws, losses, goals_difference, points) {
     return { team, wins, draws, losses, goals_difference, points }
   }
+  // Team names include the actual MLS teams playing in context()'s mock
+  // slate (Real Salt Lake, Colorado Rapids, San Jose Earthquakes, CF
+  // Montréal) so a cross-resource join between today's games and
+  // standings has real matches to find in dev, not just Seasons' own
+  // (unrelated) per-conference view of this same data. 'NY Red Bulls'
+  // deliberately has no entry here -- context()'s mock uses that
+  // shorthand while Seasons' own MLS_EASTERN set uses the real API's
+  // 'Red Bull New York', a pre-existing mismatch between two mocks built
+  // in different sessions; left as an honest gap rather than forced to
+  // match, since a real join should degrade gracefully on a miss.
   const mlsStandingsMock = {
     tables: [{
       entries: [
         mlsTeam('Inter Miami CF', 14, 5, 3, 22, 47),
-        mlsTeam('Columbus Crew', 11, 6, 5, 9, 39),
-        mlsTeam('D.C. United', 5, 4, 13, -18, 19),
         mlsTeam('Los Angeles Football Club', 13, 7, 2, 19, 46),
-        mlsTeam('Seattle Sounders FC', 10, 8, 4, 7, 38),
-        mlsTeam('St. Louis CITY SC', 4, 6, 12, -15, 18),
+        mlsTeam('Real Salt Lake', 11, 6, 5, 8, 39),
+        mlsTeam('CF Montréal', 10, 7, 5, 6, 37),
+        mlsTeam('San Jose Earthquakes', 9, 5, 8, 2, 32),
+        mlsTeam('Colorado Rapids', 6, 7, 9, -9, 25),
+        mlsTeam('D.C. United', 5, 4, 13, -18, 19),
       ],
     }],
   }
@@ -113,6 +124,31 @@ function mockRelay() {
       B: [wcTeam('England', 2, 1, 0, 4, 7), wcTeam('USA', 1, 2, 0, 2, 5), wcTeam('Iran', 1, 0, 2, -3, 3), wcTeam('Wales', 0, 1, 2, -3, 1)],
       C: [wcTeam('Argentina', 2, 0, 1, 3, 6), wcTeam('Poland', 1, 2, 0, 0, 5), wcTeam('Mexico', 1, 1, 1, -1, 4), wcTeam('Saudi Arabia', 1, 0, 2, -2, 3)],
     },
+  }
+
+  // Venues match context()'s own real mock games exactly (same fixture,
+  // not a coincidence) -- temps drift slightly (+/- weatherRequestCount)
+  // so WeatherPoll's independent polling cadence is provable by an
+  // actually-changing value across successive requests, the same trick
+  // houTexLive already uses for the desk poll.
+  let weatherRequestCount = 0
+  function weatherMock() {
+    weatherRequestCount++
+    const jitter = weatherRequestCount % 5
+    return {
+      generatedAt: Date.now(),
+      requestCount: weatherRequestCount,
+      venues: [
+        { venue: 'Citizens Bank Park', tempF: 78 + jitter, condition: 'clear' },
+        { venue: 'Yankee Stadium', tempF: 74 + jitter, condition: 'partly cloudy' },
+        { venue: 'Globe Life Field', tempF: 91, condition: 'clear (roof closed)' },
+        { venue: 'America First Field', tempF: 88 + jitter, condition: 'clear' },
+        { venue: 'Red Bull Arena', tempF: 76 - jitter, condition: 'light rain' },
+        { venue: "Dick's Sporting Goods Park", tempF: 82 + jitter, condition: 'clear' },
+        { venue: 'Footprint Center', tempF: 95, condition: 'clear (indoor)' },
+        { venue: 'Target Center', tempF: 72, condition: 'clear (indoor)' },
+      ],
+    }
   }
 
   return {
@@ -140,6 +176,10 @@ function mockRelay() {
         if (req.url?.startsWith('/mls/stats/competitions/')) {
           res.setHeader('Content-Type', 'application/json')
           return res.end(JSON.stringify(mlsStandingsMock))
+        }
+        if (req.url?.startsWith('/weather/today/')) {
+          res.setHeader('Content-Type', 'application/json')
+          return res.end(JSON.stringify(weatherMock()))
         }
         if (req.url === '/journalism/brief') {
           // Rotates every 3 requests to simulate the brief regenerating mid-session.
