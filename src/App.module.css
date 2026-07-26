@@ -49,7 +49,8 @@
 .standingsDrawer,
 .reorderCost,
 .teamAffinitySync,
-.weatherPoll {
+.weatherPoll,
+.venueGeocodeRace {
   display: flex;
   flex-direction: column;
   gap: 8px;
