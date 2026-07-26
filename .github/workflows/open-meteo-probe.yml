@@ -90,6 +90,19 @@ jobs:
             jq -r '.results[]? | "  - \(.name) (\(.admin1 // "?"), \(.country_code // "?")) at \(.latitude), \(.longitude) -- feature_code: \(.feature_code // "?")"' /tmp/geo.json >> "$OUT" 2>&1 || true
             echo "" >> "$OUT"
           done
+          echo "=== CORS check (geocoding-api is a DIFFERENT host than api.open-meteo.com --" >> "$OUT"
+          echo "the forecast endpoint's open CORS policy doesn't automatically apply here) ===" >> "$OUT"
+          CORS_URL="https://geocoding-api.open-meteo.com/v1/search?name=Citizens+Bank+Park&count=1"
+          curl -sS -D /tmp/geo-hdr.txt -o /dev/null -w "http_code: %{http_code}\n" -H "Origin: https://field-playground.jeffunglesbee.workers.dev" "$CORS_URL" >> "$OUT" 2>&1 || true
+          if grep -qi "access-control-allow-origin" /tmp/geo-hdr.txt; then
+            grep -i "access-control-allow-origin" /tmp/geo-hdr.txt >> "$OUT"
+            echo "VERDICT: CORS-OPEN on geocoding-api.open-meteo.com too -- browser can call it directly" >> "$OUT"
+          else
+            echo "VERDICT: NO access-control-allow-origin on geocoding-api.open-meteo.com" >> "$OUT"
+            echo "  -> a live in-browser demo would need a different approach (this is moot anyway" >> "$OUT"
+            echo "     given the 7/8 miss rate above -- geocoding-by-name isn't viable regardless)" >> "$OUT"
+          fi
+          echo "" >> "$OUT"
           echo "=== VERDICT ===" >> "$OUT"
           echo "Read the results above by hand: does each real venue resolve to a" >> "$OUT"
           echo "plausible coordinate? Does anything in the response (feature_code," >> "$OUT"
