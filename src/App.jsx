@@ -1,4 +1,4 @@
-import { onMount, onCleanup, lazy, Suspense, ErrorBoundary, createMemo } from 'solid-js'
+import { onMount, onCleanup, lazy, Suspense, ErrorBoundary, createMemo, createSignal, Show } from 'solid-js'
 import { AmbientPanel } from './components/AmbientPanel'
 import { DeskCard, initExtendedUrlSync } from './components/DeskCard'
 import { PickEm } from './components/PickEm'
@@ -44,6 +44,7 @@ import { TeamAffinitySync } from './components/TeamAffinitySync'
 import { WeatherPoll } from './components/WeatherPoll'
 import { VenueGeocodeRace } from './components/VenueGeocodeRace'
 import { ToastLayer } from './components/Toast'
+import { Tabs, tabId, panelId } from './components/Tabs'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { SeasonsLazy as Seasons } from './lazyModules'
 import { initOutcomesSync } from './data/outcomes'
@@ -54,6 +55,37 @@ import shared from './components/shared.module.css'
 import styles from './App.module.css'
 
 const POLL_INTERVAL_MS = 15000
+
+// Top-level surfaces grouped by TYPE rather than build order. 44 sections
+// accumulated in one flat scroll made "what kind of thing is this" a
+// question you could only answer by reading each card -- these 7 tabs are
+// that question answered up front. Counts are static (how many sections
+// live under each tab), not live data, same optional-count support Tabs
+// already has from PickEm/DayComparison.
+//
+// HealthPanel, AmbientPanel, and DeskCard are deliberately NOT tabbed.
+// HealthPanel's own header comment already argues that a health check
+// nobody has to click to see isn't monitoring anything -- putting it
+// behind tab navigation would be exactly that mistake. AmbientPanel and
+// DeskCard are the app's spine, not browsable content: they're tightly
+// coupled to each other (AmbientPanel calls DeskCard's own
+// setHighlightedGameId to cross-highlight a game) and to print.css's
+// "picks on top, games below" export, which has always assumed both are
+// simultaneously present -- a real constraint a single-active-tab system
+// can't satisfy for two components that would otherwise land in
+// different tabs (Journalism and Games). Keeping this trio always-on
+// preserves that behavior with zero print.css changes needed.
+const TOP_NAV_ID = 'app'
+
+const TOP_TABS = [
+  { key: 'games', label: 'Games', count: 9 },
+  { key: 'picks', label: 'Picks', count: 7 },
+  { key: 'stats', label: 'Stats', count: 4 },
+  { key: 'journalism', label: 'Journalism', count: 1 },
+  { key: 'social', label: 'Social', count: 3 },
+  { key: 'system', label: 'System', count: 2 },
+  { key: 'lab', label: 'Lab', count: 15 },
+]
 
 function sectionFallback(err, reset) {
   return (
@@ -91,6 +123,8 @@ function SafeSection(props) {
 }
 
 export default function App() {
+  const [activeTab, setActiveTab] = createSignal('games')
+
   onMount(() => {
     const handle = setInterval(() => { refetchDesk() }, POLL_INTERVAL_MS)
     onCleanup(() => clearInterval(handle))
@@ -120,140 +154,191 @@ export default function App() {
       </div>
     )}>
       <div class={styles.layout}>
-        <SafeSection class={styles.healthPanel}>
-          <HealthPanel />
-        </SafeSection>
-        <SafeSection class={styles.ambient}>
-          <AmbientPanel />
-        </SafeSection>
-        <SafeSection class={styles.desk}>
-          <DeskCard />
-        </SafeSection>
-        <SafeSection class={styles.pickem}>
-          <PickEm />
-        </SafeSection>
-        <SafeSection class={styles.seasons}>
-          <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
-            <Seasons />
-          </Suspense>
-        </SafeSection>
-        <SafeSection class={styles.stats}>
-          <Stats />
-        </SafeSection>
-        <SafeSection class={styles.ground}>
-          <Ground />
-        </SafeSection>
-        <SafeSection class={styles.dayComparison}>
-          <DayComparison />
-        </SafeSection>
-        <SafeSection class={styles.suspenseDemo}>
-          <SuspenseDemo />
-        </SafeSection>
-        <SafeSection class={styles.agreement}>
-          <Agreement />
-        </SafeSection>
-        <SafeSection class={styles.crossCheck}>
-          <CrossCheck />
-        </SafeSection>
-        <SafeSection class={styles.createRootDemo}>
-          <CreateRootDemo />
-        </SafeSection>
-        <SafeSection class={styles.history}>
-          <History />
-        </SafeSection>
-        <SafeSection class={styles.journalismBrief}>
-          <JournalismBrief />
-        </SafeSection>
-        <SafeSection class={styles.multiDayStreak}>
-          {streakTeam() && <MultiDayStreak baseDate={currentDate()} team={streakTeam()} />}
-        </SafeSection>
-        <SafeSection class={styles.errorBoundaryDemo}>
-          <ErrorBoundaryDemo />
-        </SafeSection>
-        <SafeSection class={styles.drillDown}>
-          <DrillDown />
-        </SafeSection>
-        <SafeSection class={styles.transitionDemo}>
-          <TransitionDemo />
-        </SafeSection>
-        <SafeSection class={styles.contextDemo}>
-          <ContextDemo />
-        </SafeSection>
-        <SafeSection class={styles.selectorDemo}>
-          <SelectorDemo />
-        </SafeSection>
-        <SafeSection class={styles.lazyBoundaryDemo}>
-          <LazyBoundaryDemo />
-        </SafeSection>
-        <SafeSection class={styles.propsDemo}>
-          <PropsDemo />
-        </SafeSection>
-        <SafeSection class={styles.dateBrowserTransition}>
-          <DateBrowserTransition />
-        </SafeSection>
-        <SafeSection class={styles.computedDemo}>
-          <ComputedDemo />
-        </SafeSection>
-        <SafeSection class={styles.indexArrayDemo}>
-          <IndexArrayDemo />
-        </SafeSection>
-        <SafeSection class={styles.pickStreak}>
-          <PickStreak />
-        </SafeSection>
-        <SafeSection class={styles.calibration}>
-          <Calibration />
-        </SafeSection>
-        <SafeSection class={styles.compareToRelay}>
-          <CompareToRelay />
-        </SafeSection>
-        <SafeSection class={styles.localNoteLayer}>
-          <LocalNoteLayer />
-        </SafeSection>
-        <SafeSection class={styles.multiDateTrend}>
-          <MultiDateTrend />
-        </SafeSection>
-        <SafeSection class={styles.undoStackDemo}>
-          <UndoStackDemo />
-        </SafeSection>
-        <SafeSection class={styles.workerBridgeDemo}>
-          <WorkerBridgeDemo />
-        </SafeSection>
-        <SafeSection class={styles.pollDeltaFeed}>
-          <PollDeltaFeed />
-        </SafeSection>
-        <SafeSection class={styles.replayDemo}>
-          <ReplayDemo />
-        </SafeSection>
-        <SafeSection class={styles.latencyHistogram}>
-          <LatencyHistogram />
-        </SafeSection>
-        <SafeSection class={styles.presence}>
-          <Presence />
-        </SafeSection>
-        <SafeSection class={styles.scoreFeed}>
-          <ScoreFeed />
-        </SafeSection>
-        <SafeSection class={styles.reactivePerfPanel}>
-          <ReactivePerfPanel />
-        </SafeSection>
-        <SafeSection class={styles.multiview}>
-          <Multiview />
-        </SafeSection>
-        <SafeSection class={styles.standingsDrawer}>
-          <StandingsDrawer />
-        </SafeSection>
-        <SafeSection class={styles.reorderCost}>
-          <ReorderCost />
-        </SafeSection>
-        <SafeSection class={styles.teamAffinitySync}>
-          <TeamAffinitySync />
-        </SafeSection>
-        <SafeSection class={styles.weatherPoll}>
-          <WeatherPoll />
-        </SafeSection>
-        <SafeSection class={styles.venueGeocodeRace}>
-          <VenueGeocodeRace />
-        </SafeSection>
+        <div class={styles.spine}>
+          <SafeSection class={styles.healthPanel}>
+            <HealthPanel />
+          </SafeSection>
+          <SafeSection class={styles.ambient}>
+            <AmbientPanel />
+          </SafeSection>
+          <SafeSection class={styles.desk}>
+            <DeskCard />
+          </SafeSection>
+        </div>
+
+        <nav class={styles.tabNav}>
+          <Tabs id={TOP_NAV_ID} tabs={TOP_TABS} active={activeTab} setActive={setActiveTab} hasPanel />
+        </nav>
+
+        {/* Unmounting an inactive tab's sections (rather than hiding them
+            with CSS) is deliberate, not incidental -- it's the same
+            pattern Seasons/PickEm/DayComparison/Stats already use for
+            their own internal tabs, proven live in this repo. Every
+            polling loop below (WeatherPoll's own setInterval,
+            JournalismBrief's 5m cadence, etc.) genuinely stops via its own
+            onCleanup while its tab isn't active, and resumes correctly on
+            remount -- fewer live polls for content nobody's looking at,
+            not a cosmetic hide. The same unmount also drops each
+            section's own local state (ScoreFeed's filter selection,
+            Multiview/ReorderCost's counters, LazyBoundaryDemo's already-
+            loaded chunk), not just its poll loop -- switching away and
+            back genuinely resets a section to its initial state. That's
+            the same tradeoff Seasons/PickEm/DayComparison/Stats already
+            accepted for their own tabs, worth naming here so it doesn't
+            read as a bug later. */}
+        <div
+          class={styles.tabbedContent}
+          role="tabpanel"
+          id={panelId(TOP_NAV_ID, activeTab())}
+          aria-labelledby={tabId(TOP_NAV_ID, activeTab())}
+        >
+          <Show when={activeTab() === 'games'}>
+            <SafeSection class={styles.drillDown}>
+              <DrillDown />
+            </SafeSection>
+            <SafeSection class={styles.multiview}>
+              <Multiview />
+            </SafeSection>
+            <SafeSection class={styles.weatherPoll}>
+              <WeatherPoll />
+            </SafeSection>
+            <SafeSection class={styles.venueGeocodeRace}>
+              <VenueGeocodeRace />
+            </SafeSection>
+            <SafeSection class={styles.scoreFeed}>
+              <ScoreFeed />
+            </SafeSection>
+            <SafeSection class={styles.pollDeltaFeed}>
+              <PollDeltaFeed />
+            </SafeSection>
+            <SafeSection class={styles.standingsDrawer}>
+              <StandingsDrawer />
+            </SafeSection>
+            <SafeSection class={styles.localNoteLayer}>
+              <LocalNoteLayer />
+            </SafeSection>
+            <SafeSection class={styles.dayComparison}>
+              <DayComparison />
+            </SafeSection>
+          </Show>
+
+          <Show when={activeTab() === 'picks'}>
+            <SafeSection class={styles.pickem}>
+              <PickEm />
+            </SafeSection>
+            <SafeSection class={styles.pickStreak}>
+              <PickStreak />
+            </SafeSection>
+            <SafeSection class={styles.calibration}>
+              <Calibration />
+            </SafeSection>
+            <SafeSection class={styles.compareToRelay}>
+              <CompareToRelay />
+            </SafeSection>
+            <SafeSection class={styles.agreement}>
+              <Agreement />
+            </SafeSection>
+            <SafeSection class={styles.crossCheck}>
+              <CrossCheck />
+            </SafeSection>
+            <SafeSection class={styles.history}>
+              <History />
+            </SafeSection>
+          </Show>
+
+          <Show when={activeTab() === 'stats'}>
+            <SafeSection class={styles.seasons}>
+              <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
+                <Seasons />
+              </Suspense>
+            </SafeSection>
+            <SafeSection class={styles.stats}>
+              <Stats />
+            </SafeSection>
+            <SafeSection class={styles.multiDayStreak}>
+              {streakTeam() && <MultiDayStreak baseDate={currentDate()} team={streakTeam()} />}
+            </SafeSection>
+            <SafeSection class={styles.multiDateTrend}>
+              <MultiDateTrend />
+            </SafeSection>
+          </Show>
+
+          <Show when={activeTab() === 'journalism'}>
+            <SafeSection class={styles.journalismBrief}>
+              <JournalismBrief />
+            </SafeSection>
+          </Show>
+
+          <Show when={activeTab() === 'social'}>
+            <SafeSection class={styles.presence}>
+              <Presence />
+            </SafeSection>
+            <SafeSection class={styles.teamAffinitySync}>
+              <TeamAffinitySync />
+            </SafeSection>
+            <SafeSection class={styles.ground}>
+              <Ground />
+            </SafeSection>
+          </Show>
+
+          <Show when={activeTab() === 'system'}>
+            <SafeSection class={styles.reactivePerfPanel}>
+              <ReactivePerfPanel />
+            </SafeSection>
+            <SafeSection class={styles.latencyHistogram}>
+              <LatencyHistogram />
+            </SafeSection>
+          </Show>
+
+          <Show when={activeTab() === 'lab'}>
+            <SafeSection class={styles.suspenseDemo}>
+              <SuspenseDemo />
+            </SafeSection>
+            <SafeSection class={styles.createRootDemo}>
+              <CreateRootDemo />
+            </SafeSection>
+            <SafeSection class={styles.errorBoundaryDemo}>
+              <ErrorBoundaryDemo />
+            </SafeSection>
+            <SafeSection class={styles.transitionDemo}>
+              <TransitionDemo />
+            </SafeSection>
+            <SafeSection class={styles.contextDemo}>
+              <ContextDemo />
+            </SafeSection>
+            <SafeSection class={styles.selectorDemo}>
+              <SelectorDemo />
+            </SafeSection>
+            <SafeSection class={styles.lazyBoundaryDemo}>
+              <LazyBoundaryDemo />
+            </SafeSection>
+            <SafeSection class={styles.propsDemo}>
+              <PropsDemo />
+            </SafeSection>
+            <SafeSection class={styles.dateBrowserTransition}>
+              <DateBrowserTransition />
+            </SafeSection>
+            <SafeSection class={styles.computedDemo}>
+              <ComputedDemo />
+            </SafeSection>
+            <SafeSection class={styles.indexArrayDemo}>
+              <IndexArrayDemo />
+            </SafeSection>
+            <SafeSection class={styles.undoStackDemo}>
+              <UndoStackDemo />
+            </SafeSection>
+            <SafeSection class={styles.workerBridgeDemo}>
+              <WorkerBridgeDemo />
+            </SafeSection>
+            <SafeSection class={styles.replayDemo}>
+              <ReplayDemo />
+            </SafeSection>
+            <SafeSection class={styles.reorderCost}>
+              <ReorderCost />
+            </SafeSection>
+          </Show>
+        </div>
+
         <ErrorBoundary fallback={sectionFallback}>
           <ToastLayer />
         </ErrorBoundary>

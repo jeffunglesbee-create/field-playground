@@ -1,9 +1,41 @@
 .layout {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 16px;
   padding: 16px;
   min-height: 100vh;
+}
+
+/* HealthPanel/AmbientPanel/DeskCard: always-on, never gated behind a tab
+   -- see App.jsx's own comment on TOP_TABS for why. Own flex-wrap row so
+   these three still sit side by side exactly as they did before the tab
+   reorganization. */
+.spine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* Sticky so switching tabs never requires re-finding the tab bar after
+   scrolling into a long section (Lab alone is 15 cards). Background
+   matches the page so sticking over content doesn't show a seam. */
+.tabNav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #0a0a0a;
+  padding: 8px 0;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+/* The active tab's own cards -- separate flex-wrap zone from .spine so
+   Tabs.module.css's small pill bar (.tabNav) doesn't have to participate
+   in card sizing. */
+.tabbedContent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
   align-items: flex-start;
 }
 
@@ -63,22 +95,37 @@
    these section classes); broader resets (backgrounds, animations) live
    in src/print.css as a plain global stylesheet, since CSS Modules'
    scoped class names mean a global file can't target .gameRow etc.
-   directly -- print.css uses element/attribute selectors instead. */
+   directly -- print.css uses element/attribute selectors instead.
+   Only .spine's contents (HealthPanel/AmbientPanel/DeskCard) can ever
+   print now -- .tabNav and .tabbedContent are hidden outright rather
+   than enumerated per section class. Before the tab reorganization this
+   listed 5 section classes by name to hide (.pickem, .seasons, .ground,
+   .dayComparison, .suspenseDemo); with 41 sections now living inside 7
+   tabs and only one tab's sections ever mounted at a time, enumerating
+   them here would both undercount (36 sections were never listed) and
+   drift the moment a section moves tabs -- hiding the whole tabbed
+   region is the version that can't go stale. */
 @media print {
   .layout {
     display: block;
     padding: 0;
   }
 
-  .ambient { order: 1; }
-  .desk    { order: 2; }
-  .pickem,
-  .seasons,
-  .ground,
-  .dayComparison,
-  .suspenseDemo {
+  /* .spine is display:flex for screen (side-by-side cards); print needs
+     it block so .ambient/.desk stack vertically instead of sharing a
+     row. Without this, "picks on top, games below" degrades to "picks
+     next to games" the moment .spine sits between .layout and them. */
+  .spine {
+    display: block;
+  }
+
+  .tabNav,
+  .tabbedContent {
     display: none;
   }
+
+  .ambient { order: 1; }
+  .desk    { order: 2; }
 
   .ambient,
   .desk {

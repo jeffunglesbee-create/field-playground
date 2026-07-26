@@ -23,15 +23,61 @@ import styles from './Tabs.module.css'
 // `tabs` may be a plain array OR an accessor: <For> unwraps a function
 // source, so both work. Seasons passes an accessor (its tab list is
 // derived from live standings); PickEm/DayComparison pass static arrays.
+//
+// `id` (optional, defaults to "tabs") namespaces this instance's
+// generated element IDs -- needed because this component can be mounted
+// several times at once (App's own top-level nav plus, say, Stats' own
+// MLB/MLS/World Cup tabs, simultaneously present whenever the Stats tab
+// is active) and DOM IDs must be globally unique, not just unique within
+// one tab bar. tabId(key)/panelId(key) are exported so a consumer that
+// renders its own tabpanel element can match `aria-labelledby`/
+// `aria-controls` to the exact IDs this component put on its buttons,
+// without duplicating the naming scheme.
+//
+// `hasPanel` (optional, default false) opts a consumer into `aria-controls`
+// -- and ONLY the active tab gets it, never the inactive ones. This isn't
+// a partial implementation: every consumer here (App.jsx included) mounts
+// only the ACTIVE tab's panel and unmounts the rest, so an inactive tab's
+// `aria-controls` would reference an element that doesn't exist in the
+// DOM at all -- a real dangling reference, not a hidden one. Per WAI-ARIA,
+// `aria-controls` is optional/informative (unlike `aria-selected`, which
+// is required); omitting it when there's no live target to point at is
+// correct, not a compromise. Seasons/PickEm/DayComparison/Stats don't
+// pass `hasPanel` -- they've never rendered a matching tabpanel element,
+// so leaving them opted out preserves their exact pre-existing behavior
+// rather than emitting a reference to something that was never there.
+export function tabId(id, key) { return `${id ?? 'tabs'}-tab-${key}` }
+export function panelId(id, key) { return `${id ?? 'tabs'}-panel-${key}` }
+
 export function Tabs(props) {
+  const list = () => (typeof props.tabs === 'function' ? props.tabs() : props.tabs)
+
+  function handleKeyDown(e) {
+    const nav = { ArrowRight: 1, ArrowLeft: -1 }
+    if (!(e.key in nav) && e.key !== 'Home' && e.key !== 'End') return
+    e.preventDefault()
+    const tabs = list()
+    const currentIndex = tabs.findIndex(t => t.key === props.active())
+    const nextIndex =
+      e.key === 'Home' ? 0 :
+      e.key === 'End' ? tabs.length - 1 :
+      (currentIndex + nav[e.key] + tabs.length) % tabs.length
+    const nextKey = tabs[nextIndex].key
+    props.setActive(nextKey)
+    document.getElementById(tabId(props.id, nextKey))?.focus()
+  }
+
   return (
-    <div class={styles.tabBar} role="tablist">
-      <For each={typeof props.tabs === 'function' ? props.tabs() : props.tabs}>
+    <div class={styles.tabBar} role="tablist" onKeyDown={handleKeyDown}>
+      <For each={list()}>
         {tab => (
           <button
+            id={tabId(props.id, tab.key)}
             class={`${styles.tab} ${props.active() === tab.key ? styles.tabActive : ''}`}
             role="tab"
             aria-selected={props.active() === tab.key}
+            aria-controls={props.hasPanel && props.active() === tab.key ? panelId(props.id, tab.key) : undefined}
+            tabIndex={props.active() === tab.key ? 0 : -1}
             onClick={() => props.setActive(tab.key)}
           >
             {tab.label}
