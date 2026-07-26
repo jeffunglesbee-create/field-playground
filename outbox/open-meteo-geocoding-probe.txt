@@ -1,0 +1,47 @@
+probe_at: 2026-07-26T16:32:07Z
+base: https://geocoding-api.open-meteo.com/v1/search
+
+Testing whether geocoding-by-name can replace this repo's hand-maintained
+VENUE_COORDS table, and whether it can tell indoor from outdoor -- the
+prediction from docs/outbox/chat-update-2026-07-26-weather-endpoint-investigation.md
+is that it CANNOT know dome status, only resolve a name to coordinates.
+
+=== "Citizens Bank Park" ===
+http_code: 200
+1 result(s)
+  - Citizens Bank Park (Pennsylvania, US) at 39.90761, -75.1649 -- feature_code: PRK
+
+=== "Yankee Stadium" ===
+http_code: 200
+0 results (no .results key)
+
+=== "Globe Life Field" ===
+http_code: 200
+0 results (no .results key)
+
+=== "America First Field" ===
+http_code: 200
+0 results (no .results key)
+
+=== "Red Bull Arena" ===
+http_code: 200
+0 results (no .results key)
+
+=== "Dick's Sporting Goods Park" ===
+http_code: 200
+0 results (no .results key)
+
+=== "Footprint Center" ===
+http_code: 200
+0 results (no .results key)
+
+=== "Target Center" ===
+http_code: 200
+0 results (no .results key)
+
+=== VERDICT ===
+Read the results above by hand: does each real venue resolve to a
+plausible coordinate? Does anything in the response (feature_code,
+elevation, name) distinguish an indoor arena from an outdoor stadium?
+If not, the prediction holds and a table stays required for the
+outdoor/indoor flag even if geocoding replaces the coordinate lookup.
