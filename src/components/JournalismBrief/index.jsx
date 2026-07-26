@@ -1,4 +1,4 @@
-import { Show, createMemo, createSignal, onMount, onCleanup } from 'solid-js'
+import { Show, createEffect, createMemo, createSignal, onMount, onCleanup } from 'solid-js'
 import { journalismBrief, refetchBrief } from '../../data/relay'
 import styles from './JournalismBrief.module.css'
 
@@ -44,20 +44,32 @@ export function JournalismBrief() {
   // reloads it; the new day's first verdict will almost always differ from
   // the old day's stored one, which would otherwise flash "updated" for a
   // date change rather than a genuine same-slate regeneration. Only flash
-  // when the date the verdict belongs to hasn't moved.
-  createMemo(() => {
+  // when the date the verdict belongs to hasn't moved -- and if a date
+  // change lands WHILE a prior flash is still showing, clear it outright
+  // rather than let it linger onto the new date's first render (an
+  // in-flight timeout from the old date would otherwise still be the one
+  // to turn it off, several seconds late and for the wrong reason).
+  // createEffect, not createMemo: this only ever runs for its signal
+  // writes and the timer it schedules, never for a value anything reads.
+  let flashTimeout = null
+  createEffect(() => {
     const text = verdict()
     const date = briefDate()
     if (text === null) return
     const prevText = prevVerdict()
     const prevD = prevDate()
-    if (prevD === date && prevText !== null && prevText !== text) {
+    if (prevD !== null && prevD !== date) {
+      if (flashTimeout) clearTimeout(flashTimeout)
+      setFreshlyUpdated(false)
+    } else if (prevD === date && prevText !== null && prevText !== text) {
+      if (flashTimeout) clearTimeout(flashTimeout)
       setFreshlyUpdated(true)
-      setTimeout(() => setFreshlyUpdated(false), 4000)
+      flashTimeout = setTimeout(() => setFreshlyUpdated(false), 4000)
     }
     setPrevVerdict(text)
     setPrevDate(date)
   })
+  onCleanup(() => { if (flashTimeout) clearTimeout(flashTimeout) })
 
   onMount(() => {
     const handle = setInterval(refetchBrief, POLL_MS)
