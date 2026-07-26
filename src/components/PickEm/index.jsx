@@ -1,6 +1,7 @@
-import { For, Show, createMemo, createEffect } from 'solid-js'
+import { For, Show, createMemo, createEffect, createSignal } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { deskStore } from '../../data/relay'
+import { Tabs } from '../Tabs'
 import styles from './PickEm.module.css'
 import shared from '../shared.module.css'
 
@@ -142,16 +143,10 @@ export function PickEm() {
         </Show>
       </header>
       <Show when={allGames().length} fallback={<p class={styles.empty}>No games today.</p>}>
-        <For each={grouped()}>
-          {([sport, games]) => (
-            <div class={styles.sportGroup}>
-              <div class={styles.sportLabel}>{sport}</div>
-              <div class={styles.pickList}>
-                <For each={games}>{game => <PickRow game={game} />}</For>
-              </div>
-            </div>
-          )}
-        </For>
+        <Tabs tabs={tabs} active={activeOrFirst} setActive={setActiveSport} />
+        <div class={styles.pickList}>
+          <For each={visibleGames()}>{game => <PickRow game={game} />}</For>
+        </div>
       </Show>
     </div>
   )
