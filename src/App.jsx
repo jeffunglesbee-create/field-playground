@@ -167,7 +167,7 @@ export default function App() {
         </div>
 
         <nav class={styles.tabNav}>
-          <Tabs id={TOP_NAV_ID} tabs={TOP_TABS} active={activeTab} setActive={setActiveTab} />
+          <Tabs id={TOP_NAV_ID} tabs={TOP_TABS} active={activeTab} setActive={setActiveTab} hasPanel />
         </nav>
 
         {/* Unmounting an inactive tab's sections (rather than hiding them

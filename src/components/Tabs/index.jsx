@@ -30,18 +30,22 @@ import styles from './Tabs.module.css'
 // MLB/MLS/World Cup tabs, simultaneously present whenever the Stats tab
 // is active) and DOM IDs must be globally unique, not just unique within
 // one tab bar. tabId(key)/panelId(key) are exported so a consumer that
-// renders its own tabpanel element (App.jsx does; Seasons/PickEm/
-// DayComparison/Stats currently don't wire theirs up, pre-existing and
-// unrelated to this change) can match `aria-labelledby`/`aria-controls`
-// to the exact IDs this component put on its buttons, without duplicating
-// the naming scheme.
+// renders its own tabpanel element can match `aria-labelledby`/
+// `aria-controls` to the exact IDs this component put on its buttons,
+// without duplicating the naming scheme.
 //
-// Roving tabindex (WAI-ARIA APG tabs pattern): only the active tab is a
-// normal Tab-key stop; arrow keys move both focus and selection among
-// the rest. This became more than a nicety once App.jsx started using
-// this as the app's primary navigation instead of an in-card control --
-// CodeRabbit correctly flagged the top-level usage as needing it, and
-// since the mechanism lives here, every consumer gets it for free.
+// `hasPanel` (optional, default false) opts a consumer into `aria-controls`
+// -- and ONLY the active tab gets it, never the inactive ones. This isn't
+// a partial implementation: every consumer here (App.jsx included) mounts
+// only the ACTIVE tab's panel and unmounts the rest, so an inactive tab's
+// `aria-controls` would reference an element that doesn't exist in the
+// DOM at all -- a real dangling reference, not a hidden one. Per WAI-ARIA,
+// `aria-controls` is optional/informative (unlike `aria-selected`, which
+// is required); omitting it when there's no live target to point at is
+// correct, not a compromise. Seasons/PickEm/DayComparison/Stats don't
+// pass `hasPanel` -- they've never rendered a matching tabpanel element,
+// so leaving them opted out preserves their exact pre-existing behavior
+// rather than emitting a reference to something that was never there.
 export function tabId(id, key) { return `${id ?? 'tabs'}-tab-${key}` }
 export function panelId(id, key) { return `${id ?? 'tabs'}-panel-${key}` }
 
@@ -72,7 +76,7 @@ export function Tabs(props) {
             class={`${styles.tab} ${props.active() === tab.key ? styles.tabActive : ''}`}
             role="tab"
             aria-selected={props.active() === tab.key}
-            aria-controls={panelId(props.id, tab.key)}
+            aria-controls={props.hasPanel && props.active() === tab.key ? panelId(props.id, tab.key) : undefined}
             tabIndex={props.active() === tab.key ? 0 : -1}
             onClick={() => props.setActive(tab.key)}
           >
