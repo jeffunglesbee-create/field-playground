@@ -87,6 +87,8 @@ function PickRow(props) {
 export const NON_MATCHUP_SPORTS = new Set(['golf', 'pga', 'atp', 'wta'])
 
 export function PickEm() {
+  const [activeSport, setActiveSport] = createSignal(null)
+
   const allGames = createMemo(() => [
     ...(deskStore.games?.regular ?? []),
     ...(deskStore.games?.postseason ?? []),
@@ -109,6 +111,26 @@ export function PickEm() {
       map[g.sport].push(g)
     }
     return Object.entries(map)
+  })
+
+  const tabs = createMemo(() =>
+    grouped().map(([sport, games]) => ({ key: sport, label: sport, count: games.length }))
+  )
+
+  // Default the selection to the first real sport rather than hardcoding
+  // one -- the slate's sports aren't known until deskStore resolves, and
+  // a hardcoded 'MLB' would show an empty tab on a night with no MLB.
+  // Only fills a NULL selection, so it never fights a user's own click,
+  // and re-fills if the current tab's sport disappears on a date change.
+  const activeOrFirst = createMemo(() => {
+    const keys = grouped().map(([sport]) => sport)
+    const current = activeSport()
+    return current && keys.includes(current) ? current : (keys[0] ?? null)
+  })
+
+  const visibleGames = createMemo(() => {
+    const entry = grouped().find(([sport]) => sport === activeOrFirst())
+    return entry ? entry[1] : []
   })
 
   return (
