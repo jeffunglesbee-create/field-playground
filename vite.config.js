@@ -152,25 +152,6 @@ function mockRelay() {
           res.setHeader('Content-Type', 'application/json')
           return res.end(JSON.stringify(mlsStandingsMock))
         }
-        if (req.url?.startsWith('/weather/today/')) {
-          // Confirmed via a live probe of the real relay (2026-07-26):
-          // /weather/today/{date} returns 403, not 200 -- the route is
-          // gated or was never actually wired up server-side; this was
-          // never verified as a real endpoint before WeatherPoll was
-          // built against it, unlike Stats/StandingsDrawer's more
-          // careful FIELD_Handoff-checked approach. Mocking a 200 here
-          // would misrepresent the real endpoint's actual behavior and
-          // hide WeatherPoll's error-handling path from ever being
-          // dev-tested -- which is exactly how the un-guarded resource
-          // read shipped and blanked the entire deployed artifact (48
-          // sections down to zero) in the first place. Matching the
-          // real, confirmed status code by default means any future
-          // session testing this locally sees the true failure mode,
-          // not a fabricated happy path.
-          res.statusCode = 403
-          res.setHeader('Content-Type', 'application/json')
-          return res.end(JSON.stringify({ error: 'weather endpoint gated' }))
-        }
         if (req.url === '/journalism/brief') {
           // Rotates every 3 requests to simulate the brief regenerating mid-session.
           briefCycle = (briefCycle + 1) % 6
