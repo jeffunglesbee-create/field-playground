@@ -1,5 +1,6 @@
-import { For, Show, createMemo } from 'solid-js'
+import { For, Show, createMemo, createSignal } from 'solid-js'
 import { currentDate, createDayContext } from '../../data/relay'
+import { Tabs } from '../Tabs'
 import styles from './DayComparison.module.css'
 
 function gameStatus(g) {
@@ -67,14 +68,34 @@ export function DayComparison() {
   const today = createDayContext(currentDate())
   const yesterday = createDayContext(yesterdayOf(currentDate()))
 
+  const [view, setView] = createSignal('both')
+
+  // "Both" is kept as a tab rather than replaced by tabs, deliberately.
+  // The point of this experiment is two INDEPENDENT resources alive
+  // simultaneously -- if tabs only ever mounted one column at a time,
+  // the thing under test would no longer be exercised at all. Both
+  // contexts are created unconditionally above (outside any <Show>), so
+  // they stay alive and keep fetching regardless of which tab is
+  // showing; the tabs change what's VISIBLE, not what's running.
+  const tabs = [
+    { key: 'both', label: 'Both' },
+    { key: 'yesterday', label: 'Yesterday' },
+    { key: 'today', label: 'Today' },
+  ]
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
         <span class={styles.label}>Day Comparison</span>
       </header>
-      <div class={styles.columns}>
-        <DayColumn ctx={yesterday} label="Yesterday" />
-        <DayColumn ctx={today} label="Today" />
+      <Tabs tabs={tabs} active={view} setActive={setView} />
+      <div class={view() === 'both' ? styles.columns : styles.singleColumn}>
+        <Show when={view() === 'both' || view() === 'yesterday'}>
+          <DayColumn ctx={yesterday} label="Yesterday" />
+        </Show>
+        <Show when={view() === 'both' || view() === 'today'}>
+          <DayColumn ctx={today} label="Today" />
+        </Show>
       </div>
     </div>
   )
