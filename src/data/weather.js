@@ -14,37 +14,53 @@ import { deskStore } from './relay'
 const OM_BASE = 'https://api.open-meteo.com/v1/forecast'
 
 // Coordinates for the venues this repo's mock slate actually uses
-// (vite.config.js's context() mock). Citizens Bank Park and Globe Life
-// Field are directly confirmed from FIELD's own production docs
-// (Google Drive: "Novel Sports Data Sources", June 26 2026). Yankee
-// Stadium, America First Field, Red Bull Arena, and Dick's Sporting
-// Goods Park are not in any Drive doc this session could find (checked
-// four separate searches, including the full production HTML source);
-// their coordinates are well-established public stadium locations, not
-// independently confirmed against a FIELD-specific source.
+// (vite.config.js's context() mock), corrected 2026-07-26 against
+// jubilant-bassoon's own src/utils/venues.js -- production's real,
+// hand-maintained VENUE_COORDS table, read directly via FIELD_Handoff
+// during the park-factor/ump-watch investigation (not the Drive docs
+// used for the original June 26 pass, which only ever confirmed
+// Citizens Bank Park and Globe Life Field's coordinates, not roof
+// status). Cross-checking that source against this file surfaced two
+// real defects, both fixed here, not worked around:
 //
-// Footprint Center and Target Center (both indoor NBA arenas, also
-// present in this repo's game data) are deliberately absent -- no
-// coordinate entry means no weather fetch, which is the correct outcome
-// for an indoor venue. FIELD production's real VENUE_COORDS uses a
-// fuzzy indoor-keyword classifier for its much larger (81+) venue
-// catalog; that heuristic isn't ported here because it has a real false
-// positive on this repo's own venue list -- "Red Bull Arena" contains
-// "arena" but is an outdoor MLS stadium. An explicit table for this
-// repo's small, closed venue set avoids that bug entirely.
+// 1. Globe Life Field was wrongly treated as outdoor. Production's own
+//    table files it under "MLB retractable-roof / dome -> false" --
+//    it's a closed dome, not a real weather venue. This file had no
+//    positive confirmation it was outdoor when it was added; it just
+//    was never excluded. Now removed, joining Footprint Center and
+//    Target Center (both indoor NBA arenas) as venues with no
+//    coordinate entry -- no entry means no weather fetch, which is the
+//    correct outcome for an indoor venue, whether arena or dome.
+// 2. America First Field, Red Bull Arena, and Dick's Sporting Goods
+//    Park were carrying approximate public-knowledge coordinates,
+//    unconfirmed against any FIELD-specific source. Dick's Sporting
+//    Goods Park's was off by roughly 0.2 degrees of longitude (~10+
+//    miles) -- enough to plausibly return a different local forecast.
+//    All three replaced with production's own confirmed values.
+//    Citizens Bank Park and Yankee Stadium already matched exactly, no
+//    change needed there.
+//
+// FIELD production's real getVenueCoords/isOutdoorVenue use a
+// base-name fuzzy match (splitting each side on the first comma) purely
+// to reconcile production's own "Venue, City" key style against
+// bare venue names -- not a keyword-based indoor/outdoor classifier.
+// Not ported here: this repo's venue names already come through bare
+// (no city suffix) from vite.config.js's mock data, so the fuzzy match
+// would never have anything to reconcile -- it would be dead code
+// solving a naming mismatch this repo doesn't have.
 export const VENUE_COORDS = {
   'Citizens Bank Park': [39.9061, -75.1665],
   'Yankee Stadium': [40.8296, -73.9262],
-  'Globe Life Field': [32.7511, -97.0832],
-  'America First Field': [40.5828, -111.8936],
-  'Red Bull Arena': [40.7367, -74.1500],
-  "Dick's Sporting Goods Park": [39.8092, -104.6936],
+  'America First Field': [40.5830, -111.8932],
+  'Red Bull Arena': [40.7367, -74.1503],
+  "Dick's Sporting Goods Park": [39.8057, -104.8919],
 }
 
 // Every real venue name in today's game list, known-coordinate or not --
 // exported for VenueGeocodeRace, which needs the FULL set (including the
-// 2 indoor venues this module deliberately has no entry for) to compare
-// against live geocoding results honestly.
+// 3 indoor venues -- Footprint Center, Target Center, and now Globe Life
+// Field's retractable roof -- this module deliberately has no entry for)
+// to compare against live geocoding results honestly.
 export const allVenues = createMemo(() => {
   const games = [...(deskStore.games?.regular ?? []), ...(deskStore.games?.postseason ?? [])]
   return [...new Set(games.map(g => g.venue).filter(Boolean))]
