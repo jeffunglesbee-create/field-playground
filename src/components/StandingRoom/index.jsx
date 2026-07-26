@@ -287,8 +287,17 @@ function GameDrawerRow(props) {
   const [expanded, setExpanded] = createSignal(false)
   const g = () => props.game
 
-  const homeInfo = createMemo(() => standingInfo(g().sport, g().home))
-  const awayInfo = createMemo(() => standingInfo(g().sport, g().away))
+  // Plain accessors, not createMemo -- createMemo computes its initial
+  // value EAGERLY at creation (confirmed against SolidJS's own docs, not
+  // assumed), so a memo here would run standingInfo()'s mlbLine/mlsLine
+  // scan for every row the moment <For> mounts it, regardless of whether
+  // that row is ever expanded. That directly contradicts this section's
+  // whole reason to exist -- "before a row is ever expanded, this row's
+  // lookup literally never runs." A plain function only runs when
+  // actually called, which only happens inside the `expanded()` Show
+  // below -- genuine lazy evaluation, not memoized-but-still-eager.
+  const homeInfo = () => standingInfo(g().sport, g().home)
+  const awayInfo = () => standingInfo(g().sport, g().away)
 
   return (
     <div class={styles.drawerRow}>
