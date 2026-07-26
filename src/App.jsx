@@ -31,6 +31,7 @@ import { WorkerBridgeDemo } from './components/WorkerBridgeDemo'
 import { PollDeltaFeed } from './components/PollDeltaFeed'
 import { ReplayDemo } from './components/ReplayDemo'
 import { LatencyHistogram } from './components/LatencyHistogram'
+import { HealthPanel } from './components/HealthPanel'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { SeasonsLazy as Seasons } from './lazyModules'
@@ -62,6 +63,9 @@ export default function App() {
       </div>
     )}>
       <div class={styles.layout}>
+        <section class={styles.healthPanel}>
+          <HealthPanel />
+        </section>
         <section class={styles.ambient}>
           <AmbientPanel />
         </section>

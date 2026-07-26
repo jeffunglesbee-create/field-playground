@@ -13,7 +13,7 @@ function Field(props) {
   return (
     <div class={styles.field}>
       <div class={styles.fieldHead}>
-        <span class={styles.fieldLabel}>{props.label}</span>
+        <span class={styles.fieldLabel} id={`${props.fieldId}-label`}>{props.label}</span>
         <span class={styles.depths}>
           <span class={styles.depthChip} title="undo depth">↶{props.controls.undoDepth()}</span>
           <span class={styles.depthChip} title="redo depth">↷{props.controls.redoDepth()}</span>
@@ -24,6 +24,8 @@ function Field(props) {
         <button
           class={styles.stepBtn}
           disabled={!props.controls.canUndo()}
+          aria-label={`undo ${props.label}`}
+          onFocus={props.onFocus}
           onClick={() => { props.onFocus(); props.controls.undo() }}
         >
           undo
@@ -31,6 +33,8 @@ function Field(props) {
         <button
           class={styles.stepBtn}
           disabled={!props.controls.canRedo()}
+          aria-label={`redo ${props.label}`}
+          onFocus={props.onFocus}
           onClick={() => { props.onFocus(); props.controls.redo() }}
         >
           redo
@@ -50,7 +54,15 @@ export function UndoStackDemo() {
     setLog(l => [...l.slice(-19), entry])
   }
 
+  let rootEl
+
   function handleKeydown(e) {
+    // Scoped to this component's own subtree (checked below), not
+    // window-wide -- otherwise Ctrl+Z pressed while focused on ANY other
+    // text input on the page (LocalNoteLayer's notes, AmbientPanel's
+    // annotations) would get hijacked into undoing this demo's counter
+    // instead of that input's own native undo.
+    if (!rootEl || !(e.target instanceof Node) || !rootEl.contains(e.target)) return
     const isUndo = (e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z'
     const isRedo = (e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'z'
     if (!isUndo && !isRedo) return
@@ -66,7 +78,7 @@ export function UndoStackDemo() {
   })
 
   return (
-    <div class={styles.root}>
+    <div class={styles.root} ref={rootEl}>
       <header class={styles.header}>
         <span class={styles.label}>Undo Stack</span>
         <span class={styles.sublabel}>createUndoableSignal — Ctrl+Z routes to last-touched field</span>
@@ -76,17 +88,21 @@ export function UndoStackDemo() {
         not global -- undoing the counter never touches the text field's own history.
       </p>
 
-      <Field label="counter" controls={countControls} onFocus={() => setActive('count')}>
+      <Field fieldId="counter" label="counter" controls={countControls} onFocus={() => setActive('count')}>
         <div class={styles.counterRow}>
           <button
             class={styles.stepBtn}
+            aria-label="decrement counter"
+            onFocus={() => setActive('count')}
             onClick={() => { setActive('count'); setCount(c => c - 1); pushLog(`counter → ${count() - 1}`) }}
           >
             −
           </button>
-          <span class={styles.counterValue}>{count()}</span>
+          <span class={styles.counterValue} aria-live="polite">{count()}</span>
           <button
             class={styles.stepBtn}
+            aria-label="increment counter"
+            onFocus={() => setActive('count')}
             onClick={() => { setActive('count'); setCount(c => c + 1); pushLog(`counter → ${count() + 1}`) }}
           >
             +
@@ -94,12 +110,14 @@ export function UndoStackDemo() {
         </div>
       </Field>
 
-      <Field label="text" controls={textControls} onFocus={() => setActive('text')}>
+      <Field fieldId="text" label="text" controls={textControls} onFocus={() => setActive('text')}>
         <input
           type="text"
+          id="undo-demo-text-input"
           class={styles.textInput}
           value={text()}
           placeholder="type here, then Ctrl+Z"
+          aria-labelledby="text-label"
           onFocus={() => setActive('text')}
           onInput={e => { setText(e.currentTarget.value); pushLog(`text → "${e.currentTarget.value}"`) }}
         />

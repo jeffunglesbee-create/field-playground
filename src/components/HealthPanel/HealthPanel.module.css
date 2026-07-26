@@ -1,0 +1,109 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.overallChip {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 3px;
+  padding: 2px 7px;
+  margin-left: auto;
+}
+
+.overall_pass     { background: #1a2e1a; color: #4c8; }
+.overall_fail     { background: #2a1a1a; color: #e66; }
+.overall_checking { background: #1a1a1a; color: var(--field-text-muted); }
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.checkList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 4px;
+  padding: 5px 8px;
+}
+
+.icon {
+  font-size: 11px;
+  width: 14px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.status_pass .icon     { color: #4c8; }
+.status_fail .icon     { color: #e66; }
+.status_checking .icon { color: var(--field-text-muted); }
+
+.rowLabel {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  flex: 1;
+}
+
+.rowDetail {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.metricList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px solid #1a1a1a;
+  padding-top: 8px;
+}
+
+.metricRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.metricLabel {
+  color: var(--field-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 9px;
+}
+
+.metricValue {
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+}

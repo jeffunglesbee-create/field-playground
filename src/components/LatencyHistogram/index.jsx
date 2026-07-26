@@ -68,7 +68,7 @@ export function LatencyHistogram() {
       .map(([endpoint, list]) => {
         const durations = list.map(s => s.durationMs).sort((a, b) => a - b)
         const avg = Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
-        const p95 = durations[Math.floor(durations.length * 0.95)] ?? durations[durations.length - 1]
+        const p95 = durations[Math.ceil(durations.length * 0.95) - 1]
         return { endpoint, count: list.length, avg, p95: Math.round(p95), errors: list.filter(s => !s.ok).length }
       })
       .sort((a, b) => b.count - a.count)

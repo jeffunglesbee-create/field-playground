@@ -31,11 +31,20 @@ export function ReplayDemo() {
 
   function stepAndScheduleNext() {
     const recs = pollRecordings()
-    const nextI = index() + 1
+    const currentI = index()
+    const nextI = currentI + 1
     if (nextI >= recs.length) { setPlaying(false); return }
-    applyIndex(nextI)
-    const gapMs = nextI + 1 < recs.length ? recs[nextI + 1].at - recs[nextI].at : 2000
-    timer = setTimeout(stepAndScheduleNext, Math.max(50, gapMs / speed()))
+    // The recorded gap belongs BEFORE the transition it leads into, not
+    // after -- applying nextI immediately and scheduling off the gap
+    // to nextI+1 (the original code) meant every delay landed one step
+    // late: play() applies record 0, then immediately (0ms) jumps to
+    // record 1, and only the eventual record 2 waits out any real gap.
+    // Recorded timing was being replayed a full step out of phase.
+    const gapMs = recs[nextI].at - recs[currentI].at
+    timer = setTimeout(() => {
+      applyIndex(nextI)
+      stepAndScheduleNext()
+    }, Math.max(50, gapMs / speed()))
   }
 
   function play() {
@@ -95,6 +104,8 @@ export function ReplayDemo() {
           max={pollRecordings().length - 1}
           value={Math.max(0, index())}
           class={styles.scrub}
+          aria-label="Replay position"
+          aria-valuetext={`recording ${Math.max(0, index()) + 1} of ${pollRecordings().length}`}
           onInput={e => { pause(); applyIndex(Number(e.currentTarget.value)) }}
         />
         <div class={styles.statusRow}>

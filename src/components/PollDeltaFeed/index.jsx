@@ -19,6 +19,7 @@ import styles from './PollDeltaFeed.module.css'
 const [events, setEvents] = createSignal([])
 let lastSnapshot = new Map()
 let seeded = false
+let lastDate = null
 
 function status(g) {
   if (g.finalized_at) return 'final'
@@ -57,9 +58,21 @@ function recordCycle() {
   ]
   const nextSnapshot = new Map(games.map(g => [g.id, g]))
 
-  // First cycle just seeds the baseline -- there's no "previous" to diff
-  // against yet, and treating every game as a fresh "appeared" event on
-  // page load would just be restating the whole slate, not a real event.
+  // Snapshots are fetched per date (DeskCard's date browser swaps the
+  // whole slate), but the baseline above spans every poll regardless of
+  // date. Without this, navigating to a different day would diff an
+  // unrelated slate against the old one and report every game as a false
+  // transition -- same failure shape as the empty-baseline bug below,
+  // just triggered by date navigation instead of the first poll.
+  if (deskStore.date !== lastDate) {
+    lastDate = deskStore.date
+    seeded = false
+  }
+
+  // First cycle (or first cycle after a date change) just seeds the
+  // baseline -- there's no "previous" to diff against yet, and treating
+  // every game as a fresh "appeared" event would just be restating the
+  // whole slate, not a real event.
   if (!seeded) {
     seeded = true
     lastSnapshot = nextSnapshot

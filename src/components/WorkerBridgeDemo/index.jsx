@@ -30,15 +30,23 @@ export function WorkerBridgeDemo() {
   const [diff, setDiff] = createSignal(null)
   const [pollCount, setPollCount] = createSignal(0)
   let worker
+  // Cloned to plain objects at capture time, not just at postMessage time
+  // -- deskStore's reconcile() patches existing game objects IN PLACE
+  // when possible (that's the whole point of the live-reconciliation
+  // experiment: stable references for DOM/perf). Keeping `lastSnapshot`
+  // pointed at the live store objects means the next reconcile() mutates
+  // the "previous" snapshot retroactively, so prev and next end up
+  // identical and the diff misses the transition entirely. Cloning once,
+  // right when each snapshot is captured, is what actually freezes it.
   let lastSnapshot = []
+  let seeded = false
+  let lastDate = null
 
   onMount(() => {
     worker = new ReconcileWorker()
     worker.onmessage = (e) => setDiff(e.data)
     onCleanup(() => worker.terminate())
   })
-
-  let seeded = false
 
   createEffect(() => {
     // Guards against the same bug class the diff itself is meant to
@@ -48,21 +56,31 @@ export function WorkerBridgeDemo() {
     // lastSnapshot (which would report every game on the slate as
     // "added" on that first real cycle).
     if (deskLastFetchedAt() == null) return
-    const next = [
+    if (!worker) return
+
+    // Same reseed-on-date-change as PollDeltaFeed: DeskCard's date
+    // browser swaps the whole slate for a different date's games, which
+    // isn't a real transition of any of these games.
+    if (deskStore.date !== lastDate) {
+      lastDate = deskStore.date
+      seeded = false
+    }
+
+    const snapshot = [
       ...(deskStore.games?.regular ?? []),
       ...(deskStore.games?.postseason ?? []),
-    ]
-    if (!worker) return
+    ].map(g => ({ ...g }))
+
     if (!seeded) {
       seeded = true
-      lastSnapshot = next
+      lastSnapshot = snapshot
       return
     }
     setPollCount(c => c + 1)
-    // Structured-clone-safe plain arrays only -- postMessage can't carry
-    // Solid's store proxies, so snapshot to plain objects first.
-    worker.postMessage({ prev: lastSnapshot.map(g => ({ ...g })), next: next.map(g => ({ ...g })) })
-    lastSnapshot = next
+    // Structured-clone-safe plain objects only -- postMessage can't carry
+    // Solid's store proxies, but both sides are already cloned above.
+    worker.postMessage({ prev: lastSnapshot, next: snapshot })
+    lastSnapshot = snapshot
   })
 
   return (
