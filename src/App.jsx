@@ -32,10 +32,16 @@ import { PollDeltaFeed } from './components/PollDeltaFeed'
 import { ReplayDemo } from './components/ReplayDemo'
 import { LatencyHistogram } from './components/LatencyHistogram'
 import { HealthPanel } from './components/HealthPanel'
+import { CommandPalette } from './components/CommandPalette'
+import { Presence } from './components/Presence'
+import { ScoreFeed } from './components/ScoreFeed'
+import { ReactivePerfPanel } from './components/ReactivePerfPanel'
 import { ToastLayer } from './components/Toast'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
 import { SeasonsLazy as Seasons } from './lazyModules'
 import { initOutcomesSync } from './data/outcomes'
+import { initScoreEvents } from './data/scoreEvents'
+import { initPresence } from './data/presence'
 import shared from './components/shared.module.css'
 import styles from './App.module.css'
 
@@ -49,6 +55,8 @@ export default function App() {
     initBroadcastDateSync()
     initOutcomesSync()
     initExtendedUrlSync()
+    initScoreEvents()
+    initPresence()
   })
 
   // MultiDayStreak needs a real team name to track -- dynamically read
@@ -169,7 +177,17 @@ export default function App() {
         <section class={styles.latencyHistogram}>
           <LatencyHistogram />
         </section>
+        <section class={styles.presence}>
+          <Presence />
+        </section>
+        <section class={styles.scoreFeed}>
+          <ScoreFeed />
+        </section>
+        <section class={styles.reactivePerfPanel}>
+          <ReactivePerfPanel />
+        </section>
         <ToastLayer />
+        <CommandPalette />
       </div>
     </ErrorBoundary>
   )

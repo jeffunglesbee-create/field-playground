@@ -1,0 +1,131 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.chip {
+  font-size: 10px;
+  font-family: inherit;
+  color: var(--field-text-secondary);
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chip:hover {
+  border-color: #3a3a3a;
+}
+
+.chip[data-active='true'] {
+  background: #1a2a3a;
+  border-color: #3a6a9a;
+  color: var(--field-text-primary);
+}
+
+.chipCount {
+  font-variant-numeric: tabular-nums;
+  color: var(--field-text-muted);
+}
+
+.chip[data-active='true'] .chipCount {
+  color: #8ab4e8;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.card {
+  display: flex;
+  gap: 10px;
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-left: 3px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.kind_live      { border-left-color: #4c8; }
+.kind_score     { border-left-color: #4a90d9; }
+.kind_final     { border-left-color: #888; }
+.kind_appeared  { border-left-color: #a80; }
+
+.icon {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--field-text-muted);
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cardText {
+  font-size: 13px;
+  color: var(--field-text-primary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.cardTime {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.truncNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  margin: 8px 0 0 0;
+  text-align: center;
+}
