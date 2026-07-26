@@ -31,21 +31,23 @@ export function WeatherPoll() {
         request so the independent cadence is provable, not just asserted.
       </p>
       <div class={styles.pollCount}>independently polled {weatherPollCount()} time{weatherPollCount() === 1 ? '' : 's'}</div>
-      <Show
-        when={weatherData()}
-        fallback={<p class={styles.empty}>{weatherData.error ? 'Unable to load weather.' : 'Loading…'}</p>}
-      >
-        <div class={styles.venueList}>
-          <For each={weatherData().venues}>
-            {v => (
-              <div class={styles.venueRow}>
-                <span class={styles.venueName}>{v.venue}</span>
-                <span class={styles.venueTemp}>{v.tempF}°F</span>
-                <span class={styles.venueCondition}>{v.condition}</span>
-              </div>
-            )}
-          </For>
-        </div>
+      <Show when={weatherData.error}>
+        <p class={styles.empty}>Unable to load weather{weatherData.error?.message ? `: ${weatherData.error.message}` : ''}.</p>
+      </Show>
+      <Show when={!weatherData.error}>
+        <Show when={weatherData()} fallback={<p class={styles.empty}>Loading…</p>}>
+          <div class={styles.venueList}>
+            <For each={weatherData().venues}>
+              {v => (
+                <div class={styles.venueRow}>
+                  <span class={styles.venueName}>{v.venue}</span>
+                  <span class={styles.venueTemp}>{v.tempF}°F</span>
+                  <span class={styles.venueCondition}>{v.condition}</span>
+                </div>
+              )}
+            </For>
+          </div>
+        </Show>
       </Show>
     </div>
   )
