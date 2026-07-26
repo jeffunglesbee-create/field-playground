@@ -54,6 +54,33 @@ import styles from './App.module.css'
 
 const POLL_INTERVAL_MS = 15000
 
+function sectionFallback(err) {
+  return (
+    <div style="font-size:11px;color:#c44;padding:8px 0;white-space:pre-wrap">
+      {err?.message ?? String(err)}
+    </div>
+  )
+}
+
+// Confirmed live 2026-07-26: a single un-guarded resource (WeatherPoll's
+// weatherData, read directly in a <Show when={...}> before checking
+// .error) threw on render, and with only ONE ErrorBoundary wrapping the
+// entire app, that one throw blanked all 54 sections -- not just its
+// own. The WeatherPoll bug itself is fixed (check .error before ever
+// calling the resource accessor, same pattern as Seasons/DrillDown/
+// StandingsDrawer), but the architecture that let one section's failure
+// take down every other section is the actual root cause worth fixing
+// too. Every section below now gets its OWN boundary: a future bug
+// anywhere degrades to that one section showing its error message, with
+// every other section continuing to render and poll normally.
+function SafeSection(props) {
+  return (
+    <section class={props.class}>
+      <ErrorBoundary fallback={sectionFallback}>{props.children}</ErrorBoundary>
+    </section>
+  )
+}
+
 export default function App() {
   onMount(() => {
     const handle = setInterval(() => { refetchDesk() }, POLL_INTERVAL_MS)
@@ -73,147 +100,154 @@ export default function App() {
   const streakTeam = createMemo(() => deskStore.games?.regular?.[0]?.home ?? null)
 
   return (
+    // Kept as the outermost safety net -- SafeSection isolates each
+    // section from every OTHER section, but something thrown outside any
+    // section (e.g. in App's own render body, or in ToastLayer/
+    // CommandPalette below, which are deliberately global overlays, not
+    // per-section) still needs somewhere to land.
     <ErrorBoundary fallback={err => (
       <div style="padding:24px;font-family:monospace;color:#c44;white-space:pre-wrap">
         Something broke: {err?.message ?? String(err)}
       </div>
     )}>
       <div class={styles.layout}>
-        <section class={styles.healthPanel}>
+        <SafeSection class={styles.healthPanel}>
           <HealthPanel />
-        </section>
-        <section class={styles.ambient}>
+        </SafeSection>
+        <SafeSection class={styles.ambient}>
           <AmbientPanel />
-        </section>
-        <section class={styles.desk}>
+        </SafeSection>
+        <SafeSection class={styles.desk}>
           <DeskCard />
-        </section>
-        <section class={styles.pickem}>
+        </SafeSection>
+        <SafeSection class={styles.pickem}>
           <PickEm />
-        </section>
-        <section class={styles.seasons}>
+        </SafeSection>
+        <SafeSection class={styles.seasons}>
           <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
-            <ErrorBoundary fallback={err => <div style="font-size:11px;color:#c44;padding:8px 0">{err.message}</div>}>
-              <Seasons />
-            </ErrorBoundary>
+            <Seasons />
           </Suspense>
-        </section>
-        <section class={styles.stats}>
+        </SafeSection>
+        <SafeSection class={styles.stats}>
           <Stats />
-        </section>
-        <section class={styles.ground}>
+        </SafeSection>
+        <SafeSection class={styles.ground}>
           <Ground />
-        </section>
-        <section class={styles.dayComparison}>
+        </SafeSection>
+        <SafeSection class={styles.dayComparison}>
           <DayComparison />
-        </section>
-        <section class={styles.suspenseDemo}>
+        </SafeSection>
+        <SafeSection class={styles.suspenseDemo}>
           <SuspenseDemo />
-        </section>
-        <section class={styles.agreement}>
+        </SafeSection>
+        <SafeSection class={styles.agreement}>
           <Agreement />
-        </section>
-        <section class={styles.crossCheck}>
+        </SafeSection>
+        <SafeSection class={styles.crossCheck}>
           <CrossCheck />
-        </section>
-        <section class={styles.createRootDemo}>
+        </SafeSection>
+        <SafeSection class={styles.createRootDemo}>
           <CreateRootDemo />
-        </section>
-        <section class={styles.history}>
+        </SafeSection>
+        <SafeSection class={styles.history}>
           <History />
-        </section>
-        <section class={styles.journalismBrief}>
+        </SafeSection>
+        <SafeSection class={styles.journalismBrief}>
           <JournalismBrief />
-        </section>
-        <section class={styles.multiDayStreak}>
+        </SafeSection>
+        <SafeSection class={styles.multiDayStreak}>
           {streakTeam() && <MultiDayStreak baseDate={currentDate()} team={streakTeam()} />}
-        </section>
-        <section class={styles.errorBoundaryDemo}>
+        </SafeSection>
+        <SafeSection class={styles.errorBoundaryDemo}>
           <ErrorBoundaryDemo />
-        </section>
-        <section class={styles.drillDown}>
+        </SafeSection>
+        <SafeSection class={styles.drillDown}>
           <DrillDown />
-        </section>
-        <section class={styles.transitionDemo}>
+        </SafeSection>
+        <SafeSection class={styles.transitionDemo}>
           <TransitionDemo />
-        </section>
-        <section class={styles.contextDemo}>
+        </SafeSection>
+        <SafeSection class={styles.contextDemo}>
           <ContextDemo />
-        </section>
-        <section class={styles.selectorDemo}>
+        </SafeSection>
+        <SafeSection class={styles.selectorDemo}>
           <SelectorDemo />
-        </section>
-        <section class={styles.lazyBoundaryDemo}>
+        </SafeSection>
+        <SafeSection class={styles.lazyBoundaryDemo}>
           <LazyBoundaryDemo />
-        </section>
-        <section class={styles.propsDemo}>
+        </SafeSection>
+        <SafeSection class={styles.propsDemo}>
           <PropsDemo />
-        </section>
-        <section class={styles.dateBrowserTransition}>
+        </SafeSection>
+        <SafeSection class={styles.dateBrowserTransition}>
           <DateBrowserTransition />
-        </section>
-        <section class={styles.computedDemo}>
+        </SafeSection>
+        <SafeSection class={styles.computedDemo}>
           <ComputedDemo />
-        </section>
-        <section class={styles.indexArrayDemo}>
+        </SafeSection>
+        <SafeSection class={styles.indexArrayDemo}>
           <IndexArrayDemo />
-        </section>
-        <section class={styles.pickStreak}>
+        </SafeSection>
+        <SafeSection class={styles.pickStreak}>
           <PickStreak />
-        </section>
-        <section class={styles.calibration}>
+        </SafeSection>
+        <SafeSection class={styles.calibration}>
           <Calibration />
-        </section>
-        <section class={styles.compareToRelay}>
+        </SafeSection>
+        <SafeSection class={styles.compareToRelay}>
           <CompareToRelay />
-        </section>
-        <section class={styles.localNoteLayer}>
+        </SafeSection>
+        <SafeSection class={styles.localNoteLayer}>
           <LocalNoteLayer />
-        </section>
-        <section class={styles.multiDateTrend}>
+        </SafeSection>
+        <SafeSection class={styles.multiDateTrend}>
           <MultiDateTrend />
-        </section>
-        <section class={styles.undoStackDemo}>
+        </SafeSection>
+        <SafeSection class={styles.undoStackDemo}>
           <UndoStackDemo />
-        </section>
-        <section class={styles.workerBridgeDemo}>
+        </SafeSection>
+        <SafeSection class={styles.workerBridgeDemo}>
           <WorkerBridgeDemo />
-        </section>
-        <section class={styles.pollDeltaFeed}>
+        </SafeSection>
+        <SafeSection class={styles.pollDeltaFeed}>
           <PollDeltaFeed />
-        </section>
-        <section class={styles.replayDemo}>
+        </SafeSection>
+        <SafeSection class={styles.replayDemo}>
           <ReplayDemo />
-        </section>
-        <section class={styles.latencyHistogram}>
+        </SafeSection>
+        <SafeSection class={styles.latencyHistogram}>
           <LatencyHistogram />
-        </section>
-        <section class={styles.presence}>
+        </SafeSection>
+        <SafeSection class={styles.presence}>
           <Presence />
-        </section>
-        <section class={styles.scoreFeed}>
+        </SafeSection>
+        <SafeSection class={styles.scoreFeed}>
           <ScoreFeed />
-        </section>
-        <section class={styles.reactivePerfPanel}>
+        </SafeSection>
+        <SafeSection class={styles.reactivePerfPanel}>
           <ReactivePerfPanel />
-        </section>
-        <section class={styles.multiview}>
+        </SafeSection>
+        <SafeSection class={styles.multiview}>
           <Multiview />
-        </section>
-        <section class={styles.standingsDrawer}>
+        </SafeSection>
+        <SafeSection class={styles.standingsDrawer}>
           <StandingsDrawer />
-        </section>
-        <section class={styles.reorderCost}>
+        </SafeSection>
+        <SafeSection class={styles.reorderCost}>
           <ReorderCost />
-        </section>
-        <section class={styles.teamAffinitySync}>
+        </SafeSection>
+        <SafeSection class={styles.teamAffinitySync}>
           <TeamAffinitySync />
-        </section>
-        <section class={styles.weatherPoll}>
+        </SafeSection>
+        <SafeSection class={styles.weatherPoll}>
           <WeatherPoll />
-        </section>
-        <ToastLayer />
-        <CommandPalette />
+        </SafeSection>
+        <ErrorBoundary fallback={sectionFallback}>
+          <ToastLayer />
+        </ErrorBoundary>
+        <ErrorBoundary fallback={sectionFallback}>
+          <CommandPalette />
+        </ErrorBoundary>
       </div>
     </ErrorBoundary>
   )

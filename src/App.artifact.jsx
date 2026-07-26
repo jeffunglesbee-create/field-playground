@@ -49,6 +49,25 @@ const POLL_INTERVAL_MS = 15000
 // dynamic import for Vite to chunk in this build target.
 const Seasons = lazy(() => Promise.resolve({ default: SeasonsComponent }))
 
+function sectionFallback(err) {
+  return (
+    <div style="font-size:11px;color:#c44;padding:8px 0;white-space:pre-wrap">
+      {err?.message ?? String(err)}
+    </div>
+  )
+}
+
+// Same isolation fix as App.jsx: one ErrorBoundary per section instead of
+// a single one wrapping the whole layout, so a future unguarded resource
+// read degrades to just its own section rather than blanking everything.
+function SafeSection(props) {
+  return (
+    <section class={props.class}>
+      <ErrorBoundary fallback={sectionFallback}>{props.children}</ErrorBoundary>
+    </section>
+  )
+}
+
 export default function App() {
   onMount(() => {
     const handle = setInterval(() => { refetchDesk() }, POLL_INTERVAL_MS)
@@ -67,80 +86,80 @@ export default function App() {
       </div>
     )}>
       <div class={styles.layout}>
-        <section class={styles.ambient}>
+        <SafeSection class={styles.ambient}>
           <AmbientPanel />
-        </section>
-        <section class={styles.desk}>
+        </SafeSection>
+        <SafeSection class={styles.desk}>
           <DeskCard />
-        </section>
-        <section class={styles.pickem}>
+        </SafeSection>
+        <SafeSection class={styles.pickem}>
           <PickEm />
-        </section>
-        <section class={styles.seasons}>
+        </SafeSection>
+        <SafeSection class={styles.seasons}>
           <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
-            <ErrorBoundary fallback={err => <div style="font-size:11px;color:#c44;padding:8px 0">{err.message}</div>}>
-              <Seasons />
-            </ErrorBoundary>
+            <Seasons />
           </Suspense>
-        </section>
-        <section class={styles.ground}>
+        </SafeSection>
+        <SafeSection class={styles.ground}>
           <Ground />
-        </section>
-        <section class={styles.dayComparison}>
+        </SafeSection>
+        <SafeSection class={styles.dayComparison}>
           <DayComparison />
-        </section>
-        <section class={styles.suspenseDemo}>
+        </SafeSection>
+        <SafeSection class={styles.suspenseDemo}>
           <SuspenseDemo />
-        </section>
-        <section class={styles.agreement}>
+        </SafeSection>
+        <SafeSection class={styles.agreement}>
           <Agreement />
-        </section>
-        <section class={styles.crossCheck}>
+        </SafeSection>
+        <SafeSection class={styles.crossCheck}>
           <CrossCheck />
-        </section>
-        <section class={styles.createRootDemo}>
+        </SafeSection>
+        <SafeSection class={styles.createRootDemo}>
           <CreateRootDemo />
-        </section>
-        <section class={styles.history}>
+        </SafeSection>
+        <SafeSection class={styles.history}>
           <History />
-        </section>
-        <section class={styles.journalismBrief}>
+        </SafeSection>
+        <SafeSection class={styles.journalismBrief}>
           <JournalismBrief />
-        </section>
-        <section class={styles.multiDayStreak}>
+        </SafeSection>
+        <SafeSection class={styles.multiDayStreak}>
           {streakTeam() && <MultiDayStreak baseDate={currentDate()} team={streakTeam()} />}
-        </section>
-        <section class={styles.errorBoundaryDemo}>
+        </SafeSection>
+        <SafeSection class={styles.errorBoundaryDemo}>
           <ErrorBoundaryDemo />
-        </section>
-        <section class={styles.drillDown}>
+        </SafeSection>
+        <SafeSection class={styles.drillDown}>
           <DrillDown />
-        </section>
-        <section class={styles.transitionDemo}>
+        </SafeSection>
+        <SafeSection class={styles.transitionDemo}>
           <TransitionDemo />
-        </section>
-        <section class={styles.contextDemo}>
+        </SafeSection>
+        <SafeSection class={styles.contextDemo}>
           <ContextDemo />
-        </section>
-        <section class={styles.selectorDemo}>
+        </SafeSection>
+        <SafeSection class={styles.selectorDemo}>
           <SelectorDemo />
-        </section>
-        <section class={styles.lazyBoundaryDemo}>
+        </SafeSection>
+        <SafeSection class={styles.lazyBoundaryDemo}>
           <LazyBoundaryDemo />
-        </section>
-        <section class={styles.propsDemo}>
+        </SafeSection>
+        <SafeSection class={styles.propsDemo}>
           <PropsDemo />
-        </section>
-        <section class={styles.dateBrowserTransition}>
+        </SafeSection>
+        <SafeSection class={styles.dateBrowserTransition}>
           <DateBrowserTransition />
-        </section>
-        <section class={styles.computedDemo}>
+        </SafeSection>
+        <SafeSection class={styles.computedDemo}>
           <ComputedDemo />
-        </section>
-        <section class={styles.indexArrayDemo}>
+        </SafeSection>
+        <SafeSection class={styles.indexArrayDemo}>
           <IndexArrayDemo />
-        </section>
-        <ToastLayer />
+        </SafeSection>
+        <ErrorBoundary fallback={sectionFallback}>
+          <ToastLayer />
+        </ErrorBoundary>
       </div>
     </ErrorBoundary>
   )
