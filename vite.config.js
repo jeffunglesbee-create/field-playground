@@ -4,8 +4,15 @@ import solid from 'vite-plugin-solid'
 function mockRelay() {
   let contextRequestCount = 0
   let briefCycle = 0
+  // /journalism/brief's real response shape -- {brief, generatedAt,
+  // contextHash, gameCount, cycleId, proseScore, clicheCount} --
+  // reconfirmed live via a direct probe 2026-07-27 (see relay.js's own
+  // comment on the journalismBrief resource). briefTexts[0] below is the
+  // real prose from that exact probe, not invented; briefTexts[1] is
+  // anchored to this repo's own mock slate the same way DeskCard's other
+  // mocks are.
   const briefTexts = [
-    'Texas Rangers lead the AL West race and host Houston tonight with Casey Mize on the mound. The Mets visit Philadelphia in a battle of fading wild-card hopefuls. MLS midweek action carries real conference weight: Real Salt Lake host Colorado in a top-four clash, while NY Red Bulls look to extend their unbeaten home run against CF Montréal.',
+    'Jackson Koivun claimed the 3M Open title at -25 through 18 holes, finishing three strokes ahead of Scottie Scheffler’s -22 effort. Hideki Matsuyama, Brian Harman, and Denny McCarthy tied for third at -20 through 18 holes.\n\nTropicana Field hosted a 1-0 Rays win over the Guardians as Drew Rasmussen outpitched Parker Messick.',
     'Houston brings José Urquidy against Texas in a critical divisional matchup — Rangers hold a 2.5-game lead. NY Mets have dropped four straight heading into Philly. WNBA Friday: Phoenix at Seattle in a potential playoff preview, Indiana at Minnesota with the Fever riding three straight wins.',
   ]
 
