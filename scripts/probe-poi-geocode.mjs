@@ -28,7 +28,20 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 mkdirSync('outbox', { recursive: true })
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 const out = []
-const log = s => { out.push(s); console.log(s) }
+const outPath = `outbox/poi-geocode-probe-${stamp}.txt`
+// Flush after EVERY line, not at the end.
+//
+// Round 2 ran 6m04s against the workflow's 5-minute step timeout, was
+// killed, and wrote nothing at all -- the job still reported success
+// because the step carries continue-on-error. Identical failure to
+// verify-reconciliation.mjs earlier today: batching output until the end
+// means a timeout destroys the entire run's evidence. Incremental writes
+// mean a killed run still leaves everything it had learned.
+const log = s => {
+  out.push(s)
+  console.log(s)
+  try { writeFileSync(outPath, out.join('\n')) } catch { /* best effort */ }
+}
 
 const UA = 'field-playground-probe/1.0 (github.com/jeffunglesbee-create/field-playground; research)'
 
@@ -79,7 +92,7 @@ async function wikidata(name) {
 // running the query at all.
 async function overpass(name) {
   const esc = name.replace(/"/g, '\\"')
-  const q = `[out:json][timeout:25];
+  const q = `[out:json][timeout:10];
     (node["name"="${esc}"]["leisure"="stadium"];
      way["name"="${esc}"]["leisure"="stadium"];
      relation["name"="${esc}"]["leisure"="stadium"];
@@ -141,18 +154,15 @@ async function main() {
       log(`    overpass: ${o.lat.toFixed(4)}, ${o.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${o.roof ? `  | roof tag: ${o.roof}` : '  | roof tag: (none)'}`)
     }
 
-    await new Promise(r => setTimeout(r, 1500))
+    await new Promise(r => setTimeout(r, 800))
   }
 
   log('')
   log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}`)
   log(`roof info returned:  wikidata ${score.roofW}/${score.total}   overpass ${score.roofO}/${score.total}`)
   log(`baseline: Open-Meteo geocoding 1/8 -- a populated-places index, not a POI index.`)
-  writeFileSync(`outbox/poi-geocode-probe-${stamp}.txt`, out.join('\n'))
 }
 
 main().catch(e => {
   log('FAILED: ' + String(e))
-  writeFileSync(`outbox/poi-geocode-probe-${stamp}.txt`, out.join('\n'))
-  process.exitCode = 1
 })
