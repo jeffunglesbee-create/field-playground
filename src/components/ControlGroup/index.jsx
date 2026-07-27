@@ -28,11 +28,11 @@ import styles from './ControlGroup.module.css'
 //   frame, the second fires only after that paint has actually
 //   happened).
 //
-// LOC counted 2026-07-27 via `wc -l`: vanillaRenderer.js (90 lines,
+// LOC counted 2026-07-27 via `wc -l`: vanillaRenderer.js (111 lines,
 // whole file) vs ReconcileGameList.jsx (39 lines, whole file) -- both
 // totals include their own header comments in equal proportion, not
 // stripped selectively to flatter either side.
-const VANILLA_LOC = 90
+const VANILLA_LOC = 111
 const RECONCILE_LOC = 39
 
 export function ControlGroup() {
@@ -122,6 +122,12 @@ export function ControlGroup() {
         })
         return
       }
+      // A poll with zero mutations never fires the MutationObserver
+      // callback, so without this reset "last cycle" would keep
+      // displaying whatever the PREVIOUS changed poll left behind --
+      // an unchanged cycle needs to actually show 0, not stale numbers.
+      setVanillaLastBatch(0)
+      setReconcileLastBatch(0)
       setCycles((c) => c + 1)
       const t0 = performance.now()
       requestAnimationFrame(() => {
