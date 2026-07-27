@@ -12,6 +12,8 @@ import { CreateRootDemo } from './components/CreateRootDemo'
 import { History } from './components/History'
 import { JournalismBrief } from './components/JournalismBrief'
 import { QualityReport } from './components/QualityReport'
+import { DramaLeaderboard } from './components/DramaLeaderboard'
+import { RelaySystemStatus } from './components/RelaySystemStatus'
 import { MultiDayStreak } from './components/MultiDayStreak'
 import { ErrorBoundaryDemo } from './components/ErrorBoundaryDemo'
 import { DrillDown } from './components/DrillDown'
@@ -276,12 +278,18 @@ export default function App() {
             <SafeSection class={styles.teamAffinitySync}>
               <TeamAffinitySync />
             </SafeSection>
+            <SafeSection class={styles.dramaLeaderboard}>
+              <DramaLeaderboard />
+            </SafeSection>
             <SafeSection class={styles.ground}>
               <Ground />
             </SafeSection>
           </Show>
 
           <Show when={activeTab() === 'system'}>
+            <SafeSection class={styles.relaySystemStatus}>
+              <RelaySystemStatus />
+            </SafeSection>
             <SafeSection class={styles.reactivePerfPanel}>
               <ReactivePerfPanel />
             </SafeSection>

@@ -199,6 +199,44 @@ async function fetchQualityReport() {
 
 export const [qualityReport, { refetch: refetchQualityReport }] = createResource(fetchQualityReport)
 
+// --- Drama leaderboard: real, live, confirmed via a direct probe 2026-07-27 ---
+//
+// GET /archive/drama/leaderboard?sport=X -> {ok, sport, season, limit,
+// games[]} where each game carries a real drama_peak score and a
+// drama_arc -- a JSON-STRING (not a real array; must be JSON.parse'd) of
+// per-minute/per-play drama scores across the whole game. sport is
+// required (400 "missing ?sport=" without it); MLB and MLS both
+// confirmed live with real completed games and real scores.
+//
+// Driven by a signal (dramaSport), same pattern as ambientData/deskData's
+// currentDate -- changing the signal refetches with the new sport.
+export const [dramaSport, setDramaSport] = createSignal('MLB')
+
+async function fetchDramaLeaderboard(sport) {
+  const res = await fetch(`${RELAY_BASE}/archive/drama/leaderboard?sport=${sport}&limit=8`)
+  if (!res.ok) throw new Error(`drama/leaderboard fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [dramaLeaderboard, { refetch: refetchDramaLeaderboard }] = createResource(dramaSport, fetchDramaLeaderboard)
+
+// --- Relay system status: real, live, confirmed via a direct probe 2026-07-27 ---
+//
+// GET /health -> NOT JSON -- a single plain-text line:
+// "RELAY OK — nba + nhl + fpl + ... , quality-source=analytics-cron".
+// Parsed client-side into a subsystem list + quality-source, since the
+// relay itself doesn't structure it. A real signal (this IS what the
+// relay reports as its own health), distinct from ReactivePerfPanel/
+// LatencyHistogram, which measure the PLAYGROUND's own client-side
+// performance, not the relay's.
+async function fetchRelayHealth() {
+  const res = await fetch(`${RELAY_BASE}/health`)
+  if (!res.ok) throw new Error(`health fetch failed: ${res.status}`)
+  return res.text()
+}
+
+export const [relayHealth, { refetch: refetchRelayHealth }] = createResource(fetchRelayHealth)
+
 // --- Day comparison: first non-singleton resource in this repo ---
 //
 // Every resource above is a single, module-level global instance, driven

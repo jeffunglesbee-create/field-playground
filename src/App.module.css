@@ -81,6 +81,8 @@
 .multiview,
 .reorderCost,
 .teamAffinitySync,
+.dramaLeaderboard,
+.relaySystemStatus,
 .weatherPoll,
 .venueGeocodeRace {
   display: flex;
