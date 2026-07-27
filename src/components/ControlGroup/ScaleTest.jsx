@@ -1,9 +1,7 @@
-import { createSignal, createMemo, onMount, onCleanup, Show } from 'solid-js'
+import { createSignal, createMemo, onMount, onCleanup } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
-import { VanillaGameList } from './VanillaGameList'
-import { ReconcileGameList } from './ReconcileGameList'
-import { createControlGroupMetrics, formatKinds, VANILLA_LOC, RECONCILE_LOC } from './metrics'
-import styles from './ControlGroup.module.css'
+import { createControlGroupMetrics } from './metrics'
+import { ComparisonView } from './ComparisonView'
 
 // ControlGroup answers "does reconcile() beat vanilla DOM for the
 // polled game list" at the one size every dev-mock game list has ever
@@ -13,15 +11,15 @@ import styles from './ControlGroup.module.css'
 // slate of sports), or does the real-data comparison only look close
 // because there's barely anything to reconcile either way?
 //
-// Same two implementations (VanillaGameList/ReconcileGameList, imported
-// directly, not reimplemented) and the same instrumentation (metrics.js,
-// shared with ControlGroup so this can't quietly measure something
-// different), against a synthetic 500-row dataset instead of real
-// deskStore data. Synthetic, not real, because production data never
-// reaches this size in this app's own dev mock or its real relay slate
-// on an ordinary day -- inventing 500 fake rows is the only way to
-// actually test the volume question, and it's labeled as exactly that
-// throughout rather than presented as if it were real.
+// Same instrumentation (metrics.js) and the same presentational shell
+// (ComparisonView.jsx), both shared with ControlGroup so this can't
+// quietly measure or display something different, against a synthetic
+// 500-row dataset instead of real deskStore data. Synthetic, not real,
+// because production data never reaches this size in this app's own
+// dev mock or its real relay slate on an ordinary day -- inventing 500
+// fake rows is the only way to actually test the volume question, and
+// it's labeled as exactly that throughout rather than presented as if
+// it were real.
 const ROW_COUNT = 500
 
 // Independent of the real app's 15s poll interval on purpose: this is a
@@ -101,91 +99,22 @@ export function ScaleTest() {
     onCleanup(() => clearInterval(handle))
   })
 
-  const {
-    setVanillaContainer, setReconcileContainer,
-    vanillaLastKinds, reconcileLastKinds,
-    vanillaAvg, reconcileAvg,
-    vanillaShiftLastCycle, reconcileShiftLastCycle,
-    vanillaShiftAvg, reconcileShiftAvg,
-    layoutShiftSupported, cycles, paintMs,
-  } = createControlGroupMetrics(pollAt)
+  const metrics = createControlGroupMetrics(pollAt)
 
   return (
-    <div class={styles.root}>
-      <header class={styles.header}>
-        <span class={styles.label}>Scale Test</span>
-        <span class={styles.note}>synthetic, {ROW_COUNT} rows, {CYCLE_MS / 1000}s cycle</span>
-      </header>
-      <p class={styles.intro}>
-        Same comparison as Control Group -- identical VanillaGameList/
-        ReconcileGameList, identical metrics.js instrumentation -- run
-        against {ROW_COUNT} synthetic rows instead of real deskStore
-        data, since every Control Group reading so far was measured at
-        the ~8-game size every other Lab demo already uses. Data is
-        fabricated (labeled as such); the poll cadence is independent
-        of the real app's 15s interval on purpose.
-      </p>
-      <div class={styles.panels}>
-        <div class={styles.panel}>
-          <div class={styles.panelHeader}>
-            <span class={styles.panelLabel}>Vanilla DOM</span>
-            <span class={styles.panelLoc}>{VANILLA_LOC} lines</span>
-          </div>
-          <VanillaGameList games={allGames} ref={setVanillaContainer} />
-        </div>
-        <div class={styles.panel}>
-          <div class={styles.panelHeader}>
-            <span class={styles.panelLabel}>deskStore + reconcile()</span>
-            <span class={styles.panelLoc}>{RECONCILE_LOC} lines</span>
-          </div>
-          <ReconcileGameList games={allGames} ref={setReconcileContainer} />
-        </div>
-      </div>
-      <div class={styles.metrics}>
-        <div class={styles.metricHead}>
-          <span />
-          <span class={styles.metricHeadCol}>Vanilla</span>
-          <span class={styles.metricHeadCol}>Reconcile</span>
-        </div>
-        <div class={styles.metricRow}>
-          <span class={styles.metricLabel}>DOM ops, last cycle</span>
-          <span class={styles.metricVal}>{formatKinds(vanillaLastKinds())}</span>
-          <span class={styles.metricVal}>{formatKinds(reconcileLastKinds())}</span>
-        </div>
-        <div class={styles.metricRow}>
-          <span class={styles.metricLabel}>DOM mutations, avg/cycle ({cycles()} cycles)</span>
-          <span class={styles.metricVal}>{vanillaAvg()}</span>
-          <span class={styles.metricVal}>{reconcileAvg()}</span>
-        </div>
-        <Show
-          when={layoutShiftSupported()}
-          fallback={
-            <div class={styles.metricRow}>
-              <span class={styles.metricLabel}>Layout shift</span>
-              <span class={styles.metricVal}>n/a</span>
-              <span class={styles.metricVal}>n/a</span>
-            </div>
-          }
-        >
-          <div class={styles.metricRow}>
-            <span class={styles.metricLabel}>Layout shift, last cycle</span>
-            <span class={styles.metricVal}>{vanillaShiftLastCycle().toFixed(4)}</span>
-            <span class={styles.metricVal}>{reconcileShiftLastCycle().toFixed(4)}</span>
-          </div>
-          <div class={styles.metricRow}>
-            <span class={styles.metricLabel}>Layout shift, avg/cycle</span>
-            <span class={styles.metricVal}>{vanillaShiftAvg()}</span>
-            <span class={styles.metricVal}>{reconcileShiftAvg()}</span>
-          </div>
-        </Show>
-      </div>
-      <Show when={paintMs() !== null}>
-        <p class={styles.paintNote}>
-          last cycle: {paintMs().toFixed(1)}ms data-change → painted frame
-          (combined -- both panels update inside the same synchronous
-          flush, so there's no real per-side paint moment to split)
-        </p>
-      </Show>
-    </div>
+    <ComparisonView
+      title="Scale Test"
+      note={`synthetic, ${ROW_COUNT} rows, ${CYCLE_MS / 1000}s cycle`}
+      allGames={allGames}
+      {...metrics}
+    >
+      Same comparison as Control Group -- identical VanillaGameList/
+      ReconcileGameList, identical metrics.js instrumentation -- run
+      against {ROW_COUNT} synthetic rows instead of real deskStore
+      data, since every Control Group reading so far was measured at
+      the ~8-game size every other Lab demo already uses. Data is
+      fabricated (labeled as such); the poll cadence is independent
+      of the real app's 15s interval on purpose.
+    </ComparisonView>
   )
 }

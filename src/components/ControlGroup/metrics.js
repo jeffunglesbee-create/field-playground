@@ -140,29 +140,26 @@ export function createControlGroupMetrics(cycleTrigger) {
     const vanillaKnownNodes = new WeakSet()
     const reconcileKnownNodes = new WeakSet()
 
-    createEffect(() => {
-      const vc = vanillaContainer()
-      if (!vc) return
-      seedKnownNodes(vc, vanillaKnownNodes)
-      const observer = new MutationObserver((records) => {
-        setVanillaLastKinds(classifyMutations(records, vanillaKnownNodes))
-        setVanillaTotal((t) => t + records.length)
+    // One helper, not two hand-written effects: the whole premise of
+    // this module is that both panels get EXACTLY the same
+    // instrumentation, so encoding that as a single parameterized
+    // function makes the guarantee structural rather than something a
+    // future edit could accidentally apply to only one side.
+    const observePanel = (container, setKinds, setTotal, knownNodes) => {
+      createEffect(() => {
+        const el = container()
+        if (!el) return
+        seedKnownNodes(el, knownNodes)
+        const observer = new MutationObserver((records) => {
+          setKinds(classifyMutations(records, knownNodes))
+          setTotal((t) => t + records.length)
+        })
+        observer.observe(el, { childList: true, attributes: true, characterData: true, subtree: true })
+        onCleanup(() => observer.disconnect())
       })
-      observer.observe(vc, { childList: true, attributes: true, characterData: true, subtree: true })
-      onCleanup(() => observer.disconnect())
-    })
-
-    createEffect(() => {
-      const rc = reconcileContainer()
-      if (!rc) return
-      seedKnownNodes(rc, reconcileKnownNodes)
-      const observer = new MutationObserver((records) => {
-        setReconcileLastKinds(classifyMutations(records, reconcileKnownNodes))
-        setReconcileTotal((t) => t + records.length)
-      })
-      observer.observe(rc, { childList: true, attributes: true, characterData: true, subtree: true })
-      onCleanup(() => observer.disconnect())
-    })
+    }
+    observePanel(vanillaContainer, setVanillaLastKinds, setVanillaTotal, vanillaKnownNodes)
+    observePanel(reconcileContainer, setReconcileLastKinds, setReconcileTotal, reconcileKnownNodes)
 
     // Layout Instability API is page-wide by nature (one shift score per
     // frame, not per element) -- but each entry's `sources` array names
@@ -260,6 +257,14 @@ export function createControlGroupMetrics(cycleTrigger) {
       setVanillaShiftLastCycle(0)
       setReconcileShiftLastCycle(0)
       setCycles((c) => c + 1)
+      // requestAnimationFrame is paused while the tab is backgrounded,
+      // so a cycle that ticks while hidden would resolve this rAF pair
+      // only on refocus -- performance.now() - t0 at that point is the
+      // whole backgrounded interval (seconds, not milliseconds),
+      // reported as if it were real paint latency. Skipping the sample
+      // outright is more honest than publishing that outlier in an
+      // instrument whose entire point is trustworthy numbers.
+      if (document.hidden) return
       const t0 = performance.now()
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
