@@ -79,6 +79,33 @@ async function main() {
   const browser = await chromium.launch()
   const page = await browser.newPage()
 
+  // OFFLINE PASS -- the scenario this harness was actually built for.
+  //
+  // The original design assumed page.setContent()'s opaque origin would
+  // make relay fetches fail, reproducing the sandboxed-iframe condition
+  // behind the blank-artifact incident. It does NOT: the relay sends
+  // `access-control-allow-origin: *`, and GitHub Actions runners have
+  // unrestricted egress, so every fetch SUCCEEDS in CI. This harness has
+  // therefore only ever tested the happy path, and reported
+  // `no_dead_sections: true` while a parallel session -- running the same
+  // script from an egress-blocked sandbox, where fetches genuinely fail --
+  // found 17 dead sections across 8 components.
+  //
+  // Aborting every relay request makes the adverse condition real and
+  // deterministic, rather than depending on which machine happens to run
+  // it. Set ARTIFACT_CHECK_ONLINE=1 to skip and test the loaded-data path
+  // instead.
+  const offline = process.env.ARTIFACT_CHECK_ONLINE !== '1'
+  manifest.mode = offline ? 'offline (all fetches aborted)' : 'online'
+  if (offline) {
+    await page.route('**', route => {
+      const u = route.request().url()
+      // Only external calls are cut; the inlined document itself must load.
+      if (u.startsWith('http://') || u.startsWith('https://')) return route.abort()
+      return route.continue()
+    })
+  }
+
   const consoleErrors = []
   const pageErrors = []
   page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text()) })
@@ -175,7 +202,15 @@ async function main() {
     const dead = await page.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'))
         .filter(b => b.textContent.trim() === 'Retry')
-      return btns.map(b => (b.parentElement?.textContent ?? '').replace('Retry', '').trim().slice(0, 160))
+      // Attribute each failure to its enclosing section's class, not just
+      // the message -- "Cannot read properties of undefined" is useless
+      // without knowing which component produced it.
+      return btns.map(b => {
+        const sec = b.closest('section')
+        const cls = sec ? (sec.className || '').split(' ')[0] : 'unknown'
+        const msg = (b.parentElement?.textContent ?? '').replace('Retry', '').trim().slice(0, 120)
+        return `${cls}: ${msg}`
+      })
     })
     if (dead.length) {
       deadSections += dead.length
