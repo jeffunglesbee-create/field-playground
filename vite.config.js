@@ -16,6 +16,34 @@ function mockRelay() {
     'Houston brings José Urquidy against Texas in a critical divisional matchup — Rangers hold a 2.5-game lead. NY Mets have dropped four straight heading into Philly. WNBA Friday: Phoenix at Seattle in a potential playoff preview, Indiana at Minnesota with the Fever riding three straight wins.',
   ]
 
+  // Real captured response from a direct probe of /health, 2026-07-27 --
+  // a plain-text status line, not JSON (see relay.js's relayHealth comment).
+  const relayHealthMock = 'RELAY OK — nba + nhl + fpl + fd + odds + squiggle + kali + atp + bdl + espn-gambit + espn-summary + dropbox + field-data + v2 + ws-game-do + jq-gate + jq-analytics + wc-d1 + wc-team-context + soccer-wp + cfl-odds + r2-mlb + r2-nfl + r2-nfl-b + soccer-fbref + nhl-series + nba-clutch + nhl-gsax + bracket-do + ambient-do + v2-cache + analytics-cron, quality-source=analytics-cron'
+
+  // Real games + real drama_peak scores from a direct probe of
+  // /archive/drama/leaderboard, 2026-07-27 (see relay.js's dramaLeaderboard
+  // comment). drama_arc arrays are downsampled from the real, much longer
+  // captured arrays (real values, real order, just fewer points) to keep
+  // this mock file a reasonable size -- not synthesized values.
+  const dramaLeaderboardMock = {
+    MLB: {
+      ok: true, sport: 'MLB', season: '2026', limit: 8,
+      games: [
+        { id: '2026-05-25-mlb-baltim-tampa', sport: 'MLB', date: '2026-05-25', home: 'Baltimore Orioles', away: 'Tampa Bay Rays', home_score: 9, away_score: 7, drama_peak: 74, drama_arc: '[52,52,52,44,44,44,51,51,59,59,68,68,74,74,74,66,66,74,74,51]', game_type: 'regular' },
+        { id: '2026-05-26-mlb-chicag-minnes', sport: 'MLB', date: '2026-05-26', home: 'Chicago White Sox', away: 'Minnesota Twins', home_score: 3, away_score: 5, drama_peak: 74, drama_arc: '[52,52,44,44,29,29,36,36,59,59,68,68,74,74,74,37,37,51,51]', game_type: 'regular' },
+        { id: '2026-05-31-mlb-seattl-arizon', sport: 'MLB', date: '2026-05-31', home: 'Seattle Mariners', away: 'Arizona Diamondbacks', home_score: 3, away_score: 2, drama_peak: 74, drama_arc: '[52,52,44,44,52,52,51,51,59,59,68,68,74,74,74,66,66]', game_type: 'regular' },
+      ],
+    },
+    MLS: {
+      ok: true, sport: 'MLS', season: '2026', limit: 8,
+      games: [
+        { id: '2026-05-23-mls-minnes-reals', sport: 'MLS', date: '2026-05-23', home: 'Minnesota United FC', away: 'Real Salt Lake', home_score: 1, away_score: 1, drama_peak: 78, drama_arc: '[52,52,52,52,52,37,37,37,37,37,37,37,37,37,37,42,42,47,47,78]', game_type: 'regular' },
+        { id: '2026-05-24-mls-lagal-housto', sport: 'MLS', date: '2026-05-24', home: 'LA Galaxy', away: 'Houston Dynamo FC', home_score: 1, away_score: 1, drama_peak: 62, drama_arc: '[52,52,52,52,52,52,37,37,37,52,52,52,52,52,52,57,57,62,62]', game_type: 'regular' },
+        { id: '2026-05-24-mls-chicag-toront', sport: 'MLS', date: '2026-05-24', home: 'Chicago Fire FC', away: 'Toronto FC', home_score: 2, away_score: 1, drama_peak: 55, drama_arc: '[52,52,52,52,52,37,37,37,52,52,52,52,52,52,52,37,42,42,47,47,55]', game_type: 'regular' },
+      ],
+    },
+  }
+
   // Real captured response from a direct probe of /quality/report,
   // 2026-07-27 -- not synthesized, same convention as briefTexts above.
   const qualityReportMock = {"ok":true,"days":7,"since":"2026-07-20","summary":[{"brief_type":"game_recap","sport":"PGA TOUR","total":1,"scored":1,"avg_score":125,"min_score":125,"max_score":125,"below_240":1,"above_240":0},{"brief_type":"game_recap","sport":"PGA Tour","total":1,"scored":1,"avg_score":125,"min_score":125,"max_score":125,"below_240":1,"above_240":0},{"brief_type":"pre_game","sport":"pga tour","total":1,"scored":1,"avg_score":125,"min_score":125,"max_score":125,"below_240":1,"above_240":0},{"brief_type":"slate","sport":null,"total":13,"scored":13,"avg_score":128.5,"min_score":108,"max_score":141,"below_240":13,"above_240":0},{"brief_type":"night_owl","sport":"Baseball (MLB)","total":15,"scored":15,"avg_score":136,"min_score":118,"max_score":148,"below_240":15,"above_240":0},{"brief_type":"mlb_game","sport":"MLB","total":64,"scored":64,"avg_score":136.4,"min_score":99,"max_score":179,"below_240":64,"above_240":0},{"brief_type":"night_owl","sport":"CFL – 2026 Season · Week 7","total":1,"scored":1,"avg_score":141,"min_score":141,"max_score":141,"below_240":1,"above_240":0},{"brief_type":"night_owl","sport":"FIFA World Cup","total":1,"scored":1,"avg_score":142,"min_score":142,"max_score":142,"below_240":1,"above_240":0},{"brief_type":"night_owl","sport":"Australian Football (AFL)","total":1,"scored":1,"avg_score":145,"min_score":145,"max_score":145,"below_240":1,"above_240":0},{"brief_type":"epl_match","sport":"EPL","total":9,"scored":9,"avg_score":146,"min_score":121,"max_score":185,"below_240":9,"above_240":0},{"brief_type":"narrative_context","sport":"MLB","total":4,"scored":4,"avg_score":146.3,"min_score":139,"max_score":154,"below_240":4,"above_240":0},{"brief_type":"pre_game","sport":"mlb","total":12,"scored":12,"avg_score":157.7,"min_score":134,"max_score":178,"below_240":12,"above_240":0},{"brief_type":"pre_game","sport":"mls","total":30,"scored":26,"avg_score":164,"min_score":136,"max_score":193,"below_240":26,"above_240":0},{"brief_type":"game_recap","sport":"MLB","total":97,"scored":97,"avg_score":165,"min_score":124,"max_score":205,"below_240":97,"above_240":0},{"brief_type":"pre_game","sport":"wnba","total":1,"scored":1,"avg_score":166,"min_score":166,"max_score":166,"below_240":1,"above_240":0},{"brief_type":"game_recap","sport":"MLS","total":30,"scored":30,"avg_score":166.3,"min_score":145,"max_score":193,"below_240":30,"above_240":0},{"brief_type":"game_recap","sport":"FIFA World Cup","total":20,"scored":20,"avg_score":169.9,"min_score":143,"max_score":184,"below_240":20,"above_240":0},{"brief_type":"game_recap","sport":"WNBA","total":11,"scored":11,"avg_score":170.7,"min_score":160,"max_score":196,"below_240":11,"above_240":0}],"alerts":[{"brief_type":"slate","sport":"all","alert":"avg_below_calibrated_p25","threshold":136,"threshold_source":"brief_type_p25(n=63)","avg_score":128.5,"failure_pct":100},{"brief_type":"night_owl","sport":"Baseball (MLB)","alert":"avg_below_calibrated_p25","threshold":137,"threshold_source":"brief_type_p25(n=236)","avg_score":136,"failure_pct":100},{"brief_type":"mlb_game","sport":"MLB","alert":"avg_below_calibrated_p25","threshold":147,"threshold_source":"brief_type_p25(n=359)","avg_score":136.4,"failure_pct":100},{"brief_type":"epl_match","sport":"EPL","alert":"high_failure_rate","threshold":92,"threshold_source":"brief_type_p25(n=21)","avg_score":146,"failure_pct":100},{"brief_type":"pre_game","sport":"mlb","alert":"high_failure_rate","threshold":155,"threshold_source":"brief_type_p25(n=46)","avg_score":157.7,"failure_pct":100},{"brief_type":"pre_game","sport":"mls","alert":"high_failure_rate","threshold":155,"threshold_source":"brief_type_p25(n=46)","avg_score":164,"failure_pct":100},{"brief_type":"game_recap","sport":"MLB","alert":"avg_below_calibrated_p25","threshold":170,"threshold_source":"brief_type_p25(n=720)","avg_score":165,"failure_pct":100},{"brief_type":"game_recap","sport":"MLS","alert":"avg_below_calibrated_p25","threshold":170,"threshold_source":"brief_type_p25(n=720)","avg_score":166.3,"failure_pct":100},{"brief_type":"game_recap","sport":"FIFA World Cup","alert":"avg_below_calibrated_p25","threshold":170,"threshold_source":"brief_type_p25(n=720)","avg_score":169.9,"failure_pct":100},{"brief_type":"game_recap","sport":"WNBA","alert":"high_failure_rate","threshold":170,"threshold_source":"brief_type_p25(n=720)","avg_score":170.7,"failure_pct":100}],"alert_count":10,"unscored_types":[],"unscored_count":0,"brief_type_calibration":{"compound":{"p25":175,"p50":178,"p75":189,"count":5},"epl_match":{"p25":92,"p50":132,"p75":149,"count":21},"game_brief":{"p25":171,"p50":188,"p75":210,"count":16},"game_recap":{"p25":170,"p50":204,"p75":223,"count":720},"mlb_game":{"p25":147,"p50":182,"p75":212,"count":359},"narrative_context":{"p25":204,"p50":215,"p75":228,"count":115},"night_owl":{"p25":137,"p50":149,"p75":167,"count":236},"pre_game":{"p25":155,"p50":162,"p75":171,"count":46},"slate":{"p25":136,"p50":230,"p75":254,"count":63},"wc_matchup":{"p25":103,"p50":124,"p75":131,"count":10}}}
@@ -188,6 +216,19 @@ function mockRelay() {
         if (req.url?.startsWith('/mls/stats/competitions/')) {
           res.setHeader('Content-Type', 'application/json')
           return res.end(JSON.stringify(mlsStandingsMock))
+        }
+        if (req.url === '/health') {
+          res.setHeader('Content-Type', 'text/plain')
+          return res.end(relayHealthMock)
+        }
+        if (req.url?.startsWith('/archive/drama/leaderboard')) {
+          const sport = new URLSearchParams(req.url.split('?')[1] || '').get('sport')
+          res.setHeader('Content-Type', 'application/json')
+          if (!sport) {
+            res.statusCode = 400
+            return res.end(JSON.stringify({ ok: false, error: 'missing ?sport=' }))
+          }
+          return res.end(JSON.stringify(dramaLeaderboardMock[sport] ?? { ok: true, sport, season: '2026', limit: 8, games: [] }))
         }
         if (req.url === '/quality/report') {
           // Real captured response from a direct probe of /quality/report,
