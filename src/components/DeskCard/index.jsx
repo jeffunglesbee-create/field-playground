@@ -503,8 +503,22 @@ function GameRow(props) {
       class={`${styles.gameRow} ${styles['tier_' + tier()]} ${isBlowout() ? styles.rowBlowout : ''} ${isCloseLate() ? styles.rowCloseLate : ''} ${isStale() ? styles.rowStale : ''} ${isHighlighted() ? styles.rowHighlighted : ''}`}
       data-game-id={g().id}
     >
+      {/* .gameRow is a CSS grid with fixed positional columns (see
+          DeskCard.module.css), not named grid areas -- so every direct
+          child's column comes from its position among ITS SIBLINGS, not
+          from a stable slot. dramaLabel and venue below render
+          unconditionally (empty when there's nothing to show) rather
+          than behind a <Show>, because <Show> removes the child from
+          the DOM entirely when its condition is false: on a game with no
+          drama yet (drama_peak < 40 -- true for essentially every
+          pregame row) the label span used to vanish, shifting every
+          later sibling one column left. That's what made team names
+          render 16px wide -- the watch-star's column -- while the score
+          area quietly inherited the wide 1fr column meant for the
+          matchup text. Confirmed live: every pregame row measured
+          matchupWidth === 16 before this fix. */}
       <span class={`${styles.statusDot} ${styles[status()]}`} />
-      <Show when={label()}><span class={styles.dramaLabel} title={`drama tier: ${tier()} (peak ${dramaPeak()})`}>{label()}</span></Show>
+      <span class={styles.dramaLabel} title={label() ? `drama tier: ${tier()} (peak ${dramaPeak()})` : undefined}>{label()}</span>
       <button
         class={`${styles.watchBtn} ${isWatched() ? styles.watchBtnActive : ''}`}
         onClick={() => toggleWatch(g().id)}
@@ -554,9 +568,7 @@ function GameRow(props) {
           </Show>
         </Show>
       </span>
-      <Show when={g().venue}>
-        <span class={styles.venue}>{g().venue}</span>
-      </Show>
+      <span class={styles.venue}>{g().venue}</span>
       <button class={styles.dismissBtn} onClick={() => dismissGame(g().id)} aria-label="dismiss" title="not interested in this one">✕</button>
       <Show when={import.meta.env.DEV}>
         <span class={styles.mountDebug} title="mount count -- should never exceed 1 if reconciliation is working">
