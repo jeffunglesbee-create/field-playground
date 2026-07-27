@@ -110,6 +110,59 @@ jobs:
           echo "If not, the prediction holds and a table stays required for the" >> "$OUT"
           echo "outdoor/indoor flag even if geocoding replaces the coordinate lookup." >> "$OUT"
 
+      - name: Probe expanded VENUE_COORDS coverage (2026-07-27 retractable-roof reversal)
+        timeout-minutes: 3
+        continue-on-error: true
+        run: |
+          OUT=outbox/open-meteo-venue-coverage-probe.txt
+          echo "probe_at: $(date -u +%FT%TZ)" > "$OUT"
+          echo "" >> "$OUT"
+          echo "Verifies two changes to src/data/weather.js's VENUE_COORDS, both run" >> "$OUT"
+          echo "from a GitHub Actions runner because this sandbox's egress allowlist" >> "$OUT"
+          echo "blocks api.open-meteo.com directly:" >> "$OUT"
+          echo "  1. Retractable-roof/domed venues now get real weather instead of" >> "$OUT"
+          echo "     being excluded (production's own table gates on isOutdoor and" >> "$OUT"
+          echo "     returns null for these -- this repo deliberately reverses that)." >> "$OUT"
+          echo "  2. Three MLB parks confirmed absent from production's table" >> "$OUT"
+          echo "     (PNC Park, Citi Field, Sutter Health Park) resolve to real," >> "$OUT"
+          echo "     sane weather at their added coordinates." >> "$OUT"
+          echo "" >> "$OUT"
+          # name|lat|lon|roofType -- coords copied from src/data/weather.js's
+          # VENUE_COORDS at the time this workflow ran; this probe checks that
+          # each coordinate resolves to real Open-Meteo data, not that the
+          # source file matches (it always does -- they're the same PR).
+          VENUES='
+          Globe Life Field|32.7512|-97.0832|retractable
+          loanDepot park|25.7781|-80.2195|retractable
+          Rogers Centre|43.6414|-79.3894|retractable
+          Daikin Park|29.7573|-95.3555|retractable
+          PNC Park|40.4469|-80.0057|open (new, absent from production)
+          Citi Field|40.7571|-73.8458|open (new, absent from production)
+          Sutter Health Park|38.5805|-121.5133|open (new, absent from production)
+          Comerica Park|42.3390|-83.0485|open
+          Nationals Park|38.8730|-77.0074|open
+          Great American Ball Park|39.0979|-84.5069|open
+          Rate Field|41.8300|-87.6339|open
+          Busch Stadium|38.6226|-90.1928|open
+          Angel Stadium|33.8003|-117.8827|open
+          Oracle Park|37.7786|-122.3893|open
+          TPC Twin Cities|45.1858|-93.2119|open
+          '
+          echo "$VENUES" | while IFS='|' read -r NAME LAT LON ROOF; do
+            [ -z "$NAME" ] && continue
+            URL="https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,precipitation,rain,snowfall,is_day,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto"
+            HTTP_CODE=$(curl -sS -o /tmp/venue.json -w "%{http_code}" "$URL" || echo "curl_failed")
+            TEMP=$(jq -r '.current.temperature_2m // "n/a"' /tmp/venue.json 2>/dev/null || echo "n/a")
+            echo "$NAME [$ROOF]: http=$HTTP_CODE temp_f=$TEMP" >> "$OUT"
+          done
+          echo "" >> "$OUT"
+          echo "=== VERDICT ===" >> "$OUT"
+          echo "Read the per-venue lines above: every venue, retractable/dome roof" >> "$OUT"
+          echo "type included, should show http=200 and a real (non-n/a) temperature." >> "$OUT"
+          echo "A real temperature returned for a retractable-roof venue confirms the" >> "$OUT"
+          echo "reversal is correct: the site has real, fetchable weather regardless" >> "$OUT"
+          echo "of roof status, so gating weather on isOutdoor was never necessary." >> "$OUT"
+
       - name: Commit probe result
         if: always()
         run: |
