@@ -39,8 +39,22 @@
 //  venue the fast pass actually misses -- so the scan's cost is now
 //  proportional to how rarely it's needed (0-1 calls/run in practice),
 //  not paid unconditionally by every venue regardless of whether it needs it.
+//
+// ROUND 6 ADDITION: a simple cache for Nominatim specifically. Its usage
+// policy (operations.osmfoundation.org/policies/nominatim/) requires it:
+// "Results must be cached on your side. Clients sending repeatedly the
+// same query may be classified as faulty and blocked." Stadium
+// coordinates don't move -- there's no reason a re-run of this probe
+// should ask Nominatim the same 8 questions again within any reasonable
+// window. Cache lives at outbox/poi-geocode-cache.json, committed
+// alongside the probe results by the same workflow step, so it persists
+// across separate GitHub Actions runs (the runner itself is ephemeral,
+// the repo isn't). TTL is 30 days -- long, deliberately: this is
+// physical geography, not live data, so staleness isn't really a risk
+// the way it would be for weather. Only successful results are cached; a
+// transient 429/504 is never treated as a real answer worth remembering.
 
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 
 mkdirSync('outbox', { recursive: true })
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -61,6 +75,18 @@ const log = s => {
 }
 
 const UA = 'field-playground-probe/1.0 (github.com/jeffunglesbee-create/field-playground; research)'
+
+const CACHE_PATH = 'outbox/poi-geocode-cache.json'
+const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000
+
+function loadCache() {
+  if (!existsSync(CACHE_PATH)) return {}
+  try { return JSON.parse(readFileSync(CACHE_PATH, 'utf8')) } catch { return {} }
+}
+function saveCache(cache) {
+  try { writeFileSync(CACHE_PATH, JSON.stringify(cache, null, 2)) } catch { /* best effort */ }
+}
+const cache = loadCache()
 
 const TRUTH = {
   'Comerica Park':      [42.3390, -83.0485, 'open'],
@@ -195,6 +221,23 @@ async function nominatim(name) {
   return { lat, lon, roof, osmType: hit.type ?? null, osmClass: hit.class ?? null }
 }
 
+// Cache wrapper -- only successful results are stored, so a transient
+// 429/504 never gets remembered as if it were a real answer, and next
+// run tries the network again instead of replaying a failure forever.
+async function nominatimCached(name) {
+  const key = `nominatim:${name}`
+  const hit = cache[key]
+  if (hit && Date.now() - hit.cachedAt < CACHE_TTL_MS) {
+    return { ...hit.result, fromCache: true }
+  }
+  const result = await nominatim(name)
+  if (!result.err) {
+    cache[key] = { result, cachedAt: Date.now() }
+    saveCache(cache)
+  }
+  return result
+}
+
 // ROUND 4 ADDITION: chat's reframe of the whole approach -- round 3's
 // two-tier fix (above) solved the immediate reliability problem (0/8 ->
 // 8/8) but is still fundamentally a LOOKUP: one Wikidata query per venue.
@@ -285,9 +328,10 @@ async function main() {
   log(`probe_at: ${new Date().toISOString()}`)
   log(`threshold: ${OK} deg (~2km) from production's hand-verified coords`)
   log(`round 5: adds Nominatim as a third free source (nominatim.openstreetmap.org, distinct infra from Overpass, extratags roof lookup)`)
+  log(`round 6: Nominatim results now cached (outbox/poi-geocode-cache.json, 30-day TTL) per its usage policy's caching requirement`)
   log(`attribution: Nominatim results (c) OpenStreetMap contributors, ODbL -- https://www.openstreetmap.org/copyright`)
   log('')
-  const score = { wikidata: 0, overpass: 0, nominatim: 0, total: 0, roofW: 0, roofO: 0, roofN: 0 }
+  const score = { wikidata: 0, overpass: 0, nominatim: 0, total: 0, roofW: 0, roofO: 0, roofN: 0, nominatimCacheHits: 0 }
 
   for (const [name, [tlat, tlon, roof]] of Object.entries(TRUTH)) {
     score.total++
@@ -316,21 +360,22 @@ async function main() {
     }
 
     let n
-    try { n = await nominatim(name) } catch (e) { n = { err: String(e).slice(0, 60) } }
+    try { n = await nominatimCached(name) } catch (e) { n = { err: String(e).slice(0, 60) } }
     if (n.err) log(`    nominatim: MISS (${n.err})`)
     else {
       const d = dist(n.lat, n.lon, tlat, tlon)
       const pass = d <= OK
       if (pass) score.nominatim++
       if (n.roof) score.roofN++
-      log(`    nominatim: ${n.lat.toFixed(4)}, ${n.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${n.roof ? `  | roof tag: ${n.roof}` : '  | roof tag: (none)'}  [${n.osmClass ?? '?'}/${n.osmType ?? '?'}]`)
+      if (n.fromCache) score.nominatimCacheHits++
+      log(`    nominatim: ${n.lat.toFixed(4)}, ${n.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${n.roof ? `  | roof tag: ${n.roof}` : '  | roof tag: (none)'}  [${n.osmClass ?? '?'}/${n.osmType ?? '?'}]${n.fromCache ? '  (cached)' : ''}`)
     }
 
     await new Promise(r => setTimeout(r, 800))
   }
 
   log('')
-  log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}   nominatim ${score.nominatim}/${score.total}`)
+  log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}   nominatim ${score.nominatim}/${score.total}  (${score.nominatimCacheHits}/${score.total} nominatim results served from cache)`)
   log(`roof info returned:  wikidata ${score.roofW}/${score.total}   overpass ${score.roofO}/${score.total}   nominatim ${score.roofN}/${score.total}`)
   log(`baseline: Open-Meteo geocoding 1/8 -- a populated-places index, not a POI index.`)
 
