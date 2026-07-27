@@ -7,6 +7,21 @@
 // and they render a perfectly believable temperature for the wrong city.
 // Threshold: 0.02 deg (~2km), generous enough for a stadium centroid vs
 // its street address, tight enough to catch a different city.
+//
+// ROUND 2 FIXES, all of them my own request bugs rather than findings:
+//  1. Overpass returned HTTP 406 on all 8 -- it requires a User-Agent
+//     and rejects requests without one BEFORE doing any lookup. Reporting
+//     that 0/8 as "Overpass failed" would have repeated the exact error
+//     this whole probe exists to correct: mistaking a tool-usage mistake
+//     for a property of the tool.
+//  2. Wikidata missed 'loanDepot park' (lowercase l, irregular casing)
+//     because the query used an exact rdfs:label match. Now also tries
+//     skos:altLabel and a case-insensitive fallback -- a string-form
+//     problem, never a coverage problem.
+//  3. Added the roof property lookup (P5624 roof type / P1132-adjacent).
+//     Chat claimed geocoding "structurally cannot know whether a stadium
+//     has a dome." Wikidata is structured data, not a geocoder, so that
+//     claim needs testing rather than assuming.
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 
@@ -15,9 +30,8 @@ const stamp = new Date().toISOString().replace(/[:.]/g, '-')
 const out = []
 const log = s => { out.push(s); console.log(s) }
 
-// Ground truth: production's own hand-verified entries, the ones the
-// table would have to beat. Deliberately mixed -- open, retractable and
-// dome -- so roof-type recovery is testable too.
+const UA = 'field-playground-probe/1.0 (github.com/jeffunglesbee-create/field-playground; research)'
+
 const TRUTH = {
   'Comerica Park':      [42.3390, -83.0485, 'open'],
   'Citizens Bank Park': [39.9061, -75.1665, 'open'],
@@ -32,41 +46,54 @@ const TRUTH = {
 const dist = (a, b, c, d) => Math.sqrt((a - c) ** 2 + (b - d) ** 2)
 const OK = 0.02
 
+// Alias-tolerant: exact label OR altLabel OR case-insensitive match.
+// Also asks for roof-ish properties, tolerating their absence.
 async function wikidata(name) {
-  // P625 = coordinate location. Also pulls P1329-adjacent roof info via
-  // P5023 (structure replaced) is unreliable; instead ask for the
-  // "has use"/roof-ish qualifiers that commonly exist, tolerating absence.
+  const esc = name.replace(/"/g, '\\"')
   const q = `
-    SELECT ?item ?itemLabel ?coord WHERE {
-      ?item rdfs:label "${name}"@en .
+    SELECT ?item ?itemLabel ?coord ?roofLabel WHERE {
+      {
+        ?item rdfs:label "${esc}"@en .
+      } UNION {
+        ?item skos:altLabel "${esc}"@en .
+      } UNION {
+        ?item rdfs:label ?lbl .
+        FILTER(LANG(?lbl) = "en" && LCASE(STR(?lbl)) = LCASE("${esc}"))
+      }
       ?item wdt:P625 ?coord .
+      OPTIONAL { ?item wdt:P5624 ?roof . }
       SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
     } LIMIT 1`
   const url = 'https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q)
-  const res = await fetch(url, { headers: { 'User-Agent': 'field-playground-probe/1.0 (research)' } })
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/sparql-results+json' } })
   if (!res.ok) return { err: `HTTP ${res.status}` }
   const j = await res.json()
   const b = j?.results?.bindings?.[0]
   if (!b) return { err: 'no match' }
   const m = /Point\(([-\d.]+) ([-\d.]+)\)/.exec(b.coord.value)
   if (!m) return { err: 'unparseable coord' }
-  return { lat: parseFloat(m[2]), lon: parseFloat(m[1]) }
+  return { lat: parseFloat(m[2]), lon: parseFloat(m[1]), roof: b.roofLabel?.value ?? null }
 }
 
+// User-Agent added. Overpass rejects UA-less requests with 406 before
+// running the query at all.
 async function overpass(name) {
-  // leisure=stadium by name. `out center` returns a centroid for ways
-  // and relations, which is what a stadium footprint actually is.
+  const esc = name.replace(/"/g, '\\"')
   const q = `[out:json][timeout:25];
-    (node["name"="${name}"]["leisure"="stadium"];
-     way["name"="${name}"]["leisure"="stadium"];
-     relation["name"="${name}"]["leisure"="stadium"];
-     node["name"="${name}"]["building"="stadium"];
-     way["name"="${name}"]["building"="stadium"];);
+    (node["name"="${esc}"]["leisure"="stadium"];
+     way["name"="${esc}"]["leisure"="stadium"];
+     relation["name"="${esc}"]["leisure"="stadium"];
+     way["name"="${esc}"]["building"="stadium"];
+     relation["name"="${esc}"]["building"="stadium"];);
     out center 1;`
   const res = await fetch('https://overpass-api.de/api/interpreter', {
     method: 'POST',
     body: 'data=' + encodeURIComponent(q),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': UA,
+      Accept: 'application/json',
+    },
   })
   if (!res.ok) return { err: `HTTP ${res.status}` }
   const j = await res.json()
@@ -75,17 +102,18 @@ async function overpass(name) {
   const lat = el.lat ?? el.center?.lat
   const lon = el.lon ?? el.center?.lon
   if (lat == null) return { err: 'no coord' }
-  // OSM tags roof:shape / building:levels etc. Report whatever roof-ish
-  // tag exists rather than inventing one.
-  const roof = el.tags?.['roof:shape'] ?? el.tags?.['building:part'] ?? null
+  const t = el.tags ?? {}
+  // Report whatever roof-ish tag actually exists; invent nothing.
+  const roof = t['roof:shape'] ?? t['building:roof'] ?? t.roof ?? null
   return { lat, lon, roof }
 }
 
 async function main() {
   log(`probe_at: ${new Date().toISOString()}`)
   log(`threshold: ${OK} deg (~2km) from production's hand-verified coords`)
+  log(`round 2: Overpass User-Agent added, Wikidata alias-tolerant, roof property queried`)
   log('')
-  const score = { wikidata: 0, overpass: 0, total: 0 }
+  const score = { wikidata: 0, overpass: 0, total: 0, roofW: 0, roofO: 0 }
 
   for (const [name, [tlat, tlon, roof]] of Object.entries(TRUTH)) {
     score.total++
@@ -98,7 +126,8 @@ async function main() {
       const d = dist(w.lat, w.lon, tlat, tlon)
       const pass = d <= OK
       if (pass) score.wikidata++
-      log(`    wikidata: ${w.lat.toFixed(4)}, ${w.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}`)
+      if (w.roof) score.roofW++
+      log(`    wikidata: ${w.lat.toFixed(4)}, ${w.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${w.roof ? `  | roof: ${w.roof}` : '  | roof: (none)'}`)
     }
 
     let o
@@ -108,16 +137,17 @@ async function main() {
       const d = dist(o.lat, o.lon, tlat, tlon)
       const pass = d <= OK
       if (pass) score.overpass++
-      log(`    overpass: ${o.lat.toFixed(4)}, ${o.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${o.roof ? ` | roof tag: ${o.roof}` : ''}`)
+      if (o.roof) score.roofO++
+      log(`    overpass: ${o.lat.toFixed(4)}, ${o.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${o.roof ? `  | roof tag: ${o.roof}` : '  | roof tag: (none)'}`)
     }
 
-    await new Promise(r => setTimeout(r, 1200)) // be a good citizen
+    await new Promise(r => setTimeout(r, 1500))
   }
 
   log('')
   log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}`)
-  log(`(Open-Meteo geocoding scored 1/8 on this same class of name —`)
-  log(` a populated-places index, not a POI index.)`)
+  log(`roof info returned:  wikidata ${score.roofW}/${score.total}   overpass ${score.roofO}/${score.total}`)
+  log(`baseline: Open-Meteo geocoding 1/8 -- a populated-places index, not a POI index.`)
   writeFileSync(`outbox/poi-geocode-probe-${stamp}.txt`, out.join('\n'))
 }
 
