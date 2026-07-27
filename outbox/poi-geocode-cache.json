@@ -78,5 +78,85 @@
       "osmClass": null
     },
     "cachedAt": 1785191904920
+  },
+  "photon:Comerica Park": {
+    "result": {
+      "lat": 42.3392219,
+      "lon": -83.0488632,
+      "roof": null,
+      "osmKey": "leisure",
+      "osmValue": "stadium"
+    },
+    "cachedAt": 1785192635055
+  },
+  "photon:Citizens Bank Park": {
+    "result": {
+      "lat": 39.9059221,
+      "lon": -75.1664804,
+      "roof": null,
+      "osmKey": "leisure",
+      "osmValue": "stadium"
+    },
+    "cachedAt": 1785192638499
+  },
+  "photon:Globe Life Field": {
+    "result": {
+      "lat": 32.747642,
+      "lon": -97.0841049,
+      "roof": null,
+      "osmKey": "leisure",
+      "osmValue": "stadium"
+    },
+    "cachedAt": 1785192641326
+  },
+  "photon:Tropicana Field": {
+    "result": {
+      "lat": 27.7680559,
+      "lon": -82.6532755,
+      "roof": null,
+      "osmKey": "leisure",
+      "osmValue": "stadium"
+    },
+    "cachedAt": 1785192643168
+  },
+  "photon:Fenway Park": {
+    "result": {
+      "lat": 42.3464614,
+      "lon": -71.0970999,
+      "roof": null,
+      "osmKey": "leisure",
+      "osmValue": "stadium"
+    },
+    "cachedAt": 1785192653135
+  },
+  "photon:Oracle Park": {
+    "result": {
+      "lat": 37.7786059,
+      "lon": -122.3894716,
+      "roof": null,
+      "osmKey": "leisure",
+      "osmValue": "stadium"
+    },
+    "cachedAt": 1785192663149
+  },
+  "photon:loanDepot park": {
+    "result": {
+      "lat": 25.7780733,
+      "lon": -80.219554,
+      "roof": null,
+      "osmKey": "leisure",
+      "osmValue": "stadium"
+    },
+    "cachedAt": 1785192678501
+  },
+  "photon:Yankee Stadium": {
+    "result": {
+      "lat": 40.8295828,
+      "lon": -73.9265212,
+      "roof": null,
+      "osmKey": "leisure",
+      "osmValue": "stadium"
+    },
+    "cachedAt": 1785192694554
   }
 }
