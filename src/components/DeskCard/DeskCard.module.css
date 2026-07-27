@@ -208,6 +208,25 @@
   transition: background 0.3s, opacity 0.3s, box-shadow 0.3s;
 }
 
+/* Every direct child below gets an explicit grid-column instead of
+   relying on DOM order -- the same fix already applied to dramaLabel/
+   venue's conditional rendering (see index.jsx), but at the root: a
+   positional grid with no explicit columns is fragile by construction,
+   since ANY future conditional child (a bare <Show> around any of
+   these, present or new) would silently reintroduce the exact
+   column-shift bug that made team names render 16px wide instead of
+   the intended flexible width. Explicit assignment makes that whole bug
+   class impossible rather than fixed once. .gameExpansion already did
+   this (grid-column: 1 / -1) for the same reason. */
+.statusDot  { grid-column: 1; }
+.dramaLabel { grid-column: 2; }
+.watchBtn   { grid-column: 3; }
+.matchup    { grid-column: 4; }
+.scoreArea  { grid-column: 5; }
+.venue      { grid-column: 6; }
+.dismissBtn { grid-column: 7; }
+.mountDebug { grid-column: 8; }
+
 .tier_fire { background: rgba(255, 100, 40, 0.09); }
 .tier_hot  { background: rgba(218, 136, 68, 0.07); }
 .tier_warm { background: rgba(218, 136, 68, 0.04); }
