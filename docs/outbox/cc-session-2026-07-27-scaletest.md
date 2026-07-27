@@ -74,6 +74,47 @@ dead sections, no console errors. Lab tab count 16 -> 17.
 
 ---
 
+## Correction (same day): the headline number above buried the finding
+
+Chat's own verification pass caught this: "~13-14 mutations/cycle" is
+the **raw MutationRecord count** (`vanillaTotal`/`reconcileTotal` in
+metrics.js), and reporting it as one figure implied the two panels cost
+roughly the same. They don't. That number is equal between panels for
+a mechanical reason, not because the mechanisms are equivalent: a
+single game's score update produces exactly one `MutationRecord`
+either way -- one combined childList record (old text node removed, new
+one added) for vanilla's `.textContent =` replace, one characterData
+record for reconcile's in-place patch. Record *count* can't see past
+that; it was never the right unit, which is the same lesson PR #25
+already established at toy scale and is repeated here at volume.
+
+The kind breakdown one row up in the same panel (`vanillaLastKinds`/
+`reconcileLastKinds`) is the real reading, and it wasn't in this doc's
+headline. Verified directly, sampled across 6 real synthetic cycles at
+500 rows:
+
+| Cycle | Vanilla | Reconcile |
+|-------|---------|-----------|
+| 1 | 15 new + 15 removed | 15 patched |
+| 2 | 14 new + 14 removed | 14 patched |
+| 3 | 13 new + 13 removed | 13 patched |
+| 4 | 14 new + 14 removed | 14 patched |
+| 5 | 12 new + 12 removed | 12 patched |
+| 6 | 15 new + 15 removed | 15 patched |
+
+The exact same 1-created+1-removed-vs-1-patched ratio found at toy
+scale (PR #25) holds precisely at 500 rows, just scaled up
+proportionally: vanilla performs **twice** the node operations
+reconcile does for the identical underlying data change, every single
+cycle, with no exceptions across the sample. That's the actual answer
+to "does the gap widen at volume" -- it doesn't widen or shrink, it
+holds at a constant 2:1 ratio, and at real production row counts that
+ratio is now attached to real per-cycle magnitudes (dozens of node
+operations, not one) rather than a toy-scale reading too small to
+distinguish from noise.
+
+---
+
 ## Files changed
 
 | Path | Status |
