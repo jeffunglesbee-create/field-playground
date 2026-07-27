@@ -114,13 +114,25 @@ ceremony.
   probe each.
 
 - **A mock that returns a happy path the real service never produces
-  hides the bug it should expose.** Two instances the same session:
-  `WeatherPoll`'s dev mock returned 200 for an endpoint that 403s in
-  reality, and `JournalismBrief`'s mock invented `brief`, `cycleId` and
-  `proseScore` fields present in no real payload. Both meant the
-  component appeared to work while testing nothing real. Mocks should
-  match observed behaviour, including the failure modes — a mock that
-  can only succeed is a mock that can only mislead.
+  hides the bug it should expose.** Real case: `WeatherPoll`'s dev mock
+  returned HTTP 200 for `/weather/today/{date}` — an endpoint that
+  returns 403 in reality, because it was never built. The component
+  looked functional in dev and shipped broken. Mocks should match
+  observed behaviour *including its failure modes*; a mock that can only
+  succeed is a mock that can only mislead.
+
+  **A second example was written here and was itself false — worth
+  keeping as the cautionary note rather than deleting.** This section
+  originally also cited `JournalismBrief`'s mock as inventing `brief`,
+  `cycleId` and `proseScore` fields "present in no real payload." A
+  direct probe shows the real `/journalism/brief` response is exactly
+  `{brief, generatedAt, contextHash, gameCount, cycleId, proseScore,
+  clicheCount}` — with real values (`proseScore: 115`, `gameCount: 16`).
+  Those fields were always real. That false claim came from accepting a
+  grep-based negative without probing — committed *in the same edit that
+  added the rule against doing exactly that*, one bullet above. The rule
+  is only worth anything if it's applied to one's own conclusions at the
+  moment of writing them down, not just to other people's.
 
 ## Mechanical fact worth stating plainly: outbox path differs from jubilant-bassoon
 
