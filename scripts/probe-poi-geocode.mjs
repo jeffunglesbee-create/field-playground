@@ -429,7 +429,21 @@ async function fetchAllVenuesByType() {
   const url = 'https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q)
   const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/sparql-results+json' } })
   if (!res.ok) return { err: `HTTP ${res.status}` }
-  const j = await res.json()
+  // res.json() reproduced "Bad control character in string literal in
+  // JSON" in 2 of 3 real dispatches on this ~180K-row response -- some
+  // venue's label/altLabel string in Wikidata's own data contains a raw,
+  // unescaped control byte (e.g. a literal embedded newline), which
+  // JSON.parse rejects outright regardless of how the rest of the
+  // response is well-formed. Every token boundary in SPARQL results JSON
+  // is already delimited by structural characters ({, }, [, ], :, ", ,),
+  // never by whitespace alone, so stripping raw control bytes (0x00-
+  // 0x1F) from the text before parsing is safe: it only ever removes
+  // insignificant whitespace between tokens or an illegally-embedded
+  // byte inside a string (losing at most a stray character from one
+  // label's text), never real JSON structure.
+  const rawText = await res.text()
+  const cleaned = rawText.replace(/[\x00-\x1F]/g, '')
+  const j = JSON.parse(cleaned)
   return { rows: j?.results?.bindings ?? [] }
 }
 
