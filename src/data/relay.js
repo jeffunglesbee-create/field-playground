@@ -262,6 +262,26 @@ async function fetchArchiveQuery(date) {
 
 export const [archiveQuery, { refetch: refetchArchiveQuery }] = createResource(archiveDate, fetchArchiveQuery)
 
+// --- WC bracket odds: real, live, confirmed via a direct probe 2026-07-27 ---
+//
+// GET /wc/projections -> a Monte Carlo simulation (N=2000 confirmed live)
+// over the real World Cup bracket -- {teams[] (per-team pR32/pR16/pQF/
+// pSF/pFinal/pChamp + real fifaRank), bracketTraps[] (teams where
+// finishing 2nd in their group gives a HIGHER pChamp than finishing 1st,
+// due to an easier knockout path -- a real, surprising, non-obvious
+// signal, not derived here), bracketSlots{}, thirdPlaceRanking[]}.
+// Complements StandingRoom's existing WcSection, which only shows GROUP
+// STAGE standings -- nothing in this app currently surfaces knockout-
+// stage projections. Static (no currentDate/sport param) -- the relay
+// itself decides when to recompute.
+async function fetchWcProjections() {
+  const res = await fetch(`${RELAY_BASE}/wc/projections`)
+  if (!res.ok) throw new Error(`wc/projections fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [wcProjections, { refetch: refetchWcProjections }] = createResource(fetchWcProjections)
+
 // --- Day comparison: first non-singleton resource in this repo ---
 //
 // Every resource above is a single, module-level global instance, driven

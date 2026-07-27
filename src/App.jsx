@@ -12,6 +12,7 @@ import { CreateRootDemo } from './components/CreateRootDemo'
 import { History } from './components/History'
 import { JournalismBrief } from './components/JournalismBrief'
 import { QualityReport } from './components/QualityReport'
+import { WcBracketOdds } from './components/WcBracketOdds'
 import { BriefReconcile } from './components/BriefReconcile'
 import { BriefArchive } from './components/BriefArchive'
 import { DramaLeaderboard } from './components/DramaLeaderboard'
@@ -252,6 +253,9 @@ export default function App() {
               <Suspense fallback={<div class={shared.skeleton}><div class={`${shared.bar} ${shared.wide}`} /><div class={`${shared.bar} ${shared.medium}`} /></div>}>
                 <StandingRoom />
               </Suspense>
+            </SafeSection>
+            <SafeSection class={styles.wcBracketOdds}>
+              <WcBracketOdds />
             </SafeSection>
             <SafeSection class={styles.stats}>
               <Stats />
