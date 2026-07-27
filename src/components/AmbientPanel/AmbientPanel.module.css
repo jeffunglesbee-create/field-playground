@@ -36,6 +36,36 @@
   padding: 1px 5px;
 }
 
+.verdict {
+  margin-bottom: 12px;
+}
+
+.verdictText {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--field-text-secondary);
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.verdictStars {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.starRating {
+  font-size: 12px;
+  color: #d4a92e;
+  letter-spacing: 0.05em;
+}
+
+.starDetail {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .qualityAlert {
   font-size: 10px;
   color: #da4;

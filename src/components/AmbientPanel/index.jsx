@@ -255,6 +255,38 @@ function TensionCard(props) {
   )
 }
 
+// pick.brief and night_stars are real fields on the same /analytics/
+// newspaper/{date} payload this component already holds -- confirmed via
+// a direct probe of the live relay, 2026-07-27 -- but unsurfaced here
+// until now. pick.brief is a one-line editorial verdict, distinct from
+// pick.ranked (the list itself, already rendered below). night_stars is
+// a real slate-quality rating (dramaGames/closeGames/walkoffs behind a
+// 0-5 star score), a different signal from qualitySharpness above, which
+// measures editorial PROSE quality, not the GAMES' quality.
+function SlateVerdict(props) {
+  const p = () => props.pick
+  const stars = () => props.nightStars
+  return (
+    <Show when={p()?.brief || stars()}>
+      <div class={styles.verdict}>
+        <Show when={p()?.brief}>
+          <p class={styles.verdictText}>{p().brief}</p>
+        </Show>
+        <Show when={stars()}>
+          <div class={styles.verdictStars}>
+            <span class={styles.starRating} title={`${stars().starScore} / 10`}>
+              {'★'.repeat(stars().stars)}{'☆'.repeat(Math.max(0, 5 - stars().stars))}
+            </span>
+            <span class={styles.starDetail}>
+              {stars().dramaGames} drama · {stars().closeGames} close · {stars().walkoffs} walkoff{stars().walkoffs === 1 ? '' : 's'}
+            </span>
+          </div>
+        </Show>
+      </div>
+    </Show>
+  )
+}
+
 function QualityAlertBadge(props) {
   const qa = () => props.qualityAlert
   return (
@@ -377,6 +409,8 @@ function Content(props) {
         <span class={styles.timeMode} title="morning/midday/evening/late, drives what's emphasized below">{timeMode()}</span>
         <span class={styles.dateMeta}>{d().date} · recap through {d().recap_date}</span>
       </header>
+
+      <SlateVerdict pick={d().pick} nightStars={d().night_stars} />
 
       <QualityAlertBadge qualityAlert={d().quality_alert} />
 

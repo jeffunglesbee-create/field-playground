@@ -145,44 +145,40 @@ export const [mlsStandings] = createResource(fetchMlsStandings)
 
 // --- Journalism brief: independent polling resource, slower cadence than deskStore ---
 //
-// Fetches the exact same /analytics/newspaper/{date} route ambientData
-// already holds -- deliberately a SEPARATE resource+poll loop, not a read
-// of ambientData directly, to keep proving what this section always
-// proved: two independently-cadenced resources against the same real
-// relay endpoint coexist correctly (polling interval managed by the
-// consuming component, JournalismBrief, same pattern as deskData's
-// interval in App.jsx).
+// Not driven by currentDate -- the relay always returns the latest brief
+// regardless of any date param, confirmed live 2026-07-27 by appending
+// ?date=2026-07-20 to a probe and getting back a byte-identical response.
+// Polling interval managed by the consuming component (JournalismBrief),
+// not here, same pattern as deskData's refetch interval in App.jsx.
 //
-// What changed 2026-07-26: the endpoint, from /journalism/brief to
-// /analytics/newspaper/{date}.
-//
-// CORRECTION 2026-07-27: an earlier version of this comment claimed
-// /journalism/brief was "confirmed to never have existed." That is
-// FALSE. Verified live: it returns HTTP 200 with real journalism prose
-// (3M Open, Rays result), and a bogus sibling path
-// (/journalism/nonsense-xyz) returns 403 "Path not allowed" -- proving
-// it is an allowlisted route, not a catch-all. The original conclusion
-// came from grepping field-relay-nba's source for "journalism"/"brief"
-// and finding zero hits, which proves only that the literal STRING is
-// absent (the route is reached some other way) -- it never proved the
-// route was absent. A negative result needs a higher bar than a grep.
-//
-// The endpoint change is still correct, for the reason that actually
-// holds: /journalism/brief takes no date parameter and returns whatever
-// the latest brief is, while this resource is driven by currentDate.
-// /analytics/newspaper/{date} is date-parameterized and documented in
-// field-relay-nba's HANDOFF.md, so date navigation genuinely works.
-// What WAS fake: the old vite.config.js mock invented a brief string, a
-// cycleId and a proseScore that exist in no real payload -- so this
-// component was only ever testing "a resource that polls on its own
-// schedule," never real journalism content. Now it's both.
-async function fetchJournalismBrief(date) {
-  const res = await fetch(`${RELAY_BASE}/analytics/newspaper/${date}`)
-  if (!res.ok) throw new Error(`newspaper fetch failed: ${res.status}`)
+// SECOND CORRECTION, 2026-07-27: this resource briefly pointed at
+// /analytics/newspaper/{date} instead of /journalism/brief, on the claim
+// that /journalism/brief "was never real on field-relay-nba." That claim
+// was FALSE -- verified live: GET /journalism/brief -> HTTP 200 with
+// real journalism prose (a real 3M Open recap, a real Rays/Guardians box
+// score); GET /journalism/nonsense-xyz -> 403 "Path not allowed" (an
+// allowlisted route, not a catch-all -- a 404 would have meant genuinely
+// absent). A FIRST correction pass fixed that headline claim but left a
+// second, narrower one standing: that the brief/cycleId/proseScore
+// fields this component reads were themselves invented, existing "in no
+// real payload." Also false -- the live response is
+// {brief, generatedAt, contextHash, gameCount, cycleId, proseScore,
+// clicheCount}, the exact shape this component has always rendered. The
+// old dev mock's TEXT was placeholder (as every mock's content is), but
+// its FIELD NAMES matched reality throughout. Both false claims trace to
+// the same root cause: grepping field-relay-nba's source for
+// "journalism"/"brief" found zero hits, which proves only that the
+// literal STRING is absent (the route is reached some other way) -- it
+// never proved the route or its fields were absent. Reverted to the
+// real endpoint and real fields -- see JournalismBrief's own header
+// comment for how they're rendered.
+async function fetchJournalismBrief() {
+  const res = await fetch(`${RELAY_BASE}/journalism/brief`)
+  if (!res.ok) throw new Error(`journalism/brief fetch failed: ${res.status}`)
   return res.json()
 }
 
-export const [journalismBrief, { refetch: refetchBrief }] = createResource(currentDate, fetchJournalismBrief)
+export const [journalismBrief, { refetch: refetchBrief }] = createResource(fetchJournalismBrief)
 
 // --- Day comparison: first non-singleton resource in this repo ---
 //
