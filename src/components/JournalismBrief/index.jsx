@@ -20,6 +20,10 @@ const POLL_MS = 5 * 60 * 1000
 export function JournalismBrief() {
   const [prevCycleId, setPrevCycleId] = createSignal(null)
   const [freshlyUpdated, setFreshlyUpdated] = createSignal(false)
+  // Ticking clock, read (not just called for side effect) inside `age` below --
+  // Date.now() itself isn't a tracked dependency, so without this the memo would
+  // only ever re-run when `data()` changes, freezing "Xm ago" between polls.
+  const [now, setNow] = createSignal(Date.now())
 
   // Reads the resource only when it's NOT in error state -- calling the
   // accessor while errored throws (same posture as StandingRoom/DayComparison/
@@ -29,7 +33,7 @@ export function JournalismBrief() {
   const age = createMemo(() => {
     const d = data()
     if (!d?.generatedAt) return null
-    const s = Math.floor((Date.now() - d.generatedAt) / 1000)
+    const s = Math.floor((now() - d.generatedAt) / 1000)
     if (s < 60) return 'just now'
     if (s < 3600) return `${Math.floor(s / 60)}m ago`
     return `${Math.floor(s / 3600)}h ago`
@@ -38,20 +42,27 @@ export function JournalismBrief() {
   // Detect when the relay genuinely regenerated the brief, not just a refetch
   // that returned the same content. cycleId is stable across polls of the same
   // generation; a new one means real new content.
+  let updatedTimer
   createMemo(() => {
     const d = data()
     if (!d?.cycleId) return
     const prev = prevCycleId()
     if (prev && prev !== d.cycleId) {
       setFreshlyUpdated(true)
-      setTimeout(() => setFreshlyUpdated(false), 4000)
+      clearTimeout(updatedTimer)
+      updatedTimer = setTimeout(() => setFreshlyUpdated(false), 4000)
     }
     setPrevCycleId(d.cycleId)
   })
 
   onMount(() => {
-    const handle = setInterval(refetchBrief, POLL_MS)
-    onCleanup(() => clearInterval(handle))
+    const pollHandle = setInterval(refetchBrief, POLL_MS)
+    const clockHandle = setInterval(() => setNow(Date.now()), 30000)
+    onCleanup(() => {
+      clearInterval(pollHandle)
+      clearInterval(clockHandle)
+      clearTimeout(updatedTimer)
+    })
   })
 
   return (

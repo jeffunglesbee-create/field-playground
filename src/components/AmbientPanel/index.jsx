@@ -274,7 +274,12 @@ function SlateVerdict(props) {
         </Show>
         <Show when={stars()}>
           <div class={styles.verdictStars}>
-            <span class={styles.starRating} title={`${stars().starScore} / 10`}>
+            <span
+              class={styles.starRating}
+              title={`${stars().starScore} / 10`}
+              role="img"
+              aria-label={`${stars().stars} out of 5 stars with a score of ${stars().starScore} / 10`}
+            >
               {'★'.repeat(stars().stars)}{'☆'.repeat(Math.max(0, 5 - stars().stars))}
             </span>
             <span class={styles.starDetail}>
