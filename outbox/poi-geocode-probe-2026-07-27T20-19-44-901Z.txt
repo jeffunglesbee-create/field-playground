@@ -1,0 +1,17 @@
+probe_at: 2026-07-27T20:19:44.901Z
+threshold: 0.02 deg (~2km) from production's hand-verified coords
+round 2: Overpass User-Agent added, Wikidata alias-tolerant, roof property queried
+
+--- Comerica Park  (truth 42.339, -83.0485 | open)
+    wikidata: MISS (HTTP 504)
+    overpass: 42.3392, -83.0489  delta 0.0005  MATCH  | roof tag: (none)
+--- Citizens Bank Park  (truth 39.9061, -75.1665 | open)
+    wikidata: MISS (HTTP 504)
+    overpass: 39.9059, -75.1664  delta 0.0002  MATCH  | roof tag: (none)
+--- Globe Life Field  (truth 32.7473, -97.0847 | retractable)
+    wikidata: MISS (HTTP 504)
+    overpass: MISS (no match)
+--- Tropicana Field  (truth 27.7682, -82.6534 | dome)
+    wikidata: MISS (HTTP 504)
+    overpass: 27.7681, -82.6533  delta 0.0001  MATCH  | roof tag: dome
+--- Fenway Park  (truth 42.3467, -71.0972 | open)
