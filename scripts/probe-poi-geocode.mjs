@@ -293,6 +293,47 @@ async function photonCached(name) {
   return result
 }
 
+// ROUND 8 ADDITION: every round so far filtered roof lookups down to 2-3
+// candidate keys (roof:shape, building:roof, roof) before checking. That's
+// an assumption, not a finding -- if retractable-roof data exists under
+// some OTHER key, filtering to those 3 would silently hide it and make
+// "0/8" look like "no data" when it's really "wrong key guessed." This
+// dumps the COMPLETE, unfiltered raw tag set for the two retractable-roof
+// venues in TRUTH (Globe Life Field, loanDepot park) from both Overpass
+// and Nominatim, so the question "is roof data available elsewhere"
+// gets answered by reading everything that's actually there, not by
+// re-running the same narrow key check again.
+async function overpassRawTags(name) {
+  const esc = name.replace(/"/g, '\\"')
+  const q = `[out:json][timeout:10];
+    (node["name"="${esc}"]["leisure"="stadium"];
+     way["name"="${esc}"]["leisure"="stadium"];
+     relation["name"="${esc}"]["leisure"="stadium"];
+     way["name"="${esc}"]["building"="stadium"];
+     relation["name"="${esc}"]["building"="stadium"];);
+    out tags 1;`
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    body: 'data=' + encodeURIComponent(q),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA, Accept: 'application/json' },
+  })
+  if (!res.ok) return { err: `HTTP ${res.status}` }
+  const j = await res.json()
+  const el = j?.elements?.[0]
+  if (!el) return { err: 'no match' }
+  return { tags: el.tags ?? {} }
+}
+
+async function nominatimRawExtratags(name) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=jsonv2&limit=1&extratags=1`
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) return { err: `HTTP ${res.status}` }
+  const j = await res.json()
+  const hit = j?.[0]
+  if (!hit) return { err: 'no match' }
+  return { tags: hit.extratags ?? {} }
+}
+
 // ROUND 4 ADDITION: chat's reframe of the whole approach -- round 3's
 // two-tier fix (above) solved the immediate reliability problem (0/8 ->
 // 8/8) but is still fundamentally a LOOKUP: one Wikidata query per venue.
@@ -487,6 +528,33 @@ async function main() {
       log(`This is the real test of chat's claim: one query today returned ${venueCount} venues total -- ${venueCount - invScore.total} more than the ${invScore.total} this probe happens to check against. Whether that's a usable basis for regenerating VENUE_COORDS (~98 real entries, MLB alone is ~30 parks) is a separate decision from whether this query mechanism works.`)
     }
   }
+
+  log('')
+  log('--- ROUND 8: raw, unfiltered tag dump for retractable-roof venues -- is roof data available under a key none of the rounds above checked for? ---')
+  const RETRACTABLE_VENUES = ['Globe Life Field', 'loanDepot park']
+  for (const name of RETRACTABLE_VENUES) {
+    log(`--- ${name} ---`)
+
+    let ot
+    try { ot = await overpassRawTags(name) } catch (e) { ot = { err: String(e).slice(0, 60) } }
+    if (ot.err) log(`    overpass raw tags: FAILED (${ot.err})`)
+    else log(`    overpass raw tags: ${JSON.stringify(ot.tags)}`)
+
+    let nt
+    try { nt = await nominatimRawExtratags(name) } catch (e) { nt = { err: String(e).slice(0, 60) } }
+    if (nt.err) log(`    nominatim extratags: FAILED (${nt.err})`)
+    else log(`    nominatim extratags: ${JSON.stringify(nt.tags)}`)
+
+    await new Promise(r => setTimeout(r, 800))
+  }
+  log('')
+  log('Read the raw tag dumps above by hand: if no key anywhere in them encodes')
+  log('retractability (movable/operable/convertible roof, not just shape), that is')
+  log('real evidence this is an OSM data-completeness gap for these two venues')
+  log('specifically, not a wrong-key-guessed bug in this probe -- roof:shape=* is a')
+  log('~30-value catalogue of GEOMETRIC shapes (dome, gabled, hipped, flat, ...) per')
+  log('OSM\'s own wiki, with no documented value for "retractable" as a mechanical')
+  log('property, which is a plausible root cause independent of source or query.')
 }
 
 main().catch(e => {
