@@ -1,0 +1,56 @@
+name: POI Geocode Probe
+
+# CI-as-proxy (chat's sandbox cannot reach these hosts).
+#
+# Tests a claim chat made and should not have: that a hand-maintained
+# VENUE_COORDS table is "the only thing that works" for stadium
+# coordinates. That conclusion came from testing Open-Meteo's geocoder,
+# which is a GeoNames POPULATED-PLACES index -- cities and towns, not
+# points of interest. Stadiums resolving 1-in-8 there is the expected
+# result for a tool doing a different job, not evidence that POI
+# geocoding fails.
+#
+# Two genuine POI sources, neither needing a key:
+#   Wikidata SPARQL -- structured entities. P625 = coordinate location.
+#                      May also carry roof/capacity, which would answer
+#                      the dome question chat claimed geocoding
+#                      structurally could not.
+#   Overpass / OSM  -- authoritative physical locations,
+#                      leisure=stadium.
+#
+# Success criterion is NOT "did something come back." It is: do the
+# returned coordinates match production's hand-verified VENUE_COORDS to
+# within a stadium's own footprint (~0.01 deg, roughly 1km)? A geocoder
+# that returns a plausible-but-wrong point is worse than one that
+# returns nothing -- that exact failure (coords off ~10 miles) was
+# already found in this repo today.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe Wikidata + Overpass
+        timeout-minutes: 5
+        continue-on-error: true
+        run: node scripts/probe-poi-geocode.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "poi-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet || git commit -m "chore: poi geocode probe result [skip ci]"
+          git push
