@@ -1,0 +1,156 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.intro {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--field-text-muted);
+  margin: 0 0 12px 0;
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.panel {
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  min-width: 0;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.panelLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--field-text-primary);
+}
+
+.panelLoc {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 4px;
+  border-radius: 4px;
+}
+
+.row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.matchup {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.metrics {
+  border-top: 1px solid #1a1a1a;
+  padding-top: 8px;
+}
+
+.metricHead,
+.metricRow {
+  display: grid;
+  grid-template-columns: 1fr 70px 70px;
+  gap: 8px;
+  align-items: center;
+}
+
+.metricHead {
+  margin-bottom: 4px;
+}
+
+.metricHeadCol {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  text-align: right;
+}
+
+.metricRow {
+  padding: 3px 0;
+}
+
+.metricLabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.metricVal {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--field-text-primary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.paintNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  margin: 8px 0 0 0;
+  line-height: 1.5;
+}
