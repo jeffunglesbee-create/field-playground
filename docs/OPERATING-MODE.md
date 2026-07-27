@@ -83,6 +83,45 @@ ceremony.
   handing it over. See
   `docs/outbox/chat-update-2026-07-25-blank-artifact-bug.md`.
 
+- **A negative result needs a higher bar than a positive one.** "Grep
+  found nothing" proves a *string* is absent. It never proves a route,
+  function, field, or capability is absent. Before writing down any
+  claim of the form "X doesn't exist," probe the live behaviour.
+
+  This fired **three times in one session**, 2026-07-25/26, each time
+  nearly sending a fix in the wrong direction:
+
+  1. **`/journalism/brief` "confirmed to never have existed."** It
+     exists. Live probe: HTTP 200 with real journalism prose. The
+     conclusion came from grepping field-relay-nba's source for
+     `"journalism"` and finding zero hits — which proved only that the
+     literal string wasn't there. The route is reached some other way.
+  2. **Open-Meteo "returns no CORS header."** It returns
+     `access-control-allow-origin: *`. The probe sent no `Origin`
+     header, so none could ever come back. That false negative pointed
+     squarely at building a relay proxy that shouldn't exist.
+  3. **`seasons_section_present: false`** on a healthy build — twice.
+     Once because the label moved behind a tab, once because the text
+     search ran against `body.innerText.slice(0, 1500)` and the heading
+     sat below the truncation.
+
+  **The one distinction that settled two of these:** a bogus sibling
+  path returning **403 "Path not allowed"** means an allowlist exists
+  and the real path is on it — the route is *real*. A **404** means the
+  route is genuinely absent. `/journalism/nonsense-xyz` → 403 proved
+  `/journalism/brief` was real; `/context/weather` → 404 proved no
+  weather route existed. Same relay, opposite conclusions, one cheap
+  probe each.
+
+- **A mock that returns a happy path the real service never produces
+  hides the bug it should expose.** Two instances the same session:
+  `WeatherPoll`'s dev mock returned 200 for an endpoint that 403s in
+  reality, and `JournalismBrief`'s mock invented `brief`, `cycleId` and
+  `proseScore` fields present in no real payload. Both meant the
+  component appeared to work while testing nothing real. Mocks should
+  match observed behaviour, including the failure modes — a mock that
+  can only succeed is a mock that can only mislead.
+
 ## Mechanical fact worth stating plainly: outbox path differs from jubilant-bassoon
 
 `jubilant-bassoon`'s session outbox manifests live at root `outbox/`
