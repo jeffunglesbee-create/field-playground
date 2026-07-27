@@ -1,0 +1,109 @@
+probe_at: 2026-07-27T23:39:45.774Z
+venues: 98  (source: src/data/weather.js, parsed live)
+method: en.wikipedia REST summary -> FIRST SENTENCE ONLY -> classify
+
+ok    Fenway Park  -> open
+ok    Yankee Stadium  -> open
+ok    Coors Field  -> open
+ok    Wrigley Field  -> open
+ok    Oracle Park  -> open
+ok    Dodger Stadium  -> open
+ok    Busch Stadium  -> open
+ok    Nationals Park  -> open
+ok    Citizens Bank Park  -> open
+ok    Great American Ball Park  -> open
+ok    Kauffman Stadium  -> open
+ok    Comerica Park  -> open
+ok    Petco Park  -> open
+ok    Oriole Park  -> open
+ok    Guaranteed Rate Field  -> open
+ok    Rate Field  -> open
+MISS  Angels Stadium  (HTTP 404)  [truth open]
+ok    Angel Stadium  -> open
+ok    Progressive Field  -> open
+ok    PNC Park  -> open
+ok    Citi Field  -> open
+ok    Sutter Health Park  -> open
+ok    Globe Life Field  -> retractable
+ok    Chase Field  -> retractable
+ok    American Family Field  -> retractable
+ok    Minute Maid Park  -> retractable
+ok    Daikin Park  -> retractable
+ok    T-Mobile Park  -> retractable
+ok    Rogers Centre  -> retractable
+ok    Tropicana Field  -> dome
+ok    Gillette Stadium  -> open
+MISS  Red Bull Arena  (disambiguation)  [truth open]
+ok    CityPark  -> open
+ok    America First Field  -> open
+ok    Snapdragon Stadium  -> open
+ok    Stade Saputo  -> open
+ok    BMO Field  -> open
+ok    Chase Stadium  -> open
+ok    Subaru Park  -> open
+ok    Bank of America Stadium  -> open
+ok    Audi Field  -> open
+MISS  Lower.com Field  (HTTP 429)  [truth open]
+MISS  TQL Stadium  (HTTP 429)  [truth open]
+MISS  Inter&Co Stadium  (HTTP 429)  [truth open]
+MISS  GEODIS Park  (HTTP 429)  [truth open]
+MISS  Soldier Field  (HTTP 429)  [truth open]
+MISS  Allianz Field  (HTTP 429)  [truth open]
+MISS  BMO Stadium  (HTTP 429)  [truth open]
+MISS  Dignity Health Sports Park  (HTTP 429)  [truth open]
+MISS  Lumen Field  (HTTP 429)  [truth open]
+MISS  Providence Park  (HTTP 429)  [truth open]
+MISS  PayPal Park  (HTTP 429)  [truth open]
+MISS  Q2 Stadium  (HTTP 429)  [truth open]
+ok    Shell Energy Stadium  -> open
+MISS  Toyota Stadium  (disambiguation)  [truth open]
+ok    Mercedes-Benz Stadium  -> retractable
+WRONG BC Place  -> predicted open, truth retractable
+        "BC Place is a multi-purpose stadium in Vancouver, British Columbia, Canada."
+ok    Anfield  -> open
+ok    Etihad Stadium  -> open
+ok    Craven Cottage  -> open
+ok    Amex Stadium  -> open
+ok    Stadium of Light  -> open
+ok    Villa Park  -> open
+ok    Turf Moor  -> open
+ok    Selhurst Park  -> open
+MISS  City Ground  (HTTP 429)  [truth open]
+ok    Riverside Stadium  -> open
+MISS  MKM Stadium  (HTTP 429)  [truth open]
+ok    The Den  -> open
+ok    London Stadium  -> open
+MISS  Allianz Arena  (HTTP 429)  [truth open]
+MISS  Europa-Park Stadion  (HTTP 429)  [truth open]
+MISS  Stade de la Meinau  (HTTP 429)  [truth open]
+MISS  MCG  (HTTP 429)  [truth open]
+MISS  ENGIE Stadium  (HTTP 429)  [truth open]
+MISS  TIO Stadium  (HTTP 429)  [truth open]
+MISS  People First Stadium  (HTTP 429)  [truth open]
+MISS  Marvel Stadium  (HTTP 429)  [truth retractable]
+MISS  Foro Italico  (HTTP 429)  [truth open]
+MISS  Rajiv Gandhi International Stadium  (HTTP 429)  [truth open]
+MISS  Sawai Mansingh Stadium  (HTTP 429)  [truth open]
+ok    Quail Hollow Club  -> open
+MISS  Aronimink Golf Club  (HTTP 429)  [truth open]
+MISS  Augusta National Golf Club  (HTTP 429)  [truth open]
+MISS  Pinehurst No. 2  (HTTP 429)  [truth open]
+MISS  Pebble Beach Golf Links  (HTTP 429)  [truth open]
+MISS  TPC Sawgrass  (HTTP 429)  [truth open]
+MISS  Riviera Country Club  (HTTP 429)  [truth open]
+MISS  Torrey Pines South Course  (HTTP 429)  [truth open]
+MISS  Harbour Town Golf Links  (HTTP 429)  [truth open]
+MISS  TPC Scottsdale  (HTTP 429)  [truth open]
+MISS  Muirfield Village Golf Club  (HTTP 429)  [truth open]
+MISS  East Lake Golf Club  (HTTP 429)  [truth open]
+MISS  St Andrews Links Old Course  (HTTP 429)  [truth open]
+MISS  Royal Troon Golf Club  (HTTP 429)  [truth open]
+MISS  Dunes Golf and Beach Club  (HTTP 429)  [truth open]
+MISS  Colonial Country Club  (HTTP 429)  [truth open]
+MISS  TPC Twin Cities  (HTTP 429)  [truth open]
+
+RESULT  correct 53/98   wrong 1   miss 44
+
+--- every disagreement, in full (this is the useful part) ---
+BC Place: predicted open, table says retractable
+   "BC Place is a multi-purpose stadium in Vancouver, British Columbia, Canada."
