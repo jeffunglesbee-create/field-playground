@@ -12,6 +12,7 @@ import { CreateRootDemo } from './components/CreateRootDemo'
 import { History } from './components/History'
 import { JournalismBrief } from './components/JournalismBrief'
 import { QualityReport } from './components/QualityReport'
+import { BriefReconcile } from './components/BriefReconcile'
 import { DramaLeaderboard } from './components/DramaLeaderboard'
 import { RelaySystemStatus } from './components/RelaySystemStatus'
 import { MultiDayStreak } from './components/MultiDayStreak'
@@ -268,6 +269,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.qualityReport}>
               <QualityReport />
+            </SafeSection>
+            <SafeSection class={styles.briefReconcile}>
+              <BriefReconcile />
             </SafeSection>
           </Show>
 
