@@ -79,10 +79,49 @@ function classify(sentence) {
 async function summary(title) {
   const url = 'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title)
   const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
+  if (res.status === 429) return { err: 'HTTP 429', rateLimited: true }
   if (!res.ok) return { err: `HTTP ${res.status}` }
   const j = await res.json()
   if (j.type === 'disambiguation') return { err: 'disambiguation' }
   return { extract: j.extract ?? '', title: j.title }
+}
+
+// Retry on 429 with backoff. The first run lost 41 of 98 venues to rate
+// limiting at 250ms spacing -- reported as "miss", which reads like a
+// coverage failure and is nothing of the sort. Wikipedia's REST API is
+// free and unauthenticated; the correct response to 429 is to slow down,
+// not to record a false negative.
+async function summaryWithRetry(title) {
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    const r = await summary(title)
+    if (!r.rateLimited) return r
+    await new Promise(res => setTimeout(res, attempt * 2500))
+  }
+  return { err: 'HTTP 429 (after 4 retries)' }
+}
+
+// On a real 404, try title variants before calling it a miss. Our table's
+// venue strings come from the relay, which uses broadcast/display names
+// that don't always match Wikipedia's article title. 'Angels Stadium'
+// 404s; the article is 'Angel Stadium' (singular). That is a bug in OUR
+// table, not Wikipedia's -- and it means the live weather lookup for that
+// venue silently finds nothing. Worth surfacing explicitly.
+function titleVariants(name) {
+  const v = [name]
+  if (/s\s/.test(name)) v.push(name.replace(/^(\w+)s\s/, '$1 '))   // Angels Stadium -> Angel Stadium
+  if (/\bStadium\b/.test(name)) v.push(name.replace(/\bStadium\b/, 'Field'))
+  if (/\bField\b/.test(name)) v.push(name.replace(/\bField\b/, 'Stadium'))
+  v.push(name.replace(/\./g, ''))                                   // Lower.com Field
+  return [...new Set(v)]
+}
+
+async function resolve(name) {
+  for (const t of titleVariants(name)) {
+    const r = await summaryWithRetry(t)
+    if (!r.err) return { ...r, viaVariant: t !== name ? t : null }
+    if (r.err === 'disambiguation') return r
+  }
+  return { err: 'no title variant resolved' }
 }
 
 async function main() {
@@ -97,7 +136,7 @@ async function main() {
 
   for (const v of venues) {
     let r
-    try { r = await summary(v.name) } catch (e) { r = { err: String(e).slice(0, 50) } }
+    try { r = await resolve(v.name) } catch (e) { r = { err: String(e).slice(0, 50) } }
 
     if (r.err) {
       score.miss++
@@ -107,7 +146,7 @@ async function main() {
       const pred = classify(sent)
       if (pred === v.truth) {
         score.correct++
-        log(`ok    ${v.name}  -> ${pred}`)
+        log(`ok    ${v.name}  -> ${pred}${r.viaVariant ? `   [matched via "${r.viaVariant}" -- OUR TABLE'S NAME IS WRONG]` : ''}`)
       } else {
         score.wrong++
         wrongs.push({ name: v.name, truth: v.truth, pred, sent })
@@ -115,7 +154,7 @@ async function main() {
         log(`        "${sent.slice(0, 200)}"`)
       }
     }
-    await new Promise(r => setTimeout(r, 250))
+    await new Promise(r => setTimeout(r, 1000))
   }
 
   log('')
