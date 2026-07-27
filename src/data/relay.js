@@ -180,6 +180,25 @@ async function fetchJournalismBrief() {
 
 export const [journalismBrief, { refetch: refetchBrief }] = createResource(fetchJournalismBrief)
 
+// --- Quality report: editorial-quality dashboard behind the single brief ---
+//
+// Real, live endpoint confirmed via a direct probe 2026-07-27: GET
+// /quality/report -> {ok, days, since, summary[], alerts[], alert_count,
+// unscored_types[], unscored_count, brief_type_calibration}. summary[] is
+// one row per (brief_type, sport) pair actually generated in the last
+// `days` days, with avg/min/max prose-quality score. alerts[] is the
+// subset currently scoring below their own brief_type's calibrated p25
+// (or flagged high_failure_rate) -- a real signal, not derived client-side.
+// A slow-moving aggregate (rolls up 7 days), so this polls far less often
+// than journalismBrief's single latest brief.
+async function fetchQualityReport() {
+  const res = await fetch(`${RELAY_BASE}/quality/report`)
+  if (!res.ok) throw new Error(`quality/report fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [qualityReport, { refetch: refetchQualityReport }] = createResource(fetchQualityReport)
+
 // --- Day comparison: first non-singleton resource in this repo ---
 //
 // Every resource above is a single, module-level global instance, driven

@@ -11,6 +11,7 @@ import { CrossCheck } from './components/CrossCheck'
 import { CreateRootDemo } from './components/CreateRootDemo'
 import { History } from './components/History'
 import { JournalismBrief } from './components/JournalismBrief'
+import { QualityReport } from './components/QualityReport'
 import { MultiDayStreak } from './components/MultiDayStreak'
 import { ErrorBoundaryDemo } from './components/ErrorBoundaryDemo'
 import { DrillDown } from './components/DrillDown'
@@ -262,6 +263,9 @@ export default function App() {
           <Show when={activeTab() === 'journalism'}>
             <SafeSection class={styles.journalismBrief}>
               <JournalismBrief />
+            </SafeSection>
+            <SafeSection class={styles.qualityReport}>
+              <QualityReport />
             </SafeSection>
           </Show>
 
