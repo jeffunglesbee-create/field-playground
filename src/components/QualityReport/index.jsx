@@ -21,13 +21,20 @@ function formatAlert(alert) {
   return alert === 'high_failure_rate' ? 'high failure rate' : 'below calibrated p25'
 }
 
+// summary rows use sport: null for the "all sports" bucket (e.g. slate);
+// alerts use sport: "all" for the same bucket. Normalize both to the same
+// key so an alert on a null-sport row actually gets matched and highlighted.
+function alertKey(briefType, sport) {
+  return `${briefType}|${sport ?? 'all'}`
+}
+
 export function QualityReport() {
   const data = () => (qualityReport.error ? undefined : qualityReport())
 
   const alertKeys = createMemo(() => {
     const d = data()
     if (!d?.alerts) return new Set()
-    return new Set(d.alerts.map(a => `${a.brief_type}|${a.sport}`))
+    return new Set(d.alerts.map(a => alertKey(a.brief_type, a.sport)))
   })
 
   const sortedSummary = createMemo(() => {
@@ -57,14 +64,14 @@ export function QualityReport() {
         <Show when={data()} fallback={<p class={styles.loading}>Loading…</p>}>
           <Show
             when={data().alert_count > 0}
-            fallback={<p class={styles.allClear}>✓ all brief types at or above their calibrated threshold</p>}
+            fallback={<p class={styles.allClear}>✓ no quality alerts</p>}
           >
-            <p class={styles.alertSummary}>{data().alert_count} brief type{data().alert_count === 1 ? '' : 's'} below threshold</p>
+            <p class={styles.alertSummary}>{data().alert_count} quality alert{data().alert_count === 1 ? '' : 's'}</p>
           </Show>
           <ul class={styles.rows}>
             <For each={sortedSummary()}>
               {(row) => (
-                <li class={`${styles.row} ${alertKeys().has(`${row.brief_type}|${row.sport}`) ? styles.rowAlert : ''}`}>
+                <li class={`${styles.row} ${alertKeys().has(alertKey(row.brief_type, row.sport)) ? styles.rowAlert : ''}`}>
                   <span class={styles.rowType}>{formatBriefType(row.brief_type)}</span>
                   <span class={styles.rowSport}>{row.sport ?? 'all sports'}</span>
                   <span class={styles.rowScore}>{row.avg_score}</span>
@@ -78,7 +85,7 @@ export function QualityReport() {
               <For each={data().alerts}>
                 {(a) => (
                   <li class={styles.alertRow}>
-                    <span class={styles.alertType}>{formatBriefType(a.brief_type)}</span>
+                    <span class={styles.alertType}>{formatBriefType(a.brief_type)} · {a.sport ?? 'all sports'}</span>
                     <span class={styles.alertDetail}>
                       {a.avg_score} vs {a.threshold} threshold ({formatAlert(a.alert)}, {a.threshold_source})
                     </span>
