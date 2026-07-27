@@ -127,6 +127,20 @@ async function main() {
   let deadSections = 0
   const deadSectionMessages = []
 
+  // Component-presence check.
+  //
+  // Gap this closes: `every_tab_renders_content` and `no_dead_sections`
+  // BOTH pass while one specific component silently renders nothing --
+  // its siblings still render, the tab looks healthy, no boundary fires,
+  // no console error. That is exactly the reported StandingRoom symptom,
+  // and the harness was blind to it.
+  //
+  // Labels, not component names: this asserts what a user actually sees.
+  // Kept deliberately short -- one representative label per top-level
+  // tab -- so it does not become the brittle thing it replaces.
+  const EXPECTED_LABELS = ['Desk', 'Standing Room', 'Stats', "Pick'em"]
+  const labelsSeen = new Set()
+
   for (let i = 0; i < tabCount; i++) {
     // Re-resolve each iteration: activating a tab remounts panels, so a
     // handle captured earlier can go stale.
@@ -166,6 +180,12 @@ async function main() {
     if (dead.length) {
       deadSections += dead.length
       for (const m of dead) if (!deadSectionMessages.includes(m)) deadSectionMessages.push(m)
+    }
+
+    // Record which expected labels are visible in THIS tab.
+    const fullText = await page.evaluate(() => document.body.innerText)
+    for (const lbl of EXPECTED_LABELS) {
+      if (fullText.includes(lbl)) labelsSeen.add(lbl)
     }
 
     tabResults.push({
@@ -231,6 +251,18 @@ async function main() {
     deadSectionCount: deadSections,
     deadSectionMessages,
     note: 'a rendered Retry button means a section threw and its subtree was replaced',
+  })
+  // Named components must actually appear somewhere. Catches the silent
+  // case: renders nothing, throws nothing, logs nothing.
+  const missingLabels = EXPECTED_LABELS.filter(l => !labelsSeen.has(l))
+  manifest.expectedLabels = EXPECTED_LABELS
+  manifest.labelsSeen = [...labelsSeen]
+  manifest.missingLabels = missingLabels
+  manifest.checks.push({
+    name: 'expected_components_rendered',
+    pass: missingLabels.length === 0,
+    missingLabels,
+    note: 'a component can render nothing while its tab and siblings look healthy',
   })
   // A hard throw at module scope means nothing else is trustworthy.
   manifest.checks.push({
