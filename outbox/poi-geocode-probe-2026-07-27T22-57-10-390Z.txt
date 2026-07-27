@@ -1,0 +1,72 @@
+probe_at: 2026-07-27T22:57:10.390Z
+threshold: 0.02 deg (~2km) from production's hand-verified coords
+round 5: adds Nominatim as a third free source (nominatim.openstreetmap.org, distinct infra from Overpass, extratags roof lookup)
+round 6: Nominatim results now cached (outbox/poi-geocode-cache.json, 30-day TTL) per its usage policy's caching requirement
+round 7: adds Photon as a fourth free source (photon.komoot.io, OSM-backed but distinct infra, chat's own original pick for fuzzy name matching), also cached
+attribution: Nominatim + Photon results (c) OpenStreetMap contributors, ODbL -- https://www.openstreetmap.org/copyright
+
+--- Comerica Park  (truth 42.339, -83.0485 | open)
+    wikidata: 42.3392, -83.0486  delta 0.0002  MATCH  | roof: (none)  [fast]
+    overpass: 42.3392, -83.0489  delta 0.0005  MATCH  | roof tag: (none)
+    nominatim: 42.3392, -83.0489  delta 0.0004  MATCH  | roof tag: (none)  [?/stadium]  (cached)
+    photon: 42.3392, -83.0489  delta 0.0004  MATCH  | roof tag: (none)  [leisure/stadium]  (cached)
+--- Citizens Bank Park  (truth 39.9061, -75.1665 | open)
+    wikidata: 39.9058, -75.1667  delta 0.0003  MATCH  | roof: (none)  [fast]
+    overpass: MISS (HTTP 504)
+    nominatim: 39.9059, -75.1665  delta 0.0002  MATCH  | roof tag: (none)  [?/stadium]  (cached)
+    photon: 39.9059, -75.1665  delta 0.0002  MATCH  | roof tag: (none)  [leisure/stadium]  (cached)
+--- Globe Life Field  (truth 32.7473, -97.0847 | retractable)
+    wikidata: 32.7474, -97.0842  delta 0.0005  MATCH  | roof: (none)  [fast]
+    overpass: MISS (no match)
+    nominatim: 32.7476, -97.0841  delta 0.0007  MATCH  | roof tag: (none)  [?/stadium]  (cached)
+    photon: 32.7476, -97.0841  delta 0.0007  MATCH  | roof tag: (none)  [leisure/stadium]  (cached)
+--- Tropicana Field  (truth 27.7682, -82.6534 | dome)
+    wikidata: 27.7683, -82.6533  delta 0.0001  MATCH  | roof: (none)  [fast]
+    overpass: 27.7681, -82.6533  delta 0.0001  MATCH  | roof tag: dome
+    nominatim: 27.7681, -82.6533  delta 0.0002  MATCH  | roof tag: dome  [?/stadium]  (cached)
+    photon: 27.7681, -82.6533  delta 0.0002  MATCH  | roof tag: (none)  [leisure/stadium]  (cached)
+--- Fenway Park  (truth 42.3467, -71.0972 | open)
+    wikidata: 42.3464, -71.0975  delta 0.0004  MATCH  | roof: (none)  [fast]
+    overpass: 42.3463, -71.0971  delta 0.0004  MATCH  | roof tag: (none)
+    nominatim: 42.3465, -71.0971  delta 0.0003  MATCH  | roof tag: (none)  [?/music_venue]  (cached)
+    photon: 42.3465, -71.0971  delta 0.0003  MATCH  | roof tag: (none)  [leisure/stadium]  (cached)
+--- Oracle Park  (truth 37.7786, -122.3893 | open)
+    wikidata: 37.7783, -122.3894  delta 0.0003  MATCH  | roof: (none)  [fast]
+    overpass: MISS (HTTP 429)
+    nominatim: 37.7786, -122.3895  delta 0.0002  MATCH  | roof tag: (none)  [?/stadium]  (cached)
+    photon: 37.7786, -122.3895  delta 0.0002  MATCH  | roof tag: (none)  [leisure/stadium]  (cached)
+--- loanDepot park  (truth 25.7781, -80.2197 | retractable)
+    wikidata: 25.7781, -80.2197  delta 0.0000  MATCH  | roof: (none)  [fast]
+    overpass: MISS (HTTP 504)
+    nominatim: 25.7781, -80.2196  delta 0.0001  MATCH  | roof tag: (none)  [?/stadium]  (cached)
+    photon: 25.7781, -80.2196  delta 0.0001  MATCH  | roof tag: (none)  [leisure/stadium]  (cached)
+--- Yankee Stadium  (truth 40.8296, -73.9262 | open)
+    wikidata: 40.8269, -73.9281  delta 0.0032  MATCH  | roof: (none)  [fast]
+    overpass: MISS (HTTP 504)
+    nominatim: 40.8296, -73.9265  delta 0.0003  MATCH  | roof tag: (none)  [?/stadium]  (cached)
+    photon: 40.8296, -73.9265  delta 0.0003  MATCH  | roof tag: (none)  [leisure/stadium]  (cached)
+
+RESULT  wikidata 8/8   overpass 3/8   nominatim 8/8   photon 8/8
+cache hits:  nominatim 8/8   photon 8/8
+roof info returned:  wikidata 0/8   overpass 1/8   nominatim 1/8   photon 0/8
+baseline: Open-Meteo geocoding 1/8 -- a populated-places index, not a POI index.
+
+--- ROUND 4: inverted single-query lookup (chat's reframe, side-by-side vs. the per-venue lookup above) ---
+type QID Q1076486 label: "sports venue" -- read this before trusting anything below; if it doesn't say something like "baseball venue" the rest of this section queried the wrong type
+single query: FAILED (SyntaxError: Expected ',' or '}' after property value in JSO)
+
+--- ROUND 8: raw, unfiltered tag dump for retractable-roof venues -- is roof data available under a key none of the rounds above checked for? ---
+--- Globe Life Field ---
+    overpass raw tags: FAILED (no match)
+    nominatim extratags: {"email":"info@texasrangers.com","phone":"+1-817-533-1972","sport":"baseball","height":"84","website":"https://globelifefield.com/","building":"yes","capacity":"40300","operator":"Texas Rangers","wikidata":"Q24284037","wikipedia":"en:Globe Life Field","wheelchair":"yes","opening_hours":"Mo-Fr 09:00-17:00","contact:twitter":"globelifefield","internet_access":"wlan","contact:facebook":"GlobeLifeField","contact:instagram":"globelifefield"}
+--- loanDepot park ---
+    overpass raw tags: FAILED (no match)
+    nominatim extratags: {"sport":"baseball","height":"78.9","building":"yes","capacity":"36,742","wikidata":"Q1368138","wikipedia":"en:LoanDepot Park"}
+
+Read the raw tag dumps above by hand: if no key anywhere in them encodes
+retractability (movable/operable/convertible roof, not just shape), that is
+real evidence this is an OSM data-completeness gap for these two venues
+specifically, not a wrong-key-guessed bug in this probe -- roof:shape=* is a
+~30-value catalogue of GEOMETRIC shapes (dome, gabled, hipped, flat, ...) per
+OSM's own wiki, with no documented value for "retractable" as a mechanical
+property, which is a plausible root cause independent of source or query.
