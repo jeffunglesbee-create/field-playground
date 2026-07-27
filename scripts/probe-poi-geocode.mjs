@@ -238,6 +238,61 @@ async function nominatimCached(name) {
   return result
 }
 
+// ROUND 7 ADDITION: a fourth free source. Photon (photon.komoot.io) is
+// built on the same underlying OSM data as Overpass/Nominatim (an
+// Elasticsearch index over it) but is a genuinely different piece of
+// software with its own infra, and was chat's own original suggestion
+// (first message in this whole thread) for better fuzzy/typo-tolerant
+// name matching than Nominatim -- "Globe Life Field" vs "Globe Life
+// Park." So this is primarily a test of MATCHING reliability under messy
+// names, not a new source of roof data: Photon's `extra` tags field is
+// only populated if the server operator configured `-extra-tags` at
+// index-build time (confirmed via Photon's own docs, not assumed) --
+// whether komoot's public instance did that for roof:shape is unknown
+// until actually queried, so this checks for it defensively rather than
+// expecting it.
+//
+// No published hard rate limit from komoot ("reasonable use... extensive
+// usage will be throttled or banned"), so this follows the same
+// convention the community-maintained R client for this exact public
+// instance defaults to: 1 request/second. No key required. Note the
+// coordinate order in Photon's GeoJSON response is [lon, lat], the
+// opposite of Nominatim's lat/lon fields -- easy to get backwards.
+let lastPhotonAt = 0
+async function photon(name) {
+  const waitMs = Math.max(0, 1100 - (Date.now() - lastPhotonAt))
+  if (waitMs > 0) await new Promise(r => setTimeout(r, waitMs))
+  lastPhotonAt = Date.now()
+
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(name)}&limit=1`
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) return { err: `HTTP ${res.status}` }
+  const j = await res.json()
+  const feat = j?.features?.[0]
+  if (!feat) return { err: 'no match' }
+  const coords = feat.geometry?.coordinates
+  if (!Array.isArray(coords) || coords.length < 2) return { err: 'unparseable coord' }
+  const [lon, lat] = coords
+  const props = feat.properties ?? {}
+  const extra = props.extra ?? {}
+  const roof = extra['roof:shape'] ?? extra['building:roof'] ?? extra.roof ?? null
+  return { lat, lon, roof, osmKey: props.osm_key ?? null, osmValue: props.osm_value ?? null }
+}
+
+async function photonCached(name) {
+  const key = `photon:${name}`
+  const hit = cache[key]
+  if (hit && Date.now() - hit.cachedAt < CACHE_TTL_MS) {
+    return { ...hit.result, fromCache: true }
+  }
+  const result = await photon(name)
+  if (!result.err) {
+    cache[key] = { result, cachedAt: Date.now() }
+    saveCache(cache)
+  }
+  return result
+}
+
 // ROUND 4 ADDITION: chat's reframe of the whole approach -- round 3's
 // two-tier fix (above) solved the immediate reliability problem (0/8 ->
 // 8/8) but is still fundamentally a LOOKUP: one Wikidata query per venue.
@@ -329,9 +384,10 @@ async function main() {
   log(`threshold: ${OK} deg (~2km) from production's hand-verified coords`)
   log(`round 5: adds Nominatim as a third free source (nominatim.openstreetmap.org, distinct infra from Overpass, extratags roof lookup)`)
   log(`round 6: Nominatim results now cached (outbox/poi-geocode-cache.json, 30-day TTL) per its usage policy's caching requirement`)
-  log(`attribution: Nominatim results (c) OpenStreetMap contributors, ODbL -- https://www.openstreetmap.org/copyright`)
+  log(`round 7: adds Photon as a fourth free source (photon.komoot.io, OSM-backed but distinct infra, chat's own original pick for fuzzy name matching), also cached`)
+  log(`attribution: Nominatim + Photon results (c) OpenStreetMap contributors, ODbL -- https://www.openstreetmap.org/copyright`)
   log('')
-  const score = { wikidata: 0, overpass: 0, nominatim: 0, total: 0, roofW: 0, roofO: 0, roofN: 0, nominatimCacheHits: 0 }
+  const score = { wikidata: 0, overpass: 0, nominatim: 0, photon: 0, total: 0, roofW: 0, roofO: 0, roofN: 0, roofP: 0, nominatimCacheHits: 0, photonCacheHits: 0 }
 
   for (const [name, [tlat, tlon, roof]] of Object.entries(TRUTH)) {
     score.total++
@@ -371,12 +427,25 @@ async function main() {
       log(`    nominatim: ${n.lat.toFixed(4)}, ${n.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${n.roof ? `  | roof tag: ${n.roof}` : '  | roof tag: (none)'}  [${n.osmClass ?? '?'}/${n.osmType ?? '?'}]${n.fromCache ? '  (cached)' : ''}`)
     }
 
+    let p
+    try { p = await photonCached(name) } catch (e) { p = { err: String(e).slice(0, 60) } }
+    if (p.err) log(`    photon: MISS (${p.err})`)
+    else {
+      const d = dist(p.lat, p.lon, tlat, tlon)
+      const pass = d <= OK
+      if (pass) score.photon++
+      if (p.roof) score.roofP++
+      if (p.fromCache) score.photonCacheHits++
+      log(`    photon: ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${p.roof ? `  | roof tag: ${p.roof}` : '  | roof tag: (none)'}  [${p.osmKey ?? '?'}/${p.osmValue ?? '?'}]${p.fromCache ? '  (cached)' : ''}`)
+    }
+
     await new Promise(r => setTimeout(r, 800))
   }
 
   log('')
-  log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}   nominatim ${score.nominatim}/${score.total}  (${score.nominatimCacheHits}/${score.total} nominatim results served from cache)`)
-  log(`roof info returned:  wikidata ${score.roofW}/${score.total}   overpass ${score.roofO}/${score.total}   nominatim ${score.roofN}/${score.total}`)
+  log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}   nominatim ${score.nominatim}/${score.total}   photon ${score.photon}/${score.total}`)
+  log(`cache hits:  nominatim ${score.nominatimCacheHits}/${score.total}   photon ${score.photonCacheHits}/${score.total}`)
+  log(`roof info returned:  wikidata ${score.roofW}/${score.total}   overpass ${score.roofO}/${score.total}   nominatim ${score.roofN}/${score.total}   photon ${score.roofP}/${score.total}`)
   log(`baseline: Open-Meteo geocoding 1/8 -- a populated-places index, not a POI index.`)
 
   log('')
