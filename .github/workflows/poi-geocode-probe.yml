@@ -52,5 +52,23 @@ jobs:
           git config user.name "poi-probe-bot"
           git config user.email "actions@github.com"
           git add outbox/
-          git diff --cached --quiet || git commit -m "chore: poi geocode probe result [skip ci]"
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: poi geocode probe result [skip ci]"
+          # This run's own probe results already sit in this commit's
+          # working tree, independent of anything origin/main gained
+          # meanwhile (this session dispatched this exact workflow well
+          # over a dozen times in under two hours today, making a
+          # same-minute push race a real, observed failure mode -- not a
+          # hypothetical). fetch + rebase replays this commit on top of
+          # whatever's new on main and retries, same manual recovery used
+          # throughout this session for the identical race on direct
+          # pushes; a few short retries cover the case where two runs
+          # race each other back to back.
+          for i in 1 2 3 4; do
+            git push && exit 0
+            echo "push rejected (attempt $i), fetching + rebasing"
+            git fetch origin main
+            git rebase origin/main
+            sleep $((i * 2))
+          done
           git push
