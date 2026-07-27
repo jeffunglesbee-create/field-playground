@@ -46,6 +46,7 @@ import { ReactivePerfPanel } from './components/ReactivePerfPanel'
 import { Multiview } from './components/Multiview'
 import { ReorderCost } from './components/ReorderCost'
 import { ControlGroup } from './components/ControlGroup'
+import { ScaleTest } from './components/ControlGroup/ScaleTest'
 import { TeamAffinitySync } from './components/TeamAffinitySync'
 import { WeatherPoll } from './components/WeatherPoll'
 import { VenueGeocodeRace } from './components/VenueGeocodeRace'
@@ -90,7 +91,7 @@ const TOP_TABS = [
   { key: 'journalism', label: 'Journalism', count: 1 },
   { key: 'social', label: 'Social', count: 3 },
   { key: 'system', label: 'System', count: 2 },
-  { key: 'lab', label: 'Lab', count: 16 },
+  { key: 'lab', label: 'Lab', count: 17 },
 ]
 
 function sectionFallback(err, reset) {
@@ -314,6 +315,9 @@ export default function App() {
           <Show when={activeTab() === 'lab'}>
             <SafeSection class={styles.controlGroup}>
               <ControlGroup />
+            </SafeSection>
+            <SafeSection class={styles.scaleTest}>
+              <ScaleTest />
             </SafeSection>
             <SafeSection class={styles.suspenseDemo}>
               <SuspenseDemo />
