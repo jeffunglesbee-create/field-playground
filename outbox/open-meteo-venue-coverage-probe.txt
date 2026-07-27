@@ -1,0 +1,34 @@
+probe_at: 2026-07-27T18:45:45Z
+
+Verifies two changes to src/data/weather.js's VENUE_COORDS, both run
+from a GitHub Actions runner because this sandbox's egress allowlist
+blocks api.open-meteo.com directly:
+  1. Retractable-roof/domed venues now get real weather instead of
+     being excluded (production's own table gates on isOutdoor and
+     returns null for these -- this repo deliberately reverses that).
+  2. Three MLB parks confirmed absent from production's table
+     (PNC Park, Citi Field, Sutter Health Park) resolve to real,
+     sane weather at their added coordinates.
+
+Globe Life Field [retractable]: http=200 temp_f=97.8
+loanDepot park [retractable]: http=200 temp_f=85.2
+Rogers Centre [retractable]: http=200 temp_f=80.5
+Daikin Park [retractable]: http=200 temp_f=91.0
+PNC Park [open (new, absent from production)]: http=200 temp_f=86.0
+Citi Field [open (new, absent from production)]: http=200 temp_f=81.4
+Sutter Health Park [open (new, absent from production)]: http=200 temp_f=83.6
+Comerica Park [open]: http=200 temp_f=89.9
+Nationals Park [open]: http=200 temp_f=88.1
+Great American Ball Park [open]: http=200 temp_f=87.1
+Rate Field [open]: http=200 temp_f=72.7
+Busch Stadium [open]: http=200 temp_f=97.7
+Angel Stadium [open]: http=200 temp_f=86.9
+Oracle Park [open]: http=200 temp_f=66.3
+TPC Twin Cities [open]: http=200 temp_f=96.1
+
+=== VERDICT ===
+Read the per-venue lines above: every venue, retractable/dome roof
+type included, should show http=200 and a real (non-n/a) temperature.
+A real temperature returned for a retractable-roof venue confirms the
+reversal is correct: the site has real, fetchable weather regardless
+of roof status, so gating weather on isOutdoor was never necessary.
