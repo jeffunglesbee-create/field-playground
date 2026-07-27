@@ -58,9 +58,29 @@ const RECONCILE_LOC = 39
 // moved. characterData/attributes mutations patch an existing node in
 // place -- the cheapest kind, no layout consequence beyond the changed
 // node itself.
+//
+// Two passes over the batch, not one: a single reposition (the SAME
+// node removed from its old spot and reinserted at a new one) can
+// arrive as separate remove/add records in EITHER order -- browsers
+// don't guarantee add-before-remove for what is logically one move.
+// A one-pass classifier that judges each removedNodes entry against
+// only the addedNodes seen SO FAR would misclassify a move as
+// removed+created whenever the remove record happens to come first.
+// Registering every addedNodes entry across the WHOLE batch before
+// judging any removal closes that ordering dependency. Also: knownNodes
+// is never deleted on removal. It's a WeakSet, so a truly-gone node is
+// still garbage collected once nothing else references it (this
+// module's own renderAll always creates a fresh element for a
+// reappearing game id rather than resurrecting a removed one) --
+// deleting here bought nothing and was the direct cause of the same
+// remove-before-add misclassification for legitimate same-batch moves.
 function classifyMutations(records, knownNodes) {
   let created = 0, moved = 0, removed = 0, patched = 0
   const addedThisBatch = new Set()
+  for (const record of records) {
+    if (record.type !== 'childList') continue
+    for (const node of record.addedNodes) addedThisBatch.add(node)
+  }
   for (const record of records) {
     if (record.type === 'characterData' || record.type === 'attributes') {
       patched++
@@ -68,18 +88,33 @@ function classifyMutations(records, knownNodes) {
     }
     if (record.type !== 'childList') continue
     for (const node of record.addedNodes) {
-      addedThisBatch.add(node)
       if (knownNodes.has(node)) moved++
       else { created++; knownNodes.add(node) }
     }
     for (const node of record.removedNodes) {
-      if (!addedThisBatch.has(node)) {
-        removed++
-        knownNodes.delete(node)
-      }
+      if (!addedThisBatch.has(node)) removed++
     }
   }
   return { created, moved, removed, patched }
+}
+
+// Seeds knownNodes from whatever a container already holds at the
+// moment its observer is set up, rather than relying on every existing
+// descendant having been freshly created (and thus already registered
+// via classifyMutations' own "created" branch) after observation
+// started. Depending on exact onMount/effect ordering between this
+// component and its two children, the initial render's nodes could in
+// principle already exist before observe() is called -- in which case
+// their creation was never delivered as a mutation record at all, and
+// without this seed they'd stay permanently unregistered, so their
+// first real reposition would misclassify as "created" instead of
+// "moved." Walking the subtree once up front removes the dependency on
+// that ordering entirely. Includes text nodes (SHOW_ALL, not just
+// elements): score text changes are text-node level, not element level.
+function seedKnownNodes(container, knownNodes) {
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ALL)
+  let node
+  while ((node = walker.nextNode())) knownNodes.add(node)
 }
 
 // A real result this classifier surfaced, confirmed live, worth stating
@@ -139,6 +174,7 @@ export function ControlGroup() {
     createEffect(() => {
       const vc = vanillaContainer()
       if (!vc) return
+      seedKnownNodes(vc, vanillaKnownNodes)
       const observer = new MutationObserver((records) => {
         setVanillaLastKinds(classifyMutations(records, vanillaKnownNodes))
         setVanillaTotal((t) => t + records.length)
@@ -150,6 +186,7 @@ export function ControlGroup() {
     createEffect(() => {
       const rc = reconcileContainer()
       if (!rc) return
+      seedKnownNodes(rc, reconcileKnownNodes)
       const observer = new MutationObserver((records) => {
         setReconcileLastKinds(classifyMutations(records, reconcileKnownNodes))
         setReconcileTotal((t) => t + records.length)
