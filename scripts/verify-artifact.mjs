@@ -183,9 +183,17 @@ async function main() {
     }
 
     // Record which expected labels are visible in THIS tab.
-    const fullText = await page.evaluate(() => document.body.innerText)
+    //
+    // CASE-INSENSITIVE, deliberately. innerText returns RENDERED text,
+    // and every section label carries `text-transform: uppercase` -- so
+    // the DOM string "Pick'em" reads back as "PICK'EM" and a literal
+    // match silently fails. That produced a false negative on this
+    // check's very first run. The labels that DID pass were matching
+    // incidentally elsewhere on the page (tab buttons, prose), not
+    // because the check worked.
+    const fullText = (await page.evaluate(() => document.body.innerText)).toLowerCase()
     for (const lbl of EXPECTED_LABELS) {
-      if (fullText.includes(lbl)) labelsSeen.add(lbl)
+      if (fullText.includes(lbl.toLowerCase())) labelsSeen.add(lbl)
     }
 
     tabResults.push({
