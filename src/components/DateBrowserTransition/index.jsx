@@ -42,7 +42,23 @@ function shiftDate(dateStr, delta) {
 }
 
 function HeadlineText(props) {
-  return <p class={styles.headline}>{props.data()}</p>
+  // A plain `if` here would only check .error ONCE, at this component
+  // function's single initial call -- SolidJS components don't re-run on
+  // reactive updates, only their returned JSX does. <Show> is what makes
+  // the check reactive: it re-evaluates `when` on every update and swaps
+  // its rendered branch accordingly, without ever touching props.data()
+  // itself in the errored branch. That matters here because once the
+  // resource settles into an error, reading props.data() directly would
+  // throw and escape past Suspense (which only ever catches PENDING
+  // reads, never rejected ones) straight to the outer SafeSection
+  // boundary -- confirmed under the artifact's simulated total-fetch-
+  // failure. The un-guarded read in the true branch is what lets Suspense
+  // still catch it while genuinely pending.
+  return (
+    <Show when={!props.data.error}>
+      <p class={styles.headline}>{props.data()}</p>
+    </Show>
+  )
 }
 
 export function DateBrowserTransition() {

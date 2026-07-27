@@ -201,7 +201,10 @@ function MultiDayStreak() {
   const teamAppearances = createMemo(() => {
     const counts = {}
     for (const r of resources) {
-      const board = r.data()
+      // Reads each resource only when it's NOT in error state -- calling
+      // the accessor while errored throws (confirmed under the artifact's
+      // simulated total-fetch-failure), same posture as StandingRoom.
+      const board = r.data.error ? undefined : r.data()
       if (!board?.hot) continue
       for (const s of board.hot) {
         counts[s.team] = (counts[s.team] || 0) + 1

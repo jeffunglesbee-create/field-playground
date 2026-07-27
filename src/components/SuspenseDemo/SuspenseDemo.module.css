@@ -56,3 +56,8 @@
   color: var(--field-text-primary);
   padding: 2px 0;
 }
+
+.error {
+  font-size: 11px;
+  color: #c44;
+}

@@ -29,7 +29,13 @@ const RELAY_BASE = import.meta.env.DEV ? '' : 'https://field-relay-nba.jeffungle
 // re-renders of the parent.
 function useTopPickId() {
   return createMemo(() => {
-    const d = ambientData()
+    // Reads the resource only when it's NOT in error state -- calling the
+    // accessor while errored throws, and createMemo evaluates EAGERLY at
+    // creation (confirmed under the artifact's simulated total-fetch-
+    // failure), so this would throw during DrillDown()'s own render, before
+    // the careful ambientData.error guards further down in the JSX ever get
+    // a chance to run. Same posture as StandingRoom/CompareToRelay.
+    const d = ambientData.error ? undefined : ambientData()
     const pick = d?.pick?.ranked?.[0]
     if (!pick?.game_id) return undefined
     // game_id format from newspaper: "espn:401816251"
@@ -39,7 +45,7 @@ function useTopPickId() {
 }
 
 function useTopPick() {
-  return createMemo(() => ambientData()?.pick?.ranked?.[0] ?? null)
+  return createMemo(() => (ambientData.error ? undefined : ambientData())?.pick?.ranked?.[0] ?? null)
 }
 
 async function fetchGameContext(espnId) {
