@@ -42,7 +42,7 @@ export function WeatherPoll() {
         <Show when={weatherData()} fallback={<p class={styles.empty}>Loading…</p>}>
           <Show
             when={weatherData().venues.length > 0}
-            fallback={<p class={styles.empty}>No outdoor venues with known coordinates in the selected date's slate.</p>}
+            fallback={<p class={styles.empty}>No venues with known coordinates in the selected date's slate.</p>}
           >
             <div class={styles.venueList}>
               <For each={weatherData().venues}>
@@ -51,6 +51,11 @@ export function WeatherPoll() {
                     <span class={styles.venueName}>{v.venue}</span>
                     <span class={styles.venueTemp}>{v.tempF}°F</span>
                     <span class={styles.venueCondition}>{v.condition}</span>
+                    <Show when={v.roofType !== 'open'}>
+                      <span class={styles.roofNote} title="Weather is at the venue's real location -- the roof may still be closed for the game itself">
+                        {v.roofType === 'dome' ? 'dome' : 'retractable roof'}
+                      </span>
+                    </Show>
                   </div>
                 )}
               </For>

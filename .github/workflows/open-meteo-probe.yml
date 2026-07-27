@@ -110,6 +110,109 @@ jobs:
           echo "If not, the prediction holds and a table stays required for the" >> "$OUT"
           echo "outdoor/indoor flag even if geocoding replaces the coordinate lookup." >> "$OUT"
 
+      - name: Probe expanded VENUE_COORDS coverage (2026-07-27 retractable-roof reversal)
+        timeout-minutes: 3
+        continue-on-error: true
+        run: |
+          OUT=outbox/open-meteo-venue-coverage-probe.txt
+          echo "probe_at: $(date -u +%FT%TZ)" > "$OUT"
+          echo "" >> "$OUT"
+          echo "Verifies two changes to src/data/weather.js's VENUE_COORDS, both run" >> "$OUT"
+          echo "from a GitHub Actions runner because this sandbox's egress allowlist" >> "$OUT"
+          echo "blocks api.open-meteo.com directly:" >> "$OUT"
+          echo "  1. Retractable-roof/domed venues now get real weather instead of" >> "$OUT"
+          echo "     being excluded (production's own table gates on isOutdoor and" >> "$OUT"
+          echo "     returns null for these -- this repo deliberately reverses that)." >> "$OUT"
+          echo "  2. Three MLB parks confirmed absent from production's table" >> "$OUT"
+          echo "     (PNC Park, Citi Field, Sutter Health Park) resolve to real," >> "$OUT"
+          echo "     sane weather at their added coordinates." >> "$OUT"
+          echo "" >> "$OUT"
+          echo "Coordinates below are read directly out of src/data/weather.js's" >> "$OUT"
+          echo "VENUE_COORDS at run time (not a hand-copied fixture) so this probe" >> "$OUT"
+          echo "can't silently drift from the table it's meant to verify." >> "$OUT"
+          echo "" >> "$OUT"
+
+          node -e '
+          const fs = require("fs");
+          const src = fs.readFileSync("src/data/weather.js", "utf8");
+          const marker = "export const VENUE_COORDS = {";
+          const start = src.indexOf(marker);
+          if (start === -1) throw new Error("VENUE_COORDS not found in src/data/weather.js");
+          const objStart = start + marker.length - 1;
+          let depth = 0, i = objStart;
+          for (; i < src.length; i++) {
+            if (src[i] === "{") depth++;
+            else if (src[i] === "}") { depth--; if (depth === 0) break; }
+          }
+          const objText = src.slice(objStart, i + 1);
+          const VENUE_COORDS = Function("return (" + objText + ")")();
+          fs.writeFileSync("/tmp/venue_coords.json", JSON.stringify(VENUE_COORDS));
+          '
+
+          # Fixed subset to probe, by NAME only -- coordinates are looked up
+          # from /tmp/venue_coords.json (the canonical table, parsed above),
+          # never duplicated here. Covers all three roofTypes, including
+          # Tropicana Field (the one true dome in the table -- retractable
+          # roofs alone don't exercise the 'dome' branch), the three MLB
+          # parks confirmed absent from production's table, and a handful
+          # of today's real slate for a broader sanity check. Not all ~90+
+          # entries -- this is a spot-check, not exhaustive coverage.
+          VENUE_NAMES=(
+            "Globe Life Field"
+            "loanDepot park"
+            "Rogers Centre"
+            "Daikin Park"
+            "Tropicana Field"
+            "PNC Park"
+            "Citi Field"
+            "Sutter Health Park"
+            "Comerica Park"
+            "Nationals Park"
+            "Great American Ball Park"
+            "Rate Field"
+            "Busch Stadium"
+            "Angel Stadium"
+            "Oracle Park"
+            "TPC Twin Cities"
+          )
+
+          FAIL_COUNT=0
+          for NAME in "${VENUE_NAMES[@]}"; do
+            ENTRY=$(jq -c --arg n "$NAME" '.[$n] // empty' /tmp/venue_coords.json 2>/dev/null || echo "")
+            if [ -z "$ENTRY" ]; then
+              echo "$NAME: MISSING FROM VENUE_COORDS" >> "$OUT"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              continue
+            fi
+            LAT=$(echo "$ENTRY" | jq -r '.[0]')
+            LON=$(echo "$ENTRY" | jq -r '.[1]')
+            ROOF=$(echo "$ENTRY" | jq -r '.[2]')
+            URL="https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,precipitation,rain,snowfall,is_day,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto"
+            HTTP_CODE=$(curl -sS -o /tmp/venue.json -w "%{http_code}" "$URL" 2>/dev/null || echo "curl_failed")
+            TEMP=$(jq -r '.current.temperature_2m // "n/a"' /tmp/venue.json 2>/dev/null || echo "n/a")
+            echo "$NAME [$ROOF]: http=$HTTP_CODE temp_f=$TEMP" >> "$OUT"
+            if [ "$HTTP_CODE" != "200" ] || [ "$TEMP" = "n/a" ] || [ "$TEMP" = "null" ]; then
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+            fi
+          done
+
+          echo "" >> "$OUT"
+          echo "=== VERDICT ===" >> "$OUT"
+          if [ "$FAIL_COUNT" -eq 0 ]; then
+            echo "All ${#VENUE_NAMES[@]} venues resolved: http=200 and a real" >> "$OUT"
+            echo "temperature, roofType included, sourced straight from" >> "$OUT"
+            echo "src/data/weather.js. Confirms the retractable/dome-roof reversal" >> "$OUT"
+            echo "works: every site has real, fetchable weather regardless of roof" >> "$OUT"
+            echo "status, including Tropicana Field, the one true fixed dome." >> "$OUT"
+          else
+            echo "$FAIL_COUNT of ${#VENUE_NAMES[@]} venues FAILED -- see the lines" >> "$OUT"
+            echo "above marked MISSING, curl_failed, or a non-200/n-a result. This" >> "$OUT"
+            echo "step exits non-zero on any failure (visible in job annotations)" >> "$OUT"
+            echo "even though continue-on-error keeps the overall job green." >> "$OUT"
+          fi
+
+          exit "$FAIL_COUNT"
+
       - name: Commit probe result
         if: always()
         run: |

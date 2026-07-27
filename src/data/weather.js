@@ -13,68 +13,212 @@ import { deskStore } from './relay'
 // Open-Meteo directly; no relay/proxy route is needed.
 const OM_BASE = 'https://api.open-meteo.com/v1/forecast'
 
-// Coordinates for the venues this repo's mock slate actually uses
-// (vite.config.js's context() mock), corrected 2026-07-26 against
-// jubilant-bassoon's own src/utils/venues.js -- production's real,
-// hand-maintained VENUE_COORDS table, read directly via FIELD_Handoff
-// during the park-factor/ump-watch investigation (not the Drive docs
-// used for the original June 26 pass, which only ever confirmed
-// Citizens Bank Park and Globe Life Field's coordinates, not roof
-// status). Cross-checking that source against this file surfaced two
-// real defects, both fixed here, not worked around:
+// Ported 2026-07-27 from jubilant-bassoon's src/utils/venues.js
+// (production's own comprehensive, hand-maintained VENUE_COORDS table),
+// read directly via FIELD_Handoff -- not a fabricated list. Replaces the
+// 5-entry sample this file carried before, which only ever covered
+// whatever venues happened to be in one earlier day's mock/relay slate
+// and went to 0/13 hits the moment the real slate rotated to a
+// different day's games (confirmed live via VenueGeocodeRace). A small
+// hand-picked sample can't scale to a real, day-varying slate across 30
+// MLB parks plus MLS/EPL/AFL/golf; the comprehensive table can.
 //
-// 1. Globe Life Field was wrongly treated as outdoor. Production's own
-//    table files it under "MLB retractable-roof / dome -> false" --
-//    it's a closed dome, not a real weather venue. This file had no
-//    positive confirmation it was outdoor when it was added; it just
-//    was never excluded. Now removed, joining Footprint Center and
-//    Target Center (both indoor NBA arenas) as venues with no
-//    coordinate entry -- no entry means no weather fetch, which is the
-//    correct outcome for an indoor venue, whether arena or dome.
-// 2. America First Field, Red Bull Arena, and Dick's Sporting Goods
-//    Park were carrying approximate public-knowledge coordinates,
-//    unconfirmed against any FIELD-specific source. Dick's Sporting
-//    Goods Park's was off by roughly 0.2 degrees of longitude (~10+
-//    miles) -- enough to plausibly return a different local forecast.
-//    All three replaced with production's own confirmed values.
-//    Citizens Bank Park and Yankee Stadium already matched exactly, no
-//    change needed there.
+// Format: [lat, lon, roofType], roofType one of:
+//   'open'        -- no roof, ever. Always real outdoor conditions.
+//   'retractable' -- has an operable roof. Real weather at the site
+//                    either way; the roof decision itself is often MADE
+//                    based on that weather.
+//   'dome'        -- fully enclosed, no opening capability. Tropicana
+//                    Field is the one true example in this table --
+//                    every other "closed" MLB park below has a roof
+//                    that actually opens.
 //
-// FIELD production's real getVenueCoords/isOutdoorVenue use a
-// base-name fuzzy match (splitting each side on the first comma) purely
-// to reconcile production's own "Venue, City" key style against
-// bare venue names -- not a keyword-based indoor/outdoor classifier.
-// Not ported here: this repo's venue names already come through bare
-// (no city suffix) from vite.config.js's mock data, so the fuzzy match
-// would never have anything to reconcile -- it would be dead code
-// solving a naming mismatch this repo doesn't have.
+// This diverges from production's own table in two real ways, both
+// intentional, both noted here rather than silently ported wrong:
+//
+// 1. Production's table uses a flat isOutdoor true/false and treats
+//    false as "don't fetch weather here" (getVenueCoords returns null
+//    for any false entry). That's also what this file used to do for
+//    Globe Life Field specifically (see the removed comment this
+//    replaces). Reversed here: a retractable-roof or domed stadium
+//    still has a real physical location with real weather -- the roof
+//    affects what the GAME experiences, not whether weather data
+//    exists to show. Every venue with known coordinates now gets
+//    weather; roofType is separate, informational metadata (see
+//    WeatherPoll's roof note), not a gate.
+// 2. Production files loanDepot park under "MLB outdoor" (isOutdoor:
+//    true). That's wrong -- it's Marlins Park, a real retractable-roof
+//    stadium, same as Globe Life Field, Chase Field, etc. Filed under
+//    'retractable' here instead of ported as-is.
+//
+// Deliberately bare venue names (no "City" suffix), matching this
+// repo's existing convention: relay/mock venue names already come
+// through bare, so production's own base-name fuzzy match (splitting on
+// the first comma to reconcile "Venue, City" keys) would have nothing
+// to reconcile here -- not ported, it'd be dead code. Where production
+// carried both a bare and a "City"-suffixed key for the same venue,
+// only the bare one is kept. Two more real-world aliases added beyond
+// production's table, both venues that renamed after production's
+// table was last updated, both confirmed live in this app's own real
+// relay slate (2026-07-27's actual games, not the dev mock):
+//   - "Rate Field" (formerly Guaranteed Rate Field, White Sox, renamed
+//     2025) -- same physical park, both keys kept.
+//   - "Daikin Park" (formerly Minute Maid Park, Astros, renamed 2025)
+//     -- same physical park, both keys kept.
+// "TPC Twin Cities" also added: not in production's table at all (its
+// golf coverage curates majors/majors-adjacent stops; TPC Twin Cities
+// hosts the 3M Open, which isn't among them), but a real, public,
+// correctly-sourced course this repo's own real slate has repeatedly
+// included (see JournalismBrief/BriefArchive's 3M Open coverage
+// elsewhere in this app).
+//
+// Three MLB parks also added that are genuinely absent from production's
+// table (confirmed via FIELD_Handoff read_source against
+// jubilant-bassoon -- they only show up in unrelated seed SQL/doc files,
+// never in venues.js itself), each appearing in this app's real
+// 2026-07-27 slate: PNC Park (Pirates), Citi Field (Mets), Sutter Health
+// Park (Athletics' temporary home, West Sacramento -- open air, no roof).
 export const VENUE_COORDS = {
-  'Citizens Bank Park': [39.9061, -75.1665],
-  'Yankee Stadium': [40.8296, -73.9262],
-  'America First Field': [40.5830, -111.8932],
-  'Red Bull Arena': [40.7367, -74.1503],
-  "Dick's Sporting Goods Park": [39.8057, -104.8919],
+  // MLB, fixed open-air ───────────────────────────────────────────────
+  'Fenway Park':                  [42.3467, -71.0972,  'open'],
+  'Yankee Stadium':               [40.8296, -73.9262,  'open'],
+  'Coors Field':                  [39.7559, -104.9942, 'open'],
+  'Wrigley Field':                [41.9484, -87.6553,  'open'],
+  'Oracle Park':                  [37.7786, -122.3893, 'open'],
+  'Dodger Stadium':               [34.0739, -118.2400, 'open'],
+  'Busch Stadium':                [38.6226, -90.1928,  'open'],
+  'Nationals Park':               [38.8730, -77.0074,  'open'],
+  'Citizens Bank Park':           [39.9061, -75.1665,  'open'],
+  'Great American Ball Park':     [39.0979, -84.5069,  'open'],
+  'Kauffman Stadium':             [39.0517, -94.4803,  'open'],
+  'Comerica Park':                [42.3390, -83.0485,  'open'],
+  'Petco Park':                   [32.7076, -117.1570, 'open'],
+  'Oriole Park':                  [39.2838, -76.6218,  'open'],
+  'Guaranteed Rate Field':        [41.8300, -87.6339,  'open'],
+  'Rate Field':                   [41.8300, -87.6339,  'open'],
+  'Angels Stadium':               [33.8003, -117.8827, 'open'],
+  'Angel Stadium':                [33.8003, -117.8827, 'open'],
+  'Progressive Field':            [41.4962, -81.6852,  'open'],
+  'PNC Park':                     [40.4469, -80.0057,  'open'],
+  'Citi Field':                   [40.7571, -73.8458,  'open'],
+  'Sutter Health Park':           [38.5805, -121.5133, 'open'],
+  // MLB, retractable roof ─────────────────────────────────────────────
+  'Globe Life Field':             [32.7512, -97.0832,  'retractable'],
+  'Chase Field':                  [33.4453, -112.0667, 'retractable'],
+  'American Family Field':        [43.0284, -87.9712,  'retractable'],
+  'Minute Maid Park':             [29.7573, -95.3555,  'retractable'],
+  'Daikin Park':                  [29.7573, -95.3555,  'retractable'],
+  'T-Mobile Park':                [47.5914, -122.3325, 'retractable'],
+  'Rogers Centre':                [43.6414, -79.3894,  'retractable'],
+  "loanDepot park":               [25.7781, -80.2195,  'retractable'],
+  // MLB, fixed dome (no opening) ──────────────────────────────────────
+  'Tropicana Field':              [27.7682, -82.6534,  'dome'],
+  // MLS / soccer ──────────────────────────────────────────────────────
+  'Gillette Stadium':             [42.0909, -71.2643,  'open'],
+  'Red Bull Arena':               [40.7367, -74.1503,  'open'],
+  "Children's Mercy Park":        [39.1225, -94.8239,  'open'],
+  'CityPark':                     [38.6317, -90.2016,  'open'],
+  'America First Field':          [40.5830, -111.8932, 'open'],
+  'Snapdragon Stadium':           [32.7831, -117.1199, 'open'],
+  'Stade Saputo':                 [45.5640, -73.5518,  'open'],
+  'BMO Field':                    [43.6333, -79.4186,  'open'],
+  'Chase Stadium':                [26.1947, -80.1506,  'open'],
+  'Subaru Park':                  [39.8334, -75.3808,  'open'],
+  'Bank of America Stadium':      [35.2259, -80.8529,  'open'],
+  'Audi Field':                   [38.8695, -77.0125,  'open'],
+  'Lower.com Field':              [39.9690, -83.0154,  'open'],
+  'TQL Stadium':                  [39.1051, -84.5182,  'open'],
+  'Inter&Co Stadium':             [28.5415, -81.3893,  'open'],
+  'GEODIS Park':                  [36.1307, -86.7665,  'open'],
+  'Soldier Field':                [41.8623, -87.6167,  'open'],
+  'Allianz Field':                [44.9530, -93.1649,  'open'],
+  'BMO Stadium':                  [34.0130, -118.2845, 'open'],
+  'Dignity Health Sports Park':   [33.8643, -118.2611, 'open'],
+  'Lumen Field':                  [47.5952, -122.3316, 'open'],
+  'Providence Park':              [45.5215, -122.6917, 'open'],
+  'PayPal Park':                  [37.3519, -121.9254, 'open'],
+  "Dick's Sporting Goods Park":   [39.8057, -104.8919, 'open'],
+  'Q2 Stadium':                   [30.3872, -97.7180,  'open'],
+  'Shell Energy Stadium':         [29.7523, -95.3511,  'open'],
+  'Toyota Stadium':               [33.1545, -96.8353,  'open'],
+  'Mercedes-Benz Stadium':        [33.7555, -84.4010,  'retractable'],
+  'BC Place':                     [49.2768, -123.1118, 'retractable'],
+  // EPL / European soccer ─────────────────────────────────────────────
+  'Anfield':                      [53.4308, -2.9608,   'open'],
+  'Etihad Stadium':               [53.4831, -2.2004,   'open'],
+  'Craven Cottage':               [51.4749, -0.2218,   'open'],
+  'Amex Stadium':                 [50.8619, -0.0831,   'open'],
+  'Stadium of Light':             [54.9147, -1.3882,   'open'],
+  'Villa Park':                   [52.5090, -1.8847,   'open'],
+  'Turf Moor':                    [53.7889, -2.2302,   'open'],
+  'Selhurst Park':                [51.3983, -0.0855,   'open'],
+  'City Ground':                  [52.9401, -1.1326,   'open'],
+  'Riverside Stadium':            [54.5785, -1.2170,   'open'],
+  "St Mary's Stadium":            [50.9058, -1.3910,   'open'],
+  'MKM Stadium':                  [53.7463, -0.3674,   'open'],
+  'The Den':                      [51.4851, -0.0509,   'open'],
+  'London Stadium':               [51.5386, -0.0163,   'open'],
+  'Allianz Arena':                [48.2188, 11.6247,   'open'],
+  'Europa-Park Stadion':          [48.0221, 7.8275,    'open'],
+  'Stade de la Meinau':           [48.5601, 7.7534,    'open'],
+  // AFL ────────────────────────────────────────────────────────────────
+  'MCG':                          [-37.8200, 144.9834, 'open'],
+  'ENGIE Stadium':                [-33.8472, 151.0635, 'open'],
+  'TIO Stadium':                  [-12.4170, 130.8694, 'open'],
+  'People First Stadium':         [-28.0056, 153.4028, 'open'],
+  'Marvel Stadium':               [-37.8169, 144.9479, 'retractable'],
+  // Tennis / cricket ──────────────────────────────────────────────────
+  'Foro Italico':                 [41.9339, 12.4672,   'open'],
+  'Rajiv Gandhi International Stadium': [17.4046, 78.5480, 'open'],
+  'Sawai Mansingh Stadium':       [26.8952, 75.8068,   'open'],
+  // Golf ───────────────────────────────────────────────────────────────
+  'Quail Hollow Club':            [35.0527, -80.8328,  'open'],
+  'Aronimink Golf Club':          [39.9654, -75.4165,  'open'],
+  'Augusta National Golf Club':   [33.5024, -82.0238,  'open'],
+  'Pinehurst No. 2':              [35.1946, -79.4657,  'open'],
+  'Pebble Beach Golf Links':      [36.5683, -121.9478, 'open'],
+  'TPC Sawgrass':                 [30.1975, -81.3957,  'open'],
+  'Riviera Country Club':         [34.0397, -118.5085, 'open'],
+  'Torrey Pines South Course':    [32.8971, -117.2519, 'open'],
+  'Harbour Town Golf Links':      [32.1380, -80.6686,  'open'],
+  'TPC Scottsdale':               [33.6606, -111.8926, 'open'],
+  'Muirfield Village Golf Club':  [40.1034, -83.0685,  'open'],
+  'East Lake Golf Club':          [33.7115, -84.2896,  'open'],
+  'St Andrews Links Old Course':  [56.3435, -2.8013,   'open'],
+  'Royal Troon Golf Club':        [55.5333, -4.6667,   'open'],
+  "Royal St George's Golf Club":  [51.2010, 1.3880,    'open'],
+  'Dunes Golf and Beach Club':    [33.7490, -78.8138,  'open'],
+  'Colonial Country Club':        [32.7247, -97.3592,  'open'],
+  'TPC Twin Cities':              [45.1858, -93.2119,  'open'],
 }
 
 // Every real venue name in today's game list, known-coordinate or not --
-// exported for VenueGeocodeRace, which needs the FULL set (including the
-// 3 indoor venues -- Footprint Center, Target Center, and now Globe Life
-// Field's retractable roof -- this module deliberately has no entry for)
-// to compare against live geocoding results honestly.
+// exported for VenueGeocodeRace, which needs the FULL set to compare
+// against live geocoding results honestly. Only Footprint Center and
+// Target Center (NBA arenas -- fully enclosed, no roof of any kind,
+// zero outdoor weather relevance ever) have no entry above; every
+// retractable-roof and domed stadium now does, having real weather at
+// a real location whether or not the roof happens to be closed.
 export const allVenues = createMemo(() => {
   const games = [...(deskStore.games?.regular ?? []), ...(deskStore.games?.postseason ?? [])]
   return [...new Set(games.map(g => g.venue).filter(Boolean))]
 })
 
-// Unique, known-coordinate outdoor venues from today's real game list --
-// recomputes whenever deskStore's games change (date navigation, poll),
-// the same "derive real values instead of hardcoding" pattern App.jsx's
-// streakTeam memo already uses for MultiDayStreak.
-const outdoorVenues = createMemo(() => allVenues().filter(v => VENUE_COORDS[v]))
+// Unique venues from today's real game list that have a known
+// coordinate entry above -- recomputes whenever deskStore's games
+// change (date navigation, poll), the same "derive real values instead
+// of hardcoding" pattern App.jsx's streakTeam memo already uses for
+// MultiDayStreak. Deliberately NOT filtered by roofType: a retractable
+// or domed venue still has real weather at its real location, so it's
+// included here on the same basis as a fully open-air park -- only "do
+// we know where it is" gates inclusion, not roof type.
+const weatherEligibleVenues = createMemo(() => allVenues().filter(v => VENUE_COORDS[v]))
 
 // In-memory per-coordinate cache, keyed like production's wxCache
 // (rounded lat_lon) -- multiple venues that round to the same key would
-// share one request, though this repo's venue set has no such overlap.
+// share one request (this repo's larger venue set now makes that a real
+// possibility, e.g. Minute Maid Park/Daikin Park share exact
+// coordinates on purpose, as aliases for the same physical park).
 // TTL matches production's (2h): actual weather doesn't change fast
 // enough to justify polling Open-Meteo itself more often, even though
 // WeatherPoll's own setInterval fires every 45s -- that interval exists
@@ -96,11 +240,11 @@ function describeConditions(current) {
 }
 
 async function fetchOneVenue(venue) {
-  const [lat, lon] = VENUE_COORDS[venue]
+  const [lat, lon, roofType] = VENUE_COORDS[venue]
   const key = `${lat.toFixed(2)}_${lon.toFixed(2)}`
   const cached = wxCache.get(key)
   if (cached && Date.now() - cached.fetchedAt < WX_TTL_MS) {
-    return { venue, ...cached.data }
+    return { venue, roofType, ...cached.data }
   }
   const url = `${OM_BASE}?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,rain,snowfall,is_day,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`
   const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
@@ -111,7 +255,7 @@ async function fetchOneVenue(venue) {
     condition: describeConditions(json.current),
   }
   wxCache.set(key, { data, fetchedAt: Date.now() })
-  return { venue, ...data }
+  return { venue, roofType, ...data }
 }
 
 // Promise.all would reject the ENTIRE batch on a single venue's failure,
@@ -119,8 +263,8 @@ async function fetchOneVenue(venue) {
 // error -- allSettled means one bad venue degrades to just that venue
 // missing from the list, not the whole poll going blank. Failures aren't
 // separately cached (unlike successes): this repo's realistic worst-case
-// load -- one browser tab polling 6 venues every 45s, ~8 req/min -- is
-// nowhere near Open-Meteo's free-tier limits (600/min), so caching a
+// load -- one browser tab polling a slate's worth of venues every 45s --
+// is nowhere near Open-Meteo's free-tier limits (600/min), so caching a
 // failure state would add real complexity for a request-budget risk
 // that doesn't actually exist at this scale.
 async function fetchWeather(venues) {
@@ -130,12 +274,12 @@ async function fetchWeather(venues) {
   // Empty results with a non-empty venue list means every single fetch
   // failed (total outage), not "no eligible venues" -- resolving to
   // { venues: [] } here would make WeatherPoll show the misleading
-  // "no outdoor venues" empty state instead of its real error state.
-  // Only genuinely zero eligible venues should reach that empty state.
+  // "no venues" empty state instead of its real error state. Only
+  // genuinely zero eligible venues should reach that empty state.
   if (results.length === 0) throw new Error('all venue weather requests failed')
   return { venues: results }
 }
 
-export const [weatherData, { refetch: refetchWeather }] = createResource(outdoorVenues, fetchWeather)
+export const [weatherData, { refetch: refetchWeather }] = createResource(weatherEligibleVenues, fetchWeather)
 
 export const [weatherPollCount, setWeatherPollCount] = createSignal(0)
