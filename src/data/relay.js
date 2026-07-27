@@ -237,6 +237,31 @@ async function fetchRelayHealth() {
 
 export const [relayHealth, { refetch: refetchRelayHealth }] = createResource(fetchRelayHealth)
 
+// --- Brief archive: real, live, confirmed via a direct probe 2026-07-27 ---
+//
+// GET /archive/query?date=X -> {ok, count, results[]} -- EVERY brief
+// generated that day (game recaps, pre-game briefs, the slate summary,
+// etc.), not just the single CURRENT one journalismBrief exposes. Each
+// result carries its own real quality_score (a genuinely different
+// field/metric from journalismBrief's proseScore -- not assumed to be
+// the same thing measured two ways, since nothing here confirms that).
+// Real confirmed shape per result: {id, date, brief_type, sport,
+// game_id, brief_text, model, quality_score, word_count, source,
+// created_at}.
+//
+// Own local date signal, not the shared currentDate -- this is a
+// history BROWSER (arbitrary past dates), a different concern from
+// currentDate's "what date is the live app currently showing."
+export const [archiveDate, setArchiveDate] = createSignal(todayStr())
+
+async function fetchArchiveQuery(date) {
+  const res = await fetch(`${RELAY_BASE}/archive/query?date=${date}`)
+  if (!res.ok) throw new Error(`archive/query fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [archiveQuery, { refetch: refetchArchiveQuery }] = createResource(archiveDate, fetchArchiveQuery)
+
 // --- Day comparison: first non-singleton resource in this repo ---
 //
 // Every resource above is a single, module-level global instance, driven

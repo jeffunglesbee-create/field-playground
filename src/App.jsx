@@ -13,6 +13,7 @@ import { History } from './components/History'
 import { JournalismBrief } from './components/JournalismBrief'
 import { QualityReport } from './components/QualityReport'
 import { BriefReconcile } from './components/BriefReconcile'
+import { BriefArchive } from './components/BriefArchive'
 import { DramaLeaderboard } from './components/DramaLeaderboard'
 import { RelaySystemStatus } from './components/RelaySystemStatus'
 import { MultiDayStreak } from './components/MultiDayStreak'
@@ -272,6 +273,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.briefReconcile}>
               <BriefReconcile />
+            </SafeSection>
+            <SafeSection class={styles.briefArchive}>
+              <BriefArchive />
             </SafeSection>
           </Show>
 
