@@ -159,6 +159,92 @@ async function overpass(name) {
   return { lat, lon, roof }
 }
 
+// ROUND 4 ADDITION: chat's reframe of the whole approach -- round 3's
+// two-tier fix (above) solved the immediate reliability problem (0/8 ->
+// 8/8) but is still fundamentally a LOOKUP: one Wikidata query per venue.
+// Fine at 8 venues, doesn't scale to VENUE_COORDS's real ~98 entries, and
+// structurally can't discover a venue that isn't already a key in TRUTH.
+//
+// Chat's point: this was a JOIN problem, not a lookup problem. Ask
+// Wikidata once for "every venue of this TYPE, with coordinates and every
+// English alias," bounded by an indexed P31/P279* path rather than by
+// name -- a few hundred rows, not a scan -- then do all the fuzzy/
+// case-insensitive/alias matching locally in JS against that small
+// in-memory set, where it's free and deterministic. Run alongside the
+// already-verified per-venue lookup above, not replacing it, so this is
+// a real side-by-side comparison rather than a swap taken on faith.
+//
+// The type QID below came from chat, not independently verified (this
+// sandbox can't reach Wikidata either) -- so this queries the QID's OWN
+// English label first and prints it. If that label doesn't read like
+// "baseball venue"/"ballpark"/similar, the ID is wrong and everything
+// below should be read as "queried the wrong type," not "Wikidata lacks
+// this data."
+const TYPE_QID = 'Q1076486'
+
+function normalizeName(s) {
+  return s
+    .toLowerCase()
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+async function verifyTypeQid() {
+  const q = `SELECT ?label WHERE { wd:${TYPE_QID} rdfs:label ?label . FILTER(LANG(?label) = "en") } LIMIT 1`
+  const url = 'https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q)
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/sparql-results+json' } })
+  if (!res.ok) return { err: `HTTP ${res.status}` }
+  const j = await res.json()
+  const label = j?.results?.bindings?.[0]?.label?.value
+  return label ? { label } : { err: 'no label found for this QID -- likely wrong or deleted' }
+}
+
+async function fetchAllVenuesByType() {
+  const q = `
+    SELECT ?venue ?venueLabel ?altLabel ?coord ?roofLabel WHERE {
+      ?venue wdt:P31/wdt:P279* wd:${TYPE_QID} ;
+             wdt:P625 ?coord .
+      OPTIONAL { ?venue skos:altLabel ?altLabel . FILTER(LANG(?altLabel) = "en") }
+      OPTIONAL { ?venue wdt:P5624 ?roof . }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+    }`
+  const url = 'https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q)
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/sparql-results+json' } })
+  if (!res.ok) return { err: `HTTP ${res.status}` }
+  const j = await res.json()
+  return { rows: j?.results?.bindings ?? [] }
+}
+
+// One row per (venue, altLabel) pair -- fold back to one entry per venue,
+// with every name (preferred label + all altLabels) as a lookup key.
+function buildLocalIndex(rows) {
+  const byVenue = new Map()
+  for (const row of rows) {
+    const uri = row.venue.value
+    const m = /Point\(([-\d.]+) ([-\d.]+)\)/.exec(row.coord?.value ?? '')
+    if (!m) continue
+    let entry = byVenue.get(uri)
+    if (!entry) {
+      entry = {
+        lat: parseFloat(m[2]),
+        lon: parseFloat(m[1]),
+        roof: row.roofLabel?.value ?? null,
+        label: row.venueLabel?.value ?? uri,
+        names: new Set(),
+      }
+      byVenue.set(uri, entry)
+    }
+    if (row.venueLabel?.value) entry.names.add(row.venueLabel.value)
+    if (row.altLabel?.value) entry.names.add(row.altLabel.value)
+  }
+  const index = new Map()
+  for (const entry of byVenue.values()) {
+    for (const name of entry.names) index.set(normalizeName(name), entry)
+  }
+  return { index, venueCount: byVenue.size, rowCount: rows.length }
+}
+
 async function main() {
   log(`probe_at: ${new Date().toISOString()}`)
   log(`threshold: ${OK} deg (~2km) from production's hand-verified coords`)
@@ -199,6 +285,46 @@ async function main() {
   log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}`)
   log(`roof info returned:  wikidata ${score.roofW}/${score.total}   overpass ${score.roofO}/${score.total}`)
   log(`baseline: Open-Meteo geocoding 1/8 -- a populated-places index, not a POI index.`)
+
+  log('')
+  log('--- ROUND 4: inverted single-query lookup (chat\'s reframe, side-by-side vs. the per-venue lookup above) ---')
+
+  let qidCheck
+  try { qidCheck = await verifyTypeQid() } catch (e) { qidCheck = { err: String(e).slice(0, 60) } }
+  if (qidCheck.err) {
+    log(`type QID ${TYPE_QID}: FAILED (${qidCheck.err}) -- can't run the inverted query without knowing what this ID even is`)
+  } else {
+    log(`type QID ${TYPE_QID} label: "${qidCheck.label}" -- read this before trusting anything below; if it doesn't say something like "baseball venue" the rest of this section queried the wrong type`)
+
+    let all
+    try { all = await fetchAllVenuesByType() } catch (e) { all = { err: String(e).slice(0, 60) } }
+    if (all.err) {
+      log(`single query: FAILED (${all.err})`)
+    } else {
+      const { index, venueCount, rowCount } = buildLocalIndex(all.rows)
+      log(`single query returned ${rowCount} rows -> ${venueCount} distinct venues (one query, not ${score.total})`)
+      log('')
+
+      const invScore = { match: 0, total: 0, roof: 0 }
+      for (const [name, [tlat, tlon]] of Object.entries(TRUTH)) {
+        invScore.total++
+        const entry = index.get(normalizeName(name))
+        if (!entry) {
+          log(`--- ${name}: MISS (no local match among ${venueCount} venues -- either wrong type, or this venue genuinely isn't in this Wikidata class)`)
+          continue
+        }
+        const d = dist(entry.lat, entry.lon, tlat, tlon)
+        const pass = d <= OK
+        if (pass) invScore.match++
+        if (entry.roof) invScore.roof++
+        log(`--- ${name}: ${entry.lat.toFixed(4)}, ${entry.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${entry.roof ? `  | roof: ${entry.roof}` : '  | roof: (none)'}  (matched via "${entry.label}")`)
+      }
+
+      log('')
+      log(`INVERTED RESULT  ${invScore.match}/${invScore.total} matched locally, ${venueCount} total venues available from the single query (roof info: ${invScore.roof}/${invScore.total})`)
+      log(`This is the real test of chat's claim: one query today returned ${venueCount} venues total -- ${venueCount - invScore.total} more than the ${invScore.total} this probe happens to check against. Whether that's a usable basis for regenerating VENUE_COORDS (~98 real entries, MLB alone is ~30 parks) is a separate decision from whether this query mechanism works.`)
+    }
+  }
 }
 
 main().catch(e => {
