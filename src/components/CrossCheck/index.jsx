@@ -65,7 +65,14 @@ function CrossRow(props) {
 }
 
 export function CrossCheck() {
-  const editorialPicks = createMemo(() => ambientData()?.pick?.ranked ?? [])
+  // Reads the resource only when it's NOT in error state -- calling the
+  // accessor while errored throws, and (confirmed under the artifact's
+  // simulated total-fetch-failure) a memo that throws on its first
+  // evaluation doesn't reliably re-throw on later reads -- it can settle
+  // into a stale `undefined` instead, which then crashes downstream reads
+  // of editorialPicks().length with an opaque error rather than the real
+  // fetch failure. Same posture as StandingRoom/DayComparison.
+  const editorialPicks = createMemo(() => (ambientData.error ? undefined : ambientData())?.pick?.ranked ?? [])
 
   return (
     <div class={styles.root}>

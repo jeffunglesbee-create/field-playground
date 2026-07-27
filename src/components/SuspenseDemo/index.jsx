@@ -29,11 +29,21 @@ function NewsMini() {
   // component here, this one does NOT guard with <Show when={news()}>
   // first. That guard is exactly what would prevent Suspense from ever
   // seeing an unresolved read in the first place.
+  //
+  // The .error check below is a separate concern from that -- it's a
+  // plain signal read, not a suspended one, so it doesn't interfere with
+  // Suspense catching the pending case. Without it, a settled error would
+  // throw on the direct read and escape past Suspense (which only ever
+  // catches PENDING reads, never rejected ones) to the outer SafeSection
+  // boundary -- confirmed under the artifact's simulated total-fetch-
+  // failure.
   const [news] = createResource(currentDate, fetchNewsMini)
   return (
     <div class={styles.pane}>
       <div class={styles.paneLabel}>Ambient (mini)</div>
-      <p class={styles.snippet}>{news()?.morning_report?.slice(0, 120)}…</p>
+      <Show when={!news.error} fallback={<p class={styles.error}>{String(news.error)}</p>}>
+        <p class={styles.snippet}>{news()?.morning_report?.slice(0, 120)}…</p>
+      </Show>
     </div>
   )
 }
@@ -44,9 +54,11 @@ function DeskMini() {
   return (
     <div class={styles.pane}>
       <div class={styles.paneLabel}>Desk (mini)</div>
-      <For each={games()}>
-        {g => <div class={styles.row}>{g.away} @ {g.home}</div>}
-      </For>
+      <Show when={!desk.error} fallback={<p class={styles.error}>{String(desk.error)}</p>}>
+        <For each={games()}>
+          {g => <div class={styles.row}>{g.away} @ {g.home}</div>}
+        </For>
+      </Show>
     </div>
   )
 }
