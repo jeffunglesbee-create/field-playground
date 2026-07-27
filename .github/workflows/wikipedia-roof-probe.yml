@@ -42,5 +42,17 @@ jobs:
           git config user.name "wikipedia-roof-probe-bot"
           git config user.email "actions@github.com"
           git add outbox/
-          git diff --cached --quiet || git commit -m "chore: wikipedia roof probe result [skip ci]"
-          git push
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: wikipedia roof probe result [skip ci]"
+          # Rebase-and-retry. A parallel session pushes to main frequently
+          # enough that a plain push races and is rejected non-fast-forward
+          # -- which is exactly how the first run of this workflow failed,
+          # losing results the script had already written successfully.
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push rejected, rebasing (attempt $i)"
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          echo "could not push after 5 attempts"
+          exit 1
