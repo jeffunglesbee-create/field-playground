@@ -153,18 +153,29 @@ export const [mlsStandings] = createResource(fetchMlsStandings)
 // consuming component, JournalismBrief, same pattern as deskData's
 // interval in App.jsx).
 //
-// What changed 2026-07-26: the endpoint. This used to fetch /journalism/
-// brief, a route confirmed to never have existed on field-relay-nba --
-// zero hits searching its source for "journalism", "brief", or "/brief",
-// and zero mentions across field-relay-nba's own HANDOFF.md (dozens of
-// real session close-outs, several documenting the newspaper bundle's
-// actual field list in detail). /analytics/newspaper/{date} IS
-// documented there explicitly, and its live shape was reconfirmed via a
-// direct probe today. The old fake route's mock in vite.config.js
-// invented a brief string, a cycleId, and a proseScore that never
-// existed anywhere real -- this component was only ever testing "a
-// resource that polls on its own schedule," never real journalism
-// content. Now it's both.
+// What changed 2026-07-26: the endpoint, from /journalism/brief to
+// /analytics/newspaper/{date}.
+//
+// CORRECTION 2026-07-27: an earlier version of this comment claimed
+// /journalism/brief was "confirmed to never have existed." That is
+// FALSE. Verified live: it returns HTTP 200 with real journalism prose
+// (3M Open, Rays result), and a bogus sibling path
+// (/journalism/nonsense-xyz) returns 403 "Path not allowed" -- proving
+// it is an allowlisted route, not a catch-all. The original conclusion
+// came from grepping field-relay-nba's source for "journalism"/"brief"
+// and finding zero hits, which proves only that the literal STRING is
+// absent (the route is reached some other way) -- it never proved the
+// route was absent. A negative result needs a higher bar than a grep.
+//
+// The endpoint change is still correct, for the reason that actually
+// holds: /journalism/brief takes no date parameter and returns whatever
+// the latest brief is, while this resource is driven by currentDate.
+// /analytics/newspaper/{date} is date-parameterized and documented in
+// field-relay-nba's HANDOFF.md, so date navigation genuinely works.
+// What WAS fake: the old vite.config.js mock invented a brief string, a
+// cycleId and a proseScore that exist in no real payload -- so this
+// component was only ever testing "a resource that polls on its own
+// schedule," never real journalism content. Now it's both.
 async function fetchJournalismBrief(date) {
   const res = await fetch(`${RELAY_BASE}/analytics/newspaper/${date}`)
   if (!res.ok) throw new Error(`newspaper fetch failed: ${res.status}`)
