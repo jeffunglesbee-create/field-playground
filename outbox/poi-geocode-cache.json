@@ -1,0 +1,72 @@
+{
+  "nominatim:Comerica Park": {
+    "result": {
+      "lat": 42.3392219,
+      "lon": -83.0488632,
+      "roof": null,
+      "osmType": "stadium",
+      "osmClass": null
+    },
+    "cachedAt": 1785191732889
+  },
+  "nominatim:Citizens Bank Park": {
+    "result": {
+      "lat": 39.9059221,
+      "lon": -75.1664804,
+      "roof": null,
+      "osmType": "stadium",
+      "osmClass": null
+    },
+    "cachedAt": 1785191735440
+  },
+  "nominatim:Globe Life Field": {
+    "result": {
+      "lat": 32.747642,
+      "lon": -97.0841049,
+      "roof": null,
+      "osmType": "stadium",
+      "osmClass": null
+    },
+    "cachedAt": 1785191752128
+  },
+  "nominatim:Tropicana Field": {
+    "result": {
+      "lat": 27.7680559,
+      "lon": -82.6532755,
+      "roof": "dome",
+      "osmType": "stadium",
+      "osmClass": null
+    },
+    "cachedAt": 1785191761627
+  },
+  "nominatim:Oracle Park": {
+    "result": {
+      "lat": 37.7786059,
+      "lon": -122.3894716,
+      "roof": null,
+      "osmType": "stadium",
+      "osmClass": null
+    },
+    "cachedAt": 1785191779260
+  },
+  "nominatim:loanDepot park": {
+    "result": {
+      "lat": 25.7780733,
+      "lon": -80.219554,
+      "roof": null,
+      "osmType": "stadium",
+      "osmClass": null
+    },
+    "cachedAt": 1785191781750
+  },
+  "nominatim:Yankee Stadium": {
+    "result": {
+      "lat": 40.8295828,
+      "lon": -73.9265212,
+      "roof": null,
+      "osmType": "stadium",
+      "osmClass": null
+    },
+    "cachedAt": 1785191792030
+  }
+}
