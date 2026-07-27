@@ -1,0 +1,46 @@
+name: Wikipedia Roof Probe
+
+# Tests whether Wikipedia lead sentences can classify stadium roof type
+# for all 98 venues in src/data/weather.js.
+#
+# Context: four structured POI sources returned 0/8 or 1/8 on roof info,
+# because OSM's roof:shape catalogue models GEOMETRY (dome, gabled, flat)
+# and has no value for "retractable", which is MECHANICAL. Wikipedia
+# prose states it plainly. See docs/outbox/cc-session-2026-07-27-poi-
+# geocode-sources.md.
+#
+# Timeout is deliberately generous: 98 venues at 250ms spacing is ~25s of
+# courtesy delay alone, plus 98 round trips. Two probes today were killed
+# by tight step timeouts and lost their output entirely; the script also
+# now flushes every line, so a kill leaves partial results rather than
+# nothing.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe Wikipedia lead sentences
+        timeout-minutes: 10
+        continue-on-error: true
+        run: node scripts/probe-wikipedia-roof.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "wikipedia-roof-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet || git commit -m "chore: wikipedia roof probe result [skip ci]"
+          git push
