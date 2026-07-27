@@ -159,6 +159,42 @@ async function overpass(name) {
   return { lat, lon, roof }
 }
 
+// ROUND 5 ADDITION: a third free source. Nominatim is OSM's own official
+// name-search geocoder (nominatim.openstreetmap.org) -- distinct
+// infrastructure from the Overpass interpreter above, even though both
+// ultimately read the same underlying OSM tag data, so it's a genuinely
+// different reliability profile, not just another way to ask Overpass
+// the same question. extratags=1 surfaces the same roof:shape-style tags
+// Overpass returns, through a different endpoint -- a second, independent
+// chance to confirm (or fail to confirm) the one real roof hit found so
+// far (Tropicana Field, via Overpass).
+//
+// Usage policy (operations.osmfoundation.org/policies/nominatim), read
+// before writing this, not assumed: max 1 request/second, a real
+// identifying User-Agent (already have one), attribution required (see
+// the log line in main()), and explicit allowance for "smaller one-time
+// bulk tasks" like this 8-request probe -- this is NOT a scheduled job
+// and won't become one without revisiting this policy.
+let lastNominatimAt = 0
+async function nominatim(name) {
+  const waitMs = Math.max(0, 1100 - (Date.now() - lastNominatimAt))
+  if (waitMs > 0) await new Promise(r => setTimeout(r, waitMs))
+  lastNominatimAt = Date.now()
+
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=jsonv2&limit=1&extratags=1`
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) return { err: `HTTP ${res.status}` }
+  const j = await res.json()
+  const hit = j?.[0]
+  if (!hit) return { err: 'no match' }
+  const lat = parseFloat(hit.lat)
+  const lon = parseFloat(hit.lon)
+  if (Number.isNaN(lat) || Number.isNaN(lon)) return { err: 'unparseable coord' }
+  const extratags = hit.extratags ?? {}
+  const roof = extratags['roof:shape'] ?? extratags['building:roof'] ?? extratags.roof ?? null
+  return { lat, lon, roof, osmType: hit.type ?? null, osmClass: hit.class ?? null }
+}
+
 // ROUND 4 ADDITION: chat's reframe of the whole approach -- round 3's
 // two-tier fix (above) solved the immediate reliability problem (0/8 ->
 // 8/8) but is still fundamentally a LOOKUP: one Wikidata query per venue.
@@ -248,9 +284,10 @@ function buildLocalIndex(rows) {
 async function main() {
   log(`probe_at: ${new Date().toISOString()}`)
   log(`threshold: ${OK} deg (~2km) from production's hand-verified coords`)
-  log(`round 3: Overpass User-Agent added, Wikidata two-tier (fast indexed pass, unbounded scan only on miss), roof property queried`)
+  log(`round 5: adds Nominatim as a third free source (nominatim.openstreetmap.org, distinct infra from Overpass, extratags roof lookup)`)
+  log(`attribution: Nominatim results (c) OpenStreetMap contributors, ODbL -- https://www.openstreetmap.org/copyright`)
   log('')
-  const score = { wikidata: 0, overpass: 0, total: 0, roofW: 0, roofO: 0 }
+  const score = { wikidata: 0, overpass: 0, nominatim: 0, total: 0, roofW: 0, roofO: 0, roofN: 0 }
 
   for (const [name, [tlat, tlon, roof]] of Object.entries(TRUTH)) {
     score.total++
@@ -278,12 +315,23 @@ async function main() {
       log(`    overpass: ${o.lat.toFixed(4)}, ${o.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${o.roof ? `  | roof tag: ${o.roof}` : '  | roof tag: (none)'}`)
     }
 
+    let n
+    try { n = await nominatim(name) } catch (e) { n = { err: String(e).slice(0, 60) } }
+    if (n.err) log(`    nominatim: MISS (${n.err})`)
+    else {
+      const d = dist(n.lat, n.lon, tlat, tlon)
+      const pass = d <= OK
+      if (pass) score.nominatim++
+      if (n.roof) score.roofN++
+      log(`    nominatim: ${n.lat.toFixed(4)}, ${n.lon.toFixed(4)}  delta ${d.toFixed(4)}  ${pass ? 'MATCH' : 'WRONG'}${n.roof ? `  | roof tag: ${n.roof}` : '  | roof tag: (none)'}  [${n.osmClass ?? '?'}/${n.osmType ?? '?'}]`)
+    }
+
     await new Promise(r => setTimeout(r, 800))
   }
 
   log('')
-  log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}`)
-  log(`roof info returned:  wikidata ${score.roofW}/${score.total}   overpass ${score.roofO}/${score.total}`)
+  log(`RESULT  wikidata ${score.wikidata}/${score.total}   overpass ${score.overpass}/${score.total}   nominatim ${score.nominatim}/${score.total}`)
+  log(`roof info returned:  wikidata ${score.roofW}/${score.total}   overpass ${score.roofO}/${score.total}   nominatim ${score.roofN}/${score.total}`)
   log(`baseline: Open-Meteo geocoding 1/8 -- a populated-places index, not a POI index.`)
 
   log('')
