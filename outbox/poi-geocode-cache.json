@@ -68,5 +68,15 @@
       "osmClass": null
     },
     "cachedAt": 1785191792030
+  },
+  "nominatim:Fenway Park": {
+    "result": {
+      "lat": 42.3464614,
+      "lon": -71.0970999,
+      "roof": null,
+      "osmType": "music_venue",
+      "osmClass": null
+    },
+    "cachedAt": 1785191904920
   }
 }
