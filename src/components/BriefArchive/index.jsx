@@ -83,7 +83,7 @@ export function BriefArchive() {
         <p class={styles.error}>{String(archiveQuery.error)}</p>
       </Show>
       <Show when={!archiveQuery.error}>
-        <Show when={data()} fallback={<p class={styles.loading}>Loading…</p>}>
+        <Show when={data() && !archiveQuery.loading} fallback={<p class={styles.loading}>Loading…</p>}>
           <Show when={sortedResults().length} fallback={<p class={styles.empty}>No briefs archived for this date.</p>}>
             <p class={styles.summaryLine}>{sortedResults().length} briefs · avg quality {avgScore()}</p>
             <ul class={styles.rows}>
