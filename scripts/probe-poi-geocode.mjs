@@ -334,6 +334,48 @@ async function nominatimRawExtratags(name) {
   return { tags: hit.extratags ?? {} }
 }
 
+// ROUND 9 ADDITION: round 8's raw tag dump found zero roof-related keys
+// anywhere in OSM's real data for these two venues -- a genuine surprise
+// given how well-documented a defining feature "has a retractable roof"
+// is for both stadiums. Two different, more direct checks, rather than
+// re-guessing at structured POI sources again:
+//
+//  1. Wikipedia's own ARTICLE PROSE (not Wikidata's structured claims --
+//     a fundamentally different kind of source, human-written encyclopedia
+//     text, via the free TextExtracts API, no key). If the fact is
+//     "readily available," this is where a person would actually find it.
+//  2. The EXACT Wikidata entities OSM itself pointed to (Q24284037,
+//     Q1368138 -- from round 8's raw tag dump), fetched by ID via
+//     Special:EntityData rather than by fuzzy label search, so this
+//     checks literally every claim on the entity, not just ones whose
+//     property label happens to contain "roof".
+async function wikipediaExtract(title) {
+  const url = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=${encodeURIComponent(title)}&format=json&formatversion=2`
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) return { err: `HTTP ${res.status}` }
+  const j = await res.json()
+  const page = j?.query?.pages?.[0]
+  if (!page || page.missing) return { err: 'page not found' }
+  const text = page.extract ?? ''
+  if (!text) return { err: 'empty extract' }
+  const sentences = text.split(/(?<=[.!?])\s+/)
+  const hits = sentences.filter(s => /retractable|\broof\b|\bdome\b/i.test(s)).slice(0, 3)
+  return { length: text.length, hits }
+}
+
+async function wikidataEntityById(qid) {
+  const url = `https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) return { err: `HTTP ${res.status}` }
+  const j = await res.json()
+  const entity = j?.entities?.[qid]
+  if (!entity) return { err: 'entity not found' }
+  const claims = entity.claims ?? {}
+  const propertyIds = Object.keys(claims)
+  const label = entity.labels?.en?.value ?? null
+  return { label, totalProperties: propertyIds.length, propertyIds }
+}
+
 // ROUND 4 ADDITION: chat's reframe of the whole approach -- round 3's
 // two-tier fix (above) solved the immediate reliability problem (0/8 ->
 // 8/8) but is still fundamentally a LOOKUP: one Wikidata query per venue.
@@ -555,6 +597,39 @@ async function main() {
   log('~30-value catalogue of GEOMETRIC shapes (dome, gabled, hipped, flat, ...) per')
   log('OSM\'s own wiki, with no documented value for "retractable" as a mechanical')
   log('property, which is a plausible root cause independent of source or query.')
+
+  log('')
+  log('--- ROUND 9: is it documented ANYWHERE free -- Wikipedia prose, or the exact Wikidata entity by ID (not label search) ---')
+  const WIKI_CHECK = [
+    { name: 'Globe Life Field', wikipediaTitle: 'Globe Life Field', qid: 'Q24284037' },
+    { name: 'loanDepot park', wikipediaTitle: 'LoanDepot Park', qid: 'Q1368138' },
+  ]
+  for (const { name, wikipediaTitle, qid } of WIKI_CHECK) {
+    log(`--- ${name} ---`)
+
+    let we
+    try { we = await wikipediaExtract(wikipediaTitle) } catch (e) { we = { err: String(e).slice(0, 60) } }
+    if (we.err) log(`    wikipedia article "${wikipediaTitle}": FAILED (${we.err})`)
+    else if (we.hits.length === 0) log(`    wikipedia article "${wikipediaTitle}": ${we.length} chars, no roof/dome/retractable sentence found`)
+    else {
+      log(`    wikipedia article "${wikipediaTitle}": ${we.length} chars, ${we.hits.length} matching sentence(s):`)
+      for (const s of we.hits) log(`      "${s.trim()}"`)
+    }
+
+    let wd
+    try { wd = await wikidataEntityById(qid) } catch (e) { wd = { err: String(e).slice(0, 60) } }
+    if (wd.err) log(`    wikidata ${qid}: FAILED (${wd.err})`)
+    else log(`    wikidata ${qid} ("${wd.label}"): ${wd.totalProperties} total properties on this entity: [${wd.propertyIds.join(', ')}]`)
+
+    await new Promise(r => setTimeout(r, 800))
+  }
+  log('')
+  log('If Wikipedia\'s own article text mentions the roof and Wikidata\'s exact')
+  log('linked entity (by ID, not a label guess) still shows no roof-related property')
+  log('among everything it has, that is real, complete evidence: the fact is')
+  log('genuinely documented and findable by a human reading Wikipedia, but was never')
+  log('transcribed into Wikidata\'s STRUCTURED claims for these two entities --')
+  log('a real gap between "documented" and "machine-queryable," not a wrong source.')
 }
 
 main().catch(e => {
