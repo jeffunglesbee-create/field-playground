@@ -13,9 +13,22 @@ name: Streams Availability Probe
 # Runs against whatever branch triggers it (github.ref_name), not
 # hardcoded to main -- unlike line-movement-probe.yml, which only ever
 # needed to run against main.
+#
+# Scheduled (2026-07-28), same reasoning as line-movement-probe.yml's
+# schedule: this repo's MCP-authored commits all carry [skip ci], so a
+# push trigger alone would mean this never re-runs on its own. This one
+# is the more valuable of the two to automate -- SERVICE_MAP is a
+# manually-maintained table matched against a broadcast landscape that
+# genuinely changes (new streaming deals, renamed services), so a
+# scheduled run is what actually catches that drift instead of it
+# silently regressing between prompts. Offset 30 minutes from
+# line-movement-probe.yml's schedule so the two don't contend for a
+# runner at the same instant.
 
 on:
   workflow_dispatch: {}
+  schedule:
+    - cron: '30 9 * * 1'
 
 permissions:
   contents: write

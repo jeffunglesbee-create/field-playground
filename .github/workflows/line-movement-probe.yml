@@ -9,9 +9,19 @@ name: Line Movement Probe
 # This sandbox can't reach field-relay-nba.jeffunglesbee.workers.dev
 # directly (same egress block as every other external host probed
 # today), so this runs on a GitHub Actions runner instead.
+#
+# Scheduled (2026-07-28) so this finding gets re-checked on its own,
+# not just when someone happens to ask again -- same reasoning as
+# deploy-playground.yml's schedule: this repo's MCP-authored commits
+# all carry [skip ci], so a push-only trigger would mean this probe
+# effectively never re-runs on its own. Weekly is plenty for a
+# same-cron-duplicate rate that's a property of the relay's capture
+# cadence, not something that drifts day to day.
 
 on:
   workflow_dispatch: {}
+  schedule:
+    - cron: '0 9 * * 1'
 
 permissions:
   contents: write
