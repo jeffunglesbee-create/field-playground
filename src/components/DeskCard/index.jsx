@@ -304,6 +304,10 @@ function GameExpansion(props) {
 // capture time kept as a small caption since provenance is genuinely
 // useful here. Defensive on shape: relay may send a string or an object,
 // and any field may be absent -- nothing is invented when it's missing.
+function fmtOdds(v) {
+  return typeof v === 'number' ? (v > 0 ? `+${v}` : String(v)) : null
+}
+
 function parseOdds(raw) {
   if (!raw) return null
   let o = raw
@@ -311,14 +315,82 @@ function parseOdds(raw) {
     try { o = JSON.parse(raw) } catch { return null }
   }
   if (!o || typeof o !== 'object') return null
-  const fmt = v => (typeof v === 'number' ? (v > 0 ? `+${v}` : String(v)) : null)
   return {
     source: o.source ?? null,
     capturedAt: o.captured_at ?? null,
-    ml: o.moneyline ? { home: fmt(o.moneyline.home), away: fmt(o.moneyline.away) } : null,
-    spread: o.spread ? { home: fmt(o.spread.home), away: fmt(o.spread.away) } : null,
+    ml: o.moneyline ? { home: fmtOdds(o.moneyline.home), away: fmtOdds(o.moneyline.away) } : null,
+    spread: o.spread ? { home: fmtOdds(o.spread.home), away: fmtOdds(o.spread.away) } : null,
     total: o.total ?? null,
   }
+}
+
+// Raw (unformatted) parse for movement math -- parseOdds above already
+// stringifies signs for display, which breaks numeric comparison/delta.
+function parseOddsRaw(raw) {
+  if (!raw) return null
+  let o = raw
+  if (typeof raw === 'string') {
+    try { o = JSON.parse(raw) } catch { return null }
+  }
+  if (!o || typeof o !== 'object') return null
+  return {
+    capturedAt: o.captured_at ?? null,
+    ml: o.moneyline ?? null,
+    spread: o.spread ?? null,
+    total: o.total ?? null,
+  }
+}
+
+const SIDE_KEYS = { ml: ['home', 'away'], spread: ['home', 'away'], total: ['over', 'under'] }
+
+// Per-field diff between two odds snapshots. Returns null when there's
+// nothing to compare (either side missing or non-numeric) or no actual
+// change on any side; otherwise an array of {side, from, to, delta}.
+function fieldDelta(key, a, b) {
+  if (!a || !b) return null
+  const moves = []
+  for (const side of SIDE_KEYS[key]) {
+    const av = a[side]
+    const bv = b[side]
+    if (typeof av !== 'number' || typeof bv !== 'number') continue
+    if (av !== bv) moves.push({ side, from: av, to: bv, delta: bv - av })
+  }
+  return moves.length ? moves : null
+}
+
+// Real line movement, not a raw open/close juxtaposition. The probe
+// (scripts/probe-line-movement.mjs, outbox/line-movement-probe-*.txt)
+// found 179/195 opening/closing pairs are the SAME cron run's snapshot
+// seconds apart (captured_at deltas under 5 minutes) -- not a genuine
+// open-to-close window. Comparing those as-is would report "no
+// movement" on games that never actually had a closing line captured.
+// Gate on the capture-time delta, but don't let the gate hide a real
+// move: the probe also found one pair where values differed despite a
+// short delta, so a value change always overrides the gate.
+const MOVEMENT_THRESHOLD_SEC = 300 // 5 min -- same floor scripts/probe-line-movement.mjs used
+
+function lineMovement(opening, closing) {
+  const open = parseOddsRaw(opening)
+  const close = parseOddsRaw(closing)
+  if (!open || !close || !open.capturedAt || !close.capturedAt) return null
+
+  const openT = Date.parse(open.capturedAt)
+  const closeT = Date.parse(close.capturedAt)
+  if (Number.isNaN(openT) || Number.isNaN(closeT)) return null
+
+  const deltaSec = (closeT - openT) / 1000
+  const ml = fieldDelta('ml', open.ml, close.ml)
+  const spread = fieldDelta('spread', open.spread, close.spread)
+  const total = fieldDelta('total', open.total, close.total)
+  const anyChanged = !!(ml || spread || total)
+
+  if (Math.abs(deltaSec) < MOVEMENT_THRESHOLD_SEC && !anyChanged) {
+    // Same-cron duplicate, no value change either -- there's no real
+    // closing line here, so say that rather than claiming "no movement."
+    return { status: 'no-data', deltaSec }
+  }
+
+  return { status: anyChanged ? 'moved' : 'stable', deltaSec, ml, spread, total }
 }
 
 function OddsLine(props) {
@@ -340,6 +412,46 @@ function OddsLine(props) {
   )
 }
 
+const MOVE_FIELD_LABEL = { ml: 'ML', spread: 'SPR', total: 'O/U' }
+
+function MovementLine(props) {
+  const m = () => lineMovement(props.opening, props.closing)
+  return (
+    <Show when={m()}>
+      <div class={styles.movementRow}>
+        <span class={styles.expansionKey}>move</span>
+        <Show when={m().status === 'no-data'}>
+          <span class={styles.movementNoData}>
+            no closing line captured -- same-cron snapshot, {Math.abs(m().deltaSec).toFixed(0)}s apart
+          </span>
+        </Show>
+        <Show when={m().status === 'stable'}>
+          <span class={styles.movementStable}>
+            line held over {(Math.abs(m().deltaSec) / 3600).toFixed(1)}h
+          </span>
+        </Show>
+        <Show when={m().status === 'moved'}>
+          <span class={styles.movementMoved}>
+            <For each={['ml', 'spread', 'total']}>
+              {key => (
+                <Show when={m()[key]}>
+                  <For each={m()[key]}>
+                    {mv => (
+                      <span class={styles.movementPart}>
+                        {MOVE_FIELD_LABEL[key]} {mv.side} {fmtOdds(mv.from) ?? mv.from} → {fmtOdds(mv.to) ?? mv.to}
+                      </span>
+                    )}
+                  </For>
+                </Show>
+              )}
+            </For>
+          </span>
+        </Show>
+      </div>
+    </Show>
+  )
+}
+
 function OddsRow(props) {
   const src = () => parseOdds(props.opening) ?? parseOdds(props.closing)
   return (
@@ -352,6 +464,7 @@ function OddsRow(props) {
         <span class={styles.expansionKey}>close</span>
         <OddsLine value={props.closing} />
       </div>
+      <MovementLine opening={props.opening} closing={props.closing} />
       <Show when={src()?.source}>
         <div class={styles.oddsSource}>
           {src().source}
