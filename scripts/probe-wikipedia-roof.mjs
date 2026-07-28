@@ -40,6 +40,28 @@ const log = s => {
   try { writeFileSync(outPath, out.join('\n')) } catch {}
 }
 
+// TASK 3: review artifact, not a live mechanism. A human reads this diff
+// before it touches src/data/weather.js -- this script never writes to
+// weather.js itself. Same incremental-flush discipline as the .txt log
+// above: written after every venue, not just at the end.
+const REVIEW_PATH = 'outbox/roof-type-proposed.json'
+const proposedRows = []
+const flushReview = () => {
+  try { writeFileSync(REVIEW_PATH, JSON.stringify(proposedRows, null, 2)) } catch {}
+}
+
+// Established already, not rediscovered here: both venues' Wikipedia lead
+// sentences omit the roof entirely -- BC Place's names the stadium as
+// "multi-purpose" without mentioning retractability, and Marvel Stadium
+// resolves under its former name (Docklands Stadium) whose lead sentence
+// is purely locational. Neither is a parsing bug; both are articles whose
+// first sentence doesn't state the fact this heuristic depends on. Flagged
+// here so a reviewer sees them as known limits, not new surprises.
+const KNOWN_UNFIXABLE = new Map([
+  ['BC Place', 'Lead sentence omits roof type entirely ("multi-purpose stadium"); venue is genuinely retractable.'],
+  ['Marvel Stadium', 'Resolves under its former name (Docklands Stadium); that lead sentence is purely locational and omits roof type; venue is genuinely retractable.'],
+])
+
 const UA = 'field-playground-probe/1.0 (github.com/jeffunglesbee-create/field-playground; research)'
 
 // Ground truth parsed from the live table, so this can't drift from it.
@@ -189,14 +211,26 @@ async function main() {
     let r
     try { r = await resolve(v.name, v.lat, v.lon) } catch (e) { r = { err: String(e).slice(0, 50) } }
 
+    const knownUnfixableNote = KNOWN_UNFIXABLE.get(v.name) ?? null
+
     if (r.err) {
       score.miss++
       log(`MISS  ${v.name}  (${r.err})  [truth ${v.truth}]`)
       for (const rej of r.rejected ?? []) log(`        rejected variant "${rej.variant}": ${rej.reason}`)
+      proposedRows.push({
+        name: v.name,
+        currentRoofType: v.truth,
+        wikipediaRoofType: null,
+        leadSentence: null,
+        agree: null,
+        knownUnfixable: !!knownUnfixableNote,
+        note: knownUnfixableNote ?? `no Wikipedia data resolved (${r.err})`,
+      })
     } else {
       const sent = firstSentence(r.extract)
       const pred = classify(sent)
-      if (pred === v.truth) {
+      const agree = pred === v.truth
+      if (agree) {
         score.correct++
         log(`ok    ${v.name}  -> ${pred}${r.viaVariant ? `   [matched via "${r.viaVariant}" -- OUR TABLE'S NAME IS WRONG -- coords verified, delta ${r.coordDelta.toFixed(4)}]` : ''}`)
       } else {
@@ -205,7 +239,17 @@ async function main() {
         log(`WRONG ${v.name}  -> predicted ${pred}, truth ${v.truth}`)
         log(`        "${sent.slice(0, 200)}"`)
       }
+      proposedRows.push({
+        name: v.name,
+        currentRoofType: v.truth,
+        wikipediaRoofType: pred,
+        leadSentence: sent,
+        agree,
+        knownUnfixable: !!knownUnfixableNote,
+        note: knownUnfixableNote,
+      })
     }
+    flushReview()
     await new Promise(r => setTimeout(r, 1000))
   }
 
@@ -217,6 +261,11 @@ async function main() {
     log(`${w.name}: predicted ${w.pred}, table says ${w.truth}`)
     log(`   "${w.sent}"`)
   }
+
+  const disagreeCount = proposedRows.filter(r => r.agree === false).length
+  const knownUnfixableCount = proposedRows.filter(r => r.knownUnfixable).length
+  log('')
+  log(`${REVIEW_PATH}: ${proposedRows.length} rows, ${disagreeCount} disagreements, ${knownUnfixableCount} known-unfixable -- for human review, weather.js NOT modified`)
 }
 
 main().catch(e => log('FAILED: ' + String(e)))
