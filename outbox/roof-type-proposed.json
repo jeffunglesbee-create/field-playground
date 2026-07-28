@@ -1,0 +1,884 @@
+[
+  {
+    "name": "Fenway Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Fenway Park is a ballpark in Boston, Massachusetts, United States, close to Kenmore Square.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Yankee Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Yankee Stadium is a baseball stadium located in the Bronx, New York City.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Coors Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Coors Field is a baseball stadium in downtown Denver, Colorado, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Wrigley Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Wrigley Field is a ballpark on the North Side of Chicago, Illinois, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Oracle Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Oracle Park is a ballpark in the South Beach neighborhood of San Francisco, California, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Dodger Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Dodger Stadium is a ballpark in the Elysian Park neighborhood of Los Angeles, California, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Busch Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Busch Stadium is a baseball stadium located in St. Louis, Missouri, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Nationals Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Nationals Park is a baseball stadium along the Anacostia River in the Navy Yard neighborhood of Washington, D.C.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Citizens Bank Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Citizens Bank Park is a baseball stadium in Philadelphia, Pennsylvania, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Great American Ball Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Great American Ball Park is a baseball stadium in Cincinnati, Ohio, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Kauffman Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Kauffman Stadium is a ballpark located in Kansas City, Missouri, and the home of Major League Baseball's Kansas City Royals.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Comerica Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Comerica Park is an open-air baseball stadium in Detroit, Michigan, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Petco Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Petco Park is a ballpark in San Diego, California.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Oriole Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Oriole Park was the name of multiple baseball parks in Baltimore, Maryland between 1883 and 1944, all built within a few blocks of each other.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Guaranteed Rate Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Rate Field is a baseball stadium on the South Side of Chicago, Illinois.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Rate Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Rate Field is a baseball stadium on the South Side of Chicago, Illinois.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Angels Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Angel Stadium is a ballpark in Anaheim, California, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Angel Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Angel Stadium is a ballpark in Anaheim, California, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Progressive Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Progressive Field is a baseball stadium in the downtown area of Cleveland, Ohio.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "PNC Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "PNC Park is a baseball stadium on the North Shore of Pittsburgh, Pennsylvania.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Citi Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Citi Field is a baseball stadium located in Flushing Meadows–Corona Park, in the borough of Queens, New York City, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Sutter Health Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Sutter Health Park is a ballpark in West Sacramento, California, directly adjacent to downtown Sacramento.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Globe Life Field",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Globe Life Field is a retractable roof stadium in Arlington, Texas, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Chase Field",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Chase Field, formerly Bank One Ballpark, is a retractable roof stadium in downtown Phoenix, Arizona, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "American Family Field",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "American Family Field is a retractable roof stadium in Milwaukee, Wisconsin.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Minute Maid Park",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Daikin Park is a retractable roof stadium in Houston, Texas, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Daikin Park",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Daikin Park is a retractable roof stadium in Houston, Texas, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "T-Mobile Park",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "T-Mobile Park is a retractable roof ballpark in Seattle, Washington, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Rogers Centre",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Rogers Centre is a retractable roof stadium in downtown Toronto, Ontario, Canada, situated at the base of the CN Tower near the northern shore of Lake Ontario.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Tropicana Field",
+    "currentRoofType": "dome",
+    "wikipediaRoofType": "dome",
+    "leadSentence": "Tropicana Field, nicknamed \"The Trop\", is a domed multi-purpose stadium located in St. Petersburg, Florida, United States. \"The Trop\" is the home of the Tampa Bay Rays of Major League Baseball (MLB).",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Gillette Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Gillette Stadium is a multi-purpose stadium located in Foxborough, Massachusetts, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Red Bull Arena",
+    "currentRoofType": "open",
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
+    "knownUnfixable": false,
+    "note": "no Wikipedia data resolved (disambiguation)"
+  },
+  {
+    "name": "CityPark",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Energizer Park, previously CityPark, is a 22,423-seat soccer-specific stadium in St. Louis, Missouri, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "America First Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "America First Field is a soccer-specific stadium in Sandy, Utah, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Snapdragon Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Snapdragon Stadium is a multi-purpose stadium in San Diego, California, located on the campus of San Diego State University (SDSU).",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Stade Saputo",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Saputo Stadium is a soccer-specific stadium at Olympic Park in the borough of Mercier–Hochelaga-Maisonneuve in Montreal, Quebec, Canada.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "BMO Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "BMO Field is an outdoor stadium located at Exhibition Place in Toronto, Ontario, Canada.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Chase Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Inter Miami CF Stadium is a soccer-specific stadium in Fort Lauderdale, Florida, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Subaru Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Subaru Park is a soccer-specific stadium in Chester, Pennsylvania, located next to Commodore Barry Bridge on the waterfront along the Delaware River.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Bank of America Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Bank of America Stadium is a multi-purpose stadium located in the Uptown section of Charlotte, North Carolina, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Audi Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Audi Field is a soccer-specific stadium in the Buzzard Point neighborhood of Washington, D.C.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Lower.com Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "ScottsMiracle-Gro Field is a soccer-specific stadium in Columbus, Ohio, United States, that serves primarily as the home stadium of the Columbus Crew of Major League Soccer and an expansion team of the National Women's Soccer League.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "TQL Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "TQL Stadium is a soccer-specific stadium in Cincinnati, Ohio, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Inter&Co Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Inter.co Stadium is a soccer-specific stadium in downtown Orlando, Florida, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "GEODIS Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
+    "knownUnfixable": false,
+    "note": "no Wikipedia data resolved (no title variant resolved)"
+  },
+  {
+    "name": "Soldier Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Soldier Field is a multi-purpose stadium on the Near South Side of Chicago, Illinois, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Allianz Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Allianz Field is a soccer-specific stadium in Saint Paul, Minnesota, United States, located near Interstate 94 and Snelling Avenue.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "BMO Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "BMO Stadium is a soccer-specific stadium in the Exposition Park neighborhood of Los Angeles, California, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Dignity Health Sports Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Dignity Health Sports Park is a multi-use sports complex located on the campus of California State University, Dominguez Hills, in Carson, California, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Lumen Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Lumen Field is a multi-purpose stadium in Seattle, Washington, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Providence Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Providence Park is an outdoor soccer venue located in the Goose Hollow neighborhood of Portland, Oregon, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "PayPal Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "PayPal Park is a soccer-specific stadium in San Jose, California.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Q2 Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Q2 Stadium is a soccer-specific stadium located in the North Burnet section of North Austin, Texas, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Shell Energy Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Shell Energy Stadium is a multi-purpose stadium located in Houston, Texas, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Toyota Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
+    "knownUnfixable": false,
+    "note": "no Wikipedia data resolved (disambiguation)"
+  },
+  {
+    "name": "Mercedes-Benz Stadium",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Mercedes-Benz Stadium is a retractable roof multi-purpose stadium in Atlanta, Georgia, U.S. Opened in 2017 as a replacement for the Georgia Dome, it is the home to the Atlanta Falcons of the National Football League (NFL), Atlanta United FC of Major League Soccer (MLS), and an expansion team of the National Women's Soccer League (NWSL).",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "BC Place",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "open",
+    "leadSentence": "BC Place is a multi-purpose stadium in Vancouver, British Columbia, Canada.",
+    "agree": false,
+    "knownUnfixable": true,
+    "note": "Lead sentence omits roof type entirely (\"multi-purpose stadium\"); venue is genuinely retractable."
+  },
+  {
+    "name": "Anfield",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Anfield is a football stadium in the area of Anfield, Liverpool, England, which has been the home of Liverpool F.C. since its formation in 1892.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Etihad Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The City of Manchester Stadium, currently known as Etihad Stadium for sponsorship reasons, is the home of Premier League club Manchester City, with a domestic football capacity of 61,038, making it the 6th-largest football stadium in England and 8th-largest stadium in the United Kingdom.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Craven Cottage",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Craven Cottage is a football stadium in Fulham, West London, England, which has been the home of Fulham F.C. since 1896.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Amex Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Falmer Stadium, currently known as the American Express Stadium for sponsorship reasons and more commonly referred to as the Amex, is a football stadium in Brighton and Hove, East Sussex, England.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Stadium of Light",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Stadium of Light is an all-seater football stadium in Sunderland, England, and the eighth and current home to Premier League club Sunderland.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Villa Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Villa Park is a football stadium in Aston, Birmingham, with a seating capacity of 43,205.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Turf Moor",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Turf Moor is an association football stadium in Burnley, Lancashire, England, which has been the home of Burnley F.C. since 1883.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Selhurst Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Selhurst Park is a football stadium in Selhurst, in the London Borough of Croydon, England.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "City Ground",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The  City Ground is a football stadium in West Bridgford, Nottinghamshire, England, on the banks of the River Trent.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Riverside Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Riverside Stadium is a football stadium in Middlesbrough, England, which has been the home of Middlesbrough since its opening in 1995.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "MKM Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The MKM Stadium is a multi-purpose stadium in Kingston upon Hull, England.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "The Den",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Den is a football stadium in New Cross Gate, south-east London, and the home of Millwall Football Club.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "London Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "London Stadium is a multi-purpose outdoor stadium at Queen Elizabeth Olympic Park in the Stratford district of London.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Allianz Arena",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Allianz Arena is a football stadium in Munich, Germany, with a 70,000 seating capacity for international matches and 75,000 for domestic matches.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Europa-Park Stadion",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Europa-Park Stadion, which opened in 2021 and is also known as the Mooswald-Stadion, is a stadium in Freiburg im Breisgau, Germany, that serves mainly as the home of football club SC Freiburg, replacing the Dreisamstadion in this role.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Stade de la Meinau",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Stade de la Meinau, commonly known as \"la Meinau\", is a football stadium in Strasbourg, France.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "MCG",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Melbourne Cricket Ground (MCG), also known locally as the 'G', is a multi-purpose stadium located in Yarra Park in the suburb of East Melbourne, Victoria, Australia.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "ENGIE Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Sydney Showground Stadium is a sports and events stadium located at the Sydney Olympic Park in Sydney.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "TIO Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Marrara Oval is a multi-purpose stadium in the Darwin suburb of Marrara.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "People First Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Carrara Stadium is a stadium located in the Gold Coast suburb of Carrara.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Marvel Stadium",
+    "currentRoofType": "retractable",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Docklands Stadium is a stadium located in the Melbourne suburb of Docklands.",
+    "agree": false,
+    "knownUnfixable": true,
+    "note": "Resolves under its former name (Docklands Stadium); that lead sentence is purely locational and omits roof type; venue is genuinely retractable."
+  },
+  {
+    "name": "Foro Italico",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Foro Italico is a sports complex in Rome, Italy, on the slopes of Monte Mario.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Rajiv Gandhi International Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Rajiv Gandhi International Cricket Stadium, commonly known as Uppal Stadium, is an international cricket stadium in Hyderabad, Telangana, India.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Sawai Mansingh Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Sawai Mansingh Stadium, popularly known as SMS Stadium, is a cricket stadium in Jaipur, Rajasthan, India.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Quail Hollow Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Quail Hollow Club is a country club and golf course located in the Quail Hollow neighborhood in Charlotte, North Carolina, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Aronimink Golf Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Aronimink Golf Club is a private country club in the eastern United States, located in Newtown Square, Pennsylvania, a suburb west of Philadelphia.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Augusta National Golf Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Augusta National Golf Club is a golf club in Augusta, Georgia, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Pinehurst No. 2",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Pinehurst Resort is a golf resort in Pinehurst, North Carolina, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Pebble Beach Golf Links",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Pebble Beach Golf Links is a public golf course located in Pebble Beach, California, U.S.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "TPC Sawgrass",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Tournament Players Club at Sawgrass is a golf course in the southeastern United States, located in Ponte Vedra Beach, Florida, southeast of Jacksonville.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Riviera Country Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Riviera Country Club is a private club with a championship golf course as well as tennis courts, located in the Pacific Palisades neighborhood of the Westside of Los Angeles, California.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Torrey Pines South Course",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Torrey Pines Golf Course is a 36-hole municipal golf facility in La Jolla, a community of San Diego, California.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Harbour Town Golf Links",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Harbour Town Golf Links is a public golf course in the eastern United States, located in South Carolina in Sea Pines Plantation on Hilton Head Island in Beaufort County.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "TPC Scottsdale",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "TPC Scottsdale is a 36-hole golf complex in the southwestern United States, located in Scottsdale, Arizona, northeast of Phoenix.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Muirfield Village Golf Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Muirfield Village is an golf-oriented community in the central United States, located in Dublin, Ohio, a suburb north of Columbus.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "East Lake Golf Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "East Lake Golf Club is a private golf club 5 miles east of downtown Atlanta, Georgia.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "St Andrews Links Old Course",
+    "currentRoofType": "open",
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
+    "knownUnfixable": false,
+    "note": "no Wikipedia data resolved (no title variant resolved)"
+  },
+  {
+    "name": "Royal Troon Golf Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Royal Troon Golf Club is a links golf course in Scotland, located in Troon, South Ayrshire.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Dunes Golf and Beach Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
+    "knownUnfixable": false,
+    "note": "no Wikipedia data resolved (no title variant resolved)"
+  },
+  {
+    "name": "Colonial Country Club",
+    "currentRoofType": "open",
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
+    "knownUnfixable": false,
+    "note": "no Wikipedia data resolved (disambiguation)"
+  },
+  {
+    "name": "TPC Twin Cities",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "TPC Twin Cities is a private golf club in the north central United States, located within the subdivision of Deacon’s Walk in Blaine, Minnesota, a suburb north of Minneapolis.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  }
+]
