@@ -43,14 +43,25 @@ const log = s => {
 const UA = 'field-playground-probe/1.0 (github.com/jeffunglesbee-create/field-playground; research)'
 
 // Ground truth parsed from the live table, so this can't drift from it.
+// Captures lat/lon too, not just roofType -- TASK 2's coordinate gating
+// (below) needs the table's own coordinates to verify a variant match
+// against, not just its roofType.
 function loadVenues() {
   const s = readFileSync('src/data/weather.js', 'utf-8')
   const re = /'([^']+)':\s*\[\s*(-?[\d.]+),\s*(-?[\d.]+),\s*'(open|retractable|dome)'/g
   const rows = []
   let m
-  while ((m = re.exec(s)) !== null) rows.push({ name: m[1], truth: m[4] })
+  while ((m = re.exec(s)) !== null) {
+    rows.push({ name: m[1], lat: parseFloat(m[2]), lon: parseFloat(m[3]), truth: m[4] })
+  }
   return rows
 }
+
+// Same threshold, same distance formula as scripts/probe-poi-geocode.mjs
+// -- reused deliberately, not reinvented, per the CC-CMD instruction:
+// "it is the same question that probe already answered."
+const dist = (a, b, c, d) => Math.sqrt((a - c) ** 2 + (b - d) ** 2)
+const COORD_OK = 0.02
 
 // First sentence only. Naive split on ". " breaks on "St. Louis" and
 // "Inc.", so require the period be followed by a capital and preceded by
@@ -83,7 +94,12 @@ async function summary(title) {
   if (!res.ok) return { err: `HTTP ${res.status}` }
   const j = await res.json()
   if (j.type === 'disambiguation') return { err: 'disambiguation' }
-  return { extract: j.extract ?? '', title: j.title }
+  return {
+    extract: j.extract ?? '',
+    title: j.title,
+    lat: j.coordinates?.lat ?? null,
+    lon: j.coordinates?.lon ?? null,
+  }
 }
 
 // Retry on 429 with backoff. The first run lost 41 of 98 venues to rate
@@ -106,6 +122,15 @@ async function summaryWithRetry(title) {
 // 404s; the article is 'Angel Stadium' (singular). That is a bug in OUR
 // table, not Wikipedia's -- and it means the live weather lookup for that
 // venue silently finds nothing. Worth surfacing explicitly.
+//
+// The Stadium<->Field swap below is UNSOUND on its own: Toyota Stadium
+// (Frisco, TX) and Toyota Field (San Antonio) are two different real
+// venues, as are Riverside Stadium (Middlesbrough) and any "Riverside
+// Field". A variant match here can silently resolve a DIFFERENT stadium
+// entirely. resolve() below gates every variant match against the
+// table's own coordinates before accepting it -- this function still
+// generates candidates freely, but generating a candidate is no longer
+// the same as trusting it.
 function titleVariants(name) {
   const v = [name]
   if (/s\s/.test(name)) v.push(name.replace(/^(\w+)s\s/, '$1 '))   // Angels Stadium -> Angel Stadium
@@ -115,12 +140,38 @@ function titleVariants(name) {
   return [...new Set(v)]
 }
 
-async function resolve(name) {
+// TASK 2 fix: a match on the exact original name needs no verification --
+// there's no ambiguity to resolve. A match on a VARIANT is only accepted
+// if the resolved article's own coordinates agree with the table's truth
+// coordinates for this venue (COORD_OK threshold, same as
+// probe-poi-geocode.mjs). No coordinates on the article, or coordinates
+// that disagree, means the variant is rejected and the next candidate
+// (if any) is tried -- never accepted unverified. A rejected variant is
+// reported distinctly from a plain miss, since "found an article but
+// couldn't confirm it's the right one" is a different, more informative
+// outcome than "found nothing at all".
+async function resolve(name, truthLat, truthLon) {
+  const rejected = []
   for (const t of titleVariants(name)) {
     const r = await summaryWithRetry(t)
-    if (!r.err) return { ...r, viaVariant: t !== name ? t : null }
     if (r.err === 'disambiguation') return r
+    if (r.err) continue
+
+    const isVariant = t !== name
+    if (!isVariant) return { ...r, viaVariant: null }
+
+    if (r.lat == null || r.lon == null) {
+      rejected.push({ variant: t, reason: 'article has no coordinates to verify against' })
+      continue
+    }
+    const d = dist(r.lat, r.lon, truthLat, truthLon)
+    if (d > COORD_OK) {
+      rejected.push({ variant: t, reason: `coordinates disagree (delta ${d.toFixed(4)}) -- likely a different venue` })
+      continue
+    }
+    return { ...r, viaVariant: t, coordDelta: d }
   }
+  if (rejected.length > 0) return { err: 'no title variant resolved', rejected }
   return { err: 'no title variant resolved' }
 }
 
@@ -136,17 +187,18 @@ async function main() {
 
   for (const v of venues) {
     let r
-    try { r = await resolve(v.name) } catch (e) { r = { err: String(e).slice(0, 50) } }
+    try { r = await resolve(v.name, v.lat, v.lon) } catch (e) { r = { err: String(e).slice(0, 50) } }
 
     if (r.err) {
       score.miss++
       log(`MISS  ${v.name}  (${r.err})  [truth ${v.truth}]`)
+      for (const rej of r.rejected ?? []) log(`        rejected variant "${rej.variant}": ${rej.reason}`)
     } else {
       const sent = firstSentence(r.extract)
       const pred = classify(sent)
       if (pred === v.truth) {
         score.correct++
-        log(`ok    ${v.name}  -> ${pred}${r.viaVariant ? `   [matched via "${r.viaVariant}" -- OUR TABLE'S NAME IS WRONG]` : ''}`)
+        log(`ok    ${v.name}  -> ${pred}${r.viaVariant ? `   [matched via "${r.viaVariant}" -- OUR TABLE'S NAME IS WRONG -- coords verified, delta ${r.coordDelta.toFixed(4)}]` : ''}`)
       } else {
         score.wrong++
         wrongs.push({ name: v.name, truth: v.truth, pred, sent })
