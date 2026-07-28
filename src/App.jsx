@@ -52,6 +52,7 @@ import { WeatherPoll } from './components/WeatherPoll'
 import { VenueGeocodeRace } from './components/VenueGeocodeRace'
 import { ScoreTicker } from './components/ScoreTicker'
 import { Arbitrage } from './components/Arbitrage'
+import { TonightsPick } from './components/TonightsPick'
 import { ToastLayer } from './components/Toast'
 import { Tabs, tabId, panelId } from './components/Tabs'
 import { refetchDesk, initUrlDateSync, initBroadcastDateSync, currentDate, deskStore } from './data/relay'
@@ -87,7 +88,7 @@ const POLL_INTERVAL_MS = 15000
 const TOP_NAV_ID = 'app'
 
 const TOP_TABS = [
-  { key: 'games', label: 'Games', count: 10 },
+  { key: 'games', label: 'Games', count: 11 },
   { key: 'picks', label: 'Picks', count: 7 },
   { key: 'stats', label: 'Stats', count: 4 },
   { key: 'journalism', label: 'Journalism', count: 1 },
@@ -202,13 +203,22 @@ export default function App() {
           aria-labelledby={tabId(TOP_NAV_ID, activeTab())}
         >
           <Show when={activeTab() === 'games'}>
-            {/* ScoreTicker leads the Games tab: it is the only surface
-                here that updates sub-second, so it is the one thing
-                worth seeing first. Deliberately NOT added to the spine
-                alongside HealthPanel/AmbientPanel/DeskCard -- that trio
-                is a reasoned set (spine = always-on, tightly coupled,
-                print.css depends on it) and quietly making it a quartet
-                would undo that reasoning. */}
+            {/* TonightsPick now leads the Games tab: it's the synthesis
+                of what everything below separately measures (drama,
+                line movement, cost to watch, weather) into one ranked
+                answer to "what's worth watching" -- the actual product
+                question, ahead of the mechanism demos that prove each
+                signal is real. ScoreTicker follows: it is the only
+                surface here that updates sub-second, so among the
+                per-signal panels it's the one thing worth seeing
+                first. Neither is added to the spine alongside
+                HealthPanel/AmbientPanel/DeskCard -- that trio is a
+                reasoned set (spine = always-on, tightly coupled,
+                print.css depends on it) and quietly growing it would
+                undo that reasoning. */}
+            <SafeSection class={styles.tonightsPick}>
+              <TonightsPick />
+            </SafeSection>
             <SafeSection class={styles.scoreTicker}>
               <ScoreTicker />
             </SafeSection>

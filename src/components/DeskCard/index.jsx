@@ -19,7 +19,7 @@ function Skeleton() {
   )
 }
 
-function gameStatus(g) {
+export function gameStatus(g) {
   if (g.home_score === null) return 'pre'
   if (g.finalized_at) return g.went_to_ot ? 'final_ot' : 'final'
   return 'live'
@@ -369,7 +369,7 @@ function fieldDelta(key, a, b) {
 // short delta, so a value change always overrides the gate.
 const MOVEMENT_THRESHOLD_SEC = 300 // 5 min -- same floor scripts/probe-line-movement.mjs used
 
-function lineMovement(opening, closing) {
+export function lineMovement(opening, closing) {
   const open = parseOddsRaw(opening)
   const close = parseOddsRaw(closing)
   if (!open || !close || !open.capturedAt || !close.capturedAt) return null
@@ -489,13 +489,13 @@ function OddsRow(props) {
 // findESPNScore(), which deskStore doesn't expose in the same form.
 // isCloseLate below is an honest, labeled approximation (live status +
 // close margin) standing in for that, not a claimed exact match.
-function dramaTier(score) {
+export function dramaTier(score) {
   if (score >= 80) return 'fire'
   if (score >= 60) return 'hot'
   if (score >= 40) return 'warm'
   return ''
 }
-function dramaLabel(score) {
+export function dramaLabel(score) {
   if (score >= 80) return '🔥'
   if (score >= 60) return '⚡'
   if (score >= 40) return '●'
