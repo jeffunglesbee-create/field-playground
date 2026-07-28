@@ -16,13 +16,29 @@ name: Deploy Playground
 # field-playground to its allowed `repository` claims -- that lives in
 # its own repo, which chat has no access to, so it wasn't attempted.
 # Worth considering if adding a token to a second repo is unwanted.
-#
-# Path filter is deliberate: this repo takes frequent docs/outbox
-# commits from the chat<->Claude Code loop, and none of those change
-# what gets served.
 
 on:
   workflow_dispatch: {}
+
+  # WHY A SCHEDULE EXISTS, and it is not belt-and-braces:
+  # the push trigger below effectively NEVER FIRES. Every commit made
+  # through the FIELD Handoff MCP tooling has "[skip ci]" appended to its
+  # message automatically, and [skip ci] suppresses ALL workflows
+  # including this one. With work landing continuously from two parallel
+  # sessions, the deployed site was observed going stale within minutes
+  # of a manual deploy, twice on 2026-07-28, with nothing signalling it.
+  #
+  # A schedule decouples "is the site current" from "did the commit
+  # message happen to permit CI" -- which is the actual failure, rather
+  # than a symptom of it. Every 3 hours; the skip-if-unchanged step below
+  # means an unchanged repo costs a build and two curls, not a deploy.
+  schedule:
+    - cron: '0 */3 * * *'
+
+  # Retained for the case where a commit arrives WITHOUT [skip ci]
+  # (e.g. a GitHub-UI edit, or a CI job committing back). Path filter is
+  # deliberate: this repo takes frequent docs/outbox commits from the
+  # chat <-> Claude Code loop, and none of those change what gets served.
   push:
     branches: [main]
     paths:
@@ -32,6 +48,13 @@ on:
       - 'package-lock.json'
       - 'vite.config.js'
       - 'wrangler.toml'
+
+# A scheduled run and a manual dispatch could otherwise overlap and race
+# each other's uploads. Queue rather than cancel -- an in-flight deploy
+# should finish rather than be aborted mid-upload.
+concurrency:
+  group: deploy-playground
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -44,13 +67,63 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run build
+
+      # Skip a redundant upload when nothing changed. Compares the entry
+      # bundle named in the freshly-built dist/index.html against the one
+      # the live site is currently serving. Reads the entry from
+      # index.html rather than globbing dist/assets/ -- that glob matches
+      # BOTH the entry bundle and the lazy chunk, and picking the first
+      # alphabetically produced a false "stale" reading on 2026-07-28.
+      - name: Skip if the live site already serves this build
+        id: check
+        run: |
+          BUILT=$(grep -o '/assets/index-[A-Za-z0-9_-]*\.js' dist/index.html | head -1)
+          LIVE=$(curl -sS --max-time 20 https://field-playground.jeffunglesbee.workers.dev/ \
+                 | grep -o '/assets/index-[A-Za-z0-9_-]*\.js' | head -1 || echo "")
+          echo "built: $BUILT"
+          echo "live:  $LIVE"
+          if [ -n "$BUILT" ] && [ "$BUILT" = "$LIVE" ]; then
+            echo "unchanged=true" >> "$GITHUB_OUTPUT"
+            echo "Already current — skipping deploy."
+          else
+            echo "unchanged=false" >> "$GITHUB_OUTPUT"
+            echo "built=$BUILT" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy to Cloudflare Workers
+        if: steps.check.outputs.unchanged != 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      - name: Confirm the deployed site actually serves
+
+      # A bare HTTP 200 on the root proves NOTHING here. wrangler.toml
+      # sets not_found_handling = "single-page-application", so a broken
+      # or missing asset path still returns 200 with index.html as the
+      # body. Confirmed on 2026-07-28: the root 200 was passing while the
+      # site served a stale bundle.
+      #
+      # So this asserts the thing that actually matters -- that the entry
+      # bundle just built is the one being served, and that fetching it
+      # returns real JavaScript rather than an HTML fallback.
+      - name: Confirm the deployed site serves THIS build
+        if: steps.check.outputs.unchanged != 'true'
         run: |
           sleep 10
-          code=$(curl -sS -o /dev/null -w "%{http_code}" https://field-playground.jeffunglesbee.workers.dev/)
-          echo "root returned HTTP $code"
-          test "$code" = "200"
+          BUILT="${{ steps.check.outputs.built }}"
+          LIVE=$(curl -sS --max-time 20 https://field-playground.jeffunglesbee.workers.dev/ \
+                 | grep -o '/assets/index-[A-Za-z0-9_-]*\.js' | head -1)
+          echo "expected: $BUILT"
+          echo "serving:  $LIVE"
+          test "$BUILT" = "$LIVE" || { echo "live site is not serving the build just deployed"; exit 1; }
+
+          CT=$(curl -sS --max-time 20 -o /dev/null -w "%{content_type}" \
+               "https://field-playground.jeffunglesbee.workers.dev$LIVE")
+          SZ=$(curl -sS --max-time 20 -o /dev/null -w "%{size_download}" \
+               "https://field-playground.jeffunglesbee.workers.dev$LIVE")
+          echo "asset content-type: $CT  size: $SZ"
+          case "$CT" in
+            *javascript*) : ;;
+            *) echo "entry asset served as '$CT', not JavaScript — SPA fallback, deploy is broken"; exit 1 ;;
+          esac
+          test "$SZ" -gt 10000 || { echo "entry asset only $SZ bytes — suspiciously small"; exit 1; }
+          echo "verified: real JS bundle, matching the build"
