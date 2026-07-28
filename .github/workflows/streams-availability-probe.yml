@@ -1,0 +1,53 @@
+name: Streams Availability Probe
+
+# Closes a verification gap flagged in this session: TonightsPick and
+# Arbitrage's "My Services" modal both depend on game.streams being
+# populated, but a live check (2026-07-28) found zero games carrying
+# stream data across the prior 6 days -- the modal's open/toggle/
+# persist path was never exercised against real data as a result. This
+# probes a much wider window on a GitHub Actions runner (this sandbox
+# can't reach field-relay-nba.jeffunglesbee.workers.dev directly, same
+# egress block as every other external host probed this session) to
+# find out whether that was a genuine dry spell or something worse.
+#
+# Runs against whatever branch triggers it (github.ref_name), not
+# hardcoded to main -- unlike line-movement-probe.yml, which only ever
+# needed to run against main.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe streams availability across a wide date sample
+        timeout-minutes: 5
+        continue-on-error: true
+        run: node scripts/probe-streams-availability.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "streams-availability-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: streams availability probe result [skip ci]"
+          for i in 1 2 3 4; do
+            git push && exit 0
+            echo "push rejected (attempt $i), fetching + rebasing"
+            git fetch origin "${{ github.ref_name }}"
+            git rebase "origin/${{ github.ref_name }}"
+            sleep $((i * 2))
+          done
+          git push
