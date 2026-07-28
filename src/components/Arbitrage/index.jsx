@@ -1,6 +1,6 @@
-import { For, Show, createMemo, createSignal } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { For, Show, createMemo, createSignal, onMount, onCleanup } from 'solid-js'
 import { deskStore } from '../../data/relay'
+import { myServices, toggleMyService } from '../../data/myServices'
 import styles from './Arbitrage.module.css'
 
 // Arbitrage — the first playground surface that touches FIELD's ACTUAL
@@ -30,9 +30,23 @@ import styles from './Arbitrage.module.css'
 // unknown rather than being assigned a guessed price — an invented
 // cost is worse than a visible gap, and this whole session has been
 // about not doing that.
+//
+// OWNERSHIP: the first version tracked "what you own" as a local,
+// ephemeral createStore({}) -- gone on remount, invisible to any other
+// surface. Production has a real name and shape for this already: "My
+// Services", an onboarding modal (confirmed via FIELD_Handoff against
+// jubilant-bassoon's STANDARDS.md) gated behind a localStorage flag.
+// `../../data/myServices` is that same concept done properly here --
+// shared, persisted -- and this component's own toggle UI moved into an
+// actual modal to match, rather than staying an always-visible inline
+// chip row. TonightsPick reads the same store, so owning a service here
+// changes what TonightsPick calls "already have it" there too.
 
-// Verbatim from production. Monthly USD.
-const PRICES = {
+// Verbatim from production. Monthly USD. Exported so other surfaces
+// (TonightsPick) can price a stream without re-copying this table --
+// two independently-maintained copies of "production's real prices"
+// is exactly the kind of drift this session has been avoiding.
+export const PRICES = {
   peacock: 9.99, max: 16.99, prime: 14.99, apple: 9.99, espnplus: 11.99,
   paramount: 7.99, tcplus: 9.99, netflix: 7.99, mlbtv: 24.99, mlbplus: 5.99,
   bein: 9.99, willow: 9.99, youtubetv: 82.99, fubo: 79.99, hulu: 82.99,
@@ -62,7 +76,7 @@ const SERVICE_MAP = [
   [/directv/i, 'directv'],
 ]
 
-function parseStreams(raw) {
+export function parseStreams(raw) {
   if (!raw || typeof raw !== 'string') return []
   return raw.split(',').map(s => s.trim()).filter(Boolean).map(label => {
     const hit = SERVICE_MAP.find(([re]) => re.test(label))
@@ -71,10 +85,55 @@ function parseStreams(raw) {
   })
 }
 
+function MyServicesModal(props) {
+  function handleKeydown(e) {
+    if (e.key === 'Escape') props.onClose()
+  }
+  onMount(() => {
+    window.addEventListener('keydown', handleKeydown)
+    onCleanup(() => window.removeEventListener('keydown', handleKeydown))
+  })
+
+  return (
+    <div class={styles.backdrop} onClick={props.onClose}>
+      <div
+        class={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-label="My Services"
+        onClick={e => e.stopPropagation()}
+      >
+        <header class={styles.modalHeader}>
+          <span class={styles.label}>My Services</span>
+          <button class={styles.modalClose} onClick={props.onClose} aria-label="close">✕</button>
+        </header>
+        <p class={styles.note}>
+          What you already subscribe to — shared with every surface that reads it, not just
+          Arbitrage, and remembered across visits.
+        </p>
+        <div class={styles.chips}>
+          <For each={props.services}>
+            {s => (
+              <button
+                class={`${styles.chip} ${myServices[s.id] ? styles.chipOwned : ''}`}
+                onClick={() => toggleMyService(s.id)}
+                title={s.price != null ? `$${s.price}/mo` : 'price unknown — not in production table'}
+              >
+                {s.label}
+                <span class={styles.chipCount}>{s.games}</span>
+                <Show when={s.price == null}><span class={styles.unpriced}>?</span></Show>
+              </button>
+            )}
+          </For>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function Arbitrage() {
-  // Which services the user already has. Local only.
-  const [owned, setOwned] = createStore({})
   const [showUnpriced, setShowUnpriced] = createSignal(false)
+  const [servicesOpen, setServicesOpen] = createSignal(false)
 
   const games = createMemo(() => [
     ...(deskStore.games?.regular ?? []),
@@ -103,7 +162,7 @@ export function Arbitrage() {
     return [...map.values()].sort((a, b) => b.games - a.games)
   })
 
-  const ownedKeys = createMemo(() => Object.keys(owned).filter(k => owned[k]))
+  const ownedKeys = createMemo(() => Object.keys(myServices).filter(k => myServices[k]))
 
   // Coverage: how many of tonight's games are reachable with what you
   // already own. Derived from the same source, so it moves with the
@@ -167,24 +226,14 @@ export function Arbitrage() {
             {coverage().uncovered} unreachable
           </span>
           <span class={styles.stat}>${monthlySpend().toFixed(2)}/mo</span>
+          <button class={styles.editServicesBtn} onClick={() => setServicesOpen(true)}>
+            My Services ({ownedKeys().length})
+          </button>
         </div>
 
-        <h4 class={styles.subhead}>What you have</h4>
-        <div class={styles.chips}>
-          <For each={services()}>
-            {s => (
-              <button
-                class={`${styles.chip} ${owned[s.id] ? styles.chipOwned : ''}`}
-                onClick={() => setOwned(s.id, v => !v)}
-                title={s.price != null ? `$${s.price}/mo` : 'price unknown — not in production table'}
-              >
-                {s.label}
-                <span class={styles.chipCount}>{s.games}</span>
-                <Show when={s.price == null}><span class={styles.unpriced}>?</span></Show>
-              </button>
-            )}
-          </For>
-        </div>
+        <Show when={servicesOpen()}>
+          <MyServicesModal services={services()} onClose={() => setServicesOpen(false)} />
+        </Show>
 
         <h4 class={styles.subhead}>
           Cheapest way to reach what you can't
