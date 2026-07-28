@@ -495,6 +495,32 @@
   margin-top: 1px;
 }
 
+.movementRow {
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+
+.movementNoData {
+  color: var(--field-text-muted);
+  font-style: italic;
+}
+
+.movementStable {
+  color: var(--field-text-secondary);
+}
+
+.movementMoved {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.movementPart {
+  color: #da4;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .empty {
   font-size: 12px;
   color: var(--field-text-muted);

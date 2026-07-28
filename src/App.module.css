@@ -91,6 +91,7 @@
 .weatherPoll,
 .scoreTicker,
 .arbitrage,
+.tonightsPick,
 .venueGeocodeRace {
   display: flex;
   flex-direction: column;
