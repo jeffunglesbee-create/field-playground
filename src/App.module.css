@@ -89,6 +89,8 @@
 .dramaLeaderboard,
 .relaySystemStatus,
 .weatherPoll,
+.scoreTicker,
+.arbitrage,
 .venueGeocodeRace {
   display: flex;
   flex-direction: column;
