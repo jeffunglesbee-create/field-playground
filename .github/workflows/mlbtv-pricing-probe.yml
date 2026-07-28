@@ -1,0 +1,53 @@
+name: MLB.TV Pricing Probe
+
+# CI-as-proxy: mlb.com is not on the chat sandbox's egress allowlist.
+# Answers whether the 24 unmatched stream labels from
+# probe-streams-availability have real, sourceable prices -- or whether
+# Arbitrage's current "unknown" handling is the correct permanent answer.
+#
+# Generous timeouts: ~15 URL fetches with courtesy delays. The script
+# flushes output after every line, so a timeout still leaves partial
+# results rather than nothing.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe MLB.TV and per-team pages
+        timeout-minutes: 8
+        continue-on-error: true
+        run: node scripts/probe-mlbtv-pricing.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "mlbtv-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: mlbtv pricing probe result [skip ci]"
+          # Rebase-and-retry: a parallel session pushes to main often
+          # enough that a plain push races and is rejected
+          # non-fast-forward -- that is exactly how the first
+          # wikipedia-roof-probe run failed, losing results the script
+          # had already written successfully.
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push rejected, rebasing (attempt $i)"
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          echo "could not push after 5 attempts"
+          exit 1
