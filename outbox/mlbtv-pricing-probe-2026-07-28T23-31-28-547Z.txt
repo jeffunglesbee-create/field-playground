@@ -1,0 +1,43 @@
+probe_at: 2026-07-28T23:31:28.548Z
+purpose: do the 24 unmatched stream labels have findable prices?
+  12 ".TV" labels (hypothesis: MLB-operated DTC, priced)
+  12 RSN labels  (hypothesis: carriage-bundled, unpriced)
+
+=== PART 1: MLB.TV subscription pages ===
+  mlb subscribe: HTTP 200  (https://www.mlb.com/live-stream-games/subscribe)
+     $94.99/season
+        ...nticate Already A Subscriber? Help The Home of Streaming Baseball Seasonal Monthly MLB.TV $94.99 /season Watch EVERY out-of-market game LIVE or on dem...
+     $59.99/year
+        ...ive audio for all MLB teams. Subscription renews on or around March 1, 2027. BUY NOW MLB+ $59.99 /yearly Listen to LIVE audio of all 30 teams (no blac...
+  mlb tv root: HTTP 200  (https://www.mlb.com/tv)
+     no subscription-context prices found
+  mlb live games: HTTP 200  (https://www.mlb.com/live-stream-games)
+     no subscription-context prices found
+
+=== PART 2: per-team DTC pages ===
+(testing whether a ".TV" label corresponds to a real product page)
+  Brewers.TV: HTTP 200  (no prices found)
+  Cardinals.TV: HTTP 200  (no prices found)
+  Tigers.TV: HTTP 200  (no prices found)
+  Rays.TV: HTTP 200  (no prices found)
+  Marlins.TV: HTTP 200  (no prices found)
+  Mariners.TV: HTTP 200  (no prices found)
+  Royals.TV: HTTP 200  (no prices found)
+  Reds.TV: HTTP 200  (no prices found)
+  Nationals.TV: HTTP 200  (no prices found)
+  Twins.TV: HTTP 200  prices: $40
+  Angels.TV: HTTP 200  (no prices found)
+  CLEGuardians.TV: HTTP 200  (no prices found)
+
+=== PART 3: RSN labels — expected to have NO standalone price ===
+(these are carriage-bundled; confirming rather than assuming)
+  MASN: not probed — no canonical URL pattern exists for these,
+     and guessing one would produce exactly the false-negative
+     this probe format exists to avoid. Left as a stated gap.
+  (12 RSN labels total, listed in the script)
+
+=== VERDICT ===
+Read Part 2 above: if ".TV" pages resolve with prices, those labels
+can be priced from a real source and added to PRICES. If they do
+not, the current "unknown" handling in Arbitrage is correct and
+should stay -- an unpriced service is honest; a guessed one is not.
