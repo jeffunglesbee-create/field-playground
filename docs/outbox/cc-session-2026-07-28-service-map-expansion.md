@@ -2,7 +2,9 @@
 
 **Date:** 2026-07-28
 **Branch:** `claude/playground-setup-njng55`
-**Commits:** 1fb3fd7 (expansion), 8614b91 (CI probe result, verification)
+**PR:** jeffunglesbee-create/field-playground#28 (merged)
+**Commits:** 1fb3fd7 (expansion), 8614b91 (CI probe result, verification),
+95d6043 (dev mock fix, see below)
 **CI runs:** [30405232819](https://github.com/jeffunglesbee-create/field-playground/actions/runs/30405232819) (baseline, on `main`), [30406477402](https://github.com/jeffunglesbee-create/field-playground/actions/runs/30406477402) (post-expansion, on this branch)
 
 ---

@@ -2,6 +2,7 @@
 
 **Date:** 2026-07-28
 **Branch:** `claude/playground-setup-njng55`
+**PR:** jeffunglesbee-create/field-playground#28 (merged)
 **Commit:** e33c839 (branch restarted from `main` -- its prior PR, #27,
 was already merged; per the branch-restart rule this pushed as fresh
 history via force-with-lease, not stacked on merged commits)
