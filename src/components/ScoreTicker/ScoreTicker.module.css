@@ -1,0 +1,148 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.good { color: #4c8; }
+.bad  { color: #e77; }
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  font-size: 10px;
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.pauseBtn {
+  font-size: 9px;
+  font-family: inherit;
+  color: var(--field-text-muted);
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 2px 7px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.pauseBtn:hover {
+  color: var(--field-text-secondary);
+  border-color: #3a3a3a;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+/* The viewport clips; the track scrolls. The track carries the
+   animation and is NEVER keyed to data — that separation is the whole
+   point of the experiment. */
+.viewport {
+  overflow: hidden;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 6px 0;
+  /* Fade the edges so items enter and leave rather than pop. */
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.track {
+  display: flex;
+  gap: 22px;
+  width: max-content;
+  animation: ticker-scroll 60s linear infinite;
+}
+
+.trackPaused {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Respect reduced-motion: a ticker that cannot be stopped is a
+   genuine accessibility problem, not a style preference. The pause
+   button remains available either way. */
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none; }
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot.pre      { background: #2a2a2a; }
+.dot.live     { background: #4c8; animation: blink 1.4s ease-in-out infinite; }
+.dot.final    { background: #3a3a3a; }
+.dot.final_ot { background: #3a3a3a; }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.teams {
+  color: var(--field-text-secondary);
+}
+
+.score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.score_live     { color: #4c8; }
+.score_final    { color: var(--field-text-primary); }
+.score_final_ot { color: var(--field-text-primary); }
+.score_pre      { color: var(--field-text-muted); }
+
+.ot {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--field-text-muted);
+  letter-spacing: 0.05em;
+}
