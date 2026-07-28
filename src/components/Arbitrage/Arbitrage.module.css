@@ -1,0 +1,198 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 10px;
+  background: #161616;
+  border: 1px solid #232323;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.stat {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.good { color: #4c8; }
+.warn { color: #da4; }
+
+.subhead {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  margin-bottom: 6px;
+}
+
+.allCovered {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: #4c8;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-family: inherit;
+  color: var(--field-text-secondary);
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 3px 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip:hover {
+  border-color: #3a3a3a;
+  color: var(--field-text-primary);
+}
+
+.chipOwned {
+  background: #1a2e1a;
+  border-color: #2a4a2a;
+  color: #4c8;
+}
+
+.chipCount {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+  font-size: 9px;
+}
+
+.unpriced {
+  color: #da4;
+  font-weight: 700;
+}
+
+.chipInert {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  color: var(--field-text-muted);
+  background: #141414;
+  border: 1px dashed #2a2a2a;
+  border-radius: 4px;
+  padding: 3px 7px;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.marginalList {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.marginalRow {
+  display: grid;
+  grid-template-columns: minmax(60px, 1fr) auto auto minmax(0, 92px);
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  padding: 3px 0;
+  border-bottom: 1px solid #181818;
+}
+
+.marginalRow:last-child { border-bottom: none; }
+
+.mName {
+  color: var(--field-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mUnlocks {
+  color: #4c8;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mPrice {
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mCpg {
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toggleUnpriced {
+  font-size: 9px;
+  font-family: inherit;
+  color: var(--field-text-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.toggleUnpriced:hover { color: var(--field-text-secondary); }
+
+.unpricedNote {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--field-text-muted);
+  margin: 6px 0;
+}
