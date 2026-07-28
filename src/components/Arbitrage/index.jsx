@@ -56,6 +56,27 @@ export const PRICES = {
 // Maps the relay's display strings onto PRICES keys. Deliberately
 // conservative: anything unmatched stays unmatched and is reported,
 // rather than being force-fitted to the nearest-looking key.
+//
+// Expanded 2026-07-28 after scripts/probe-streams-availability.mjs (run
+// via .github/workflows/streams-availability-probe.yml) found this
+// table was only resolving 325 of 1020 real label mentions (32%) --
+// the other 68% split between team RSN feeds (already documented as
+// deliberately unmatched, see the unpricedNote below) and major
+// national networks this table had never covered at all: ESPN's
+// linear/cable channel (distinct from ESPN+, already mapped), TBS,
+// FS1, NBA TV, MLB Network, CNBC, Golf Channel, ION, NBCSN, Disney+,
+// WNBA League Pass, TV Azteca, FOX Deportes, FOX One, and the four
+// broadcast networks (FOX/CBS/NBC/ABC). Patterns below are anchored
+// (^...$) wherever the bare national brand could otherwise collide
+// with a same-named LOCAL affiliate call sign or regional feed also
+// present in the real data (e.g. "FOX" must not match "Fox 5 WTTG" or
+// "FOX Deportes"; "Sportsnet" must not match "Sportsnet LA", a
+// Dodgers regional feed, not the Canadian national network). Local
+// affiliate call signs themselves (KMSP-TV, WPIX, KING 5, ...) are
+// deliberately NOT mapped -- there are effectively unbounded many,
+// they're market-specific rather than a single ownable product, and
+// mapping them would be exactly the over-fitting this table has
+// avoided since it started.
 const SERVICE_MAP = [
   [/peacock/i, 'peacock'],
   [/\bmax\b/i, 'max'],
@@ -74,14 +95,48 @@ const SERVICE_MAP = [
   [/hulu/i, 'hulu'],
   [/sling/i, 'sling'],
   [/directv/i, 'directv'],
+  // -- major national networks, added 2026-07-28 --
+  [/^espn$/i, 'espn'],
+  [/^tbs$/i, 'tbs'],
+  [/^fs1$/i, 'fs1'],
+  [/nba tv/i, 'nbatv'],
+  [/mlb net/i, 'mlbnetwork'],
+  [/^cnbc$/i, 'cnbc'],
+  [/golf chnl|golf channel/i, 'golfchannel'],
+  [/^ion$/i, 'ion'],
+  [/^nbcsn$/i, 'nbcsn'],
+  [/disney\+/i, 'disneyplus'],
+  [/wnba league pass/i, 'wnbaleaguepass'],
+  [/tv azteca/i, 'tvazteca'],
+  [/fox deportes/i, 'foxdeportes'],
+  [/fox one/i, 'foxone'],
+  [/^fox$/i, 'fox'],
+  [/^cbs$/i, 'cbs'],
+  [/^nbc$/i, 'nbc'],
+  [/^abc$/i, 'abc'],
+  [/^tsn$/i, 'tsn'],
+  [/^sportsnet$/i, 'sportsnet'],
+  [/^tva$/i, 'tva'],
 ]
+
+// FOX, CBS, NBC, ABC are broadcast networks -- free over the air by US
+// law, not a price this table doesn't happen to know. That's a third,
+// honest category distinct from both PRICES (a real number) and
+// "unmatched" (a real gap): this one is known, and it's $0. None of
+// the newly-added cable-only nationals (ESPN linear, TBS, FS1, NBA TV,
+// MLB Network, ...) get a PRICES entry either -- they're sold bundled
+// into cable/live-TV packages (youtubetv, fubo, hulu, sling, directv,
+// all already in PRICES), never standalone, so a standalone monthly
+// number for them would be exactly the invented cost this table has
+// never allowed.
+const FREE_BROADCAST = new Set(['fox', 'cbs', 'nbc', 'abc'])
 
 export function parseStreams(raw) {
   if (!raw || typeof raw !== 'string') return []
   return raw.split(',').map(s => s.trim()).filter(Boolean).map(label => {
     const hit = SERVICE_MAP.find(([re]) => re.test(label))
     const key = hit ? hit[1] : null
-    return { label, key, price: key ? PRICES[key] : null }
+    return { label, key, price: key ? PRICES[key] : null, free: key ? FREE_BROADCAST.has(key) : false }
   })
 }
 
@@ -115,13 +170,14 @@ function MyServicesModal(props) {
           <For each={props.services}>
             {s => (
               <button
-                class={`${styles.chip} ${myServices[s.id] ? styles.chipOwned : ''}`}
+                class={`${styles.chip} ${myServices[s.id] ? styles.chipOwned : ''} ${s.free ? styles.chipFree : ''}`}
                 onClick={() => toggleMyService(s.id)}
-                title={s.price != null ? `$${s.price}/mo` : 'price unknown — not in production table'}
+                title={s.free ? 'free over-the-air broadcast' : s.price != null ? `$${s.price}/mo` : 'price unknown — not in production table'}
               >
                 {s.label}
                 <span class={styles.chipCount}>{s.games}</span>
-                <Show when={s.price == null}><span class={styles.unpriced}>?</span></Show>
+                <Show when={s.free}><span class={styles.freeTag}>free</span></Show>
+                <Show when={s.price == null && !s.free}><span class={styles.unpriced}>?</span></Show>
               </button>
             )}
           </For>
@@ -195,7 +251,9 @@ export function Arbitrage() {
       out.push({
         ...svc,
         unlocks,
-        costPerGame: svc.price != null ? svc.price / unlocks : null,
+        // Free broadcast networks cost $0 to add, not "unknown" -- and
+        // 0 correctly sorts ahead of every priced option below.
+        costPerGame: svc.free ? 0 : (svc.price != null ? svc.price / unlocks : null),
       })
     }
     return out.sort((a, b) => {
@@ -205,7 +263,10 @@ export function Arbitrage() {
     })
   })
 
-  const unpricedCount = createMemo(() => services().filter(s => s.price == null).length)
+  // Free broadcast nets ARE priced -- we know the price, it's $0 --
+  // so they're excluded from the "unpriced" bucket, which is
+  // specifically the "we genuinely don't know" case.
+  const unpricedCount = createMemo(() => services().filter(s => s.price == null && !s.free).length)
 
   return (
     <div class={styles.root}>
@@ -248,10 +309,10 @@ export function Arbitrage() {
                 <span class={styles.mName}>{m.label}</span>
                 <span class={styles.mUnlocks}>+{m.unlocks} game{m.unlocks === 1 ? '' : 's'}</span>
                 <span class={styles.mPrice}>
-                  {m.price != null ? `$${m.price.toFixed(2)}` : '—'}
+                  {m.free ? 'free' : m.price != null ? `$${m.price.toFixed(2)}` : '—'}
                 </span>
                 <span class={styles.mCpg}>
-                  {m.costPerGame != null ? `$${m.costPerGame.toFixed(2)}/game` : 'price unknown'}
+                  {m.free ? 'free/game' : m.costPerGame != null ? `$${m.costPerGame.toFixed(2)}/game` : 'price unknown'}
                 </span>
               </div>
             )}
@@ -266,13 +327,17 @@ export function Arbitrage() {
           <Show when={showUnpriced()}>
             <p class={styles.unpricedNote}>
               These appear in the relay's stream strings but have no entry in
-              production's PRICES table — mostly team-owned RSN feeds
-              (Royals.TV, Tigers.TV) which are typically bundled rather than
-              sold standalone. Shown as unknown rather than assigned a guessed
-              cost.
+              production's PRICES table — team-owned RSN feeds (Royals.TV,
+              Tigers.TV) that are typically bundled rather than sold
+              standalone, plus national cable networks (ESPN, TBS, FS1, NBA
+              TV, MLB Network, ...) that are real, mapped services but are
+              also only ever sold bundled into a cable or live-TV package,
+              never standalone. Broadcast networks (FOX, CBS, NBC, ABC) are
+              NOT in this list — those are shown as free, not unpriced,
+              since that's a real known fact rather than a gap.
             </p>
             <div class={styles.chips}>
-              <For each={services().filter(s => s.price == null)}>
+              <For each={services().filter(s => s.price == null && !s.free)}>
                 {s => <span class={styles.chipInert}>{s.label}</span>}
               </For>
             </div>

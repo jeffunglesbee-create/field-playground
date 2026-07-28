@@ -40,11 +40,15 @@ const BLOWOUT_MARGIN = 20
 function cheapestStream(streamsRaw) {
   const streams = parseStreams(streamsRaw)
   if (!streams.length) return null
+  // Free broadcast (FOX/CBS/NBC/ABC, from Arbitrage's SERVICE_MAP) beats
+  // every other option -- it needs no subscription at all, owned or not.
+  const free = streams.find(s => s.free)
+  if (free) return { label: free.label, owned: false, free: true, price: 0 }
   const owned = streams.find(s => s.key && myServices[s.key])
-  if (owned) return { label: owned.label, owned: true, price: 0 }
+  if (owned) return { label: owned.label, owned: true, free: false, price: 0 }
   const priced = streams.filter(s => s.price != null).sort((a, b) => a.price - b.price)
-  if (priced.length) return { label: priced[0].label, owned: false, price: priced[0].price }
-  return { label: streams[0].label, owned: false, price: null }
+  if (priced.length) return { label: priced[0].label, owned: false, free: false, price: priced[0].price }
+  return { label: streams[0].label, owned: false, free: false, price: null }
 }
 
 // weatherData is a createResource -- calling its accessor while the
@@ -132,12 +136,14 @@ export function TonightsPick() {
                       <span class={`${styles.badge} ${styles.badgeBlowout}`}>blowout</span>
                     </Show>
                     <Show when={entry.stream} fallback={<span class={styles.badgeMuted}>no stream data</span>}>
-                      <span class={`${styles.badge} ${entry.stream.owned ? styles.badgeOwned : ''}`}>
-                        {entry.stream.owned
-                          ? `you have it — ${entry.stream.label}`
-                          : entry.stream.price != null
-                            ? `${entry.stream.label} $${entry.stream.price.toFixed(2)}/mo`
-                            : `${entry.stream.label} — price unknown`}
+                      <span class={`${styles.badge} ${entry.stream.owned || entry.stream.free ? styles.badgeOwned : ''}`}>
+                        {entry.stream.free
+                          ? `free — ${entry.stream.label}`
+                          : entry.stream.owned
+                            ? `you have it — ${entry.stream.label}`
+                            : entry.stream.price != null
+                              ? `${entry.stream.label} $${entry.stream.price.toFixed(2)}/mo`
+                              : `${entry.stream.label} — price unknown`}
                       </span>
                     </Show>
                     <Show when={entry.weather}>
