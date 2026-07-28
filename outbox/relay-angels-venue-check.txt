@@ -1,0 +1,14 @@
+checked_at: 2026-07-28T02:53:05Z
+endpoint: https://field-relay-nba.jeffunglesbee.workers.dev/context/date/{date}
+window: -14 to +14 days from today
+
+2026-07-17: "venue":"Angel Stadium"
+2026-07-18: "venue":"Angel Stadium"
+2026-07-19: "venue":"Angel Stadium"
+2026-07-20: "venue":"Angel Stadium"
+2026-07-21: "venue":"Angel Stadium"
+2026-07-22: "venue":"Angel Stadium"
+2026-07-27: "venue":"Angel Stadium"
+
+Read the venue string(s) above exactly as printed -- that
+spelling is what src/data/weather.js's key must match.
