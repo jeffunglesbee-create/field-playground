@@ -1,0 +1,49 @@
+name: Line Movement Probe
+
+# Independently re-verifies chat's finding (2026-07-27, screenshots):
+# closing_odds is frequently captured only seconds before opening_odds
+# -- both snapshots from the same cron run, not a genuine open-to-close
+# window. Only games with a real gap between captures (chat's example:
+# 2026-07-25's MLS slate, ~14 hours) show genuine line movement.
+#
+# This sandbox can't reach field-relay-nba.jeffunglesbee.workers.dev
+# directly (same egress block as every other external host probed
+# today), so this runs on a GitHub Actions runner instead.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe line movement across a wide date sample
+        timeout-minutes: 5
+        continue-on-error: true
+        run: node scripts/probe-line-movement.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "line-movement-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: line movement probe result [skip ci]"
+          for i in 1 2 3 4; do
+            git push && exit 0
+            echo "push rejected (attempt $i), fetching + rebasing"
+            git fetch origin main
+            git rebase origin/main
+            sleep $((i * 2))
+          done
+          git push
