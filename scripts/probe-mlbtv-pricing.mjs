@@ -153,7 +153,22 @@ async function main() {
     const prices = r.status === 200 ? extractPrices(r.body) : []
     const solid = prices.filter(p => !p.suspect)
     const suspect = prices.filter(p => p.suspect)
-    log(`  ${label}: HTTP ${r.status}${solid.length ? '  PRICES: ' + solid.map(p => '
+    // Plain concatenation, NOT a template literal. A dollar sign inside
+    // a template literal was silently eaten in a previous edit,
+    // truncating this line and deleting the context loops below.
+    const money = String.fromCharCode(36)
+    const priceList = solid.map(p => money + p.amount + '/' + p.unit).join(', ')
+    log('  ' + label + ': HTTP ' + r.status +
+        (solid.length ? '  PRICES: ' + priceList : '  (no subscription prices)'))
+    // ALWAYS log context for any hit. The first run reported a bare
+    // Twins.TV 40 with no context, which made it impossible to judge
+    // whether it was real -- the exact failure this fixes.
+    for (const p of solid) log('     ...' + p.context + '...')
+    for (const p of suspect) {
+      log('     SUSPECT ' + money + p.amount +
+          ' (no period attached -- likely not a subscription)')
+      log('     ...' + p.context + '...')
+    }
     await new Promise(r => setTimeout(r, 1000))
   }
 
