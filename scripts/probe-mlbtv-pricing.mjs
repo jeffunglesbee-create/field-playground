@@ -184,7 +184,7 @@ main().catch(e => log('FAILED: ' + String(e)))
     for (const p of solid) log(`     ...${p.context}...`)
     for (const p of suspect) {
       log(`     SUSPECT ${p.amount} (no period attached — likely not a subscription)`)
-      log(`developer     ...${p.context}...`)
+      log(`     ...${p.context}...`)
     }
     await new Promise(r => setTimeout(r, 1000))
   }
