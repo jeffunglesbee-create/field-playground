@@ -81,7 +81,17 @@ async function fetchText(url) {
 }
 
 // Pull dollar amounts that sit near subscription language. Deliberately
-// narrow: a page full of merchandise prices should not produce noise.
+// narrow: a page full of merchandise or ticket prices should not produce
+// noise.
+//
+// TIGHTENED after the first run: the original filter accepted a bare
+// "$40" on the Twins page purely because the surrounding text mentioned
+// "stream". Every sibling team page returned nothing, which makes a lone
+// unitless hit far more likely to be a ticket or merchandise price than
+// a subscription. A subscription price essentially always carries a
+// PERIOD (/month, /season, /year), so requiring one is the cheap
+// discriminator. Unitless hits are still captured, but flagged as
+// suspect rather than reported as prices.
 function extractPrices(html) {
   const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
   const hits = []
@@ -90,10 +100,14 @@ function extractPrices(html) {
   while ((m = re.exec(text)) !== null) {
     const ctx = text.slice(Math.max(0, m.index - 90), m.index + 90)
     if (/subscri|stream|package|plan|per month|per year|season|watch/i.test(ctx)) {
-      hits.push({ amount: m[1], unit: m[2] ?? '', context: ctx.trim().slice(0, 150) })
+      hits.push({
+        amount: m[1],
+        unit: m[2] ?? '',
+        suspect: !m[2], // no period attached -> probably not a subscription
+        context: ctx.trim().slice(0, 150),
+      })
     }
   }
-  // dedupe by amount+unit
   const seen = new Set()
   return hits.filter(h => {
     const k = h.amount + '|' + h.unit
@@ -137,7 +151,41 @@ async function main() {
     const r = await fetchText(url)
     if (r.err) { log(`  ${label}: ERROR ${r.err}`); continue }
     const prices = r.status === 200 ? extractPrices(r.body) : []
-    log(`  ${label}: HTTP ${r.status}${prices.length ? '  prices: ' + prices.map(p => '$' + p.amount + (p.unit ? '/' + p.unit : '')).join(', ') : '  (no prices found)'}`)
+    const solid = prices.filter(p => !p.suspect)
+    const suspect = prices.filter(p => p.suspect)
+    log(`  ${label}: HTTP ${r.status}${solid.length ? '  PRICES: ' + solid.map(p => '
+    await new Promise(r => setTimeout(r, 1000))
+  }
+
+  log('')
+  log('=== PART 3: RSN labels — expected to have NO standalone price ===')
+  log('(these are carriage-bundled; confirming rather than assuming)')
+  for (const label of RSN_LABELS) {
+    log(`  ${label}: not probed — no canonical URL pattern exists for these,`)
+    log(`     and guessing one would produce exactly the false-negative`)
+    log(`     this probe format exists to avoid. Left as a stated gap.`)
+    break
+  }
+  log(`  (${RSN_LABELS.length} RSN labels total, listed in the script)`)
+
+  log('')
+  log('=== VERDICT ===')
+  log('Read Part 2 above: if ".TV" pages resolve with prices, those labels')
+  log('can be priced from a real source and added to PRICES. If they do')
+  log('not, the current "unknown" handling in Arbitrage is correct and')
+  log('should stay -- an unpriced service is honest; a guessed one is not.')
+}
+
+main().catch(e => log('FAILED: ' + String(e)))
+ + p.amount + '/' + p.unit).join(', ') : '  (no subscription prices)'}`)
+    // ALWAYS log context for any hit. The first run reported a bare
+    // "Twins.TV $40" with no context, which made it impossible to judge
+    // whether it was real -- the exact failure this fixes.
+    for (const p of solid) log(`     ...${p.context}...`)
+    for (const p of suspect) {
+      log(`     SUSPECT ${p.amount} (no period attached — likely not a subscription)`)
+      log(`developer     ...${p.context}...`)
+    }
     await new Promise(r => setTimeout(r, 1000))
   }
 
