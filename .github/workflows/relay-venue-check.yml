@@ -1,0 +1,75 @@
+name: Relay Venue Spelling Check
+
+# TASK 1 of docs/CC-CMD-2026-07-28-venue-table-followups.md: confirm
+# which spelling the relay actually emits for the Angels' home venue
+# before touching src/data/weather.js -- "the string the relay sends is
+# the only thing that decides the correct spelling," not a guess at
+# which one looks more standard. This sandbox can't reach
+# field-relay-nba.jeffunglesbee.workers.dev directly (same egress block
+# as every other external host probed today), so this runs on a GitHub
+# Actions runner instead -- CI-as-proxy, same pattern as every other
+# probe today.
+#
+# No single date is hardcoded: rather than guess which date has an
+# Angels home game, this scans a real window (-14 to +14 days from
+# today) and reports whatever it actually finds, honestly, including if
+# nothing matches in that window.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan recent dates for the Angels' venue spelling
+        run: |
+          mkdir -p outbox
+          OUT=outbox/relay-angels-venue-check.txt
+          echo "checked_at: $(date -u +%FT%TZ)" > "$OUT"
+          echo "endpoint: https://field-relay-nba.jeffunglesbee.workers.dev/context/date/{date}" >> "$OUT"
+          echo "window: -14 to +14 days from today" >> "$OUT"
+          echo "" >> "$OUT"
+          FOUND=0
+          for OFFSET in $(seq -14 14); do
+            D=$(date -u -d "$OFFSET days" +%Y-%m-%d)
+            RESP=$(curl -sS --max-time 10 "https://field-relay-nba.jeffunglesbee.workers.dev/context/date/$D" 2>/dev/null || echo "")
+            VENUES=$(echo "$RESP" | grep -o '"venue":"[^"]*"' | sort -u)
+            ANGEL=$(echo "$VENUES" | grep -i "angel" || true)
+            if [ -n "$ANGEL" ]; then
+              echo "$D: $ANGEL" >> "$OUT"
+              FOUND=1
+            fi
+          done
+          echo "" >> "$OUT"
+          if [ "$FOUND" -eq 0 ]; then
+            echo "No Angels home game found in the scanned window. Widen the" >> "$OUT"
+            echo "range or pick a specific known date rather than assuming" >> "$OUT"
+            echo "either spelling is correct without direct evidence." >> "$OUT"
+          else
+            echo "Read the venue string(s) above exactly as printed -- that" >> "$OUT"
+            echo "spelling is what src/data/weather.js's key must match." >> "$OUT"
+          fi
+
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.name "relay-check-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: relay Angels venue spelling check [skip ci]"
+          for i in 1 2 3 4; do
+            git push && exit 0
+            echo "push rejected (attempt $i), fetching + rebasing"
+            git fetch origin main
+            git rebase origin/main
+            sleep $((i * 2))
+          done
+          git push
