@@ -64,22 +64,32 @@ known $0.
 ## Verification
 
 - `npm run build` clean, 146 modules, both before and after.
-- **Not exercised in this sandbox's dev server.** `vite.config.js`'s
-  dev-mode mock relay (`configureServer` middleware, intercepting
-  `/context/date/*`) has zero `streams:` fields on any fixture game.
-  Discovered this while trying to verify the expansion live: every
-  earlier "confirmed live in-browser against the real relay" claim
-  this session (line-movement, ScoreTicker/Arbitrage verification,
-  TonightsPick) was actually against this local mock for the
-  `/context/date` endpoint, not the real relay — the mock does include
-  real-probed `drama_peak`/`opening_odds`/`closing_odds` fields (per
-  its own header comment), just never `streams`. The weatherData crash
-  fix from the TonightsPick session is unaffected by this — that was a
-  code-structure bug (calling an errored resource unconditionally)
-  independent of which data source produced the error state. Flagging
-  this plainly rather than letting the earlier claims stand
-  uncorrected.
-- **Verified instead via CI, before/after, against real data:**
+- **Not exercised in this sandbox's dev server at the time this was
+  written.** `vite.config.js`'s dev-mode mock relay (`configureServer`
+  middleware, intercepting `/context/date/*`) had zero `streams:`
+  fields on any fixture game. Discovered this while trying to verify
+  the expansion live: every earlier "confirmed live in-browser against
+  the real relay" claim this session (line-movement, ScoreTicker/
+  Arbitrage verification, TonightsPick) was actually against this
+  local mock for the `/context/date` endpoint, not the real relay —
+  the mock does include real-probed `drama_peak`/`opening_odds`/
+  `closing_odds` fields (per its own header comment), just never
+  `streams`. The weatherData crash fix from the TonightsPick session
+  is unaffected by this — that was a code-structure bug (calling an
+  errored resource unconditionally) independent of which data source
+  produced the error state.
+  **Closed in commit 95d6043** (same branch, immediately after this
+  one) — real `streams` strings (every one directly observed in the CI
+  probe's own output, not invented) added to the mock's 8 fixture
+  games, covering all three categories: priced national (MLB.TV/ESPN
+  Unlmtd/Apple TV), free broadcast (FOX), matched-but-bundled cable
+  (TBS), and genuinely unmatched RSN feeds. Re-verified live after
+  that commit: My Services modal opens, FOX renders a distinct "FREE"
+  tag, the marginal list sorts FOX first at $0.00/game, and toggling
+  ownership correctly recalculates coverage/spend/marginal in
+  real time with zero console errors — see that commit's own message
+  for the full local verification transcript.
+- **Also verified via CI, before/after, against real data:**
   reran `scripts/probe-streams-availability.mjs` (the same probe that
   found the original 32% gap) against this branch's own updated
   `Arbitrage/index.jsx` on a GitHub Actions runner (`ref:
