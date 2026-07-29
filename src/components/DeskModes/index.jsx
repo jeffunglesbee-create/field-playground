@@ -1,4 +1,5 @@
 import { For, Show, createMemo, createSignal } from 'solid-js'
+import { Dynamic } from 'solid-js/web'
 import { deskStore } from '../../data/relay'
 import { gameStatus } from '../DeskCard'
 import styles from './DeskModes.module.css'
@@ -133,7 +134,7 @@ const MODES = [
 
 export function DeskModes() {
   const [active, setActive] = createSignal('finals')
-  const ActiveComponent = createMemo(() => MODES.find(m => m.key === active())?.Component)
+  const activeMode = createMemo(() => MODES.find(m => m.key === active()))
 
   return (
     <div class={styles.root}>
@@ -154,7 +155,7 @@ export function DeskModes() {
         </For>
       </div>
       <div class={styles.body}>
-        {ActiveComponent()({})}
+        <Dynamic component={activeMode()?.Component} />
       </div>
     </div>
   )
