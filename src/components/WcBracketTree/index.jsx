@@ -72,6 +72,7 @@ function SlotCard(props) {
 
 export function WcBracketTree() {
   const rounds = createMemo(() => {
+    if (projections.error) return []
     const p = projections()
     if (!p?.bracketSlots) return []
     return ROUNDS.map(r => ({
@@ -80,7 +81,10 @@ export function WcBracketTree() {
     })).filter(r => r.slots.length)
   })
 
-  const champion = createMemo(() => projections()?.bracketSlots?.Champion)
+  const champion = createMemo(() => {
+    if (projections.error) return null
+    return projections()?.bracketSlots?.Champion
+  })
 
   return (
     <div class={styles.root}>
