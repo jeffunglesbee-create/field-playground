@@ -1,7 +1,5 @@
 import { Show, createMemo } from 'solid-js'
-import { ambientData } from '../../data/relay'
-import { journalismBrief } from '../../data/relay'
-import { qualityReport } from '../../data/relay'
+import { ambientData, journalismBrief, qualityReport } from '../../data/relay'
 import styles from './Newspaper.module.css'
 
 // Newspaper — the assembled front page. Production's renderNewspaper is
