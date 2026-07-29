@@ -52,6 +52,9 @@ import { WeatherPoll } from './components/WeatherPoll'
 import { VenueGeocodeRace } from './components/VenueGeocodeRace'
 import { ScoreTicker } from './components/ScoreTicker'
 import { Arbitrage } from './components/Arbitrage'
+import { WcBracketTree } from './components/WcBracketTree'
+import { Newspaper } from './components/Newspaper'
+import { DeskModes } from './components/DeskModes'
 import { TonightsPick } from './components/TonightsPick'
 import { ToastLayer } from './components/Toast'
 import { Tabs, tabId, panelId } from './components/Tabs'
@@ -88,10 +91,10 @@ const POLL_INTERVAL_MS = 15000
 const TOP_NAV_ID = 'app'
 
 const TOP_TABS = [
-  { key: 'games', label: 'Games', count: 11 },
+  { key: 'games', label: 'Games', count: 12 },
   { key: 'picks', label: 'Picks', count: 7 },
-  { key: 'stats', label: 'Stats', count: 4 },
-  { key: 'journalism', label: 'Journalism', count: 1 },
+  { key: 'stats', label: 'Stats', count: 5 },
+  { key: 'journalism', label: 'Journalism', count: 2 },
   { key: 'social', label: 'Social', count: 3 },
   { key: 'system', label: 'System', count: 2 },
   { key: 'lab', label: 'Lab', count: 17 },
@@ -225,6 +228,9 @@ export default function App() {
             <SafeSection class={styles.arbitrage}>
               <Arbitrage />
             </SafeSection>
+            <SafeSection class={styles.deskModes}>
+              <DeskModes />
+            </SafeSection>
             <SafeSection class={styles.drillDown}>
               <DrillDown />
             </SafeSection>
@@ -284,6 +290,9 @@ export default function App() {
             <SafeSection class={styles.wcBracketOdds}>
               <WcBracketOdds />
             </SafeSection>
+            <SafeSection class={styles.wcBracketTree}>
+              <WcBracketTree />
+            </SafeSection>
             <SafeSection class={styles.stats}>
               <Stats />
             </SafeSection>
@@ -296,6 +305,9 @@ export default function App() {
           </Show>
 
           <Show when={activeTab() === 'journalism'}>
+            <SafeSection class={styles.newspaper}>
+              <Newspaper />
+            </SafeSection>
             <SafeSection class={styles.journalismBrief}>
               <JournalismBrief />
             </SafeSection>
