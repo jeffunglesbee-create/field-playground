@@ -14,9 +14,20 @@ name: Open-Meteo Probe
 #      directly and no relay proxy is needed, which is why no /weather
 #      route exists on field-relay-nba.
 #   3. What is the real payload shape for a real venue?
+#
+# Scheduled (2026-07-28): the venue-coverage step below is the one
+# that actually benefits from recurring runs -- VENUE_COORDS is a
+# hand-maintained table and new real venues do turn up in the live
+# slate over time (three MLB parks were already found missing once
+# this session). The forecast/geocoding CORS checks are closer to
+# static facts, but re-running them costs nothing extra in the same
+# job and all three steps write to fixed filenames, so nothing
+# accumulates. Weekly, same cadence as the other data-drift probes.
 
 on:
   workflow_dispatch: {}
+  schedule:
+    - cron: '0 10 * * 1'
 
 permissions:
   contents: write

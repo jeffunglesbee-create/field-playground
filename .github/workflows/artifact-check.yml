@@ -1,7 +1,19 @@
 name: Artifact Check
 
+# Scheduled (2026-07-28): this is the offline-mode smoke test behind
+# several of this session's "verified live" claims (allPass, dead-
+# section count, no uncaught page errors) -- it had no push trigger at
+# all, manual-only, so it only ran when someone remembered to ask.
+# Same [skip ci] blind spot as build-check.yml/deploy-playground.yml
+# would apply to a push trigger here too, so a schedule is the actual
+# fix rather than adding a push trigger that would go quietly dead the
+# same way. Daily, same cadence as build-check.yml, since this is a
+# real-app regression guard, not a slow-drifting data table.
+
 on:
   workflow_dispatch: {}
+  schedule:
+    - cron: '0 8 * * *'
 
 permissions:
   contents: write

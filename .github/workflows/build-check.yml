@@ -7,11 +7,23 @@ name: Build Check
 # but "verification ships with the feature" didn't happen in practice.
 # This is the lightweight, low-ceremony version of closing that gap —
 # no confidence gates, no Codex logging, just: does it actually build.
+#
+# Scheduled (2026-07-28): the push trigger above has been effectively
+# dead this whole session for the same reason deploy-playground.yml's
+# was -- every MCP-authored commit here carries [skip ci], which
+# suppresses push-triggered workflows too. This is the one check
+# answering "does this actually build," so a silently-dead trigger on
+# it is worse than on most other workflows: a real build break could
+# have landed on main undetected the entire time. Daily rather than
+# weekly, since a broken build is the kind of regression worth
+# catching sooner than a slow-drifting data table.
 
 on:
   push:
     branches: [main]
   workflow_dispatch: {}
+  schedule:
+    - cron: '0 8 * * *'
 
 jobs:
   build:

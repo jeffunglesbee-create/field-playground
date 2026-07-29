@@ -14,9 +14,22 @@ name: Wikipedia Roof Probe
 # by tight step timeouts and lost their output entirely; the script also
 # now flushes every line, so a kill leaves partial results rather than
 # nothing.
+#
+# Scheduled (2026-07-28): this only ever generates a reviewed proposal
+# (outbox/roof-type-proposed.json) -- it does NOT touch
+# src/data/weather.js itself, applying a roof-type change is still a
+# human's call by design (some cases are genuine heuristic ceilings,
+# see the TASK 3 outbox writeup). What a schedule buys is catching
+# DRIFT in the proposal itself over time -- a venue getting a real
+# roof retrofit, or Wikipedia's lead sentence being edited -- without
+# needing someone to re-ask. Weekly, same cadence as the other
+# data-drift probes; monthly would also be defensible given how rarely
+# a stadium roof actually changes, but weekly costs little more.
 
 on:
   workflow_dispatch: {}
+  schedule:
+    - cron: '0 11 * * 1'
 
 permissions:
   contents: write
