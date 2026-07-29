@@ -1,0 +1,122 @@
+.root {
+  background: #0d0d0d;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--field-text-primary);
+  margin: 0;
+}
+
+.mastheadRule {
+  flex: 1;
+  height: 1px;
+  background: #2a2a2a;
+  min-width: 20px;
+}
+
+.dateline {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sportOfWeek {
+  font-size: 9px;
+  font-weight: 700;
+  color: #da4;
+  background: #241c0a;
+  border: 1px solid #3a2a10;
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.leadContradiction {
+  border-left: 3px solid #e77;
+  padding: 6px 0 6px 12px;
+  margin-bottom: 12px;
+}
+
+.leadKicker {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #e77;
+  margin-bottom: 3px;
+}
+
+.leadText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--field-text-primary);
+}
+
+.leadQuote {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--field-text-primary);
+  border-left: 2px solid #da4;
+  padding: 2px 0 2px 12px;
+  margin: 0 0 12px 0;
+}
+
+.body {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--field-text-secondary);
+  margin-bottom: 10px;
+}
+
+.column {
+  border-top: 1px solid #1e1e1e;
+  padding-top: 10px;
+  margin-top: 4px;
+}
+
+.columnLabel {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  margin-bottom: 6px;
+}
+
+.byline {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  font-style: italic;
+}
+
+.masthead2 {
+  border-top: 1px solid #1e1e1e;
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+.footNote {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
