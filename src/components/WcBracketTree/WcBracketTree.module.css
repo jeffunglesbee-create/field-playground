@@ -1,0 +1,141 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.championBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: linear-gradient(90deg, #2a2410, #1a1a10);
+  border: 1px solid #4a3a10;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.championLabel {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #da4;
+}
+
+.championName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--field-text-primary);
+}
+
+.championPct {
+  margin-left: auto;
+  font-size: 12px;
+  color: #da4;
+  font-variant-numeric: tabular-nums;
+}
+
+.tree {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.roundCol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.roundLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  margin: 0 0 2px 0;
+}
+
+.roundSlots {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slot {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 2px 6px;
+  background: #161616;
+  border: 1px solid #232323;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+.team {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--field-text-muted);
+  letter-spacing: 0.03em;
+}
+
+.name {
+  font-size: 10px;
+  color: var(--field-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pct {
+  font-size: 9px;
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.barTrack {
+  grid-column: 1 / -1;
+  height: 3px;
+  background: #0d0d0d;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: #4c8;
+  border-radius: 2px;
+}
