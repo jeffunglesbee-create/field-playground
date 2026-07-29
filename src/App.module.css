@@ -92,6 +92,9 @@
 .scoreTicker,
 .arbitrage,
 .tonightsPick,
+.deskModes,
+.wcBracketTree,
+.newspaper,
 .venueGeocodeRace {
   display: flex;
   flex-direction: column;
