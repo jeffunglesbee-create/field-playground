@@ -1,0 +1,110 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.tab {
+  font-size: 10px;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--field-text-muted);
+  background: #161616;
+  border: 1px solid #232323;
+  border-radius: 4px;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+
+.tab:hover { color: var(--field-text-secondary); border-color: #333; }
+
+.tabActive {
+  color: var(--field-text-primary);
+  background: #1e1e1e;
+  border-color: #3a3a3a;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+/* Finals */
+.finalsList { display: flex; flex-direction: column; gap: 4px; }
+
+.finalsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  background: #161616;
+  border-radius: 4px;
+  border-left: 2px solid #333;
+}
+
+.status_live { border-left-color: #4c8; }
+.status_final, .status_final_ot { border-left-color: #666; }
+
+.finalsMatchup { font-size: 11px; color: var(--field-text-primary); }
+.finalsScore { font-size: 11px; color: var(--field-text-secondary); font-variant-numeric: tabular-nums; margin-left: auto; }
+.finalsBadge { font-size: 8px; font-weight: 700; color: var(--field-text-muted); letter-spacing: 0.05em; }
+
+/* Picker */
+.pickerCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #1a2410, #14140a);
+  border: 1px solid #2a3a1a;
+  border-radius: 6px;
+}
+
+.pickerKicker { font-size: 8px; font-weight: 700; letter-spacing: 0.08em; color: #8c4; text-transform: uppercase; }
+.pickerMatchup { font-size: 14px; font-weight: 700; color: var(--field-text-primary); }
+.pickerPeak { font-size: 10px; color: var(--field-text-secondary); }
+.pickerRunnerUp { font-size: 9px; color: var(--field-text-muted); margin-top: 4px; }
+
+/* Upsets */
+.upsetsList { display: flex; flex-direction: column; gap: 3px; }
+
+.upsetRow {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 11px;
+  padding: 3px 0;
+}
+
+.upsetWinner { color: #4c8; font-weight: 600; }
+.upsetOver { color: var(--field-text-muted); font-size: 9px; }
+.upsetFav { color: var(--field-text-secondary); }
+.upsetLine { color: var(--field-text-muted); font-size: 9px; font-variant-numeric: tabular-nums; }
