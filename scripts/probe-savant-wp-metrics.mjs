@@ -134,15 +134,16 @@ async function main() {
     const wpaVals = arr.map(e => Number(e?.homeTeamWinProbabilityAdded ?? 0))
     const totalMovement = sum(wpaVals.map(v => Math.abs(v)))
 
-    // "Late" defined by INNING to stay comparable with round 2's
-    // period>=7 threshold. Savant entries carry an inning field under
-    // one of a few possible names -- resolved from the shape dump above
-    // if this guess is wrong, logged as a skip rather than silently
-    // computing on undefined.
-    const inningOf = e => Number(e?.inning ?? e?.atBatIndex != null ? null : null) // placeholder, real key confirmed from shape dump
-    let lateMovement = null
-    // Real inning key resolved dynamically post-shape-dump; see VERDICT
-    // section for whether this could be computed at all this run.
+    // Real field confirmed from the shape dump above: `i` is a half-inning
+    // string like "T1" (top 1st) or "B9" (bottom 9th). Parsed rather than
+    // guessed -- this is exactly the field this run was built to discover
+    // before computing anything on it.
+    const inningOf = e => {
+      const m = /^[TB](\d+)/.exec(String(e?.i ?? ''))
+      return m ? parseInt(m[1], 10) : null
+    }
+    const lateEntries = arr.filter(e => { const inn = inningOf(e); return inn != null && inn >= 7 })
+    const lateMovement = sum(lateEntries.map(e => Math.abs(Number(e?.homeTeamWinProbabilityAdded ?? 0))))
 
     rows.push({
       matchup: g.away + ' @ ' + g.home,
@@ -150,10 +151,12 @@ async function main() {
       gamePk,
       entries: arr.length,
       totalMovement: Math.round(totalMovement * 1000) / 1000,
+      lateMovement: Math.round(lateMovement * 1000) / 1000,
     })
 
     log(g.away + ' @ ' + g.home + '  gamePk=' + gamePk + '  entries=' + arr.length +
-        '  total_wp_movement=' + (Math.round(totalMovement * 1000) / 1000))
+        '  total_wp_movement=' + (Math.round(totalMovement * 1000) / 1000) +
+        '  late_wp_movement=' + (Math.round(lateMovement * 1000) / 1000))
     await new Promise(r => setTimeout(r, 400))
   }
 
@@ -165,16 +168,26 @@ async function main() {
   log('=== RESULT ===')
   log('games with real Savant WP data: ' + rows.length + ' / ' + sample.length)
   if (rows.length) {
-    const vals = rows.map(r => r.totalMovement)
-    log('total_wp_movement distinct: ' + new Set(vals).size + ' / ' + vals.length)
-    log('range: ' + Math.min(...vals) + ' - ' + Math.max(...vals))
+    const totals = rows.map(r => r.totalMovement)
+    const lates = rows.map(r => r.lateMovement)
+    log('total_wp_movement -- distinct: ' + new Set(totals).size + ' / ' + totals.length +
+        '  range: ' + Math.min(...totals) + ' - ' + Math.max(...totals))
+    log('late_wp_movement  -- distinct: ' + new Set(lates).size + ' / ' + lates.length +
+        '  range: ' + Math.min(...lates) + ' - ' + Math.max(...lates))
+    log('')
+    log('=== DOES LATE MOVEMENT REORDER GAMES DIFFERENTLY THAN TOTAL MOVEMENT? ===')
+    const byTotal = [...rows].sort((a, b) => b.totalMovement - a.totalMovement)
+    const byLate = [...rows].sort((a, b) => b.lateMovement - a.lateMovement)
+    log('top 5 by TOTAL movement: ' + byTotal.slice(0, 5).map(r => r.matchup).join(' | '))
+    log('top 5 by LATE movement:  ' + byLate.slice(0, 5).map(r => r.matchup).join(' | '))
   }
   log('')
-  log('NOTE: late-window WP movement (mirroring the NFL spec\'s')
-  log('late_wpa_movement) requires knowing the real inning field name on')
-  log('each entry -- deliberately NOT guessed. Read the RAW SHAPE dump')
-  log('above for the real field name before computing it in a follow-up')
-  log('pass, rather than computing on a field that might not exist.')
+  log('NOTE: a WP-scale discrepancy was observed, not chased further this')
+  log('round -- homeTeamWinProbability values are 0-100 (e.g. 52.2), but')
+  log('fetchSavantGameFeed\'s own comment in field.js states "WP scale: 0-1')
+  log('fraction (e.g. 0.72 = 72%)". Flagged as an open discrepancy between')
+  log('the comment and live data, NOT confirmed as a display bug -- the')
+  log('actual DOM-rendering consumer of this value was not traced.')
 }
 
 main().catch(e => log('FAILED: ' + String(e)))
