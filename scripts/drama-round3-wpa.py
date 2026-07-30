@@ -154,6 +154,7 @@ resolved = 0
 gamepk_failures = []
 savant_failures = []
 rows = []
+dumped_raw = False
 
 for g in SAMPLE:
     away, home = g["matchup"].split(" @ ")
@@ -170,6 +171,17 @@ for g in SAMPLE:
         log("SKIP  " + g["matchup"] + "  gamePk=" + str(pk) + "  Savant failed: " + str(err2))
         time.sleep(0.5)
         continue
+
+    if not dumped_raw:
+        dumped_raw = True
+        log("")
+        log("=== RAW DIAGNOSTIC DUMP (first resolved game, before trusting ANY derived metric) ===")
+        log("field.js's own comment claims homeTeamWinProbability is a 0-1 fraction.")
+        log("9230-scale comeback values in a prior run say otherwise -- checking directly.")
+        for i, p in enumerate(wpa_arr[:3] + wpa_arr[-3:]):
+            log("  entry " + str(i) + ": " + json.dumps(p))
+        log("=== END RAW DUMP ===")
+        log("")
 
     resolved += 1
     sl = wpa_sustained_late(wpa_arr)
