@@ -1,0 +1,50 @@
+name: Savant WP Metrics Probe
+
+# Round 3 of the drama-scoring granularity investigation. Tests whether
+# real Savant win-probability data (statsapi.mlb.com for gamePk
+# resolution, baseballsavant.mlb.com for the WP array) sharpens round
+# 2's score-diff proxies. Both hosts confirmed sandbox-blocked
+# (x-deny-reason: host_not_allowed) -- GitHub Actions runners have
+# unrestricted egress.
+#
+# Generous timeout: 25 games x (schedule lookup + Savant fetch +
+# courtesy delays) is a genuinely multi-minute run. Script flushes
+# output after every line, so a timeout still leaves partial results.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe Savant WP data
+        timeout-minutes: 8
+        continue-on-error: true
+        run: node scripts/probe-savant-wp-metrics.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "savant-wp-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: savant wp metrics probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push rejected, rebasing (attempt $i)"
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          echo "could not push after 5 attempts"
+          exit 1
