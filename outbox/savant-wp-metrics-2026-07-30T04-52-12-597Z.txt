@@ -1,0 +1,70 @@
+round3_at: 2026-07-30T04:52:12.598Z
+purpose: does real Savant WP data sharpen round 2's proxies, same 25-game class
+
+sample size: 28
+
+=== RAW SHAPE (first real game, first entry) ===
+{
+  "homeTeamWinProbability": 52.2,
+  "awayTeamWinProbability": 47.8,
+  "homeTeamWinProbabilityAdded": 2.200000000000003,
+  "hwp": 2.200000000000003,
+  "awp": -2.200000000000003,
+  "atBatIndex": 0,
+  "i": "T1",
+  "capIndex": 14
+}
+=== RAW SHAPE (last entry) ===
+{
+  "homeTeamWinProbability": 0,
+  "awayTeamWinProbability": 100,
+  "homeTeamWinProbabilityAdded": -0.5,
+  "hwp": -50,
+  "awp": 50,
+  "atBatIndex": 69,
+  "i": "B9",
+  "capIndex": 14
+}
+total entries: 70
+
+Mets @ Phillies  gamePk=823440  entries=70  total_wp_movement=228
+Rays @ Red Sox  gamePk=824766  entries=73  total_wp_movement=117.1
+Dodgers @ Yankees  gamePk=823524  entries=67  total_wp_movement=242.9
+White Sox @ Blue Jays  gamePk=822789  entries=84  total_wp_movement=151.2
+Rangers @ Braves  gamePk=824901  entries=81  total_wp_movement=118.6
+Marlins @ Brewers  gamePk=823766  entries=77  total_wp_movement=390.7
+Twins @ Cubs  gamePk=824655  entries=72  total_wp_movement=233.6
+Orioles @ Astros  gamePk=824170  entries=77  total_wp_movement=347.9
+Padres @ Royals  gamePk=824090  entries=86  total_wp_movement=588.9
+Reds @ Rockies  gamePk=824332  entries=75  total_wp_movement=210.1
+Tigers @ Angels  gamePk=824009  entries=70  total_wp_movement=369.9
+Cardinals @ Diamondbacks  gamePk=825060  entries=77  total_wp_movement=404.6
+Nationals @ Athletics  gamePk=824981  entries=90  total_wp_movement=145.5
+Giants @ Mariners  gamePk=823115  entries=75  total_wp_movement=169.7
+Pirates @ Guardians  gamePk=824414  entries=71  total_wp_movement=168
+Twins @ Cubs  gamePk=824657  entries=72  total_wp_movement=163.1
+White Sox @ Blue Jays  gamePk=822790  entries=64  total_wp_movement=228.4
+Reds @ Rockies  gamePk=824331  entries=76  total_wp_movement=93.8
+Mets @ Phillies  gamePk=823441  entries=75  total_wp_movement=166.9
+Rays @ Red Sox  gamePk=824738  entries=73  total_wp_movement=343
+Rangers @ Braves  gamePk=824899  entries=84  total_wp_movement=381.8
+Orioles @ Astros  gamePk=824169  entries=88  total_wp_movement=500.4
+Marlins @ Brewers  gamePk=823763  entries=81  total_wp_movement=267.1
+Padres @ Royals  gamePk=824088  entries=70  total_wp_movement=210.2
+Cardinals @ Diamondbacks  gamePk=825059  entries=73  total_wp_movement=185
+Giants @ Mariners  gamePk=823116  entries=79  total_wp_movement=343.6
+Nationals @ Athletics  gamePk=824979  entries=82  total_wp_movement=70.6
+Tigers @ Angels  gamePk=824008  entries=75  total_wp_movement=86.4
+
+=== SKIPPED ===
+
+=== RESULT ===
+games with real Savant WP data: 28 / 28
+total_wp_movement distinct: 28 / 28
+range: 70.6 - 588.9
+
+NOTE: late-window WP movement (mirroring the NFL spec's
+late_wpa_movement) requires knowing the real inning field name on
+each entry -- deliberately NOT guessed. Read the RAW SHAPE dump
+above for the real field name before computing it in a follow-up
+pass, rather than computing on a field that might not exist.
