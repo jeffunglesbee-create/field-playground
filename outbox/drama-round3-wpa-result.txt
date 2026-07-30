@@ -1,6 +1,18 @@
-round3_at: 2026-07-30T04:42:37Z
+round3_at: 2026-07-30T04:46:47Z
 sample: 25 games (round 2's real sample, re-used)
 purpose: does REAL win-probability sharpen round 2's already-confirmed metrics?
+
+
+=== RAW DIAGNOSTIC DUMP (first resolved game, before trusting ANY derived metric) ===
+field.js's own comment claims homeTeamWinProbability is a 0-1 fraction.
+9230-scale comeback values in a prior run say otherwise -- checking directly.
+  entry 0: {"homeTeamWinProbability": 52.2, "awayTeamWinProbability": 47.8, "homeTeamWinProbabilityAdded": 2.200000000000003, "hwp": 2.200000000000003, "awp": -2.200000000000003, "atBatIndex": 0, "i": "T1", "capIndex": 14}
+  entry 1: {"homeTeamWinProbability": 49.8, "awayTeamWinProbability": 50.2, "homeTeamWinProbabilityAdded": -2.4000000000000057, "hwp": -0.20000000000000284, "awp": 0.20000000000000284, "atBatIndex": 1, "i": "T1", "capIndex": 33}
+  entry 2: {"homeTeamWinProbability": 54.800000000000004, "awayTeamWinProbability": 45.199999999999996, "homeTeamWinProbabilityAdded": 5.000000000000007, "hwp": 4.800000000000004, "awp": -4.800000000000004, "atBatIndex": 2, "i": "T1", "capIndex": 24}
+  entry 3: {"homeTeamWinProbability": 71, "awayTeamWinProbability": 29, "homeTeamWinProbabilityAdded": 0.7000000000000028, "hwp": 21, "awp": -21, "atBatIndex": 74, "i": "B10", "capIndex": 0}
+  entry 4: {"homeTeamWinProbability": 61.4, "awayTeamWinProbability": 38.6, "homeTeamWinProbabilityAdded": -9.600000000000001, "hwp": 11.399999999999999, "awp": -11.399999999999999, "atBatIndex": 75, "i": "B10", "capIndex": 14}
+  entry 5: {"homeTeamWinProbability": 100, "awayTeamWinProbability": 0, "homeTeamWinProbabilityAdded": 38.6, "hwp": 50, "awp": -50, "atBatIndex": 76, "i": "B10", "capIndex": 60}
+=== END RAW DUMP ===
 
 Marlins @ Brewers                [OT] gamePk=823766     77 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=390.70
 Padres @ Royals                  [OT] gamePk=824090     86 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=588.90
