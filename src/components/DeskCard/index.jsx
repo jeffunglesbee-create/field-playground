@@ -250,7 +250,25 @@ function ScoreEditor(props) {
   )
 }
 
-// Real drama_arc sparkline -- confirmed live: a long array of numeric
+// Real drama_arc sparkline. IMPORTANT: the relay sends drama_arc as a
+// STRINGIFIED JSON array ("[52,52,52,...]"), not a real array --
+// confirmed by parsing a live response, not assumed. Array.isArray()
+// on that raw string is always false, so passing it unparsed into a
+// component guarded by Array.isArray() means the guard correctly
+// rejects it and silently renders nothing -- which is exactly what
+// happened here until this fix. DramaLeaderboard already parses this
+// field correctly elsewhere in this repo; this brings DeskCard in line
+// with that, rather than leaving two different unparsing conventions.
+function parseArc(raw) {
+  if (Array.isArray(raw)) return raw
+  if (typeof raw !== 'string') return null
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
 // drama values sampled across the game, not invented. Downsampled to a
 // manageable number of bars for a compact row rather than plotting
 // every point.
@@ -280,7 +298,7 @@ function GameExpansion(props) {
     <div class={styles.gameExpansion}>
       <Show when={g().drama_arc}>
         <div class={styles.expansionLabel}>drama over time (peak {g().drama_peak})</div>
-        <DramaSparkline arc={g().drama_arc} />
+        <DramaSparkline arc={parseArc(g().drama_arc)} />
       </Show>
       <Show when={g().note}>
         <div class={styles.expansionRow}><span class={styles.expansionKey}>note</span> {g().note}</div>
