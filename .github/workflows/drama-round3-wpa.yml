@@ -1,0 +1,61 @@
+name: Drama Round 3 WPA Probe
+
+# Round 3 of the drama-scoring-granularity investigation. Direct
+# extension of round 2 (docs/outbox/chat-update-2026-07-30-drama-
+# scoring-round2.md), not new infrastructure -- swaps round 2's crude
+# score-diff proxies for real Baseball Savant win-probability data on
+# the exact same 25-game sample.
+#
+# Neither statsapi.mlb.com nor baseballsavant.mlb.com is in the chat
+# sandbox's egress allowlist (confirmed: "Host not in allowlist" on
+# direct test -- a sandbox rejection, not a real-world one). GitHub
+# Actions runners reach both directly, same CI-as-proxy pattern used
+# for Open-Meteo, Wikidata, Overpass, Nominatim, Wikipedia, and
+# MLB.TV pricing earlier this session.
+#
+# Generous timeout: 25 games x 2 real API calls each (schedule lookup +
+# Savant fetch), with courtesy delays between calls. The script flushes
+# output after every line, so a timeout still leaves partial results.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch real MLB win-probability data and compute WPA-based metrics
+        timeout-minutes: 8
+        continue-on-error: true
+        run: |
+          mkdir -p outbox
+          python3 scripts/drama-round3-wpa.py
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "drama-round3-wpa-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: drama round 3 WPA probe result [skip ci]"
+          # Rebase-and-retry: a parallel session pushes to main often
+          # enough that a plain push can race and be rejected
+          # non-fast-forward.
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push rejected, rebasing (attempt $i)"
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          echo "could not push after 5 attempts"
+          exit 1
