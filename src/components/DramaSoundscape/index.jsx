@@ -95,11 +95,6 @@ export function DramaSoundscape() {
         envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.05 },
       }).toDestination()
 
-      const whistle = new Tone.Synth({
-        oscillator: { type: 'triangle' },
-        envelope: { attack: 0.01, decay: 0.05, sustain: 0.6, release: 0.1 },
-      }).toDestination()
-
       const trombone = new Tone.Synth({
         oscillator: { type: 'sawtooth' },
         envelope: { attack: 0.05, decay: 0.1, sustain: 0.4, release: 0.3 },
@@ -115,8 +110,8 @@ export function DramaSoundscape() {
         envelope: { attack: 0.001, decay: 0.3, sustain: 0.1, release: 0.4 },
       }).toDestination()
 
-      const s = { Tone, boing, whistle, trombone, xylo, bell }
-      s.boing.volume.value = volume(); s.whistle.volume.value = volume()
+      const s = { Tone, boing, trombone, xylo, bell }
+      s.boing.volume.value = volume()
       s.trombone.volume.value = volume(); s.xylo.volume.value = volume()
       s.bell.volume.value = volume()
       setSynths(s)
@@ -130,7 +125,7 @@ export function DramaSoundscape() {
 
   onCleanup(() => {
     const s = synths()
-    if (s) { s.boing.dispose(); s.whistle.dispose(); s.trombone.dispose(); s.xylo.dispose(); s.bell.dispose() }
+    if (s) { s.boing.dispose(); s.trombone.dispose(); s.xylo.dispose(); s.bell.dispose() }
   })
 
   // --- The six cartoon gestures ---
@@ -143,18 +138,6 @@ export function DramaSoundscape() {
     s.boing.triggerAttack('C4', now)
     s.boing.frequency.exponentialRampTo('A4', 0.12, now)
     s.boing.triggerRelease(now + 0.15)
-  }
-
-  function playWhistle(rising) {
-    // A continuous glide across a wide range -- the slide whistle.
-    // Rising for a comeback climbing back into contention, falling
-    // for... nothing currently uses falling, kept for symmetry/reuse.
-    const s = synths(); if (!s) return
-    const now = s.Tone.now()
-    const [from, to] = rising ? ['C3', 'C6'] : ['C6', 'C3']
-    s.whistle.triggerAttack(from, now)
-    s.whistle.frequency.exponentialRampTo(to, 0.5, now)
-    s.whistle.triggerRelease(now + 0.55)
   }
 
   function playWahTrombone() {
@@ -298,10 +281,28 @@ export function DramaSoundscape() {
                 const v = Number(e.target.value)
                 setVolume(v)
                 const s = synths()
-                if (s) { s.boing.volume.value = v; s.whistle.volume.value = v; s.trombone.volume.value = v; s.xylo.volume.value = v; s.bell.volume.value = v }
+                if (s) { s.boing.volume.value = v; s.trombone.volume.value = v; s.xylo.volume.value = v; s.bell.volume.value = v }
               }}
             />
           </label>
+        </div>
+
+        {/* On-demand preview -- waiting for a real lead change to check
+            whether a sound design actually works is impractical. Same
+            functions the real triggers call, fired directly. This is
+            also how the blowout/extra-frames pair (shared trombone) and
+            new-hottest/dramatic-final pair (shared bell) -- the two
+            structurally-closest sounds, confirmed by a distinctness
+            check across oscillator type and note pattern -- are meant
+            to be checked specifically against each other. */}
+        <div class={styles.previewRow}>
+          <span class={styles.previewLabel}>preview:</span>
+          <button class={styles.previewBtn} onClick={playBoing}>🫠 lead change</button>
+          <button class={styles.previewBtn} onClick={playXyloRun}>🎢 comeback</button>
+          <button class={styles.previewBtn} onClick={playWahTrombone}>📉 blowout</button>
+          <button class={styles.previewBtn} onClick={playDing}>🔔 new hottest</button>
+          <button class={styles.previewBtn} onClick={playSuspense}>⏰ extra frames</button>
+          <button class={styles.previewBtn} onClick={playTaDa}>🎉 dramatic final</button>
         </div>
       </Show>
 
