@@ -1,0 +1,81 @@
+round3_at: 2026-07-31T01:46:16.960Z
+purpose: does real Savant WP data sharpen round 2's proxies, same 25-game class
+
+sample size: 28
+
+=== RAW SHAPE (first real game, first entry) ===
+{
+  "homeTeamWinProbability": 52.2,
+  "awayTeamWinProbability": 47.8,
+  "homeTeamWinProbabilityAdded": 2.200000000000003,
+  "hwp": 2.200000000000003,
+  "awp": -2.200000000000003,
+  "atBatIndex": 0,
+  "i": "T1",
+  "capIndex": 14
+}
+=== RAW SHAPE (last entry) ===
+{
+  "homeTeamWinProbability": 0,
+  "awayTeamWinProbability": 100,
+  "homeTeamWinProbabilityAdded": -0.5,
+  "hwp": -50,
+  "awp": 50,
+  "atBatIndex": 69,
+  "i": "B9",
+  "capIndex": 14
+}
+total entries: 70
+
+Mets @ Phillies  gamePk=823440  entries=70  total_wp_movement=2.28  late_wp_movement=0.556
+Rays @ Red Sox  gamePk=824766  entries=73  total_wp_movement=1.171  late_wp_movement=0.002
+Dodgers @ Yankees  gamePk=823524  entries=67  total_wp_movement=2.429  late_wp_movement=1.338
+White Sox @ Blue Jays  gamePk=822789  entries=84  total_wp_movement=1.512  late_wp_movement=0.081
+Rangers @ Braves  gamePk=824901  entries=81  total_wp_movement=1.186  late_wp_movement=0.008
+Marlins @ Brewers  gamePk=823766  entries=77  total_wp_movement=3.907  late_wp_movement=2.297
+Twins @ Cubs  gamePk=824655  entries=72  total_wp_movement=2.336  late_wp_movement=0.47
+Orioles @ Astros  gamePk=824170  entries=77  total_wp_movement=3.479  late_wp_movement=1.754
+Padres @ Royals  gamePk=824090  entries=86  total_wp_movement=5.889  late_wp_movement=3.569
+Reds @ Rockies  gamePk=824332  entries=75  total_wp_movement=2.101  late_wp_movement=0.377
+Tigers @ Angels  gamePk=824009  entries=70  total_wp_movement=3.699  late_wp_movement=2.34
+Cardinals @ Diamondbacks  gamePk=825060  entries=77  total_wp_movement=4.046  late_wp_movement=2.131
+Nationals @ Athletics  gamePk=824981  entries=90  total_wp_movement=1.455  late_wp_movement=0.001
+Giants @ Mariners  gamePk=823115  entries=75  total_wp_movement=1.697  late_wp_movement=0.159
+Pirates @ Guardians  gamePk=824414  entries=71  total_wp_movement=1.68  late_wp_movement=0.169
+Twins @ Cubs  gamePk=824657  entries=72  total_wp_movement=1.631  late_wp_movement=0.311
+White Sox @ Blue Jays  gamePk=822790  entries=64  total_wp_movement=2.284  late_wp_movement=0.636
+Reds @ Rockies  gamePk=824331  entries=76  total_wp_movement=0.938  late_wp_movement=0.03
+Mets @ Phillies  gamePk=823441  entries=75  total_wp_movement=1.669  late_wp_movement=0.06
+Rays @ Red Sox  gamePk=824738  entries=73  total_wp_movement=3.43  late_wp_movement=1.531
+Rangers @ Braves  gamePk=824899  entries=84  total_wp_movement=3.818  late_wp_movement=1.041
+Orioles @ Astros  gamePk=824169  entries=88  total_wp_movement=5.004  late_wp_movement=3.186
+Marlins @ Brewers  gamePk=823763  entries=81  total_wp_movement=2.671  late_wp_movement=0.344
+Padres @ Royals  gamePk=824088  entries=70  total_wp_movement=2.102  late_wp_movement=0.068
+Cardinals @ Diamondbacks  gamePk=825059  entries=73  total_wp_movement=1.85  late_wp_movement=0.405
+Giants @ Mariners  gamePk=823116  entries=79  total_wp_movement=3.436  late_wp_movement=2.031
+Nationals @ Athletics  gamePk=824979  entries=82  total_wp_movement=0.706  late_wp_movement=0.006
+Tigers @ Angels  gamePk=824008  entries=75  total_wp_movement=0.864  late_wp_movement=0.051
+
+=== SKIPPED ===
+
+=== RESULT ===
+games with real Savant WP data: 28 / 28
+total_wp_movement -- distinct: 28 / 28  range: 0.706 - 5.889
+late_wp_movement  -- distinct: 28 / 28  range: 0.001 - 3.569
+
+=== DOES LATE MOVEMENT REORDER GAMES DIFFERENTLY THAN TOTAL MOVEMENT? ===
+top 5 by TOTAL movement: Padres @ Royals | Orioles @ Astros | Cardinals @ Diamondbacks | Marlins @ Brewers | Rangers @ Braves
+top 5 by LATE movement:  Padres @ Royals | Orioles @ Astros | Tigers @ Angels | Marlins @ Brewers | Cardinals @ Diamondbacks
+
+SCALE FIX (2026-07-31): this round originally flagged homeTeam-
+WinProbability/Added as 0-100 raw (e.g. 52.2), an open discrepancy
+against fetchSavantGameFeed's own "0-1 fraction" comment. That is
+now CONFIRMED as a real bug, not just a comment mismatch --
+jubilant-bassoon fixed fetchSavantGameFeed itself the same day
+(divides by 100 at the source). totalMovement/lateMovement above
+are computed on the CORRECTED /100 scale to match. A uniform
+linear rescale does not change which games rank higher or lower
+relative to each other -- round 3's qualitative finding (100%
+resolution, beats every proxy tested) is unaffected -- but the
+absolute numbers here are real and on the right scale, unlike the
+original run's.
