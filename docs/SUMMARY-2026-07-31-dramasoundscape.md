@@ -108,6 +108,52 @@ Latest confirmed-clean run: 6/6 preview buttons found and clickable,
 
 ---
 
+## A THIRD gap the two-layer pattern above missed — real bug, real fix
+
+Reported 2026-07-31: "soundboard doesn't play live." Both layers above
+passed clean, and both were genuinely correct about what they tested —
+neither one exercises the actual polling-driven trigger path (the six
+real transition checks that run every time `deskStore` updates, not
+the six preview buttons). That gap is exactly how this shipped broken.
+
+**Root cause, confirmed in isolation (node test, solid-js core, no
+DOM) before touching the fix:** the trigger-detection logic was a bare
+`createMemo(() => {...})` whose return value nothing ever read.
+`createMemo` is lazy/pull-based in Solid — with zero consumers there
+is nothing to pull, so it runs exactly once at creation and never
+re-runs on subsequent dependency changes, no matter how many times
+`deskStore` actually updates. **Fix: `createEffect` instead** — push-
+based, always re-runs when its tracked dependencies change, which is
+what a side-effect-only computation (detect a transition, push a log
+entry, play a sound) actually needs.
+
+**A second, compounding gap found while investigating:** the dev
+mock's game data never actually varied in the ways any of the six
+cues check for — no `drama_peak` at all, no repeated score deltas on
+the same live game, no false→true `went_to_ot`/`finalized_at`
+transition. Even with the reactivity bug fixed, none of the six cues
+were reachable locally before `vite.config.js`'s mock was extended
+with a staged transition ladder (see its own comment for the exact
+schedule). One nuance worth keeping in mind if you touch that ladder:
+the dev server fires 3 near-simultaneous `/context/date/` requests at
+page mount (confirmed via server-side request timestamps — a benign,
+pre-existing Vite/HMR dev-only startup burst, unrelated to this
+component) before settling into a clean one-request-per-poll cadence.
+A count-keyed ladder has to start comfortably past that burst (this
+one starts at request 5) or its early steps silently get skipped.
+
+**New regression coverage:** `scripts/probe-soundscape-live-triggers.mjs`
++ `.github/workflows/soundscape-live-triggers-probe.yml` — starts this
+repo's own dev server (not the deployed site; the deployed site's real
+relay data can't be staged into a deterministic sequence), watches the
+component's own log across real polls, and asserts all six real cues
+actually fire via the real live path. This is deliberately separate
+from `probe-soundscape-cdn-load.mjs`, which still only covers the
+preview buttons — both are needed now, same "write the check for the
+path you didn't just test" lesson as the two-layer section above.
+
+---
+
 ## A real dead-code bug this session caught in itself, worth the pattern
 
 The first build included a 7th sound function, `playWhistle`, with a

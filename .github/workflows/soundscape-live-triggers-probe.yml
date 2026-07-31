@@ -1,0 +1,59 @@
+name: Soundscape Live Triggers Probe
+
+# Regression coverage for the 2026-07-31 "soundboard doesn't play live"
+# bug (bare createMemo used for a side effect -- fixed by switching to
+# createEffect). soundscape-cdn-load-probe.yml only exercises the
+# PREVIEW buttons against the real deployed site; this probe exercises
+# the actual live polling-driven trigger path against this repo's own
+# dev server + mock, whose staged transition ladder (vite.config.js's
+# context()) is the only way to deterministically stage all six real
+# cues in sequence.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install chromium --with-deps
+
+      - name: Start dev server in background
+        run: nohup npm run dev > /tmp/vite-dev.log 2>&1 &
+
+      - name: Wait for dev server
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5173/ > /dev/null && exit 0
+            sleep 1
+          done
+          echo "dev server never came up"; cat /tmp/vite-dev.log; exit 1
+
+      - name: Watch the live trigger path fire all 6 real cues
+        timeout-minutes: 5
+        continue-on-error: true
+        run: node scripts/probe-soundscape-live-triggers.mjs
+
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.name "soundscape-live-triggers-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: soundscape live triggers probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1

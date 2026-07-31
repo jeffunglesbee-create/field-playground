@@ -122,12 +122,48 @@ function mockRelay() {
   // group for "did unrelated rows avoid remounting."
   const context = (date) => {
     contextRequestCount++
-    const houTexLive = contextRequestCount >= 2
     // Same variation strategy as houTexLive: nym-phi's local_note changes
     // after the first poll, so LocalNoteLayer's "override goes stale when
     // the relay's own value moves" behavior is actually exercisable in dev,
     // not just asserted in a comment.
     const nymPhiNote = contextRequestCount >= 2 ? 'Editor updated: doubleheader nightcap' : 'Getaway day, bullpen game'
+    // DramaSoundscape needs data that actually TRANSITIONS across polls to
+    // exercise its six live cues -- found missing 2026-07-31 (user report:
+    // "soundboard doesn't play live"; root cause was a separate reactivity
+    // bug in the component, but investigating it surfaced that none of the
+    // six cues were even reachable in local dev, since nothing here varied
+    // in the ways they check for: no drama_peak at all, no repeated score
+    // deltas on the same live game, no false->true went_to_ot/finalized_at
+    // transition).
+    //
+    // The dev server fires 3 near-simultaneous /context/date/ requests at
+    // page mount (confirmed via server-side request logging -- benign,
+    // pre-existing Vite/HMR dev-only startup burst, unrelated to this
+    // component), before settling into a clean one-request-per-15s
+    // cadence. A ladder keyed to request COUNT has to start comfortably
+    // past that burst or its early steps silently get skipped -- counts
+    // 1-4 are a quiet baseline for exactly that reason; every real
+    // transition below starts at count 5+, one distinct step per poll:
+    //   c5: hou-tex goes live (1-0) -- no cue yet, a delta needs a PRIOR
+    //       live tick to compare against.
+    //   c6: hou-tex 6-0 (margin 1->6, growing, not yet blowout -- the
+    //       intermediate step blowout's "still growing" check needs).
+    //   c7: hou-tex 9-0 (margin 6->9, still growing, now >=8) -> BLOWOUT.
+    //       bos-nyy flips to 3-5 (home lead +1 -> away lead -2) -> LEAD
+    //       CHANGE. bos-nyy's drama_peak jumps 50->90, overtaking hou-
+    //       tex's static 60 -> NEW HOTTEST. wnba-sea-phx's went_to_ot
+    //       flips false->true -> EXTRA FRAMES.
+    //   c8: hou-tex 9-5 (margin 9->4, shrank 5) -> COMEBACK. wnba-sea-phx
+    //       gets finalized_at set (still went_to_ot true) -> DRAMATIC
+    //       FINAL (status flips live->final while went_to_ot holds).
+    //   c9+: everything static -- the steady-state control, confirms
+    //        cues fire once on the real transition and don't repeat.
+    const houTexHome = contextRequestCount < 5 ? null : contextRequestCount === 5 ? 1 : contextRequestCount === 6 ? 6 : 9
+    const houTexAway = contextRequestCount < 5 ? null : contextRequestCount < 8 ? 0 : 5
+    const bosNyyAway = contextRequestCount < 7 ? 2 : 5
+    const bosNyyDramaPeak = contextRequestCount < 7 ? 50 : 90
+    const wnbaWentToOt = contextRequestCount >= 7
+    const wnbaFinalizedAt = contextRequestCount >= 8 ? `${date}T02:30:00Z` : null
     // Real shape confirmed live (see OddsRow's own comment in DeskCard):
     // string-encoded JSON with a few internal-only fields (_oddsProof)
     // that the UI is expected to ignore, not surface.
@@ -157,13 +193,13 @@ function mockRelay() {
       date,
       games: {
         regular: [
-          { id: `${date}-mlb-nym-phi`, sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets',        home_score: 4,    away_score: 2,    venue: 'Citizens Bank Park',        finalized_at: `${date}T02:15:00Z`, went_to_ot: null, local_note: nymPhiNote, streams: nymPhiStreams },
-          { id: `${date}-mlb-bos-nyy`, sport: 'MLB', home: 'NY Yankees',            away: 'Boston Red Sox', home_score: 3,    away_score: 2,    venue: 'Yankee Stadium',            finalized_at: null,                went_to_ot: null, opening_odds: bosNyyOpeningOdds, closing_odds: bosNyyClosingOdds, streams: bosNyyStreams },
-          { id: `${date}-mlb-hou-tex`, sport: 'MLB', home: 'Texas Rangers',          away: 'Houston Astros', home_score: houTexLive ? 1 : null, away_score: houTexLive ? 0 : null, venue: 'Globe Life Field',          finalized_at: null,                went_to_ot: null, streams: houTexStreams },
+          { id: `${date}-mlb-nym-phi`, sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets',        home_score: 4,    away_score: 2,    venue: 'Citizens Bank Park',        finalized_at: `${date}T02:15:00Z`, went_to_ot: null, local_note: nymPhiNote, streams: nymPhiStreams, drama_peak: 40 },
+          { id: `${date}-mlb-bos-nyy`, sport: 'MLB', home: 'NY Yankees',            away: 'Boston Red Sox', home_score: 3,    away_score: bosNyyAway, venue: 'Yankee Stadium',            finalized_at: null,                went_to_ot: null, opening_odds: bosNyyOpeningOdds, closing_odds: bosNyyClosingOdds, streams: bosNyyStreams, drama_peak: bosNyyDramaPeak },
+          { id: `${date}-mlb-hou-tex`, sport: 'MLB', home: 'Texas Rangers',          away: 'Houston Astros', home_score: houTexHome, away_score: houTexAway, venue: 'Globe Life Field',          finalized_at: null,                went_to_ot: null, streams: houTexStreams, drama_peak: 60 },
           { id: `${date}-mls-col-slc`, sport: 'MLS', home: 'Real Salt Lake',         away: 'Colorado Rapids',home_score: null, away_score: null, venue: 'America First Field',       finalized_at: null,                went_to_ot: null, streams: mlsStreams },
           { id: `${date}-mls-cfm-nyr`, sport: 'MLS', home: 'NY Red Bulls',           away: 'CF Montr\xe9al', home_score: null, away_score: null, venue: 'Red Bull Arena',            finalized_at: null,                went_to_ot: null, streams: mlsStreams },
-          { id: `${date}-mls-sj-col`,  sport: 'MLS', home: 'Colorado Rapids',        away: 'San Jose Earthquakes', home_score: 0, away_score: 1, venue: "Dick's Sporting Goods Park", finalized_at: `${date}T01:45:00Z`, went_to_ot: null, streams: mlsStreams },
-          { id: `${date}-wnba-sea-phx`,sport: 'WNBA',home: 'Phoenix Mercury',        away: 'Seattle Storm',  home_score: 68,   away_score: 71,   venue: 'Footprint Center',          finalized_at: `${date}T02:30:00Z`, went_to_ot: true,  streams: wnbaStreams },
+          { id: `${date}-mls-sj-col`,  sport: 'MLS', home: 'Colorado Rapids',        away: 'San Jose Earthquakes', home_score: 0, away_score: 1, venue: "Dick's Sporting Goods Park", finalized_at: `${date}T01:45:00Z`, went_to_ot: null, streams: mlsStreams, drama_peak: 45 },
+          { id: `${date}-wnba-sea-phx`,sport: 'WNBA',home: 'Phoenix Mercury',        away: 'Seattle Storm',  home_score: 60,   away_score: 58,   venue: 'Footprint Center',          finalized_at: wnbaFinalizedAt,      went_to_ot: wnbaWentToOt, streams: wnbaStreams },
           { id: `${date}-wnba-ind-min`,sport: 'WNBA',home: 'Minnesota Lynx',         away: 'Indiana Fever',  home_score: null, away_score: null, venue: 'Target Center',             finalized_at: null,                went_to_ot: null, streams: wnbaStreams },
         ],
         postseason: [],

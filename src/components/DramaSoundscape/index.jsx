@@ -1,4 +1,4 @@
-import { For, Show, createSignal, createMemo, onCleanup } from 'solid-js'
+import { For, Show, createSignal, createMemo, createEffect, onCleanup } from 'solid-js'
 import { deskStore } from '../../data/relay'
 import styles from './DramaSoundscape.module.css'
 
@@ -190,9 +190,16 @@ export function DramaSoundscape() {
 
   const games = createMemo(() => [...(deskStore.games?.regular ?? []), ...(deskStore.games?.postseason ?? [])])
 
-  // This memo's real job is the SIDE EFFECT of detecting transitions
-  // and firing sounds -- it runs on every deskStore poll tick.
-  createMemo(() => {
+  // REAL BUG, FOUND 2026-07-31 (user report: "soundboard doesn't play
+  // live"): this was a bare createMemo whose return value nothing ever
+  // reads. Confirmed in isolation (node test, solid-js core, no DOM):
+  // an unread createMemo runs exactly ONCE at creation and never
+  // re-runs on subsequent dependency changes -- memos are lazy/pull-
+  // based in Solid, so with zero consumers there is nothing to pull.
+  // createEffect is push-based and always re-runs when its tracked
+  // dependencies change, which is what a side-effect-only computation
+  // (detecting transitions, firing sounds) actually needs.
+  createEffect(() => {
     const list = games()
     if (!list.length) return
 
