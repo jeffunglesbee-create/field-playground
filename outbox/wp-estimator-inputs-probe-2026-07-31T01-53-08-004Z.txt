@@ -1,0 +1,48 @@
+probe_at: 2026-07-31T01:53:08.005Z
+purpose: find real scoreDiff/periodProgress inputs for the WP estimator,
+  confirmed by shape, before writing any estimator code
+
+=== Mets @ Phillies  (2026-07-16, gamePk=823440) ===
+  Savant top-level keys: game_status_code, game_status, gamedayType, gameDate, hasAbs, scoreboard, venue_id, home_team_data, away_team_data, team_home_id, team_away_id, team_home, home_pitchers, away_batters, team_away, home_batters, away_pitchers, exit_velocity, game_date, players, away_lineup, home_lineup, away_pitcher_lineup, home_pitcher_lineup, boxscore, cacheKey, cache_hit
+  Savant scoreboard keys: gamePk, linescore, stats, currentPlay, status, teams, datetime, probablePitchers
+  keys anywhere matching /score/i (first 30): root.scoreboard, root.scoreboard.linescore, root.scoreboard.currentPlay.result.awayScore, root.scoreboard.currentPlay.result.homeScore, root.boxscore, root.boxscore.topPerformers.0.gameScore, root.boxscore.topPerformers.0.pitchingGameScore, root.boxscore.topPerformers.1.gameScore, root.boxscore.topPerformers.1.hittingGameScore, root.boxscore.topPerformers.2.gameScore, root.boxscore.topPerformers.2.hittingGameScore
+  gameWpa[0]: {"homeTeamWinProbability":52.2,"awayTeamWinProbability":47.8,"homeTeamWinProbabilityAdded":2.200000000000003,"hwp":2.200000000000003,"awp":-2.200000000000003,"atBatIndex":0,"i":"T1","capIndex":14}
+  gameWpa[35] (mid-game): {"homeTeamWinProbability":38.2,"awayTeamWinProbability":61.8,"homeTeamWinProbabilityAdded":-3.299999999999997,"hwp":-11.799999999999997,"awp":11.799999999999997,"atBatIndex":35,"i":"B5","capIndex":14}
+  liveData.plays.allPlays.length: 70
+  allPlays[first]: atBatIndex=0  inning=1 halfInning=top  homeScore=0  awayScore=0  isComplete=true
+  allPlays[mid]: atBatIndex=35  inning=5 halfInning=bottom  homeScore=0  awayScore=1  isComplete=true
+  allPlays[last]: atBatIndex=69  inning=9 halfInning=bottom  homeScore=1  awayScore=4  isComplete=true
+
+=== Rays @ Red Sox  (2026-07-17, gamePk=824766) ===
+  Savant top-level keys: game_status_code, game_status, gamedayType, gameDate, hasAbs, scoreboard, venue_id, home_team_data, away_team_data, team_home_id, team_away_id, team_home, home_pitchers, away_batters, team_away, home_batters, away_pitchers, exit_velocity, game_date, players, away_lineup, home_lineup, away_pitcher_lineup, home_pitcher_lineup, boxscore, cacheKey, cache_hit
+  Savant scoreboard keys: gamePk, linescore, stats, currentPlay, status, teams, datetime, probablePitchers
+  keys anywhere matching /score/i (first 30): root.scoreboard, root.scoreboard.linescore, root.scoreboard.currentPlay.result.awayScore, root.scoreboard.currentPlay.result.homeScore, root.boxscore, root.boxscore.topPerformers.0.gameScore, root.boxscore.topPerformers.0.pitchingGameScore, root.boxscore.topPerformers.1.gameScore, root.boxscore.topPerformers.1.hittingGameScore, root.boxscore.topPerformers.2.gameScore, root.boxscore.topPerformers.2.hittingGameScore
+  gameWpa[0]: {"homeTeamWinProbability":52.2,"awayTeamWinProbability":47.8,"homeTeamWinProbabilityAdded":2.200000000000003,"hwp":2.200000000000003,"awp":-2.200000000000003,"atBatIndex":0,"i":"T1","capIndex":14}
+  gameWpa[36] (mid-game): {"homeTeamWinProbability":87.3,"awayTeamWinProbability":12.700000000000003,"homeTeamWinProbabilityAdded":-1.2000000000000028,"hwp":37.3,"awp":-37.3,"atBatIndex":36,"i":"B5","capIndex":0}
+  liveData.plays.allPlays.length: 73
+  allPlays[first]: atBatIndex=0  inning=1 halfInning=top  homeScore=0  awayScore=0  isComplete=true
+  allPlays[mid]: atBatIndex=36  inning=5 halfInning=bottom  homeScore=3  awayScore=0  isComplete=true
+  allPlays[last]: atBatIndex=72  inning=9 halfInning=top  homeScore=10  awayScore=0  isComplete=true
+
+=== Dodgers @ Yankees  (2026-07-17, gamePk=823524) ===
+  Savant top-level keys: game_status_code, game_status, gamedayType, gameDate, hasAbs, scoreboard, venue_id, home_team_data, away_team_data, team_home_id, team_away_id, team_home, home_pitchers, away_batters, team_away, home_batters, away_pitchers, exit_velocity, game_date, players, away_lineup, home_lineup, away_pitcher_lineup, home_pitcher_lineup, boxscore, cacheKey, cache_hit
+  Savant scoreboard keys: gamePk, linescore, stats, currentPlay, status, teams, datetime, probablePitchers
+  keys anywhere matching /score/i (first 30): root.scoreboard, root.scoreboard.linescore, root.scoreboard.currentPlay.result.awayScore, root.scoreboard.currentPlay.result.homeScore, root.boxscore, root.boxscore.topPerformers.0.gameScore, root.boxscore.topPerformers.0.pitchingGameScore, root.boxscore.topPerformers.1.gameScore, root.boxscore.topPerformers.1.pitchingGameScore, root.boxscore.topPerformers.2.gameScore, root.boxscore.topPerformers.2.hittingGameScore
+  gameWpa[0]: {"homeTeamWinProbability":52.2,"awayTeamWinProbability":47.8,"homeTeamWinProbabilityAdded":2.200000000000003,"hwp":2.200000000000003,"awp":-2.200000000000003,"atBatIndex":0,"i":"T1","capIndex":0}
+  gameWpa[33] (mid-game): {"homeTeamWinProbability":68.7,"awayTeamWinProbability":31.299999999999997,"homeTeamWinProbabilityAdded":-2.0999999999999943,"hwp":18.700000000000003,"awp":-18.700000000000003,"atBatIndex":33,"i":"B5","capIndex":0}
+  liveData.plays.allPlays.length: 67
+  allPlays[first]: atBatIndex=0  inning=1 halfInning=top  homeScore=0  awayScore=0  isComplete=true
+  allPlays[mid]: atBatIndex=33  inning=5 halfInning=bottom  homeScore=1  awayScore=0  isComplete=true
+  allPlays[last]: atBatIndex=66  inning=9 halfInning=bottom  homeScore=1  awayScore=2  isComplete=true
+
+=== VERDICT ===
+If /score/i hits appeared in the Savant response above, score data may
+already live in the SAME response as the WP array -- no second host or
+join needed, re-read those exact fields before assuming anything further.
+If not, and MLB Stats API's allPlays entries show real homeScore/
+awayScore alongside atBatIndex, that confirms the real join key: match
+Savant's gameWpa[i].atBatIndex to allPlays[j].about.atBatIndex for the
+SAME gamePk to attach a real score state to each real WP reading.
+Compare a few atBatIndex values by inning between the two dumps above
+to confirm they actually correspond to the same plays, not just the same
+field name by coincidence, before building anything on this join.
