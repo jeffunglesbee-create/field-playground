@@ -52,6 +52,7 @@ import { WeatherPoll } from './components/WeatherPoll'
 import { VenueGeocodeRace } from './components/VenueGeocodeRace'
 import { ScoreTicker } from './components/ScoreTicker'
 import { LiveWpTicker } from './components/LiveWpTicker'
+import { DramaSoundscape } from './components/DramaSoundscape'
 import { Arbitrage } from './components/Arbitrage'
 import { WcBracketTree } from './components/WcBracketTree'
 import { Newspaper } from './components/Newspaper'
@@ -92,7 +93,7 @@ const POLL_INTERVAL_MS = 15000
 const TOP_NAV_ID = 'app'
 
 const TOP_TABS = [
-  { key: 'games', label: 'Games', count: 12 },
+  { key: 'games', label: 'Games', count: 13 },
   { key: 'picks', label: 'Picks', count: 7 },
   { key: 'stats', label: 'Stats', count: 5 },
   { key: 'journalism', label: 'Journalism', count: 2 },
@@ -228,6 +229,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.liveWpTicker}>
               <LiveWpTicker />
+            </SafeSection>
+            <SafeSection class={styles.dramaSoundscape}>
+              <DramaSoundscape />
             </SafeSection>
             <SafeSection class={styles.arbitrage}>
               <Arbitrage />
