@@ -1,11 +1,14 @@
-round3_at: 2026-07-30T04:46:47Z
+round3_at: 2026-07-31T01:46:15Z
 sample: 25 games (round 2's real sample, re-used)
 purpose: does REAL win-probability sharpen round 2's already-confirmed metrics?
 
 
-=== RAW DIAGNOSTIC DUMP (first resolved game, before trusting ANY derived metric) ===
+=== RAW DIAGNOSTIC DUMP (first resolved game, TRUE raw values, before normalizing) ===
 field.js's own comment claims homeTeamWinProbability is a 0-1 fraction.
-9230-scale comeback values in a prior run say otherwise -- checking directly.
+CONFIRMED (2026-07-31, cross-verified against jubilant-bassoon's own same-day
+audit) it is actually 0-100 -- the 9230-scale comeback value below is exactly
+that bug, not noise. normalize_wp_scale() below corrects it before any metric
+is computed; this dump is kept as the honest historical record of the raw shape.
   entry 0: {"homeTeamWinProbability": 52.2, "awayTeamWinProbability": 47.8, "homeTeamWinProbabilityAdded": 2.200000000000003, "hwp": 2.200000000000003, "awp": -2.200000000000003, "atBatIndex": 0, "i": "T1", "capIndex": 14}
   entry 1: {"homeTeamWinProbability": 49.8, "awayTeamWinProbability": 50.2, "homeTeamWinProbabilityAdded": -2.4000000000000057, "hwp": -0.20000000000000284, "awp": 0.20000000000000284, "atBatIndex": 1, "i": "T1", "capIndex": 33}
   entry 2: {"homeTeamWinProbability": 54.800000000000004, "awayTeamWinProbability": 45.199999999999996, "homeTeamWinProbabilityAdded": 5.000000000000007, "hwp": 4.800000000000004, "awp": -4.800000000000004, "atBatIndex": 2, "i": "T1", "capIndex": 24}
@@ -14,38 +17,38 @@ field.js's own comment claims homeTeamWinProbability is a 0-1 fraction.
   entry 5: {"homeTeamWinProbability": 100, "awayTeamWinProbability": 0, "homeTeamWinProbabilityAdded": 38.6, "hwp": 50, "awp": -50, "atBatIndex": 76, "i": "B10", "capIndex": 60}
 === END RAW DUMP ===
 
-Marlins @ Brewers                [OT] gamePk=823766     77 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=390.70
-Padres @ Royals                  [OT] gamePk=824090     86 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=588.90
-Orioles @ Astros                 [OT] gamePk=824169     88 plays  wpa_sustained_late=  2.3%  wpa_comeback=9230.0  wpa_swing=500.40
-Giants @ Mariners                [OT] gamePk=823116     79 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=343.60
-Cardinals @ Diamondbacks         [OT] gamePk=825057     90 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=384.80
-Tigers @ Cubs                    [OT] gamePk=824654     93 plays  wpa_sustained_late=  2.1%  wpa_comeback=8280.0  wpa_swing=461.90
-Athletics @ Diamondbacks         [OT] gamePk=825056     85 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=381.60
-Twins @ Guardians                [OT] gamePk=824406     90 plays  wpa_sustained_late=  2.2%  wpa_comeback=8060.0  wpa_swing=523.20
-Cubs @ Pirates                   [OT] gamePk=823352     78 plays  wpa_sustained_late=  2.6%  wpa_comeback=8420.0  wpa_swing=397.70
-Braves @ Orioles                 [OT] gamePk=824812     86 plays  wpa_sustained_late=  2.3%  wpa_comeback=7940.0  wpa_swing=441.40
-Angels @ Giants                  [OT] gamePk=823196     82 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=386.20
-Braves @ Orioles                 [OT] gamePk=824810     93 plays  wpa_sustained_late=  2.1%  wpa_comeback=9230.0  wpa_swing=513.10
-Reds @ Cardinals                 [OT] gamePk=823028     84 plays  wpa_sustained_late=  2.4%  wpa_comeback=7610.0  wpa_swing=412.50
-Mets @ Phillies                       gamePk=823440     70 plays  wpa_sustained_late=  5.7%  wpa_comeback=5460.0  wpa_swing=228.00
-Rays @ Red Sox                        gamePk=824766     73 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=117.10
-Dodgers @ Yankees                     gamePk=823524     67 plays  wpa_sustained_late=  2.9%  wpa_comeback=7370.0  wpa_swing=242.90
-White Sox @ Blue Jays                 gamePk=822789     84 plays  wpa_sustained_late=  9.5%  wpa_comeback=5430.0  wpa_swing=151.20
-Rangers @ Braves                      gamePk=824901     81 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=118.60
-Twins @ Cubs                          gamePk=824655     72 plays  wpa_sustained_late=  2.8%  wpa_comeback=7550.0  wpa_swing=233.60
-Orioles @ Astros                      gamePk=824170     77 plays  wpa_sustained_late=  2.6%  wpa_comeback=8600.0  wpa_swing=347.90
-Reds @ Rockies                        gamePk=824332     75 plays  wpa_sustained_late=  2.6%  wpa_comeback=5540.0  wpa_swing=210.10
-Tigers @ Angels                       gamePk=824009     70 plays  wpa_sustained_late=  2.9%  wpa_comeback=8620.0  wpa_swing=369.90
-Cardinals @ Diamondbacks              gamePk=825060     77 plays  wpa_sustained_late=  2.6%  wpa_comeback=6290.0  wpa_swing=404.60
-Nationals @ Athletics                 gamePk=824981     90 plays  wpa_sustained_late=  4.4%  wpa_comeback=5780.0  wpa_swing=145.50
-Giants @ Mariners                     gamePk=823115     75 plays  wpa_sustained_late= 18.4%  wpa_comeback=5550.0  wpa_swing=169.70
+Marlins @ Brewers                [OT] gamePk=823766     77 plays  wpa_sustained_late= 87.2%  wpa_comeback= 11.8  wpa_swing=3.91
+Padres @ Royals                  [OT] gamePk=824090     86 plays  wpa_sustained_late= 48.8%  wpa_comeback= 41.6  wpa_swing=5.89
+Orioles @ Astros                 [OT] gamePk=824169     88 plays  wpa_sustained_late= 70.5%  wpa_comeback= 42.8  wpa_swing=5.00
+Giants @ Mariners                [OT] gamePk=823116     79 plays  wpa_sustained_late= 50.0%  wpa_comeback= 40.0  wpa_swing=3.44
+Cardinals @ Diamondbacks         [OT] gamePk=825057     90 plays  wpa_sustained_late= 26.7%  wpa_comeback= 48.5  wpa_swing=3.85
+Tigers @ Cubs                    [OT] gamePk=824654     93 plays  wpa_sustained_late= 34.0%  wpa_comeback= 33.3  wpa_swing=4.62
+Athletics @ Diamondbacks         [OT] gamePk=825056     85 plays  wpa_sustained_late= 20.9%  wpa_comeback=  7.2  wpa_swing=3.82
+Twins @ Guardians                [OT] gamePk=824406     90 plays  wpa_sustained_late= 55.6%  wpa_comeback= 31.1  wpa_swing=5.23
+Cubs @ Pirates                   [OT] gamePk=823352     78 plays  wpa_sustained_late= 82.1%  wpa_comeback= 34.7  wpa_swing=3.98
+Braves @ Orioles                 [OT] gamePk=824812     86 plays  wpa_sustained_late= 46.5%  wpa_comeback= 29.9  wpa_swing=4.41
+Angels @ Giants                  [OT] gamePk=823196     82 plays  wpa_sustained_late= 41.5%  wpa_comeback=  9.8  wpa_swing=3.86
+Braves @ Orioles                 [OT] gamePk=824810     93 plays  wpa_sustained_late= 19.1%  wpa_comeback= 42.8  wpa_swing=5.13
+Reds @ Cardinals                 [OT] gamePk=823028     84 plays  wpa_sustained_late= 76.2%  wpa_comeback= 26.6  wpa_swing=4.12
+Mets @ Phillies                       gamePk=823440     70 plays  wpa_sustained_late= 25.7%  wpa_comeback=  5.1  wpa_swing=2.28
+Rays @ Red Sox                        gamePk=824766     73 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.2  wpa_swing=1.17
+Dodgers @ Yankees                     gamePk=823524     67 plays  wpa_sustained_late= 11.8%  wpa_comeback= 24.2  wpa_swing=2.43
+White Sox @ Blue Jays                 gamePk=822789     84 plays  wpa_sustained_late=  2.4%  wpa_comeback=  4.8  wpa_swing=1.51
+Rangers @ Braves                      gamePk=824901     81 plays  wpa_sustained_late=  0.0%  wpa_comeback=  0.0  wpa_swing=1.19
+Twins @ Cubs                          gamePk=824655     72 plays  wpa_sustained_late=  2.8%  wpa_comeback= 26.0  wpa_swing=2.34
+Orioles @ Astros                      gamePk=824170     77 plays  wpa_sustained_late=  5.1%  wpa_comeback= 36.5  wpa_swing=3.48
+Reds @ Rockies                        gamePk=824332     75 plays  wpa_sustained_late= 10.5%  wpa_comeback=  5.9  wpa_swing=2.10
+Tigers @ Angels                       gamePk=824009     70 plays  wpa_sustained_late=  5.7%  wpa_comeback= 36.7  wpa_swing=3.70
+Cardinals @ Diamondbacks              gamePk=825060     77 plays  wpa_sustained_late= 33.3%  wpa_comeback= 13.4  wpa_swing=4.05
+Nationals @ Athletics                 gamePk=824981     90 plays  wpa_sustained_late=  2.2%  wpa_comeback=  8.3  wpa_swing=1.46
+Giants @ Mariners                     gamePk=823115     75 plays  wpa_sustained_late=  2.6%  wpa_comeback=  6.0  wpa_swing=1.70
 
 === RESOLUTION SUMMARY ===
 resolved with real Savant WP data: 25 / 25
 
 === DISTRIBUTION ===
-wpa_sustained_late -- distinct: 12/25 (48%)  range: 0.0-18.4
-wpa_comeback       -- distinct: 17/25 (68%)  range: 0.0-9230.0
+wpa_sustained_late -- distinct: 24/25 (96%)  range: 0.0-87.2
+wpa_comeback       -- distinct: 24/25 (96%)  range: 0.0-48.5
 
 === VERDICT ===
 Compare the distinct-value counts and ranges above against round 2's
