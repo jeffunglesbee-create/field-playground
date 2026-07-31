@@ -1,0 +1,52 @@
+name: WP Estimator Inputs Probe
+
+# WP Estimator Validation Lab, Task 1 (docs/CC-CMD-2026-07-31-wp-
+# estimator-validation-lab.md): re-verify the real input shape before
+# writing any estimator code. Savant's gameWpa array (the only source
+# read so far) has no score field -- this finds out where scoreDiff
+# actually lives (same Savant response, or MLB Stats API's live feed)
+# and whether it can be joined back to Savant's WP readings by
+# atBatIndex, for real, on real games.
+#
+# Both statsapi.mlb.com and baseballsavant.mlb.com are sandbox-blocked
+# from the chat environment (confirmed repeatedly this session) --
+# GitHub Actions runners have unrestricted egress, same CI-as-proxy
+# pattern used for every Savant/MLB probe so far.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe WP estimator input shape (Savant full response + MLB live feed)
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node scripts/probe-wp-estimator-inputs.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "wp-estimator-inputs-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: wp estimator inputs probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push rejected, rebasing (attempt $i)"
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          echo "could not push after 5 attempts"
+          exit 1
