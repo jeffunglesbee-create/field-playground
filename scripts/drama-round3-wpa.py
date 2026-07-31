@@ -102,6 +102,29 @@ def fetch_savant_wpa(game_pk):
     return wpa_arr, None
 
 
+def normalize_wp_scale(wpa_arr):
+    """SCALE FIX (2026-07-31): Savant's raw API returns homeTeamWin-
+    Probability/Added on a 0-100 scale (confirmed live: 52.2, not
+    0.522) -- the exact bug this round's own raw diagnostic dump first
+    caught (a 9230-scale comeback value on what field.js's comment
+    claims is a 0-1 fraction). jubilant-bassoon fixed fetchSavantGameFeed
+    itself the same day (divides by 100 at the source). Every formula
+    below (wpa_comeback's `50 - worst*100`, wpa_sustained_late's
+    `abs(wp-0.5)<=0.15`) was written assuming a 0-1 input -- normalizing
+    once here, at the single read point, keeps them correct without
+    touching each formula individually, same principle as production's
+    own fix (fix the source, not each consumer)."""
+    out = []
+    for p in wpa_arr:
+        q = dict(p)
+        if q.get("homeTeamWinProbability") is not None:
+            q["homeTeamWinProbability"] = q["homeTeamWinProbability"] / 100
+        if q.get("homeTeamWinProbabilityAdded") is not None:
+            q["homeTeamWinProbabilityAdded"] = q["homeTeamWinProbabilityAdded"] / 100
+        out.append(q)
+    return out
+
+
 def wpa_sustained_late(wpa_arr):
     """Fraction of the SECOND HALF of the play sequence (proxy for
     late-game) where win probability stayed within 15 percentage points
@@ -175,14 +198,18 @@ for g in SAMPLE:
     if not dumped_raw:
         dumped_raw = True
         log("")
-        log("=== RAW DIAGNOSTIC DUMP (first resolved game, before trusting ANY derived metric) ===")
+        log("=== RAW DIAGNOSTIC DUMP (first resolved game, TRUE raw values, before normalizing) ===")
         log("field.js's own comment claims homeTeamWinProbability is a 0-1 fraction.")
-        log("9230-scale comeback values in a prior run say otherwise -- checking directly.")
+        log("CONFIRMED (2026-07-31, cross-verified against jubilant-bassoon's own same-day")
+        log("audit) it is actually 0-100 -- the 9230-scale comeback value below is exactly")
+        log("that bug, not noise. normalize_wp_scale() below corrects it before any metric")
+        log("is computed; this dump is kept as the honest historical record of the raw shape.")
         for i, p in enumerate(wpa_arr[:3] + wpa_arr[-3:]):
             log("  entry " + str(i) + ": " + json.dumps(p))
         log("=== END RAW DUMP ===")
         log("")
 
+    wpa_arr = normalize_wp_scale(wpa_arr)
     resolved += 1
     sl = wpa_sustained_late(wpa_arr)
     cb = wpa_comeback(wpa_arr)

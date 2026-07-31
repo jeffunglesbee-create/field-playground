@@ -128,10 +128,22 @@ async function main() {
       shapeDumped = true
     }
 
+    // SCALE FIX (2026-07-31): Savant's raw API returns
+    // homeTeamWinProbability/Added on a 0-100 scale (confirmed live:
+    // 52.2, not 0.522), despite field.js's own adjacent comment
+    // claiming 0-1 fraction -- the exact bug jubilant-bassoon fixed
+    // the same day in fetchSavantGameFeed itself (see
+    // docs/CC-CMD-2026-07-31-wp-estimator-validation-lab.md). This
+    // round's original run computed totalMovement/lateMovement on the
+    // raw, unscaled values -- normalizing here, at the single read
+    // point, so this round's own numbers are expressed in the same
+    // 0-1-fraction units production now uses, not the wrong scale
+    // this file originally flagged as merely "an open discrepancy."
+    //
     // Defensive field access -- shape confirmed live above, but coded
     // defensively in case fields differ entry-to-entry (e.g. missing on
     // the very first pitch of a game).
-    const wpaVals = arr.map(e => Number(e?.homeTeamWinProbabilityAdded ?? 0))
+    const wpaVals = arr.map(e => Number(e?.homeTeamWinProbabilityAdded ?? 0) / 100)
     const totalMovement = sum(wpaVals.map(v => Math.abs(v)))
 
     // Real field confirmed from the shape dump above: `i` is a half-inning
@@ -143,7 +155,9 @@ async function main() {
       return m ? parseInt(m[1], 10) : null
     }
     const lateEntries = arr.filter(e => { const inn = inningOf(e); return inn != null && inn >= 7 })
-    const lateMovement = sum(lateEntries.map(e => Math.abs(Number(e?.homeTeamWinProbabilityAdded ?? 0))))
+    // Same /100 scale fix as wpaVals above -- lateEntries is filtered
+    // from the raw arr, not from the already-normalized wpaVals.
+    const lateMovement = sum(lateEntries.map(e => Math.abs(Number(e?.homeTeamWinProbabilityAdded ?? 0) / 100)))
 
     rows.push({
       matchup: g.away + ' @ ' + g.home,
@@ -182,12 +196,18 @@ async function main() {
     log('top 5 by LATE movement:  ' + byLate.slice(0, 5).map(r => r.matchup).join(' | '))
   }
   log('')
-  log('NOTE: a WP-scale discrepancy was observed, not chased further this')
-  log('round -- homeTeamWinProbability values are 0-100 (e.g. 52.2), but')
-  log('fetchSavantGameFeed\'s own comment in field.js states "WP scale: 0-1')
-  log('fraction (e.g. 0.72 = 72%)". Flagged as an open discrepancy between')
-  log('the comment and live data, NOT confirmed as a display bug -- the')
-  log('actual DOM-rendering consumer of this value was not traced.')
+  log('SCALE FIX (2026-07-31): this round originally flagged homeTeam-')
+  log('WinProbability/Added as 0-100 raw (e.g. 52.2), an open discrepancy')
+  log('against fetchSavantGameFeed\'s own "0-1 fraction" comment. That is')
+  log('now CONFIRMED as a real bug, not just a comment mismatch --')
+  log('jubilant-bassoon fixed fetchSavantGameFeed itself the same day')
+  log('(divides by 100 at the source). totalMovement/lateMovement above')
+  log('are computed on the CORRECTED /100 scale to match. A uniform')
+  log('linear rescale does not change which games rank higher or lower')
+  log('relative to each other -- round 3\'s qualitative finding (100%')
+  log('resolution, beats every proxy tested) is unaffected -- but the')
+  log('absolute numbers here are real and on the right scale, unlike the')
+  log('original run\'s.')
 }
 
 main().catch(e => log('FAILED: ' + String(e)))
