@@ -1,0 +1,106 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.enableBtn {
+  display: block;
+  width: 100%;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--field-text-primary);
+  background: #1a2410;
+  border: 1px solid #2a3a1a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.enableBtn:hover { border-color: #3a4a2a; }
+.enableBtn:disabled { opacity: 0.6; cursor: default; }
+
+.error {
+  font-size: 10px;
+  color: #e77;
+  margin-bottom: 8px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.onBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #4c8;
+}
+
+.volLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 9px;
+  color: var(--field-text-muted);
+  padding: 6px 0;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.logItem {
+  font-size: 11px;
+  color: var(--field-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
