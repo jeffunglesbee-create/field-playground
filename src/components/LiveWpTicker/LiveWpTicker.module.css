@@ -1,0 +1,153 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.note code {
+  color: var(--field-text-secondary);
+  font-size: 10px;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0;
+}
+
+.rowList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  background: #0e0e0e;
+  border: 1px solid #1e1e1e;
+  border-radius: 5px;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.matchup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.team {
+  color: var(--field-text-primary);
+}
+
+.at {
+  color: var(--field-text-muted);
+  font-size: 10px;
+}
+
+.loading {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.error {
+  font-size: 10px;
+  color: #e66;
+}
+
+.state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.score {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--field-text-primary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.inningNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.wpBar {
+  flex: 1 1 80px;
+  min-width: 60px;
+  height: 6px;
+  background: #1e1e1e;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.wpFill {
+  height: 100%;
+  background: #4c8;
+  transition: width 0.4s ease;
+}
+
+.wpValue {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Visible caveat state, not a tooltip-only footnote -- the validated
+   MAE genuinely jumps 3-6x in extra innings (docs/outbox/cc-session-
+   2026-07-31-wp-estimator-validation-lab.md), so this has to read as a
+   distinct warning, not a quiet label the same weight as everything
+   else in the row. */
+.extraInningsBadge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #e77;
+  background: #2a1414;
+  border: 1px solid #4a1e1e;
+  border-radius: 3px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+  width: 100%;
+}

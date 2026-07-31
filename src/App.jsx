@@ -51,6 +51,7 @@ import { TeamAffinitySync } from './components/TeamAffinitySync'
 import { WeatherPoll } from './components/WeatherPoll'
 import { VenueGeocodeRace } from './components/VenueGeocodeRace'
 import { ScoreTicker } from './components/ScoreTicker'
+import { LiveWpTicker } from './components/LiveWpTicker'
 import { Arbitrage } from './components/Arbitrage'
 import { WcBracketTree } from './components/WcBracketTree'
 import { Newspaper } from './components/Newspaper'
@@ -224,6 +225,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.scoreTicker}>
               <ScoreTicker />
+            </SafeSection>
+            <SafeSection class={styles.liveWpTicker}>
+              <LiveWpTicker />
             </SafeSection>
             <SafeSection class={styles.arbitrage}>
               <Arbitrage />
