@@ -90,19 +90,42 @@ export function DramaSoundscape() {
       // Five small synths, each built for ONE cartoon gesture rather
       // than one general-purpose voice doing everything -- matches how
       // real cartoon scoring works, a different instrument per gag.
+      //
+      // FOUND 2026-07-31 (user, listening for real: "Sounds 8-bit but
+      // not in a good way"): boing/bell are sine -- a pure tone has no
+      // harmonics to sound harsh, sine can't produce that. trombone/
+      // xylo were raw Tone.Synth on sawtooth/square routed straight to
+      // toDestination() with NO filtering at all -- an unfiltered
+      // sawtooth/square is *exactly* what unfiltered NES/Game Boy chip
+      // audio is, harmonically. That's the real, explainable cause, not
+      // a vague "make it sound better" guess. Fix: Tone.MonoSynth
+      // instead of Tone.Synth for these two specifically -- it adds a
+      // built-in lowpass filter + filterEnvelope, the standard
+      // subtractive-synthesis way to turn a raw waveform into something
+      // that reads as an instrument rather than a chip tone. For
+      // trombone this doubles as a genuine "wah" (a filter envelope
+      // sweep IS what a wah pedal does) -- not just noise reduction,
+      // an on-theme improvement for a function literally called
+      // playWahTrombone. Perceptual result needs a human ear to
+      // actually confirm -- same rule as the closest-pairs section
+      // below, not something to claim fixed by inspection alone.
       const boing = new Tone.Synth({
         oscillator: { type: 'sine' },
         envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.05 },
       }).toDestination()
 
-      const trombone = new Tone.Synth({
+      const trombone = new Tone.MonoSynth({
         oscillator: { type: 'sawtooth' },
         envelope: { attack: 0.05, decay: 0.1, sustain: 0.4, release: 0.3 },
+        filter: { type: 'lowpass', rolloff: -24, Q: 1 },
+        filterEnvelope: { attack: 0.05, decay: 0.2, sustain: 0.3, release: 0.3, baseFrequency: 200, octaves: 3 },
       }).toDestination()
 
-      const xylo = new Tone.Synth({
+      const xylo = new Tone.MonoSynth({
         oscillator: { type: 'square' },
         envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.02 },
+        filter: { type: 'lowpass', rolloff: -12, Q: 0.5 },
+        filterEnvelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.02, baseFrequency: 800, octaves: 3 },
       }).toDestination()
 
       const bell = new Tone.Synth({
