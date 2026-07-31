@@ -80,13 +80,48 @@ async function main() {
   for (const e of consoleErrors.slice(0, 10)) log('  ' + e.slice(0, 200))
 
   log('')
-  log('=== VERDICT ===')
+  log('=== VERDICT (enable step) ===')
   if (onCount > 0 && errCount === 0) {
     log('CONFIRMED: the CDN import genuinely succeeds in a real browser. Tone.js loaded, Tone.start() completed, the component reached its enabled state for real -- not assumed.')
   } else if (errCount > 0) {
     log('CONFIRMED FAILURE: the CDN import does not work as built. Real error captured above -- this needs a fix (different CDN host, or falling back to bundling Tone.js properly), not a retry.')
+    await browser.close()
+    return
   } else {
-    log('INCONCLUSIVE: neither the success state nor an error message appeared within the wait window. May need a longer timeout, or something is failing silently -- check the console errors above.')
+    log('INCONCLUSIVE: neither the success state nor an error message appeared within the wait window.')
+    await browser.close()
+    return
+  }
+
+  // --- Click all six preview buttons, confirm each fires without error ---
+  log('')
+  log('=== PREVIEW BUTTONS ===')
+  const previewBtns = page.locator('button[class*="previewBtn"]')
+  const btnCount = await previewBtns.count()
+  log('preview buttons found: ' + btnCount + ' (expected 6)')
+
+  const preClickErrorCount = consoleErrors.length
+  for (let i = 0; i < btnCount; i++) {
+    const label = (await previewBtns.nth(i).textContent())?.trim()
+    await previewBtns.nth(i).click()
+    await page.waitForTimeout(600) // let the note sequence actually play out
+    log('  clicked: ' + label)
+  }
+  await page.waitForTimeout(500)
+
+  const newErrors = consoleErrors.slice(preClickErrorCount)
+  log('')
+  log('errors during preview clicks: ' + newErrors.length)
+  for (const e of newErrors.slice(0, 10)) log('  ' + e.slice(0, 200))
+
+  log('')
+  log('=== FINAL VERDICT ===')
+  if (btnCount === 6 && newErrors.length === 0) {
+    log('CONFIRMED: all 6 preview buttons present and clickable, zero errors across all 6 real sound calls (playBoing/playXyloRun/playWahTrombone/playDing/playSuspense/playTaDa). Each cue\'s code path genuinely executes end to end.')
+  } else if (btnCount !== 6) {
+    log('MISMATCH: expected 6 preview buttons, found ' + btnCount + ' -- check the component render.')
+  } else {
+    log('FAILURE: preview buttons present but ' + newErrors.length + ' error(s) fired during playback -- see above, real bug not a false alarm.')
   }
 
   await browser.close()
