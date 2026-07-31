@@ -1,0 +1,29 @@
+probe_at: 2026-07-31T23:57:27.897Z
+purpose: does DramaSoundscape's CDN Tone.js import genuinely succeed on a real click, in a real (non-offline) browser?
+
+enable button found: 1
+clicked enable button, waiting for CDN import + Tone.start()...
+
+=== RESULT ===
+"sound on" badge present: true
+error message present: false
+still stuck loading after 4s: false
+
+console/page errors captured: 0
+
+=== VERDICT (enable step) ===
+CONFIRMED: the CDN import genuinely succeeds in a real browser. Tone.js loaded, Tone.start() completed, the component reached its enabled state for real -- not assumed.
+
+=== PREVIEW BUTTONS ===
+preview buttons found: 6 (expected 6)
+  clicked: 🫠 lead change
+  clicked: 🎢 comeback
+  clicked: 📉 blowout
+  clicked: 🔔 new hottest
+  clicked: ⏰ extra frames
+  clicked: 🎉 dramatic final
+
+errors during preview clicks: 0
+
+=== FINAL VERDICT ===
+CONFIRMED: all 6 preview buttons present and clickable, zero errors across all 6 real sound calls (playBoing/playXyloRun/playWahTrombone/playDing/playSuspense/playTaDa). Each cue's code path genuinely executes end to end.
