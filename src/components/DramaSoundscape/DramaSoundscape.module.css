@@ -83,6 +83,41 @@
   margin-bottom: 8px;
 }
 
+.previewRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.previewLabel {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  margin-right: 2px;
+}
+
+.previewBtn {
+  font-size: 10px;
+  font-family: inherit;
+  color: var(--field-text-secondary);
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.previewBtn:hover {
+  color: var(--field-text-primary);
+  border-color: #3a3a3a;
+}
+
+.previewBtn:active {
+  transform: scale(0.96);
+}
+
 .empty {
   font-size: 11px;
   color: var(--field-text-muted);
