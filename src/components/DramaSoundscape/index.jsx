@@ -150,8 +150,9 @@ export function DramaSoundscape() {
   }
 
   function playXyloRun() {
-    // A fast ascending run, accelerating -- the "climbing back in"
-    // cartoon run, distinct from the slide whistle's continuous glide.
+    // A fast ascending run of DISCRETE notes, accelerating -- the
+    // "climbing back in" cartoon run. Distinct from playBoing's single
+    // pitch-bent glide: this is a stepped sequence, not a continuous ramp.
     const s = synths(); if (!s) return
     const now = s.Tone.now()
     const notes = ['C4', 'D4', 'E4', 'G4', 'C5']
