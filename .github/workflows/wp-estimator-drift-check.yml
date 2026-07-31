@@ -1,0 +1,54 @@
+name: WP Estimator Drift Check
+
+# Automated follow-up for the WP Estimator Validation Lab and the Live
+# WP Ticker / WP Source Badge features built on it (docs/CC-CMD-2026-
+# 07-31-wp-estimator-validation-lab.md, docs/outbox/cc-session-2026-07-
+# 31-live-wp-ticker.md). Checks the FROZEN, already-shipped weights
+# (src/data/wpEstimator.js) against real recent games they have never
+# seen -- NOT a re-run of the validation lab itself, which reads a
+# static sample and would return identical numbers forever. Monthly
+# cadence: a season's shape drifts slowly, so this doesn't need the
+# weekly cadence of the CORS health check.
+#
+# statsapi.mlb.com / baseballsavant.mlb.com sandbox-blocked from chat
+# -- CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 12 1 * *'
+
+permissions:
+  contents: write
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check frozen estimator weights against fresh real games
+        timeout-minutes: 8
+        continue-on-error: true
+        run: node scripts/wp-estimator-drift-check.mjs
+
+      - name: Commit drift check result
+        if: always()
+        run: |
+          git config user.name "wp-estimator-drift-check-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: wp estimator drift check result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push rejected, rebasing (attempt $i)"
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          echo "could not push after 5 attempts"
+          exit 1

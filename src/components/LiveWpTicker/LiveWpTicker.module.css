@@ -118,10 +118,18 @@
   overflow: hidden;
 }
 
+/* Default fill is the ESTIMATED color (amber, matches WpSourceBadge's
+   .estimated) since that's the more common case across sports long-
+   term; .savantFill overrides to green for the real-ground-truth row
+   specifically, matching WpSourceBadge's .savant. */
 .wpFill {
   height: 100%;
-  background: #4c8;
+  background: #d4a92e;
   transition: width 0.4s ease;
+}
+
+.savantFill {
+  background: #4c8;
 }
 
 .wpValue {
@@ -131,6 +139,24 @@
   flex-shrink: 0;
   min-width: 28px;
   text-align: right;
+}
+
+.sourceRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unavailable {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-style: italic;
+}
+
+.delta {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Visible caveat state, not a tooltip-only footnote -- the validated

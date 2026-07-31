@@ -1,0 +1,26 @@
+.savant,
+.estimated {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
+
+/* Green -- real ground truth, same "confirmed/good" semantic ScoreTicker
+   already uses (styles.good: #4c8). */
+.savant {
+  color: #4c8;
+  background: #0f2016;
+  border: 1px solid #1e3a26;
+}
+
+/* Amber -- an approximation/caveat, same semantic WeatherPoll's
+   roofNote already uses for "this isn't the full picture" (#d4a92e). */
+.estimated {
+  color: #d4a92e;
+  background: #241c0a;
+  border: 1px solid #3a2e10;
+}
