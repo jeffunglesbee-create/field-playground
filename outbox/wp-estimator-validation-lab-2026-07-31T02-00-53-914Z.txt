@@ -1,0 +1,69 @@
+probe_at: 2026-07-31T02:00:53.915Z
+purpose: build + honestly validate a minimal client-side WP estimator against real Savant data
+sample: 28 real MLB games (round 3's sample, re-used)
+
+Mets @ Phillies  gamePk=823440  joined 70/70 plays
+Rays @ Red Sox  gamePk=824766  joined 73/73 plays
+Dodgers @ Yankees  gamePk=823524  joined 67/67 plays
+White Sox @ Blue Jays  gamePk=822789  joined 84/84 plays
+Rangers @ Braves  gamePk=824901  joined 81/81 plays
+Marlins @ Brewers  gamePk=823766  joined 77/77 plays
+Twins @ Cubs  gamePk=824655  joined 72/72 plays
+Orioles @ Astros  gamePk=824170  joined 77/77 plays
+Padres @ Royals  gamePk=824090  joined 86/86 plays
+Reds @ Rockies  gamePk=824332  joined 75/75 plays
+Tigers @ Angels  gamePk=824009  joined 70/70 plays
+Cardinals @ Diamondbacks  gamePk=825060  joined 77/77 plays
+Nationals @ Athletics  gamePk=824981  joined 90/90 plays
+Giants @ Mariners  gamePk=823115  joined 75/75 plays
+Pirates @ Guardians  gamePk=824414  joined 71/71 plays
+Twins @ Cubs  gamePk=824657  joined 72/72 plays
+White Sox @ Blue Jays  gamePk=822790  joined 64/64 plays
+Reds @ Rockies  gamePk=824331  joined 76/76 plays
+Mets @ Phillies  gamePk=823441  joined 75/75 plays
+Rays @ Red Sox  gamePk=824738  joined 73/73 plays
+Rangers @ Braves  gamePk=824899  joined 84/84 plays
+Orioles @ Astros  gamePk=824169  joined 88/88 plays
+Marlins @ Brewers  gamePk=823763  joined 81/81 plays
+Padres @ Royals  gamePk=824088  joined 70/70 plays
+Cardinals @ Diamondbacks  gamePk=825059  joined 73/73 plays
+Giants @ Mariners  gamePk=823116  joined 79/79 plays
+Nationals @ Athletics  gamePk=824979  joined 82/82 plays
+Tigers @ Angels  gamePk=824008  joined 75/75 plays
+
+=== SKIPPED ===
+
+games with joined real data: 28 / 28
+
+train games: 22  test games (held out): 6
+test set: Rays @ Red Sox | Rangers @ Braves | Marlins @ Brewers | Marlins @ Brewers | Rangers @ Braves | Nationals @ Athletics
+train points: 1651  test points: 486
+
+=== FITTED WEIGHTS ===
+estimateWinProb({scoreDiff, periodProgress}) = sigmoid(0.3114*scoreDiff + 0.7084*scoreDiff*periodProgress + 0.1696*periodProgress + 0.0893)
+
+=== VALIDATION (held-out test games, never used for fitting) ===
+mean absolute error vs real Savant WP: 0.0289  (on a 0-1 scale)
+
+=== ERROR BY INNING (does the estimator fail in an identifiable situation?) ===
+  inning 1:  n=43  mean_abs_err=0.0205
+  inning 2:  n=61  mean_abs_err=0.0423
+  inning 3:  n=52  mean_abs_err=0.0344
+  inning 4:  n=52  mean_abs_err=0.0228
+  inning 5:  n=51  mean_abs_err=0.0164
+  inning 6:  n=67  mean_abs_err=0.0277
+  inning 7:  n=60  mean_abs_err=0.0158
+  inning 8:  n=51  mean_abs_err=0.0210
+  inning 9:  n=42  mean_abs_err=0.0455
+  inning 10:  n=7  mean_abs_err=0.1375
+  extra innings (>9) specifically: n=7  mean_abs_err=0.1375
+
+=== PLAIN VERDICT ===
+MAE 0.0289 on a 0-1 probability scale, on real held-out MLB games,
+never seen while fitting. Read this against what "trustworthy" should mean:
+an MAE under ~0.05-0.08 would put the estimator within a few percentage
+points of real Savant WP on average -- plausibly usable as a stand-in for
+NBA/MLS/EPL where no real ground truth exists at all. A materially larger
+MAE, or a clear per-inning pattern above (e.g. much worse early or in extra
+innings), means the estimator needs rethinking before it goes near any UI --
+report exactly what the numbers above show, not a rounded-up impression.
