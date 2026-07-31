@@ -1,0 +1,50 @@
+name: WP Estimator Validation Lab
+
+# WP Estimator Validation Lab, Tasks 2-3 (docs/CC-CMD-2026-07-31-wp-
+# estimator-validation-lab.md): build estimateWinProb({scoreDiff,
+# periodProgress}) via logistic regression against real Savant WP data
+# (join confirmed by Task 1's probe, scripts/probe-wp-estimator-
+# inputs.mjs), and honestly validate it -- game-level train/test split,
+# real MAE on held-out test games, no test-set tuning.
+#
+# Both statsapi.mlb.com and baseballsavant.mlb.com are sandbox-blocked
+# from the chat environment -- GitHub Actions runners have unrestricted
+# egress, same CI-as-proxy pattern used for every Savant/MLB probe so far.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build + validate WP estimator against real Savant/MLB data
+        timeout-minutes: 8
+        continue-on-error: true
+        run: node scripts/wp-estimator-validation-lab.mjs
+
+      - name: Commit validation result
+        if: always()
+        run: |
+          git config user.name "wp-estimator-validation-lab-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: wp estimator validation lab result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push rejected, rebasing (attempt $i)"
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          echo "could not push after 5 attempts"
+          exit 1
