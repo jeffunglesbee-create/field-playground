@@ -1,0 +1,54 @@
+probe_at: 2026-08-01T02:28:30.863Z
+purpose: does the wpBonus scale fix change dramaScoreLive peak resolution (round 1 approximated wpBonus=0)?
+
+sample: 28 real MLB games (same sample as round 3)
+
+=== JOIN CHECK (first real game: Mets @ Phillies) ===
+Savant entries: 70  MLB allPlays w/ usable state: 70  joined: 70  missed: 0
+
+Mets @ Phillies  joined=70/70  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=108 (fire)
+Rays @ Red Sox  joined=73/73  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=115 (fire)
+Dodgers @ Yankees  joined=67/67  no_wpBonus_peak=101 (fire)  with_wpBonus_peak=117 (fire)
+White Sox @ Blue Jays  joined=84/84  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=113 (fire)
+Rangers @ Braves  joined=81/81  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=108 (fire)
+Marlins @ Brewers  joined=77/77  no_wpBonus_peak=122 (fire)  with_wpBonus_peak=139 (fire)
+Twins @ Cubs  joined=72/72  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=111 (fire)
+Orioles @ Astros  joined=77/77  no_wpBonus_peak=101 (fire)  with_wpBonus_peak=126 (fire)
+Padres @ Royals  joined=86/86  no_wpBonus_peak=116 (fire)  with_wpBonus_peak=141 (fire)
+Reds @ Rockies  joined=75/75  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=109 (fire)
+Tigers @ Angels  joined=70/70  no_wpBonus_peak=101 (fire)  with_wpBonus_peak=126 (fire)
+Cardinals @ Diamondbacks  joined=77/77  no_wpBonus_peak=116 (fire)  with_wpBonus_peak=136 (fire)
+Nationals @ Athletics  joined=90/90  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=111 (fire)
+Giants @ Mariners  joined=75/75  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=111 (fire)
+Pirates @ Guardians  joined=71/71  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=104 (fire)
+Twins @ Cubs  joined=72/72  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=116 (fire)
+White Sox @ Blue Jays  joined=64/64  no_wpBonus_peak=101 (fire)  with_wpBonus_peak=117 (fire)
+Reds @ Rockies  joined=76/76  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=109 (fire)
+Mets @ Phillies  joined=75/75  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=106 (fire)
+Rays @ Red Sox  joined=73/73  no_wpBonus_peak=101 (fire)  with_wpBonus_peak=125 (fire)
+Rangers @ Braves  joined=84/84  no_wpBonus_peak=101 (fire)  with_wpBonus_peak=125 (fire)
+Orioles @ Astros  joined=88/88  no_wpBonus_peak=122 (fire)  with_wpBonus_peak=147 (fire)
+Marlins @ Brewers  joined=81/81  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=109 (fire)
+Padres @ Royals  joined=70/70  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=106 (fire)
+Cardinals @ Diamondbacks  joined=73/73  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=111 (fire)
+Giants @ Mariners  joined=79/79  no_wpBonus_peak=122 (fire)  with_wpBonus_peak=140 (fire)
+Nationals @ Athletics  joined=82/82  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=102 (fire)
+Tigers @ Angels  joined=75/75  no_wpBonus_peak=100 (fire)  with_wpBonus_peak=105 (fire)
+
+=== SKIPPED ===
+
+=== RESULT ===
+games joined and scored: 28 / 28
+no_wpBonus  -- distinct peak values: 4 / 28  values: 100,101,116,122
+with_wpBonus -- distinct peak values: 18 / 28  values: 102,104,105,106,108,109,111,113,115,116,117,125,126,136,139,140,141,147
+tier changes (no_wpBonus tier != with_wpBonus tier, same game): 0
+
+avg atBatIndex join rate: 100.0%
+
+=== VERDICT ===
+resolution (distinct/total): no_wpBonus 14% -> with_wpBonus 64%
+This isolates ONE question: does adding a correctly-scaled wpBonus to
+a PEAK-taken formula change round 1's resolution finding? It does
+not test round 3's already-confirmed alternative (summing WP
+movement across the whole game, not peak) -- that finding stands
+regardless of this result.
