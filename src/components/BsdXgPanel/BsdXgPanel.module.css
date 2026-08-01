@@ -1,0 +1,99 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 9px;
+  color: var(--field-text-muted);
+}
+
+.empty, .error {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.error { color: #e77; }
+
+.matchup {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.teams {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--field-text-primary);
+}
+
+.kickoff {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.resolved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  color: var(--field-text-muted);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.resolvedLabel { color: var(--field-text-muted); }
+.resolvedId { color: var(--field-text-secondary); font-variant-numeric: tabular-nums; }
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statLabel {
+  font-size: 10px;
+  color: var(--field-text-muted);
+}
+
+.statValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--field-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.notStarted {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--field-text-muted);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #1a1a1a;
+}
