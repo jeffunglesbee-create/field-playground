@@ -23,7 +23,7 @@ const log = s => { out.push(s); console.log(s); try { writeFileSync(outPath, out
 
 async function main() {
   log('probe_at: ' + new Date().toISOString())
-  log('purpose: does DramaSoundscape\'s CDN Tone.js import genuinely succeed on a real click, in a real (non-offline) browser?')
+  log('purpose: does DramaSoundscape\'s CDN synth-library import genuinely succeed on a real click, in a real (non-offline) browser?')
   log('')
 
   const browser = await chromium.launch()
@@ -53,9 +53,9 @@ async function main() {
   }
 
   await enableBtn.click()
-  log('clicked enable button, waiting for CDN import + Tone.start()...')
+  log('clicked enable button, waiting for CDN import + audio context unlock...')
 
-  // Give the CDN fetch + Tone.js init genuine time -- this is a real
+  // Give the CDN fetch + synth init genuine time -- this is a real
   // network round-trip, not instant.
   await page.waitForTimeout(4000)
 
@@ -82,9 +82,9 @@ async function main() {
   log('')
   log('=== VERDICT (enable step) ===')
   if (onCount > 0 && errCount === 0) {
-    log('CONFIRMED: the CDN import genuinely succeeds in a real browser. Tone.js loaded, Tone.start() completed, the component reached its enabled state for real -- not assumed.')
+    log('CONFIRMED: the CDN import genuinely succeeds in a real browser. The synth library loaded, its audio context unlocked, the component reached its enabled state for real -- not assumed.')
   } else if (errCount > 0) {
-    log('CONFIRMED FAILURE: the CDN import does not work as built. Real error captured above -- this needs a fix (different CDN host, or falling back to bundling Tone.js properly), not a retry.')
+    log('CONFIRMED FAILURE: the CDN import does not work as built. Real error captured above -- this needs a fix (different CDN host, or falling back to bundling the library properly), not a retry.')
     await browser.close()
     return
   } else {
