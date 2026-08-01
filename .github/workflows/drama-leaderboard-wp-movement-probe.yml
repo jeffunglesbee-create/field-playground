@@ -1,0 +1,49 @@
+name: Drama Leaderboard WP Movement Probe
+
+# Pre-build check for putting round 3's validated WP-movement drama
+# metric (docs/outbox/chat-update-2026-07-30-drama-scoring-round3.md)
+# into a live field-playground UI: confirms the real leaderboard
+# response's shape (does each game carry a real date field?) and that
+# the exact validated method still resolves real gamePks + real Savant
+# WP data for TODAY'S actual leaderboard games, not just round 3's
+# cached 28-game sample.
+#
+# field-relay-nba.jeffunglesbee.workers.dev, statsapi.mlb.com, and
+# baseballsavant.mlb.com are all sandbox-blocked from chat -- CI-as-
+# proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Confirm leaderboard shape + WP movement method on real current games
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node scripts/probe-drama-leaderboard-wp-movement.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "drama-leaderboard-wp-movement-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: drama leaderboard WP movement probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
