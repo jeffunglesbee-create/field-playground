@@ -159,6 +159,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.syncNote {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  font-style: italic;
+}
+
 /* Visible caveat state, not a tooltip-only footnote -- the validated
    MAE genuinely jumps 3-6x in extra innings (docs/outbox/cc-session-
    2026-07-31-wp-estimator-validation-lab.md), so this has to read as a

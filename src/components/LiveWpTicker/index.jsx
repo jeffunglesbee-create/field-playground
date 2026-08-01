@@ -65,33 +65,83 @@ async function resolveGamePk(date, home, away) {
   return pk
 }
 
-async function fetchLiveState(gamePk) {
+// Returns the FULL play map (atBatIndex -> state), not just the last
+// play -- needed to join against Savant's array (see joinSamePlay
+// below). Previously this only read plays[plays.length - 1], which is
+// what made the Δ line below compare two feeds' independently-polled
+// "latest" points instead of the same real play.
+async function fetchMlbPlays(gamePk) {
   const res = await fetch(`https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`)
   if (!res.ok) throw new Error('live feed HTTP ' + res.status)
   const data = await res.json()
   const plays = data?.liveData?.plays?.allPlays
   if (!Array.isArray(plays) || !plays.length) return null
-  const last = plays[plays.length - 1]
-  const homeScore = last?.result?.homeScore
-  const awayScore = last?.result?.awayScore
-  const inning = last?.about?.inning
-  const halfBottom = last?.about?.halfInning === 'bottom'
-  if (homeScore == null || awayScore == null || inning == null) return null
-  return { homeScore, awayScore, inning, halfBottom }
+  const byAtBatIndex = new Map()
+  for (const p of plays) {
+    const idx = p?.about?.atBatIndex
+    const homeScore = p?.result?.homeScore
+    const awayScore = p?.result?.awayScore
+    const inning = p?.about?.inning
+    const halfBottom = p?.about?.halfInning === 'bottom'
+    if (idx == null || homeScore == null || awayScore == null || inning == null) continue
+    byAtBatIndex.set(idx, { homeScore, awayScore, inning, halfBottom })
+  }
+  return byAtBatIndex.size ? byAtBatIndex : null
 }
 
 // Same endpoint, same field, same /100 scale fix as the validation
 // lab's own fetchSavantWpa -- the real ground truth this whole feature
 // is judged against, read live instead of from a historical sample.
-async function fetchSavantWp(gamePk) {
+// Returns the FULL array (not just the last entry) for the same reason
+// as fetchMlbPlays above.
+async function fetchSavantWpa(gamePk) {
   const res = await fetch(`https://baseballsavant.mlb.com/gf?game_pk=${gamePk}`)
   if (!res.ok) throw new Error('Savant HTTP ' + res.status)
   const data = await res.json()
   const arr = data?.scoreboard?.stats?.wpa?.gameWpa
   if (!Array.isArray(arr) || !arr.length) return null
-  const raw = Number(arr[arr.length - 1]?.homeTeamWinProbability)
-  if (!Number.isFinite(raw)) return null
-  return raw / 100
+  return arr
+}
+
+// TIGHTENED RECONCILIATION: fetchLiveState/fetchSavantWp used to each
+// independently pick their own feed's last entry -- two independently-
+// polled feeds, no guarantee they landed on the same real play (Savant
+// can lag or lead the live feed by a play or more). Joined by
+// atBatIndex instead, the same key confirmed a 100% reliable join
+// across 28 real full games in scripts/probe-wpbonus-fix-resolution.mjs
+// -- so the score/inning shown and the Savant WP compared against are
+// now guaranteed the exact same real play, not each source's own tail.
+// Walks Savant's array backward (most real-time first) looking for the
+// newest entry whose atBatIndex the live feed also has a play for.
+function joinSamePlay(byAtBatIndex, savantArr) {
+  for (let i = savantArr.length - 1; i >= 0; i--) {
+    const e = savantArr[i]
+    const idx = e?.atBatIndex
+    const state = idx != null ? byAtBatIndex.get(idx) : null
+    if (!state) continue
+    const raw = Number(e?.homeTeamWinProbability)
+    if (!Number.isFinite(raw)) continue
+    return { ...state, savantWp: raw / 100, atBatIndex: idx, playsBehindSavant: savantArr.length - 1 - i }
+  }
+  return null
+}
+
+// Fallback for when a join genuinely isn't possible (one feed down, or
+// -- rare, early in a game -- no atBatIndex overlap yet): each source's
+// own latest, same as this component's original behavior.
+function latestFromMap(byAtBatIndex) {
+  if (!byAtBatIndex) return null
+  let maxIdx = -Infinity, latest = null
+  for (const [idx, state] of byAtBatIndex) {
+    if (idx > maxIdx) { maxIdx = idx; latest = state }
+  }
+  return latest
+}
+
+function latestSavantWp(savantArr) {
+  if (!savantArr || !savantArr.length) return null
+  const raw = Number(savantArr[savantArr.length - 1]?.homeTeamWinProbability)
+  return Number.isFinite(raw) ? raw / 100 : null
 }
 
 export function LiveWpTicker() {
@@ -114,23 +164,33 @@ export function LiveWpTicker() {
 
         // Two independent sources, two independent failure modes --
         // one failing must not hide or fake the other.
-        const [stateResult, savantResult] = await Promise.allSettled([
-          fetchLiveState(pk),
-          fetchSavantWp(pk),
+        const [playsResult, wpaResult] = await Promise.allSettled([
+          fetchMlbPlays(pk),
+          fetchSavantWpa(pk),
         ])
-        const state = stateResult.status === 'fulfilled' ? stateResult.value : null
-        const stateErr = stateResult.status === 'rejected'
-          ? String(stateResult.reason?.message ?? stateResult.reason).slice(0, 100)
-          : (state ? null : 'live feed has no play data yet')
-        const savantWp = savantResult.status === 'fulfilled' ? savantResult.value : null
-        const savantErr = savantResult.status === 'rejected'
-          ? String(savantResult.reason?.message ?? savantResult.reason).slice(0, 100)
-          : (savantWp == null ? 'no Savant reading yet' : null)
+        const byAtBatIndex = playsResult.status === 'fulfilled' ? playsResult.value : null
+        const playsErr = playsResult.status === 'rejected'
+          ? String(playsResult.reason?.message ?? playsResult.reason).slice(0, 100)
+          : (byAtBatIndex ? null : 'live feed has no play data yet')
+        const savantArr = wpaResult.status === 'fulfilled' ? wpaResult.value : null
+        const savantErr = wpaResult.status === 'rejected'
+          ? String(wpaResult.reason?.message ?? wpaResult.reason).slice(0, 100)
+          : (savantArr ? null : 'no Savant reading yet')
 
-        if (!state && savantWp == null) {
-          setRows(g.id, r => ({ ...r, loading: false, error: stateErr || savantErr || 'no data available' }))
+        if (!byAtBatIndex && !savantArr) {
+          setRows(g.id, r => ({ ...r, loading: false, error: playsErr || savantErr || 'no data available' }))
           return
         }
+
+        // Prefer the join -- guarantees the score/inning shown and the
+        // Savant WP compared against are the exact same real play. Only
+        // fall back to each source's own independent latest when a join
+        // genuinely isn't possible, and say so via `synced` rather than
+        // silently presenting an unsynced comparison as if it matched.
+        const joined = byAtBatIndex && savantArr ? joinSamePlay(byAtBatIndex, savantArr) : null
+        const state = joined ?? latestFromMap(byAtBatIndex)
+        const savantWp = joined ? joined.savantWp : latestSavantWp(savantArr)
+        const synced = joined != null
 
         const estimatedWp = state != null
           ? estimateWinProb({ scoreDiff: state.homeScore - state.awayScore, periodProgress: periodProgress(state.inning, state.halfBottom) })
@@ -140,8 +200,9 @@ export function LiveWpTicker() {
           home: g.home, away: g.away, loading: false, error: null,
           homeScore: state?.homeScore, awayScore: state?.awayScore,
           inning: state?.inning, halfBottom: state?.halfBottom,
-          estimatedWp, estimatedError: estimatedWp == null ? stateErr : null,
+          estimatedWp, estimatedError: estimatedWp == null ? playsErr : null,
           savantWp, savantError: savantWp == null ? savantErr : null,
+          synced, playsBehindSavant: joined?.playsBehindSavant ?? null,
         })
       } catch (e) {
         setRows(g.id, r => ({ ...r, loading: false, error: String(e?.message ?? e).slice(0, 120) }))
@@ -173,7 +234,9 @@ export function LiveWpTicker() {
         and a client-side <code>estimateWinProb(scoreDiff, periodProgress)</code>, validated against
         real held-out Savant data at MAE {WP_ESTIMATOR_MAE_REGULATION.toFixed(3)} in regulation
         innings. The estimate is the proposed fallback for NBA/MLS/EPL, where no win-probability
-        source exists at all — this is where it's checked against a real one, live.
+        source exists at all — this is where it's checked against a real one, live. The two feeds
+        are joined by <code>atBatIndex</code> so the score/inning and the Savant number being
+        compared are the same real play, not each feed's independently-polled "latest."
       </p>
       <Show when={rowList().length === 0}>
         <p class={styles.empty}>No live MLB games right now.</p>
@@ -231,7 +294,14 @@ export function LiveWpTicker() {
 
                 <Show when={row.savantWp != null && row.estimatedWp != null}>
                   <span class={styles.delta}>
-                    Δ {(Math.abs(row.savantWp - row.estimatedWp) * 100).toFixed(1)}pp live vs Savant
+                    Δ {(Math.abs(row.savantWp - row.estimatedWp) * 100).toFixed(1)}pp
+                    {row.synced ? ' (same real play)' : ' (unsynced — feeds not yet joined at a shared play)'}
+                  </span>
+                </Show>
+
+                <Show when={row.synced && row.playsBehindSavant > 0}>
+                  <span class={styles.syncNote}>
+                    joined {row.playsBehindSavant} play{row.playsBehindSavant === 1 ? '' : 's'} behind Savant's own latest — that's the newest play both feeds agree on
                   </span>
                 </Show>
 
