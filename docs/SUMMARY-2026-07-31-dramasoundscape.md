@@ -55,15 +55,44 @@ exact thing being moved away from.
 
 Real General MIDI instrument programs, each confirmed directly against
 the library's own timbre table in source (not the GM spec sheet from
-memory): `Trombone=57`, `Xylophone=13`, `Tubular Bells=14`,
-`Whistle=78` — used for lead-change/`playBoing` instead of a generic
-sine, a better thematic fit for a slide-whistle glide than the
-original choice ever was. One MIDI channel per cue (`CH` in the
-component), matching the original one-instrument-per-gag structure.
-API is MIDI-message based (`noteOn`/`noteOff`/`setBend`/`setProgram`),
-a real, different, and genuinely learnable programming model from
+memory): `Trombone=57`, `Xylophone=13`, `Glockenspiel=9`, `Whistle=78`
+— used for lead-change/`playBoing` instead of a generic sine, a
+better thematic fit for a slide-whistle glide than the original choice
+ever was. One MIDI channel per cue (`CH` in the component), matching
+the original one-instrument-per-gag structure. API is MIDI-message
+based (`noteOn`/`noteOff`/`setBend`/`setProgram`/`setModulation`), a
+real, different, and genuinely learnable programming model from
 Tone.js's trigger-based API — don't assume Tone.js idioms carry over
 if you touch this again.
+
+**Round 2, same day, user listening again: "it's better but the
+sounds are more generic than fun or silly."** Real, explainable cause:
+a GM instrument voice is built to sound like a real instrument — a
+real trombone patch playing a plain descending run just sounds like
+someone playing trombone. The cartoon character in an actual
+"wah-wah trombone" or "boioioing" comes from PERFORMANCE exaggeration
+layered on top of the instrument (slide glissando, vibrato wobble,
+pitch overshoot), not from instrument choice alone. Every one of the
+six gestures now uses `setBend`/`setModulation` for exactly that, not
+just `noteOn`/`noteOff`:
+- `playBoing`: overshoots the target pitch then settles with vibrato
+  — the actual spring-release mechanic.
+- `playWahTrombone`: each note scoops in from slightly flat (a real
+  slide), the held final note wobbles instead of sitting static.
+- `playXyloRun`: lands with a small pitch "boop" overshoot.
+- `playSuspense`: a vibrato shiver on the final low note.
+- `playTaDa`: the held final note wobbles into a flourish.
+
+Also swapped the bell channel from `Tubular Bells` to `Glockenspiel`
+— Tubular Bells reads as a dignified church/orchestral instrument (its
+real-world use); Glockenspiel is the bright, toy-like voice actually
+common in game-show "ding!" stings.
+
+Both `setBend` and `setModulation` are channel-wide and persist until
+explicitly changed (confirmed from source, not assumed) — every
+gesture that turns one on resets it at the end, since `trombone` is
+shared by two cues (`playWahTrombone`, `playSuspense`) and a leaked
+vibrato/bend would corrupt whichever fires next on that channel.
 
 **Still the same CDN-at-runtime constraint as before, same reason:**
 `package.json` is not reachable through the mobile-chat session's
@@ -211,17 +240,18 @@ pairs share an oscillator timbre and are the closest to each other,
 confirmed by a mechanical distinctness check (not a guess):**
 
 - blowout (`playWahTrombone`) vs. extra-frames (`playSuspense`) — both
-  use the `trombone` GM channel, distinguished only by register
-  (mid-low descending run vs. very-low repeat-then-drop) and note
-  pattern.
+  use the `trombone` GM channel, distinguished by register (mid-low
+  descending slide with a wobble finish vs. very-low repeat-then-drop
+  with a shiver) and note pattern.
 - new-hottest (`playDing`) vs. dramatic-final (`playTaDa`) — both use
-  the `bell` (Tubular Bells GM) channel, distinguished only by length
-  (2 notes vs. 4 notes) and starting register.
+  the `bell` (Glockenspiel GM) channel, distinguished by length (2
+  notes vs. 4 notes, the latter now wobbling into a flourish) and
+  starting register.
 
-(This pairing predates the webaudio-tinysynth swap and wasn't
-re-evaluated by it — same two structurally-closest pairs, now on real
-instrument voices instead of raw oscillators, but still worth a fresh
-listen given how much the underlying timbre changed.)
+(This pairing predates both the webaudio-tinysynth swap and the
+performance-exaggeration pass, and wasn't re-evaluated by either — same
+two structurally-closest pairs, now with real slide/wobble character
+layered in, but still worth a fresh listen given how much has changed.)
 
 **Whether these are perceptually distinguishable to a human ear is
 explicitly NOT something to try to resolve mechanically.** No script
