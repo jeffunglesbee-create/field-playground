@@ -1,0 +1,35 @@
+probe_at: 2026-08-01T23:50:49.981Z
+purpose: verify real Premier League data via ESPN + FPL (BSD skipped -- source unclear, user-confirmed)
+
+=== ESPN eng.1 (Premier League) scoreboard ===
+  events returned: 1
+  top-level keys: leagues, season, day, events, provider
+  first event: Coventry City at Arsenal  date: 2026-08-21T19:00Z  status: Scheduled
+
+
+=== ESPN eng.1 summary (real event 401879301, from today's scoreboard) ===
+  top-level keys: boxscore, format, gameInfo, lastFiveGames, broadcasts, pickcenter, odds, hasOdds, rosters, news, header, wallclockAvailable, ticketsInfo, seasonseries, meta, standings
+  boxscore present: true
+  commentary present: false
+  header present: true
+  boxscore top-level keys: teams
+
+=== FPL bootstrap-static ===
+  real teams: 20  sample: Arsenal, Aston Villa, Bournemouth
+  real players: 564
+  gameweeks (events): 38
+  current/next gameweek: {"id":1,"name":"Gameweek 1","finished":false,"is_current":false}
+
+=== FPL fixtures ===
+  real fixtures: 380
+  finished: 0  currently live (started && !finished): 0
+
+=== FPL event/{gw}/live (real per-player live stats) ===
+  gameweek tested: 1  real player entries: 0
+
+=== VERDICT ===
+ESPN eng.1: real scoreboard + summary confirmed (subject to actual results above).
+FPL: real bootstrap-static/fixtures/event-live confirmed (subject to actual results above).
+This does not test true real-time in-progress-match polling (no live EPL match exists at
+probe time) -- same limitation as the MLB live-endpoints probe, which used a finalized
+game to confirm shape rather than waiting for a real live one.
