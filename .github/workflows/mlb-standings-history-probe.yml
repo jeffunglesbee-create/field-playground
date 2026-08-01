@@ -1,0 +1,46 @@
+name: MLB Standings History Probe
+
+# Feature-viability check: can a "live playoff-stakes tracker using
+# standings trajectories" be backed by real MLB Stats API data? Tests
+# whether /api/v1/standings' date= param returns genuinely different
+# historical results (not just today's snapshot regardless of date),
+# and dumps which playoff-stakes fields (gamesBack, eliminationNumber,
+# etc.) are actually populated. statsapi.mlb.com is sandbox-blocked
+# (x-deny-reason: host_not_allowed, confirmed repeatedly this session)
+# -- CI-as-proxy, same pattern as every real-data probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe MLB standings historical date support
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node scripts/probe-mlb-standings-history.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "mlb-standings-history-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: MLB standings history probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
