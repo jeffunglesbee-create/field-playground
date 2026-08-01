@@ -1,0 +1,24 @@
+probe_at: 2026-08-01T02:09:11.604Z
+purpose: does DramaSoundscape's LIVE polling-driven trigger path actually fire real cues,
+  not just the on-demand preview buttons (which a separate probe already covers)?
+base: http://localhost:5173
+
+tick 0: 0/6 real cues seen so far
+tick 1: 0/6 real cues seen so far
+tick 2: 0/6 real cues seen so far
+tick 3: 0/6 real cues seen so far
+tick 4: 4/6 real cues seen so far
+tick 5: 6/6 real cues seen so far
+
+=== RESULT ===
+  🫠 lead change: FIRED
+  🎢 comeback: FIRED
+  📉 blowout: FIRED
+  🔔 new hottest: FIRED
+  ⏰ extra frames: FIRED
+  🎉 dramatic final: FIRED
+
+console/page errors: 0
+
+=== VERDICT ===
+CONFIRMED: all 6 live-polling-driven cues actually fired, real transitions, real DOM log entries -- not the preview buttons, the real path.
