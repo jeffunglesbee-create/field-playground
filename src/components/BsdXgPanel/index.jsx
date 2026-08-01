@@ -112,7 +112,7 @@ export function BsdXgPanel() {
         <p class={styles.empty}>Resolving real fixture + BSD event…</p>
       </Show>
 
-      <Show when={data()}>
+      <Show when={!data.error && data()}>
         {d => (
           <>
             <div class={styles.matchup}>
