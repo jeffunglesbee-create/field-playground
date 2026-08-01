@@ -1,0 +1,43 @@
+name: MLB Live Endpoints Probe
+
+# Follow-up to the standings-viability check: confirms linescore,
+# boxscore, playByPlay, and diffPatch against a real gamePk -- which
+# MLB Stats API endpoints carry genuine mid-game granularity, not just
+# daily snapshots. statsapi.mlb.com sandbox-blocked (confirmed
+# repeatedly this session) -- CI-as-proxy.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe MLB live-in-game endpoints
+        timeout-minutes: 3
+        continue-on-error: true
+        run: node scripts/probe-mlb-live-endpoints.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "mlb-live-endpoints-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: MLB live endpoints probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
