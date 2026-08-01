@@ -73,7 +73,21 @@ const CDN_URL = 'https://esm.sh/webaudio-tinysynth@1.1.3'
 
 // Confirmed directly from g200kg/webaudio-tinysynth's own source
 // (its GM timbre name table), not the general spec sheet from memory.
-const GM = { WHISTLE: 78, TROMBONE: 57, XYLOPHONE: 13, TUBULAR_BELLS: 14 }
+// FOUND 2026-08-01, user actually listening again: "it's better but
+// the sounds are more generic than fun or silly." Real, explainable
+// cause -- GM instrument voices are built to sound like real
+// instruments; a real trombone patch playing a plain descending run
+// just sounds like someone playing trombone, not a comedic gag. The
+// cartoon character in a real "wah-wah trombone" or "boioioing" comes
+// from PERFORMANCE exaggeration (slide glissando, vibrato wobble,
+// overshoot) layered on top of the instrument, not the instrument
+// choice alone -- so every gesture below now uses setBend/
+// setModulation for that, not just noteOn/noteOff. Tubular Bells also
+// swapped for Glockenspiel specifically: Tubular Bells reads as a
+// dignified church/orchestral instrument (its real-world use), while
+// Glockenspiel is the bright, toy-like voice actually common in game-
+// show "ding!"/sparkle stings.
+const GM = { WHISTLE: 78, TROMBONE: 57, XYLOPHONE: 13, GLOCKENSPIEL: 9 }
 // One MIDI channel per cartoon gesture -- each keeps its own program
 // and pitch-bend state independently, same one-instrument-per-gag
 // reasoning the prior Tone.js version already used.
@@ -119,10 +133,12 @@ export function DramaSoundscape() {
       s.setProgram(CH.boing, GM.WHISTLE)
       s.setProgram(CH.trombone, GM.TROMBONE)
       s.setProgram(CH.xylo, GM.XYLOPHONE)
-      s.setProgram(CH.bell, GM.TUBULAR_BELLS)
-      // A full octave of bend range specifically for the whistle
-      // channel's glide -- the other three channels never bend.
+      s.setProgram(CH.bell, GM.GLOCKENSPIEL)
+      // Wide bend range on every channel now, since every gesture
+      // below uses a bend or overshoot somewhere, not just boing.
       s.setBendRange(CH.boing, 1200)
+      s.setBendRange(CH.trombone, 1200)
+      s.setBendRange(CH.xylo, 1200)
       s.setMasterVol(volume())
       setSynth(s)
       setEnabled(true)
@@ -142,26 +158,32 @@ export function DramaSoundscape() {
   // confirmed in the library's own docs) ---
 
   function playBoing() {
-    // A whistle glide, bent upward in discrete steps -- setBend
-    // schedules an instantaneous value at each timestamp (confirmed
-    // from source: it's a detune.setValueAtTime call, not a ramp), so
-    // several close-together steps approximate a glide rather than
-    // one continuous sweep.
+    // A spring release actually overshoots its rest point and wobbles
+    // before settling -- that overshoot+wobble IS the "boing" gag, not
+    // just a rising pitch. Glide up past the target (16383, the bend
+    // ceiling), dip back down under it, then let vibrato (setModulation)
+    // shake it out before the note ends. setBend schedules an
+    // instantaneous value at each timestamp (confirmed from source:
+    // detune.setValueAtTime, not a ramp), so close-together steps
+    // approximate the glide/overshoot.
     const s = synth(); if (!s) return
     const t = s.getAudioContext().currentTime
-    s.noteOn(CH.boing, 60, 100, t)
+    s.noteOn(CH.boing, 60, 110, t)
     s.setBend(CH.boing, 8192, t)
-    s.setBend(CH.boing, 11000, t + 0.04)
-    s.setBend(CH.boing, 14000, t + 0.08)
-    s.setBend(CH.boing, 16383, t + 0.12)
-    s.noteOff(CH.boing, 60, t + 0.15)
-    s.setBend(CH.boing, 8192, t + 0.16) // reset for the next hit
+    s.setBend(CH.boing, 12500, t + 0.03)
+    s.setBend(CH.boing, 16383, t + 0.06)   // overshoot the top
+    s.setBend(CH.boing, 14500, t + 0.10)   // settle back down
+    s.setModulation(CH.boing, 100, t + 0.10) // wobble kicks in on the settle
+    s.noteOff(CH.boing, 60, t + 0.22)
+    s.setBend(CH.boing, 8192, t + 0.23)    // reset for the next hit
+    s.setModulation(CH.boing, 0, t + 0.23)
   }
 
   function playWahTrombone() {
-    // Three descending notes plus a held low note -- the classic
-    // disappointment "wah-wah-wah-waaah," a real trombone FM voice
-    // this time instead of a raw sawtooth.
+    // The actual "wah-wah-wah-waaah" mechanic is a real trombone SLIDE
+    // between notes, not four flat triggers -- each note now scoops
+    // up into pitch from slightly flat and settles, and the final held
+    // note wobbles with vibrato instead of sitting static.
     const s = synth(); if (!s) return
     const t = s.getAudioContext().currentTime
     const notes = [55, 53, 50, 48] // G3 F3 D3 C3
@@ -169,26 +191,39 @@ export function DramaSoundscape() {
       const start = t + i * 0.2
       const dur = i === 3 ? 0.5 : 0.18
       s.noteOn(CH.trombone, n, 100, start)
+      s.setBend(CH.trombone, 6800, start)       // scoop in from flat
+      s.setBend(CH.trombone, 8192, start + 0.05) // settle on pitch
+      if (i === notes.length - 1) s.setModulation(CH.trombone, 100, start + 0.15) // the "waaah" wobble
       s.noteOff(CH.trombone, n, start + dur)
     })
+    const end = t + (notes.length - 1) * 0.2 + 0.5
+    s.setModulation(CH.trombone, 0, end)
+    s.setBend(CH.trombone, 8192, end)
   }
 
   function playXyloRun() {
-    // A fast ascending run of DISCRETE notes -- the "climbing back in"
-    // cartoon run, a real xylophone FM voice.
+    // A fast ascending run, slightly quicker than before for more
+    // cartoon pep, landing with a little "boop" pitch overshoot on the
+    // top note instead of stopping flat.
     const s = synth(); if (!s) return
     const t = s.getAudioContext().currentTime
     const notes = [60, 62, 64, 67, 72] // C4 D4 E4 G4 C5
     notes.forEach((n, i) => {
-      const start = t + i * 0.07
+      const start = t + i * 0.06
       s.noteOn(CH.xylo, n, 100, start)
+      if (i === notes.length - 1) {
+        s.setBend(CH.xylo, 8192, start)
+        s.setBend(CH.xylo, 9400, start + 0.02) // the "boop"
+        s.setBend(CH.xylo, 8192, start + 0.06)
+      }
       s.noteOff(CH.xylo, n, start + 0.08)
     })
   }
 
   function playDing() {
-    // A bright bell + a two-note tiny fanfare -- game-show "correct
-    // answer," a real tubular-bells FM voice instead of a plain sine.
+    // Bright two-note fanfare -- game-show "correct answer," now on
+    // Glockenspiel (a real, toy-like sparkle voice) instead of the
+    // more solemn Tubular Bells.
     const s = synth(); if (!s) return
     const t = s.getAudioContext().currentTime
     s.noteOn(CH.bell, 76, 100, t) // E5
@@ -198,21 +233,26 @@ export function DramaSoundscape() {
   }
 
   function playSuspense() {
-    // Three low notes, deliberately over-fast for the register (a
-    // real suspense sting is slow; playing it too quick is what makes
-    // it read as a gag rather than genuinely ominous).
+    // Three low notes, deliberately over-fast for the register (a real
+    // suspense sting is slow; playing it too quick is what makes it
+    // read as a gag rather than genuinely ominous) -- now with a
+    // shiver of vibrato on the final low note for extra "uh oh."
     const s = synth(); if (!s) return
     const t = s.getAudioContext().currentTime
     const notes = [36, 36, 31] // C2 C2 G1
     notes.forEach((n, i) => {
       const start = t + i * 0.18
       s.noteOn(CH.trombone, n, 100, start)
+      if (i === notes.length - 1) s.setModulation(CH.trombone, 80, start)
       s.noteOff(CH.trombone, n, start + 0.2)
     })
+    s.setModulation(CH.trombone, 0, t + (notes.length - 1) * 0.18 + 0.2)
   }
 
   function playTaDa() {
-    // Ascending major triad + octave, held -- the cartoon "ta-da!"
+    // Ascending major triad + octave, held -- the cartoon "ta-da!" --
+    // with the final held note wobbling into a flourish (vibrato,
+    // switched on partway through the hold) instead of ringing flat.
     const s = synth(); if (!s) return
     const t = s.getAudioContext().currentTime
     const notes = [60, 64, 67, 72] // C4 E4 G4 C5
@@ -220,8 +260,10 @@ export function DramaSoundscape() {
       const start = t + i * 0.1
       const dur = i === 3 ? 0.6 : 0.15
       s.noteOn(CH.bell, n, 100, start)
+      if (i === notes.length - 1) s.setModulation(CH.bell, 70, start + 0.15)
       s.noteOff(CH.bell, n, start + dur)
     })
+    s.setModulation(CH.bell, 0, t + (notes.length - 1) * 0.1 + 0.6)
   }
 
   // --- Real-data transition detection ---
