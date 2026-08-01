@@ -1,0 +1,265 @@
+probe_at: 2026-08-01T11:44:33.791Z
+purpose: does statsapi.mlb.com /standings support real historical as-of-date, and what playoff-stakes fields does it carry?
+
+=== RAW SHAPE (today, first division, first team) ===
+{
+  "team": {
+    "id": 139,
+    "name": "Rays",
+    "link": "/api/v1/teams/139"
+  },
+  "season": "2026",
+  "streak": {
+    "streakCode": "L1",
+    "streakType": "losses",
+    "streakNumber": 1
+  },
+  "divisionRank": "1",
+  "leagueRank": "1",
+  "sportRank": "4",
+  "gamesPlayed": 109,
+  "gamesBack": "-",
+  "wildCardGamesBack": "-",
+  "leagueGamesBack": "-",
+  "springLeagueGamesBack": "-",
+  "sportGamesBack": "4.5",
+  "divisionGamesBack": "-",
+  "conferenceGamesBack": "-",
+  "leagueRecord": {
+    "wins": 64,
+    "losses": 45,
+    "ties": 0,
+    "pct": ".587"
+  },
+  "lastUpdated": "2026-08-01T05:46:15Z",
+  "records": {
+    "splitRecords": [
+      {
+        "wins": 40,
+        "losses": 17,
+        "type": "home",
+        "pct": ".702"
+      },
+      {
+        "wins": 24,
+        "losses": 28,
+        "type": "away",
+        "pct": ".462"
+      },
+      {
+        "wins": 22,
+        "losses": 10,
+        "type": "left",
+        "pct": ".688"
+      },
+      {
+        "wins": 15,
+        "losses": 1,
+        "type": "leftHome",
+        "pct": ".938"
+      },
+      {
+        "wins": 7,
+        "losses": 9,
+        "type": "leftAway",
+        "pct": ".438"
+      },
+      {
+        "wins": 25,
+        "losses": 16,
+        "type": "rightHome",
+        "pct": ".610"
+      },
+      {
+        "wins": 17,
+        "losses": 19,
+        "type": "rightAway",
+        "pct": ".472"
+      },
+      {
+        "wins": 42,
+        "losses": 35,
+        "type": "right",
+        "pct": ".545"
+      },
+      {
+        "wins": 7,
+        "losses": 3,
+        "type": "lastTen",
+        "pct": ".700"
+      },
+      {
+        "wins": 5,
+        "losses": 4,
+        "type": "extraInning",
+        "pct": ".556"
+      },
+      {
+        "wins": 13,
+        "losses": 10,
+        "type": "oneRun",
+        "pct": ".565"
+      },
+      {
+        "wins": 35,
+        "losses": 24,
+        "type": "winners",
+        "pct": ".593"
+      },
+      {
+        "wins": 23,
+        "losses": 23,
+        "type": "day",
+        "pct": ".500"
+      },
+      {
+        "wins": 41,
+        "losses": 22,
+        "type": "night",
+        "pct": ".651"
+      },
+      {
+        "wins": 18,
+        "losses": 24,
+        "type": "grass",
+        "pct": ".429"
+      },
+      {
+        "wins": 46,
+        "losses": 21,
+        "type": "turf",
+        "pct": ".687"
+      }
+    ],
+    "divisionRecords": [
+      {
+        "wins": 8,
+        "losses": 7,
+        "pct": ".533",
+        "division": {
+          "id": 200,
+          "name": "American League West",
+          "link": "/api/v1/divisions/200"
+        }
+      },
+      {
+        "wins": 22,
+        "losses": 13,
+        "pct": ".629",
+        "division": {
+          "id": 201,
+          "name": "American League East",
+          "link": "/api/v1/divisions/201"
+        }
+      },
+      {
+        "wins": 18,
+        "losses": 8,
+        "pct": ".692",
+        "division": {
+          "id": 202,
+          "name": "American League Central",
+          "link": "/api/v1/divisions/202"
+        }
+      }
+    ],
+    "overallRecords": [
+      {
+        "wins": 40,
+        "losses": 17,
+        "type": "home",
+        "pct": ".702"
+      },
+      {
+        "wins": 24,
+        "losses": 28,
+        "type": "away",
+        "pct": ".462"
+      }
+    ],
+    "leagueRecords": [
+      {
+        "wins": 48,
+        "losses": 28,
+        "pct": ".632",
+        "league": {
+          "id": 103,
+          "name": "American League",
+          "link": "/api/v1/league/103"
+        }
+      },
+      {
+        "wins": 16,
+        "losses": 17,
+        "pct": ".485",
+        "league": {
+          "id": 104,
+          "name": "National League",
+          "link": "/api/v1/league/104"
+        }
+      }
+    ],
+    "expectedRecords": [
+      {
+        "wins": 59,
+        "losses": 50,
+        "type": "xWinLoss",
+        "pct": ".541"
+      },
+      {
+        "wins": 87,
+        "losses": 75,
+        "type": "xWinLossSeason",
+        "pct": ".537"
+      }
+    ]
+  },
+  "runsAllowed": 444,
+  "runsScored": 482,
+  "divisionChamp": false,
+  "divisionLeader": true,
+  "hasWildcard": true,
+  "clinched": false,
+  "eliminationNumber": "-",
+  "eliminationNumberSport": "-",
+  "eliminationNumberLeague": "-",
+  "eliminationNumberDivision": "-",
+  "eliminationNumberConference": "-",
+  "wildCardEliminationNumber": "-",
+  "magicNumber": "51",
+  "wins": 64,
+  "losses": 45,
+  "runDifferential": 38,
+  "winningPercentage": ".587"
+}
+
+divisions returned: 6
+
+=== TEST: does date= actually change the response? (team: Rays) ===
+  2026-04-15: {"date":"2026-04-15","wins":10,"losses":7,"gamesBack":"-","wildCardGamesBack":"-","divisionRank":"1","eliminationNumber":"-","wildCardEliminationNumber":"-","streak":"W5","clinched":false}
+  2026-05-15: {"date":"2026-05-15","wins":29,"losses":14,"gamesBack":"-","wildCardGamesBack":"-","divisionRank":"1","eliminationNumber":"-","wildCardEliminationNumber":"-","streak":"W1","clinched":false}
+  2026-06-15: {"date":"2026-06-15","wins":41,"losses":28,"gamesBack":"1.5","wildCardGamesBack":"+6.5","divisionRank":"2","wildCardRank":"1","eliminationNumber":"92","wildCardEliminationNumber":"-","streak":"L1","clinched":false}
+  2026-07-15: {"date":"2026-07-15","wins":56,"losses":38,"gamesBack":"-","wildCardGamesBack":"-","divisionRank":"1","eliminationNumber":"-","wildCardEliminationNumber":"-","streak":"L1","clinched":false}
+  2026-08-01: {"date":"2026-08-01","wins":64,"losses":45,"gamesBack":"-","wildCardGamesBack":"-","divisionRank":"1","eliminationNumber":"-","wildCardEliminationNumber":"-","streak":"L1","clinched":false}
+
+=== RESULT ===
+dates successfully fetched: 5 / 5
+distinct win-loss records across dates: 5 / 5
+distinct gamesBack values across dates: 2 / 5
+
+=== VERDICT ===
+CONFIRMED: the date= param genuinely changes the returned standings -- real historical
+as-of-date data IS available from this endpoint. This is NOT the same gap flagged for the
+other feature this session -- MLB Stats API standings resolves it, at least at this
+resolution (whatever real dates were tested above).
+
+=== PLAYOFF-STAKES FIELD AVAILABILITY (today's data, all teams, all divisions) ===
+  gamesBack: present 30/30  sample values: -, 2.5, 6.0, 10.5, 13.5
+  wildCardGamesBack: present 30/30  sample values: -, +6.5, +3.0, 1.5, 4.5
+  eliminationNumber: present 30/30  sample values: -, 51, 48, 43, 40
+  wildCardEliminationNumber: present 30/30  sample values: -, 51, 48, 52, 49
+  magicNumber: present 6/30  sample values: 51, 50, 52, 45, 47
+  divisionRank: present 30/30  sample values: 1, 2, 3, 4, 5
+  wildCardRank: present 24/30  sample values: 1, 2, 6, 9, 4
+  clinched: present 30/30  sample values: false
+  streak: present 30/30  sample values: L1, W1, W3, W2, L2
