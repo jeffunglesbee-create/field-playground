@@ -14,8 +14,10 @@ chat conversation that produced it.
 The first non-visual surface in this playground. Everything else here
 (ScoreTicker, Arbitrage, LiveWpTicker, WpSourceBadge, etc.) is a visual
 widget. `DramaSoundscape` sonifies real game transitions with original,
-Tone.js-synthesized cartoon sound effects — a boing, a slide-whistle-
-style pitch bend, a trombone wah-wah, a xylophone run, a bell/fanfare.
+synthesized cartoon sound effects — a boing, a slide-whistle-style
+pitch bend, a trombone wah-wah, a xylophone run, a bell/fanfare.
+**Synthesis engine swapped 2026-08-01 (Tone.js → webaudio-tinysynth)
+— see its own section below before touching audio code.**
 
 **Deliberately NOT ambient/atmospheric.** The original creative pitch
 was closer to that register (rising tones, sustained pads); it was
@@ -25,33 +27,60 @@ Voice Positioning v4) and because "fun" is a checkable creative target
 in a way "ethereal" mostly isn't. If this gets extended, stay in that
 register — don't drift back toward moody/atmospheric.
 
-**Every sound is synthesized, none sampled.** Tone.js oscillators and
-envelopes only. This evokes a generic, decades-old cartoon-SFX
-vocabulary (slide whistle, boing, wah-wah trombone are non-proprietary
-tropes) without sampling or naming any specific franchise anywhere in
-the code or UI. Keep it that way if extending — no audio files, no
-franchise references in comments, UI text, or component names.
+**Every sound is synthesized, none sampled.** No audio files, no
+franchise references in comments, UI text, or component names. This
+evokes a generic, decades-old cartoon-SFX vocabulary (slide whistle,
+boing, wah-wah trombone are non-proprietary tropes), not a specific
+franchise. Keep it that way if extending.
 
 ---
 
-## Real architectural constraint: how Tone.js is loaded, and why
+## Synthesis engine: webaudio-tinysynth (swapped from Tone.js, 2026-08-01)
 
-`package.json` is not reachable through this session's write path —
-confirmed not in the MCP tool's read/write allowlist (unlike most other
-paths in field-playground, which are unrestricted). `read_source` also
-returned zero hits for it, matching a documented unreliability of that
-tool elsewhere in this project's history. **If you have a write path to
-package.json that this chat session didn't, adding `tone` as a real npm
-dependency and switching to a static import would be the more
-idiomatic fix** — the current CDN approach is a deliberate workaround
-for a tooling limitation, not a considered preference.
+User, listening for real, twice: first "sounds 8-bit but not in a good
+way" (raw unfiltered Tone.js `sawtooth`/`square` oscillators — fixed
+with a `Tone.MonoSynth` lowpass filter, which addressed the literal
+harshness but was still hand-tuned raw oscillators), then explicitly
+"use GitHub Actions runner for a better sound effects library" rather
+than keep hand-tuning. Researched real candidates before picking one —
+`jsfxr` and `zzfx` were both ruled out on their own documentation
+(both explicitly retro/chiptune-style generators, the direction being
+moved away from). Landed on **webaudio-tinysynth**
+(`g200kg/webaudio-tinysynth`, Apache-2.0, zero dependencies): its own
+README states "All timbres are generated ... algorithmically without
+any PCM samples" — real synthesis, no samples, matching this
+component's existing constraint. Use `quality:1` ("FM based") — its
+`quality:0` mode is explicitly documented as "chiptune like," the
+exact thing being moved away from.
 
-Current approach: `import(/* @vite-ignore */ 'https://esm.sh/tone@15')`
-at runtime, inside the enable-sound handler only (never at module load
-time). This was verified to genuinely work — see verification section
-below — but if you do migrate it to a real dependency, re-run the same
-verification method afterward rather than assuming the swap is
-behavior-preserving.
+Real General MIDI instrument programs, each confirmed directly against
+the library's own timbre table in source (not the GM spec sheet from
+memory): `Trombone=57`, `Xylophone=13`, `Tubular Bells=14`,
+`Whistle=78` — used for lead-change/`playBoing` instead of a generic
+sine, a better thematic fit for a slide-whistle glide than the
+original choice ever was. One MIDI channel per cue (`CH` in the
+component), matching the original one-instrument-per-gag structure.
+API is MIDI-message based (`noteOn`/`noteOff`/`setBend`/`setProgram`),
+a real, different, and genuinely learnable programming model from
+Tone.js's trigger-based API — don't assume Tone.js idioms carry over
+if you touch this again.
+
+**Still the same CDN-at-runtime constraint as before, same reason:**
+`package.json` is not reachable through the mobile-chat session's
+write path that first built this file (confirmed: not in its MCP
+read/write allowlist). Current approach:
+`import(/* @vite-ignore */ 'https://esm.sh/webaudio-tinysynth@1.1.3')`
+inside the enable-sound handler only, never at module load time. If
+you have a write path to `package.json` that session didn't, adding
+`webaudio-tinysynth` as a real npm dependency would be the more
+idiomatic fix — re-run the same CDN-load probe afterward rather than
+assuming the swap is behavior-preserving.
+
+**Perceptual result of this swap is unconfirmed by Claude Code as of
+this doc** — verified technically (real CDN load, zero runtime errors,
+all 6 cues fire via both the preview buttons and the live path, see
+verification section below), not verified to sound good. That needs a
+human ear, same rule as the closest-pairs section further down.
 
 ---
 
@@ -90,21 +119,22 @@ genuinely different things:
    the component's initial state renders without crashing anything.
    Does NOT prove the CDN import works, because the import only fires
    after a user click, which offline mode never simulates.
-2. **`scripts/probe-soundscape-cdn-load.mjs` (new, real network, real
+2. **`scripts/probe-soundscape-cdn-load.mjs` (real network, real
    browser via Playwright)** — navigates to the real deployed site,
-   clicks "tap to enable sound" for real, confirms Tone.js genuinely
-   loads and `Tone.start()` completes, then clicks all 6 preview
-   buttons and confirms zero console/page errors across all 6 real
-   sound-generating code paths.
+   clicks "tap to enable sound" for real, confirms the synth library
+   genuinely loads and its audio context unlocks, then clicks all 6
+   preview buttons and confirms zero console/page errors across all 6
+   real sound-generating code paths. Generic to whichever library is
+   in use — its own text no longer names Tone.js specifically.
 
 **Both are required for a component like this. If you build another
 CDN-dependent or interaction-gated feature, write the second kind of
 check too — a clean offline render pass alone is not sufficient
 evidence that the real interactive path works.**
 
-Latest confirmed-clean run: 6/6 preview buttons found and clickable,
-0 errors. Full result in
-`outbox/soundscape-cdn-load-probe-2026-07-31T22-2*.txt`.
+Latest confirmed-clean run (against the webaudio-tinysynth swap):
+6/6 preview buttons found and clickable, 0 errors. Full result in
+`outbox/soundscape-cdn-load-probe-2026-08-01T00-35-47-466Z.txt`.
 
 ---
 
@@ -181,12 +211,17 @@ pairs share an oscillator timbre and are the closest to each other,
 confirmed by a mechanical distinctness check (not a guess):**
 
 - blowout (`playWahTrombone`) vs. extra-frames (`playSuspense`) — both
-  use the `trombone` (sawtooth) synth, distinguished only by register
+  use the `trombone` GM channel, distinguished only by register
   (mid-low descending run vs. very-low repeat-then-drop) and note
   pattern.
 - new-hottest (`playDing`) vs. dramatic-final (`playTaDa`) — both use
-  the `bell` (sine) synth, distinguished only by length (2 notes vs.
-  4 notes) and starting register.
+  the `bell` (Tubular Bells GM) channel, distinguished only by length
+  (2 notes vs. 4 notes) and starting register.
+
+(This pairing predates the webaudio-tinysynth swap and wasn't
+re-evaluated by it — same two structurally-closest pairs, now on real
+instrument voices instead of raw oscillators, but still worth a fresh
+listen given how much the underlying timbre changed.)
 
 **Whether these are perceptually distinguishable to a human ear is
 explicitly NOT something to try to resolve mechanically.** No script
