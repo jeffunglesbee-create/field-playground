@@ -1,0 +1,42 @@
+drift_check_at: 2026-08-01T13:36:56.147Z
+purpose: check the FROZEN, already-shipped estimator weights against real games
+  it has never seen -- not the static validation-lab sample, real drift detection
+
+candidate real Final games, 2026-07-22 to 2026-07-31: 10 (capped at 10)
+
+Pittsburgh Pirates @ New York Yankees  (2026-07-22, gamePk=823518)  joined 82/82
+Pittsburgh Pirates @ New York Yankees  (2026-07-22, gamePk=823519)  joined 61/61
+Baltimore Orioles @ Boston Red Sox  (2026-07-22, gamePk=824735)  joined 72/72
+Baltimore Orioles @ Boston Red Sox  (2026-07-22, gamePk=824732)  joined 75/75
+San Francisco Giants @ Kansas City Royals  (2026-07-22, gamePk=824083)  joined 67/67
+New York Mets @ Milwaukee Brewers  (2026-07-22, gamePk=823761)  joined 74/74
+Washington Nationals @ Colorado Rockies  (2026-07-22, gamePk=824327)  joined 80/80
+Athletics @ Arizona Diamondbacks  (2026-07-22, gamePk=825055)  joined 85/85
+Cincinnati Reds @ Seattle Mariners  (2026-07-22, gamePk=823110)  joined 71/71
+St. Louis Cardinals @ Los Angeles Angels  (2026-07-22, gamePk=824004)  joined 67/67
+
+=== SKIPPED ===
+
+real games with joined data: 10 / 10
+total fresh points (never used to fit or validate before): 734
+
+=== DRIFT CHECK (frozen weights vs FRESH real Savant data, never used to fit) ===
+overall MAE: 0.0316
+regulation-inning MAE: 0.0312
+original validation-lab regulation MAE (baseline): 0.0289
+
+=== BY INNING ===
+  inning 1:  n=78  mean_abs_err=0.0286
+  inning 2:  n=81  mean_abs_err=0.0251
+  inning 3:  n=75  mean_abs_err=0.0189
+  inning 4:  n=89  mean_abs_err=0.0260
+  inning 5:  n=80  mean_abs_err=0.0340
+  inning 6:  n=78  mean_abs_err=0.0271
+  inning 7:  n=101  mean_abs_err=0.0321
+  inning 8:  n=75  mean_abs_err=0.0293
+  inning 9:  n=67  mean_abs_err=0.0648
+  inning 10:  n=10  mean_abs_err=0.0545
+
+=== VERDICT ===
+No drift detected: regulation-inning MAE (0.0312) on fresh real games stays under the ~0.08 trustworthy threshold.
+The frozen weights still track real Savant WP on games they have never seen.
