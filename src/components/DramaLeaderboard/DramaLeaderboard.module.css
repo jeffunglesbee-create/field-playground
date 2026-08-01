@@ -46,10 +46,22 @@
 
 .row {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 4px;
   padding: 4px 0;
   border-bottom: 1px solid #1a1a1a;
+}
+
+.rowMain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 6px 0 0 0;
 }
 
 .rank {
@@ -119,4 +131,45 @@
   font-size: 12px;
   color: #c44;
   margin-top: 10px;
+}
+
+/* WP movement -- round 3's richer signal, shown alongside drama_peak
+   (never replacing it), left indented under the matchup it belongs to. */
+.wpMovementRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 24px;
+  flex-wrap: wrap;
+}
+
+.wpMovementLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #4c8;
+  background: #0f2016;
+  border: 1px solid #1e3a26;
+  border-radius: 3px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
+
+.wpMovementState {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-style: italic;
+}
+
+.wpMovementValue {
+  font-size: 11px;
+  color: var(--field-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.wpMovementSub {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  font-variant-numeric: initial;
 }
