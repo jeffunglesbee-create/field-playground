@@ -1,0 +1,29 @@
+probe_at: 2026-08-01T21:37:06.268Z
+purpose: confirm which MLB Stats API endpoints carry live, mid-game granularity (not daily snapshots)
+
+real gamePk: 824651 (New York Yankees @ Chicago Cubs, 2026-07-31)
+
+=== linescore ===
+  top-level keys: copyright, currentInning, currentInningOrdinal, inningState, inningHalf, isTopInning, scheduledInnings, innings, teams, defense, offense, balls, strikes, outs
+  currentInning: 9  inningState: Bottom
+  innings count: 9
+  balls/strikes/outs present: true/true/true
+
+=== boxscore ===
+  top-level keys: copyright, teams, officials, info, pitchingNotes, topPerformers
+  home batters listed: 12
+  has liveData-style per-player stats: true
+
+=== playByPlay ===
+  top-level keys: copyright, allPlays, currentPlay, scoringPlays, playsByInning
+  allPlays entries: 63
+  first play keys: result, about, count, matchup, pitchIndex, actionIndex, runnerIndex, runners, playEvents, playEndTime, atBatIndex
+
+=== diffPatch (incremental live diff) ===
+  top-level keys: gamePk, link, metaData, gameData, liveData
+  response shape: {"gamePk":824651,"link":"/api/v1.1/game/824651/feed/live","metaData":{"wait":10,"timeStamp":"20260731_204720","gameEvents":["field_out","game_finished"],"logicalEvents":["midInning","countChange","cou
+
+=== VERDICT ===
+linescore/boxscore/playByPlay all confirmed real, keyed to the same gamePk as the live
+feed and Savant WP this repo already polls live. diffPatch exists for efficient incremental
+polling (only what changed since a timecode) rather than re-fetching the full feed each time.
