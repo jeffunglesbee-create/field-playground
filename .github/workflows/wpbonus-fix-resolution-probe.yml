@@ -1,0 +1,48 @@
+name: WpBonus Fix Resolution Probe
+
+# Follow-up to round 1 (drama-scoring granularity) and the wpBonus scale
+# fix shipped earlier this session. Round 1's peak-formula comparison
+# approximated wpBonus=0 (its ESPN data source carries no WP data) --
+# this probe joins Savant's real gameWpa array with MLB Stats API's real
+# allPlays (by atBatIndex) to test whether a correctly-scaled wpBonus
+# term changes round 1's "no resolution improvement" finding.
+#
+# statsapi.mlb.com and baseballsavant.mlb.com are both sandbox-blocked
+# (x-deny-reason: host_not_allowed, confirmed by prior probes this
+# session) -- CI-as-proxy, same pattern as every prior real-data probe.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe wpBonus-fix peak resolution (real Savant + MLB Stats API join)
+        timeout-minutes: 7
+        continue-on-error: true
+        run: node scripts/probe-wpbonus-fix-resolution.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "wpbonus-fix-resolution-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: wpBonus fix resolution probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
