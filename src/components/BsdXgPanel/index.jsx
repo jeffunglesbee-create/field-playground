@@ -57,6 +57,14 @@ async function fetchTeamNames() {
 // currently is not.
 async function resolveBsdEventId(homeName, awayName) {
   const norm = s => (s || '').toLowerCase().replace(/[^a-z]/g, '')
+  // FUZZY, NOT EXACT: confirmed live that FPL's short names ("Man
+  // City") and BSD's apparent full names ("Manchester City") fail
+  // strict equality after normalization -- norm("Man City")="mancity"
+  // vs norm("Manchester City")="manchestercity", verified unequal
+  // before this fix. Reused production's own espnTeamMatch
+  // bidirectional-includes pattern (field.js ~L22852), already proven
+  // correct for this exact class of short-vs-full-name mismatch.
+  const fuzzyMatch = (x, y) => x === y || x.includes(y) || y.includes(x)
   const h = norm(homeName), a = norm(awayName)
   for (let offset = 0; offset < 500; offset += 50) {
     const res = await fetch(RELAY + '/bsd/events/season?league_id=1&limit=50&offset=' + offset)
@@ -66,7 +74,7 @@ async function resolveBsdEventId(homeName, awayName) {
     if (!results.length) break
     const match = results.find(r => {
       const rh = norm(r.home_team), ra = norm(r.away_team)
-      return (rh === h && ra === a) || (rh === a && ra === h)
+      return (fuzzyMatch(rh, h) && fuzzyMatch(ra, a)) || (fuzzyMatch(rh, a) && fuzzyMatch(ra, h))
     })
     if (match) return match.id
   }
