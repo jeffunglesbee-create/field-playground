@@ -34,6 +34,12 @@ async function main() {
 
   let bapiRequestSeen = false
   let bapiStatus = null
+  let bapiHeaders = null
+  page.on('request', req => {
+    if (req.url().includes('wapp.bapi.bundesliga.com/broadcasts/')) {
+      bapiHeaders = req.headers()
+    }
+  })
   page.on('response', res => {
     if (res.url().includes('wapp.bapi.bundesliga.com/broadcasts/')) {
       bapiRequestSeen = true
@@ -55,6 +61,14 @@ async function main() {
     log('REAL FINDING: even a real browser gets ' + bapiStatus + ' now. This is a genuine access change, not a probe-context gap.')
   } else {
     log('The page did not request wapp.bapi at all during this load -- worth knowing on its own.')
+  }
+
+  log('')
+  log('=== real wapp.bapi request headers, as the browser actually sent them ===')
+  if (bapiHeaders) {
+    for (const [k, v] of Object.entries(bapiHeaders)) log('  ' + k + ': ' + v)
+  } else {
+    log('not captured')
   }
 
   log('')
