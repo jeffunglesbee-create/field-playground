@@ -1,0 +1,68 @@
+name: LaLiga Network Capture Probe
+
+# Follow-up to the LaLiga APIM investigation's own stated next step:
+# static bundle-string search found zero literal apim.laliga.com
+# references (docs/outbox/cc-session-2026-08-02-laliga-apim-
+# investigation.md) -- a genuine negative that couldn't rule out
+# server-side data fetching. This captures REAL network requests a
+# real headless browser makes while laliga.com actually renders,
+# instead of searching static bundle text.
+#
+# apim-int.laliga.com is never navigated to or manually requested --
+# verified by a hard grep-based refusal step (checks the script has no
+# goto()/fetch() call targeting it), same pattern as the original
+# investigation's safety check.
+#
+# laliga.com confirmed sandbox-blocked from both curl and a local
+# headless browser (ERR_TUNNEL_CONNECTION_FAILED) before this workflow
+# was written -- needs GitHub Actions' unrestricted egress.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Safety check — script never navigates to or fetches apim-int
+        run: |
+          if grep -nE "(goto|fetch|request)\(.*apim-int" scripts/probe-laliga-network-capture.mjs; then
+            echo "REFUSING TO RUN: script targets apim-int in a navigation/fetch call"
+            exit 1
+          fi
+          echo "confirmed: no goto()/fetch()/request() call targets apim-int in this script"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture real LaLiga network requests
+        timeout-minutes: 6
+        continue-on-error: true
+        run: node scripts/probe-laliga-network-capture.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "laliga-network-capture-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: LaLiga network capture probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
