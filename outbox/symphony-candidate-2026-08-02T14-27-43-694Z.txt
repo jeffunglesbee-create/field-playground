@@ -1,0 +1,35 @@
+probe_at: 2026-08-02T14:27:43.694Z
+purpose: confirm real MLB play timing field + reconstructed cue sequence for Game Symphony Archive
+
+real leaderboard games: 8
+CHOSEN: Tampa Bay Rays @ Baltimore Orioles  gamePk=824838  real plays=109
+
+=== SHAPE CHECK: real `about` object on first real play (looking for a timing field) ===
+{
+  "atBatIndex": 0,
+  "halfInning": "top",
+  "isTopInning": true,
+  "inning": 1,
+  "startTime": "2026-05-25T17:37:42.464Z",
+  "endTime": "2026-05-25T17:38:09.291Z",
+  "isComplete": true,
+  "isScoringPlay": false,
+  "hasReview": false,
+  "hasOut": true,
+  "captivatingIndex": 0
+}
+
+=== REAL RECONSTRUCTED STATE SEQUENCE ===
+total states (incl. synthetic pre/final bookends): 111
+final real score: Tampa Bay Rays 7 - Baltimore Orioles 9
+went to extra innings (real, from inning field): true
+
+=== REAL RECONSTRUCTED CUE SEQUENCE (shared dramaCueEngine, same rules as live) ===
+total real cues fired: 2
+by type: {"extraFrames":1,"dramaticFinal":1}
+
+  [state 74/111] ⏰ extra frames  (score at this point: 2-2, real startTime: 2026-05-25T20:32:36.272Z)
+  [state 110/111] 🎉 final, the hard way  (score at this point: 7-9)
+
+=== VERDICT ===
+real cue count: 2 -- non-trivial, real sequence confirmed
