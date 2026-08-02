@@ -1,6 +1,7 @@
 import { For, Show, createSignal, createMemo, createEffect, onCleanup } from 'solid-js'
+import { createStore } from 'solid-js/store'
 import { deskStore } from '../../data/relay'
-import { CUES, detectCueTransitions } from '../../data/dramaCueEngine'
+import { CUES, CUE_META, detectCueTransitions } from '../../data/dramaCueEngine'
 import styles from './DramaSoundscape.module.css'
 
 // DramaSoundscape — the first non-visual surface in this playground.
@@ -110,6 +111,12 @@ export function DramaSoundscape() {
   const [log, setLog] = createSignal([]) // [{id, label, icon, t}]
   const [synth, setSynth] = createSignal(null)
 
+  // Multi-game mixer: which live games have made real noise recently.
+  // Keyed by gameKey -> {matchup, icon, active}. `active` flips back
+  // to false ~1.5s after a cue fires (setTimeout below), so the chip
+  // visually pulses per real cue rather than staying lit permanently.
+  const [activity, setActivity] = createStore({})
+
   // Previous-tick snapshot per game, to detect real TRANSITIONS rather
   // than re-firing on every unchanged poll.
   let prevByKey = {}
@@ -117,6 +124,12 @@ export function DramaSoundscape() {
 
   function pushLog(label, icon) {
     setLog(l => [{ id: Math.random().toString(36).slice(2), label, icon, t: Date.now() }, ...l].slice(0, 12))
+  }
+
+  function markActive(g, icon) {
+    const k = gameKey(g)
+    setActivity(k, { matchup: `${g.away} @ ${g.home}`, icon, active: true })
+    setTimeout(() => setActivity(k, 'active', false), 1500)
   }
 
   async function enableSound() {
@@ -267,6 +280,60 @@ export function DramaSoundscape() {
     s.setModulation(CH.bell, 0, t + (notes.length - 1) * 0.1 + 0.6)
   }
 
+  // --- Three new gestures, 2026-08-02 (walk-off, photo finish,
+  // milestone drama). UNLIKE the six above, these have NOT been
+  // through a real-listening tuning pass yet -- structurally
+  // distinct from every existing gesture by design (different channel/
+  // pattern combo), but not yet confirmed to actually sound good.
+  // Flagged honestly rather than implied polished, matching this
+  // file's own established practice of only claiming what's been
+  // actually heard. ---
+
+  function playWalkOff() {
+    // A triumphant sudden glide-up-and-hold on the whistle channel --
+    // deliberately bigger/more sustained than playBoing's quick
+    // bounce, since a walk-off is a decisive single moment, not a
+    // repeatable bounce gag.
+    const s = synth(); if (!s) return
+    const t = s.getAudioContext().currentTime
+    s.noteOn(CH.boing, 67, 110, t) // G4
+    s.setBend(CH.boing, 8192, t)
+    s.setBend(CH.boing, 16383, t + 0.25) // long glide to the top
+    s.setModulation(CH.boing, 90, t + 0.25)
+    s.noteOff(CH.boing, 67, t + 0.6)
+    s.setBend(CH.boing, 8192, t + 0.61)
+    s.setModulation(CH.boing, 0, t + 0.61)
+  }
+
+  function playPhotoFinish() {
+    // A fast alternating two-note trill (tension), cut off abruptly
+    // instead of resolving -- the "too close to call, then suddenly
+    // it's over" feel, distinct from playSuspense's slow low notes.
+    const s = synth(); if (!s) return
+    const t = s.getAudioContext().currentTime
+    const notes = [64, 67]
+    for (let i = 0; i < 8; i++) {
+      const n = notes[i % 2]
+      const start = t + i * 0.05
+      s.noteOn(CH.xylo, n, 100, start)
+      s.noteOff(CH.xylo, n, start + 0.045)
+    }
+  }
+
+  function playMilestone() {
+    // A quick sparkling arpeggio, brighter/faster than playDing's
+    // two-note fanfare -- a "leveled up" feel for one game crossing
+    // into the top drama tier on its own.
+    const s = synth(); if (!s) return
+    const t = s.getAudioContext().currentTime
+    const notes = [72, 76, 79, 84] // C5 E5 G5 C6
+    notes.forEach((n, i) => {
+      const start = t + i * 0.05
+      s.noteOn(CH.bell, n, 100, start)
+      s.noteOff(CH.bell, n, start + 0.25)
+    })
+  }
+
   // --- Real-data transition detection ---
 
   const games = createMemo(() => [...(deskStore.games?.regular ?? []), ...(deskStore.games?.postseason ?? [])])
@@ -284,6 +351,20 @@ export function DramaSoundscape() {
     const list = games()
     if (!list.length) return
 
+    // Cue key -> real sound function. Built here (not module scope) so
+    // it can reference the play* closures defined above; function
+    // hoisting makes the reference order safe either way.
+    const CUE_SOUND = {
+      [CUES.LEAD_CHANGE]: playBoing,
+      [CUES.COMEBACK]: playXyloRun,
+      [CUES.BLOWOUT]: playWahTrombone,
+      [CUES.EXTRA_FRAMES]: playSuspense,
+      [CUES.DRAMATIC_FINAL]: playTaDa,
+      [CUES.WALK_OFF]: playWalkOff,
+      [CUES.PHOTO_FINISH]: playPhotoFinish,
+      [CUES.MILESTONE_DRAMA]: playMilestone,
+    }
+
     // Slate-wide: has the drama_peak leader changed?
     const withPeak = list.filter(g => typeof g.drama_peak === 'number')
     if (withPeak.length) {
@@ -291,6 +372,7 @@ export function DramaSoundscape() {
       const hk = gameKey(hottest)
       if (prevHottest !== null && prevHottest !== hk) {
         pushLog(`${hottest.away} @ ${hottest.home} takes the slate lead`, '🔔')
+        markActive(hottest, '🔔')
         if (enabled()) playDing()
       }
       prevHottest = hk
@@ -300,17 +382,16 @@ export function DramaSoundscape() {
       const k = gameKey(g)
       const prev = prevByKey[k]
       const status = gameStatus(g)
-      const curr = { home_score: g.home_score, away_score: g.away_score, status, went_to_ot: g.went_to_ot }
+      const curr = { home_score: g.home_score, away_score: g.away_score, status, went_to_ot: g.went_to_ot, drama_peak: g.drama_peak }
 
       // Shared engine (src/data/dramaCueEngine.js) -- same rules a
       // reconstructed replay of a completed game's real state sequence
       // uses (Game Symphony Archive), not a hand-synced duplicate.
       for (const cue of detectCueTransitions(prev, curr)) {
-        if (cue === CUES.LEAD_CHANGE) { pushLog(`${g.away} @ ${g.home} — lead change`, '🫠'); if (enabled()) playBoing() }
-        else if (cue === CUES.COMEBACK) { pushLog(`${g.away} @ ${g.home} — closing fast`, '🎢'); if (enabled()) playXyloRun() }
-        else if (cue === CUES.BLOWOUT) { pushLog(`${g.away} @ ${g.home} — getting away from them`, '📉'); if (enabled()) playWahTrombone() }
-        else if (cue === CUES.EXTRA_FRAMES) { pushLog(`${g.away} @ ${g.home} — extra frames`, '⏰'); if (enabled()) playSuspense() }
-        else if (cue === CUES.DRAMATIC_FINAL) { pushLog(`${g.away} @ ${g.home} — final, the hard way`, '🎉'); if (enabled()) playTaDa() }
+        const meta = CUE_META[cue]
+        pushLog(`${g.away} @ ${g.home} — ${meta.label}`, meta.icon)
+        markActive(g, meta.icon)
+        if (enabled()) CUE_SOUND[cue]?.()
       }
 
       prevByKey[k] = curr
@@ -365,6 +446,9 @@ export function DramaSoundscape() {
           <button class={styles.previewBtn} onClick={playDing}>🔔 new hottest</button>
           <button class={styles.previewBtn} onClick={playSuspense}>⏰ extra frames</button>
           <button class={styles.previewBtn} onClick={playTaDa}>🎉 dramatic final</button>
+          <button class={styles.previewBtn} onClick={playWalkOff}>🚶 walk-off</button>
+          <button class={styles.previewBtn} onClick={playPhotoFinish}>🔬 photo finish</button>
+          <button class={styles.previewBtn} onClick={playMilestone}>💎 milestone</button>
         </div>
       </Show>
 
@@ -375,7 +459,31 @@ export function DramaSoundscape() {
         <span>🔔 new hottest</span>
         <span>⏰ extra frames</span>
         <span>🎉 dramatic final</span>
+        <span>🚶 walk-off</span>
+        <span>🔬 photo finish</span>
+        <span>💎 milestone</span>
       </div>
+
+      {/* Multi-game mixer: which live games are actually making real
+          noise right now, not just the most recent log line. Each chip
+          pulses (styles.mixerActive) for ~1.5s per real cue -- see
+          markActive above -- so simultaneous activity across several
+          live games is visually distinguishable at a glance. */}
+      <Show when={games().filter(g => gameStatus(g) === 'live').length}>
+        <div class={styles.mixer}>
+          <span class={styles.mixerLabel}>mixer</span>
+          <For each={games().filter(g => gameStatus(g) === 'live')}>
+            {g => {
+              const k = gameKey(g)
+              return (
+                <span class={`${styles.mixerChip} ${activity[k]?.active ? styles.mixerActive : ''}`}>
+                  {activity[k]?.icon ?? '●'} {g.away} @ {g.home}
+                </span>
+              )
+            }}
+          </For>
+        </div>
+      </Show>
 
       <Show when={log().length} fallback={<p class={styles.empty}>Watching for real transitions…</p>}>
         <ul class={styles.logList}>

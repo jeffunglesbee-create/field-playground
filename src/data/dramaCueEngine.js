@@ -18,6 +18,9 @@ export const CUES = {
   BLOWOUT: 'blowout',
   EXTRA_FRAMES: 'extraFrames',
   DRAMATIC_FINAL: 'dramaticFinal',
+  WALK_OFF: 'walkOff',
+  PHOTO_FINISH: 'photoFinish',
+  MILESTONE_DRAMA: 'milestoneDrama',
 }
 
 export const CUE_META = {
@@ -26,6 +29,9 @@ export const CUE_META = {
   [CUES.BLOWOUT]: { icon: '📉', label: 'getting away from them' },
   [CUES.EXTRA_FRAMES]: { icon: '⏰', label: 'extra frames' },
   [CUES.DRAMATIC_FINAL]: { icon: '🎉', label: 'final, the hard way' },
+  [CUES.WALK_OFF]: { icon: '🚶', label: 'walk-off' },
+  [CUES.PHOTO_FINISH]: { icon: '🔬', label: 'photo finish' },
+  [CUES.MILESTONE_DRAMA]: { icon: '💎', label: 'this game just got real' },
 }
 
 // prev/curr shape: { home_score, away_score, status: 'pre'|'live'|'final', went_to_ot }
@@ -66,6 +72,35 @@ export function detectCueTransitions(prev, curr) {
   // Just went final, and it went the distance
   if (prev.status !== 'final' && curr.status === 'final' && curr.went_to_ot) {
     cues.push(CUES.DRAMATIC_FINAL)
+  }
+
+  // Walk-off: game just went final, and the immediately-prior live
+  // state was tied or had the OPPOSITE team ahead -- a last-moment
+  // win, not a lead the winner already held. Not mutually exclusive
+  // with DRAMATIC_FINAL -- an extra-innings game can also end this way.
+  if (prev.status !== 'final' && curr.status === 'final' &&
+      curr.home_score !== null && prev.home_score !== null) {
+    const prevDiff = prev.home_score - prev.away_score
+    const finalDiff = curr.home_score - curr.away_score
+    if (finalDiff !== 0 && (prevDiff === 0 || Math.sign(prevDiff) !== Math.sign(finalDiff))) {
+      cues.push(CUES.WALK_OFF)
+    }
+
+    // Photo finish: ended with the smallest possible real margin.
+    if (Math.abs(finalDiff) === 1) {
+      cues.push(CUES.PHOTO_FINISH)
+    }
+  }
+
+  // Milestone drama: THIS game's own real drama_peak crosses into the
+  // top tier (>=80, "fire" -- DeskCard's own real dramaTier threshold,
+  // reused verbatim) for the first time. Undefined-safe: drama_peak
+  // isn't part of the archive-reconstruction state shape (Game Symphony
+  // Archive), so this simply never fires there rather than needing a
+  // separate code path.
+  if (typeof prev.drama_peak === 'number' && typeof curr.drama_peak === 'number' &&
+      prev.drama_peak < 80 && curr.drama_peak >= 80) {
+    cues.push(CUES.MILESTONE_DRAMA)
   }
 
   return cues

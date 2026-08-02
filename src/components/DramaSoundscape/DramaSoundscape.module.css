@@ -118,6 +118,37 @@
   transform: scale(0.96);
 }
 
+.mixer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.mixerLabel {
+  font-size: 9px;
+  color: var(--field-text-muted);
+  margin-right: 2px;
+}
+
+.mixerChip {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  background: #161616;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.mixerActive {
+  background: #223622;
+  border-color: #3a5a3a;
+  color: #8d8;
+}
+
 .empty {
   font-size: 11px;
   color: var(--field-text-muted);

@@ -112,6 +112,45 @@ export async function createCartoonSynth({ volume = 0.6 } = {}) {
     s.setModulation(CH.bell, 0, t + (notes.length - 1) * 0.1 + 0.6)
   }
 
+  // Three new gestures, 2026-08-02 -- verbatim-mirrored from
+  // DramaSoundscape/index.jsx's own new gestures (same rationale as
+  // the original six: one real definition, physically duplicated
+  // because the two files own separate synth instances). NOT yet
+  // through a real-listening tuning pass, same honest caveat as the
+  // live copy.
+
+  function playWalkOff() {
+    const t = s.getAudioContext().currentTime
+    s.noteOn(CH.boing, 67, 110, t)
+    s.setBend(CH.boing, 8192, t)
+    s.setBend(CH.boing, 16383, t + 0.25)
+    s.setModulation(CH.boing, 90, t + 0.25)
+    s.noteOff(CH.boing, 67, t + 0.6)
+    s.setBend(CH.boing, 8192, t + 0.61)
+    s.setModulation(CH.boing, 0, t + 0.61)
+  }
+
+  function playPhotoFinish() {
+    const t = s.getAudioContext().currentTime
+    const notes = [64, 67]
+    for (let i = 0; i < 8; i++) {
+      const n = notes[i % 2]
+      const start = t + i * 0.05
+      s.noteOn(CH.xylo, n, 100, start)
+      s.noteOff(CH.xylo, n, start + 0.045)
+    }
+  }
+
+  function playMilestone() {
+    const t = s.getAudioContext().currentTime
+    const notes = [72, 76, 79, 84]
+    notes.forEach((n, i) => {
+      const start = t + i * 0.05
+      s.noteOn(CH.bell, n, 100, start)
+      s.noteOff(CH.bell, n, start + 0.25)
+    })
+  }
+
   function setVolume(v) { s.setMasterVol(v) }
 
   function dispose() {
@@ -119,7 +158,11 @@ export async function createCartoonSynth({ volume = 0.6 } = {}) {
     s.getAudioContext()?.close?.()
   }
 
-  return { playBoing, playWahTrombone, playXyloRun, playDing, playSuspense, playTaDa, setVolume, dispose }
+  return {
+    playBoing, playWahTrombone, playXyloRun, playDing, playSuspense, playTaDa,
+    playWalkOff, playPhotoFinish, playMilestone,
+    setVolume, dispose,
+  }
 }
 
 // cue key (dramaCueEngine.js) -> which real gesture plays for it.
@@ -127,6 +170,9 @@ export const CUE_TO_GESTURE = {
   leadChange: 'playBoing',
   comeback: 'playXyloRun',
   blowout: 'playWahTrombone',
+  walkOff: 'playWalkOff',
+  photoFinish: 'playPhotoFinish',
+  milestoneDrama: 'playMilestone',
   extraFrames: 'playSuspense',
   dramaticFinal: 'playTaDa',
 }
