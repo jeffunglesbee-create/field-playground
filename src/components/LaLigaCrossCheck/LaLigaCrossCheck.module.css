@@ -88,3 +88,11 @@
   flex-direction: column;
   gap: 2px;
 }
+
+.raw {
+  font-size: 9px;
+  color: var(--field-text-secondary);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  margin: 4px 0 0;
+}
