@@ -1,0 +1,30 @@
+probe_at: 2026-08-02T02:46:51.944Z
+purpose: why does wcMode read false right after toggleWCView() is called, against the real live site
+
+=== NAVIGATING to real live site ===
+bootReady (waited for window._fieldDataReady): true
+bracketReady (waited for toggleWCView + _bracketWS): true
+
+=== DIAGNOSTIC (pre-toggle state) ===
+{
+  "toggleWCViewType": "function",
+  "bracketWSExists": true,
+  "fieldDataReady": true,
+  "wcNavLinkExists": true,
+  "wcSectionExists": true,
+  "bodyClassList": "",
+  "readyState": "complete"
+}
+
+=== ATTEMPTING toggleWCView() with explicit error capture ===
+{
+  "ok": true,
+  "before": false,
+  "after": true
+}
+
+=== console errors captured ===
+count: 1
+  Failed to load resource: the server responded with a status of 403 ()
+
+=== DONE ===
