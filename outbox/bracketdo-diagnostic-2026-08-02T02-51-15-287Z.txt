@@ -1,0 +1,53 @@
+probe_at: 2026-08-02T02:51:15.287Z
+purpose: why does wcMode read false right after toggleWCView() is called, against the real live site
+
+=== NAVIGATING to real live site ===
+bootReady (waited for window._fieldDataReady): true
+bracketReady (waited for toggleWCView + _bracketWS): true
+
+=== DIAGNOSTIC (pre-toggle state) ===
+{
+  "toggleWCViewType": "function",
+  "bracketWSExists": true,
+  "fieldDataReady": true,
+  "wcNavLinkExists": true,
+  "wcSectionExists": true,
+  "bodyClassList": "",
+  "readyState": "complete"
+}
+
+=== ATTEMPTING toggleWCView() with explicit error capture ===
+{
+  "ok": true,
+  "before": false,
+  "after": true
+}
+
+=== WAITING 1.5s (matching the original probe's exact timing) THEN RE-CHECKING ===
+{
+  "wcMode": true,
+  "bodyClassList": "wc-mode",
+  "liveIndicator": true
+}
+
+wc-mode persisted through the wait -- the original stalled probe's failure was not this specific reset. Real cause remains elsewhere.
+
+=== console errors captured ===
+count: 60
+  Failed to load resource: the server responded with a status of 403 ()
+  Failed to load resource: the server responded with a status of 403 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 ()
+  Failed to load resource: the server responded with a status of 404 (Not Found)
+  Failed to load resource: the server responded with a status of 404 ()
+
+=== DONE ===
