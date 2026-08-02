@@ -1,80 +1,130 @@
-import { For, Show, createResource } from 'solid-js'
+import { Show, createResource, createSignal } from 'solid-js'
 import styles from './BundesligaBroadcasters.module.css'
 
 const RELAY = 'https://field-relay-nba.jeffunglesbee.workers.dev'
 
-// BundesligaBroadcasters — real broadcaster data from
-// wapp.bapi.bundesliga.com, found via the same real network-capture
-// method that found LaLiga's apim.laliga.com, confirmed on two
-// independent CI runs.
+// BundesligaBroadcasters — rebuilt 2026-08-02 against the routes that
+// actually shipped, not the one this originally guessed at.
 //
-// DELIBERATELY SCOPED TO /broadcasters ONLY. The capture also found a
-// real, working /broadcasts/{competitionId}/{matchdayId} endpoint --
-// but the matchday ID captured (DFL-DAY-004CBT) is opaque, not a
-// constructible sequence, and was only ever observed for whatever
-// match the site happened to be showing during capture. Wiring that
-// endpoint here with a hardcoded ID would silently always show one
-// specific historical matchday's broadcasts regardless of what's
-// actually happening now -- exactly the kind of fabricated-looking
-// correctness this project has repeatedly caught and rejected
-// elsewhere. The production CC-CMD (docs/CC-CMD-2026-08-02-wire-
-// bundesliga-bapi-broadcasts.md, jubilant-bassoon) is investigating
-// how that ID is really resolved for arbitrary dates. This component
-// builds only the half that's genuinely safe to use today: the
-// broadcaster list itself takes no match-specific ID at all.
+// The original version called /bundesliga-bapi/broadcasters (plural,
+// no params) -- that route was never built. Production went a
+// different, two-step direction instead, both routes real and live:
+//   1. GET /bundesliga-bapi/resolve-dayid?season=X&date=YYYY-MM-DD
+//      -> {ok, dayId, comId} (or an honest {ok:false} if no matchday
+//      contains that date -- e.g. before the season starts)
+//   2. GET /bundesliga-bapi/broadcasts?comId=X&dayId=Y
+//      -> {available, data:{broadcasts:[...]}}
 //
-// This does NOT call wapp.bapi.bundesliga.com directly from the
-// client -- CORS would very likely block it even if it didn't, and
-// this project's convention throughout today (FD/FPL/BSD/apim) is
-// relay-proxied, server-side. This calls the relay route instead;
-// until that route exists, this honestly shows "not available yet",
-// same pattern as BsdXgPanel/LaLigaCrossCheck before their production
-// CC-CMDs landed.
+// TWO REAL, CONFIRMED-LIVE CAVEATS THIS COMPONENT MUST HANDLE HONESTLY:
+//   - Bundesliga's 2026-27 season starts Aug 28 (confirmed). Before
+//     then, resolve-dayid correctly returns ok:false for any date --
+//     that's not an error, it's the real, current state of the world.
+//   - Every real check across the ENTIRE completed 2025-26 season
+//     found broadcasts:[] -- confirmed structural (that endpoint
+//     serves current/near-term data only, not a historical archive),
+//     not a bug. So even a resolved, in-range date is very likely to
+//     show a genuinely empty broadcast list right now, honestly.
+//
+// Cold resolve-dayid calls invoke real Browser Rendering server-side
+// and can take up to ~45s (bounded binary search, max ~6 renders) --
+// shown plainly rather than left looking hung.
 
-async function fetchBroadcasters() {
-  const res = await fetch(RELAY + '/bundesliga-bapi/broadcasters?promoteInHeader=true')
-  if (!res.ok) throw new Error('relay route not available yet (' + res.status + ') -- production CC-CMD may not have landed')
-  return res.json()
+async function fetchBundesligaBroadcasts(dateStr) {
+  const [y, m] = dateStr.split('-').map(Number)
+  const season = m >= 7 ? `${y}-${y + 1}` : `${y - 1}-${y}`
+
+  const resolveRes = await fetch(
+    RELAY + '/bundesliga-bapi/resolve-dayid?season=' + season + '&date=' + dateStr
+  )
+  const resolved = await resolveRes.json()
+
+  if (!resolved.ok) {
+    // Real, honest non-error: no matchday covers this date (e.g. the
+    // 2026-27 season hasn't started yet, or a mid-season gap week).
+    return { state: 'no-matchday', season, dateStr, resolved }
+  }
+
+  const bRes = await fetch(
+    RELAY + '/bundesliga-bapi/broadcasts?comId=' + resolved.comId + '&dayId=' + resolved.dayId
+  )
+  const broadcastData = await bRes.json()
+
+  if (!broadcastData.available) {
+    return { state: 'unavailable', season, dateStr, resolved, broadcastData }
+  }
+
+  const list = broadcastData.data?.broadcasts ?? []
+  return { state: list.length ? 'has-data' : 'empty', season, dateStr, resolved, broadcastData, list }
 }
 
 export function BundesligaBroadcasters() {
-  const [data] = createResource(fetchBroadcasters)
+  const today = new Date().toISOString().slice(0, 10)
+  const [dateStr, setDateStr] = createSignal(today)
+  const [data] = createResource(dateStr, fetchBundesligaBroadcasts)
 
   return (
     <div class={styles.root}>
       <header class={styles.header}>
         <span class={styles.label}>Bundesliga Broadcasters</span>
-        <span class={styles.note}>real wapp.bapi.bundesliga.com data — broadcaster list only, matchday-specific lookups pending ID resolution</span>
+        <span class={styles.note}>real resolve-dayid → broadcasts chain, live</span>
       </header>
+
+      <label class={styles.dateRow}>
+        date
+        <input
+          type="date"
+          value={dateStr()}
+          onInput={e => setDateStr(e.target.value)}
+          class={styles.dateInput}
+        />
+      </label>
 
       <Show when={data.error}>
         <p class={styles.error}>{String(data.error?.message ?? data.error)}</p>
       </Show>
 
       <Show when={data.loading}>
-        <p class={styles.empty}>Fetching real broadcaster data…</p>
+        <p class={styles.empty}>Resolving… (cold lookups render server-side, can take up to ~45s)</p>
       </Show>
 
-      <Show when={!data.error && data()}>
+      <Show when={!data.error && !data.loading && data()}>
         {d => (
           <>
-            <Show when={Array.isArray(d())} fallback={
-              <pre class={styles.raw}>{JSON.stringify(d(), null, 2).slice(0, 600)}</pre>
-            }>
-              <ul class={styles.list}>
-                <For each={d()}>
-                  {b => <li class={styles.item}>{b.name ?? JSON.stringify(b).slice(0, 80)}</li>}
-                </For>
-              </ul>
+            <Show when={d().state === 'no-matchday'}>
+              <p class={styles.honestState}>
+                No Bundesliga matchday covers {d().dateStr} — real, expected result.
+                The 2026-27 season starts Aug 28, 2026; dates before then correctly
+                have no matchday to resolve to.
+              </p>
             </Show>
 
-            <div class={styles.pending}>
-              <strong>Not wired here:</strong> match-specific broadcast lookups
-              (which channel is showing a given game). The real endpoint exists
-              and was confirmed live, but its matchday ID format is opaque —
-              pending the production CC-CMD's resolution investigation before
-              this can safely show anything beyond the general broadcaster list.
-            </div>
+            <Show when={d().state === 'unavailable'}>
+              <p class={styles.error}>
+                Resolved to a real matchday ({d().resolved.dayId}) but the broadcasts
+                lookup itself failed — relay-side issue, not a data gap.
+              </p>
+            </Show>
+
+            <Show when={d().state === 'empty'}>
+              <p class={styles.honestState}>
+                Resolved real matchday {d().resolved.dayId} ({d().resolved.comId}) —
+                broadcast list is empty. Confirmed structural, not a bug: this
+                endpoint has only ever returned real data for current/near-term
+                matchdays, never historical or far-future ones. Real broadcaster
+                data becomes checkable once the season is actually underway
+                (Aug 28+).
+              </p>
+            </Show>
+
+            <Show when={d().state === 'has-data'}>
+              <p class={styles.honestState}>
+                Resolved matchday {d().resolved.dayId} — {d().list.length} real
+                broadcast entr{d().list.length === 1 ? 'y' : 'ies'}. Field-name
+                extraction is best-effort (never confirmed against real non-empty
+                data before now) — raw shape shown below rather than a guessed parse.
+              </p>
+              <pre class={styles.raw}>{JSON.stringify(d().list, null, 2).slice(0, 800)}</pre>
+            </Show>
           </>
         )}
       </Show>
