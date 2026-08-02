@@ -1,5 +1,6 @@
 import { For, Show, createSignal, createMemo, createEffect, onCleanup } from 'solid-js'
 import { deskStore } from '../../data/relay'
+import { CUES, detectCueTransitions } from '../../data/dramaCueEngine'
 import styles from './DramaSoundscape.module.css'
 
 // DramaSoundscape — the first non-visual surface in this playground.
@@ -299,46 +300,20 @@ export function DramaSoundscape() {
       const k = gameKey(g)
       const prev = prevByKey[k]
       const status = gameStatus(g)
+      const curr = { home_score: g.home_score, away_score: g.away_score, status, went_to_ot: g.went_to_ot }
 
-      if (prev && status === 'live' && prev.status === 'live' &&
-          g.home_score !== null && prev.home_score !== null) {
-        const prevDiff = prev.home_score - prev.away_score
-        const diff = g.home_score - g.away_score
-
-        // Lead change: sign flipped (and it wasn't already 0-0)
-        if (prevDiff !== 0 && diff !== 0 && Math.sign(prevDiff) !== Math.sign(diff)) {
-          pushLog(`${g.away} @ ${g.home} — lead change`, '🫠')
-          if (enabled()) playBoing()
-        }
-
-        // Comeback: the trailing margin shrank by 3+ in one tick
-        const prevMargin = Math.abs(prevDiff)
-        const margin = Math.abs(diff)
-        if (prevMargin - margin >= 3 && margin > 0) {
-          pushLog(`${g.away} @ ${g.home} — closing fast`, '🎢')
-          if (enabled()) playXyloRun()
-        }
-
-        // Blowout developing: margin crosses 8+ and is still growing
-        if (margin >= 8 && margin > prevMargin) {
-          pushLog(`${g.away} @ ${g.home} — getting away from them`, '📉')
-          if (enabled()) playWahTrombone()
-        }
+      // Shared engine (src/data/dramaCueEngine.js) -- same rules a
+      // reconstructed replay of a completed game's real state sequence
+      // uses (Game Symphony Archive), not a hand-synced duplicate.
+      for (const cue of detectCueTransitions(prev, curr)) {
+        if (cue === CUES.LEAD_CHANGE) { pushLog(`${g.away} @ ${g.home} — lead change`, '🫠'); if (enabled()) playBoing() }
+        else if (cue === CUES.COMEBACK) { pushLog(`${g.away} @ ${g.home} — closing fast`, '🎢'); if (enabled()) playXyloRun() }
+        else if (cue === CUES.BLOWOUT) { pushLog(`${g.away} @ ${g.home} — getting away from them`, '📉'); if (enabled()) playWahTrombone() }
+        else if (cue === CUES.EXTRA_FRAMES) { pushLog(`${g.away} @ ${g.home} — extra frames`, '⏰'); if (enabled()) playSuspense() }
+        else if (cue === CUES.DRAMATIC_FINAL) { pushLog(`${g.away} @ ${g.home} — final, the hard way`, '🎉'); if (enabled()) playTaDa() }
       }
 
-      // Extra frames just started (went_to_ot flips false -> true)
-      if (prev && !prev.went_to_ot && g.went_to_ot) {
-        pushLog(`${g.away} @ ${g.home} — extra frames`, '⏰')
-        if (enabled()) playSuspense()
-      }
-
-      // Just went final, and it went the distance
-      if (prev && prev.status !== 'final' && status === 'final' && g.went_to_ot) {
-        pushLog(`${g.away} @ ${g.home} — final, the hard way`, '🎉')
-        if (enabled()) playTaDa()
-      }
-
-      prevByKey[k] = { home_score: g.home_score, away_score: g.away_score, status, went_to_ot: g.went_to_ot }
+      prevByKey[k] = curr
     }
   })
 
