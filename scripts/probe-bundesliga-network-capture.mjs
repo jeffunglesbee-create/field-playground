@@ -34,14 +34,26 @@ const log = s => {
   try { writeFileSync(outPath, out.join('\n')) } catch {}
 }
 
-// Hosts already identified as non-data (assets/tracking/paywall) from
-// the user's own uploaded page capture, checked ahead of time so the
-// real findings below aren't buried under expected noise.
-const KNOWN_NON_DATA_HOSTS = new Set([
-  'assets.bundesliga.com', // images
-  'mt.bundesliga.com',     // Matomo analytics
-  'cp.bundesliga.com',     // Contentpass paywall -- never manually targeted
-])
+// FOLLOW-UP (same day): the first pass found a real broadcast API but
+// nothing standings-shaped. Two real, evidence-based reasons to widen
+// this rather than just retry with a longer wait:
+//   1. LaLiga's own confirmed webview API used "opta" directly in its
+//      path (seasons/opta/2026/competitions/opta/23/...) -- Opta is
+//      confirmed (2026-07-27 research doc) as the official data
+//      provider for 4 of Europe's big 5 leagues. If Bundesliga
+//      white-labels standings to Opta/StatsPerform on a DIFFERENT
+//      domain, the original *.bundesliga.com-only filter would miss it
+//      completely no matter how long this waits.
+//   2. The table could genuinely be server-rendered, in which case no
+//      amount of waiting or interaction reveals a client API, because
+//      none exists. This pass checks the DOM directly for real team/
+//      points data present immediately after navigation, before
+//      assuming a missing API call means "didn't wait long enough."
+//
+// This pass captures ALL cross-origin requests, not just bundesliga.com
+// ones, and specifically flags any known football-data-provider domain
+// pattern (opta, statsperform, performgroup, sportradar) if seen.
+const KNOWN_PROVIDER_PATTERNS = /opta|statsperform|performgroup|sportradar|heimspiel|sportec/i
 
 async function main() {
   log('probe_at: ' + new Date().toISOString())
@@ -52,19 +64,18 @@ async function main() {
   const browser = await chromium.launch()
   const page = await browser.newPage()
 
+  // ALL cross-origin requests this time, not just *.bundesliga.com --
+  // the real fix for the gap found in the first pass.
   const allRequests = []
   page.on('request', req => {
     try {
       const url = new URL(req.url())
-      if (!url.hostname.endsWith('bundesliga.com')) return
       allRequests.push({ method: req.method(), url: req.url(), resourceType: req.resourceType(), hostname: url.hostname })
     } catch { /* malformed URL, ignore */ }
   })
-  const responseInfo = new Map() // url -> {status, contentType}
+  const responseInfo = new Map()
   page.on('response', res => {
     try {
-      const url = new URL(res.url())
-      if (!url.hostname.endsWith('bundesliga.com')) return
       responseInfo.set(res.url(), { status: res.status(), contentType: res.headers()['content-type'] || '' })
     } catch { /* ignore */ }
   })
@@ -103,15 +114,43 @@ async function main() {
   }
 
   log('')
-  log('=== ALL REAL REQUESTS TO *.bundesliga.com ===')
+  log('=== CHECKING IF THE TABLE IS SERVER-RENDERED (real team names already in DOM) ===')
+  const domCheck = await page.evaluate(() => {
+    const text = document.body.innerText || ''
+    // Real Bundesliga team names -- if these appear with what look like
+    // real points/position numbers nearby, the table arrived server-
+    // rendered, not via a client fetch this script could ever capture.
+    const realTeams = ['Bayern', 'Dortmund', 'Leipzig', 'Leverkusen', 'Stuttgart']
+    const found = realTeams.filter(t => text.includes(t))
+    return { foundTeams: found, bodyTextLength: text.length, snippet: text.slice(0, 500) }
+  }).catch(() => null)
+  if (domCheck) {
+    log('real team names found in rendered DOM: ' + domCheck.foundTeams.join(', ') + ' (of 5 checked)')
+    log('body text length: ' + domCheck.bodyTextLength)
+    if (domCheck.foundTeams.length >= 3) {
+      log('STRONG SIGNAL: table data is present in the DOM regardless of any client API -- likely server-rendered')
+    }
+  }
+
+  log('')
+  log('=== ALL CROSS-ORIGIN REQUESTS, ANY HOST (not just bundesliga.com this time) ===')
   log('total: ' + allRequests.length)
   const byHost = {}
   for (const r of allRequests) byHost[r.hostname] = (byHost[r.hostname] || 0) + 1
   log('by host: ' + JSON.stringify(byHost, null, 2))
 
   log('')
-  log('=== REQUESTS TO HOSTS NOT ALREADY KNOWN AS NON-DATA (the real candidates) ===')
-  const candidates = allRequests.filter(r => !KNOWN_NON_DATA_HOSTS.has(r.hostname) && r.hostname !== 'www.bundesliga.com')
+  log('=== ANY KNOWN FOOTBALL-DATA-PROVIDER DOMAIN (opta/statsperform/sportradar/etc) ===')
+  const providerHits = allRequests.filter(r => KNOWN_PROVIDER_PATTERNS.test(r.hostname) || KNOWN_PROVIDER_PATTERNS.test(r.url))
+  log('count: ' + providerHits.length)
+  for (const r of providerHits) {
+    const info = responseInfo.get(r.url) || {}
+    log('  ' + r.method + ' ' + r.url + '  (status: ' + (info.status ?? '?') + ', content-type: ' + (info.contentType || '?') + ')')
+  }
+
+  log('')
+  log('=== REQUESTS TO HOSTS NOT ALREADY KNOWN AS NON-DATA (the real candidates, widened) ===')
+  const candidates = allRequests.filter(r => !KNOWN_NON_DATA_HOSTS.has(r.hostname) && r.hostname !== 'www.bundesliga.com' && r.resourceType !== 'image' && r.resourceType !== 'stylesheet' && r.resourceType !== 'font' && r.resourceType !== 'script')
   log('count: ' + candidates.length)
   for (const r of candidates) {
     const info = responseInfo.get(r.url) || {}
