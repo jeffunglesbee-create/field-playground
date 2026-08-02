@@ -1,5 +1,6 @@
 import { Show, createMemo, createSignal, onMount, onCleanup } from 'solid-js'
 import { journalismBrief, refetchBrief } from '../../data/relay'
+import { safeResource } from '../../data/safeResource'
 import styles from './JournalismBrief.module.css'
 
 const POLL_MS = 5 * 60 * 1000
@@ -27,8 +28,9 @@ export function JournalismBrief() {
 
   // Reads the resource only when it's NOT in error state -- calling the
   // accessor while errored throws (same posture as StandingRoom/DayComparison/
-  // MultiDayStreak).
-  const data = () => (journalismBrief.error ? undefined : journalismBrief())
+  // MultiDayStreak). Canonical helper now (src/data/safeResource.js) --
+  // this exact guard has been independently hand-written 4+ times.
+  const data = safeResource(journalismBrief)
 
   const age = createMemo(() => {
     const d = data()
