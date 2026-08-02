@@ -1,0 +1,28 @@
+probe_at: 2026-08-02T04:48:30.912Z
+
+=== NAVIGATING to real live matchday page ===
+
+=== QUESTION 1: does a real page load still get a real 200 from wapp.bapi? ===
+bapiRequestSeen: true
+bapiStatus: 200
+REAL FINDING: a real browser context still gets 200. The 403 the standalone probe hit is a missing-context problem (no real Origin/Referer/cookies), not a genuine access change.
+
+=== QUESTION 2: real DOM structure around anything matchday-related ===
+[
+  {
+    "tag": "SPAN",
+    "text": "All Matchdays",
+    "class": "mat-mdc-select-placeholder mat-mdc-select-min-line",
+    "id": "",
+    "dataAttrs": []
+  },
+  {
+    "tag": "H2",
+    "text": "Matchday updates",
+    "class": "",
+    "id": "",
+    "dataAttrs": []
+  }
+]
+
+=== DONE ===
