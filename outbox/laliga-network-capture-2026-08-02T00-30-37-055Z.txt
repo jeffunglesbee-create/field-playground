@@ -1,0 +1,38 @@
+probe_at: 2026-08-02T00:30:37.055Z
+purpose: capture REAL network requests a real browser makes rendering laliga.com -- not a static bundle-string search
+SAFETY: this script never navigates to or manually requests apim-int.laliga.com at any point
+
+=== NAVIGATING (real page load, capturing real network activity) ===
+navigation status: 200
+
+=== __NEXT_DATA__ (SSR-embedded JSON, if present) ===
+__NEXT_DATA__ present, length: 87136
+literal apim*.laliga.com occurrences in __NEXT_DATA__: 3
+  match: apim.laliga.com/public-service
+  context: ...f6b97e06766d4a8c93c","runtimeConfig":{"backendUrl":"https://apim.laliga.com/public-service","backendServerUrl":"https://apim-int.laliga.com/public-ser...
+  match: apim-int.laliga.com/public-service
+  context: ...apim.laliga.com/public-service","backendServerUrl":"https://apim-int.laliga.com/public-service","backendSubscription":"c13c3a8e2f6b46da9c5c425cf61fab3e","...
+  match: apim.laliga.com/webview
+  context: ...n":"c13c3a8e2f6b46da9c5c425cf61fab3e","webviewUrl":"https://apim.laliga.com/webview","webviewSubscription":"ee7fcd5c543f4485ba2a48856fc7ece9","...
+top-level props.pageProps keys: lang, country, competition, layout, statusCode, baseAdUnit, gptBase
+
+=== REAL NETWORK REQUESTS TO *.laliga.com (all, during real page load) ===
+total requests to any *.laliga.com host: 59
+by host: {"www.laliga.com":39,"assets.laliga.com":10,"apim.laliga.com":10}
+
+=== REAL REQUESTS SPECIFICALLY TO apim.laliga.com OR apim-int.laliga.com ===
+(passively observed only -- this script never manually navigates to or targets either)
+count: 10
+  GET https://apim.laliga.com/public-service/api/v1/digitalassets/proximos-partidos?contentLanguage=en&countryCode=US&subscription-key=c13c3a8e2f6b46da9c5c425cf61fab3e  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/public-service/api/v1/digitalassets/clasificacion?contentLanguage=en&countryCode=US&subscription-key=c13c3a8e2f6b46da9c5c425cf61fab3e  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/public-service/api/v1/digitalassets/brand-day?contentLanguage=en&countryCode=US&subscription-key=c13c3a8e2f6b46da9c5c425cf61fab3e  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/public-service/api/v1/digitalassets/highlight?contentLanguage=en&countryCode=US&subscription-key=c13c3a8e2f6b46da9c5c425cf61fab3e  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/webview/api/web/subscriptions/laliga-easports-2026/standing?&contentLanguage=en&subscription-key=ee7fcd5c543f4485ba2a48856fc7ece9  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/public-service/api/v1/subscriptions/laliga-easports-2026/stats?contentLanguage=en&subscription-key=c13c3a8e2f6b46da9c5c425cf61fab3e  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/webview/api/web/seasons/opta/2026/competitions/opta/23/rankings/players/group?stats%5B0%5D=stat.total_goals_ranking&stats%5B1%5D=stat.total_ontarget_attempt_ranking&stats%5B2%5D=stat.total_pass_ranking&stats%5B3%5D=stat.total_assists_ranking&stats%5B4%5D=stat.total_interception_ranking&stats%5B5%5D=stat.total_saves_ranking&contentLanguage=en&subscription-key=ee7fcd5c543f4485ba2a48856fc7ece9  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/public-service/api/v1/broadcasters-channels?contentLanguage=en&countryCode=US&subscription-key=c13c3a8e2f6b46da9c5c425cf61fab3e  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/webview/api/web/seasons/opta/2025/competitions/opta/23/rankings/players/group?stats%5B0%5D=stat.total_goals_ranking&stats%5B1%5D=stat.total_ontarget_attempt_ranking&stats%5B2%5D=stat.total_pass_ranking&stats%5B3%5D=stat.total_assists_ranking&stats%5B4%5D=stat.total_interception_ranking&stats%5B5%5D=stat.total_saves_ranking&contentLanguage=en&subscription-key=ee7fcd5c543f4485ba2a48856fc7ece9  (resourceType: xhr)  status: 200
+  GET https://apim.laliga.com/webview/api/web/subscriptions/laliga-easports-2026/standing?&contentLanguage=en&subscription-key=ee7fcd5c543f4485ba2a48856fc7ece9  (resourceType: xhr)  status: 200
+
+=== VERDICT ===
+Real browser network capture completed. See counts/matches above for the actual, unguessed result.
