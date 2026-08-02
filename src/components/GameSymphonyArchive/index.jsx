@@ -69,7 +69,14 @@ function playTimeline(synthApi, cues, onCuePlay) {
 }
 
 export function GameSymphonyArchive() {
-  const [candidate] = createResource(dramaLeaderboard, async lb => {
+  // dramaLeaderboard is itself a createResource accessor -- calling it
+  // directly as this resource's source re-throws if IT has errored,
+  // crashing before the fetcher below ever gets to check lb.error.
+  // Same bug class already fixed in BsdXgPanel/WcBracketTree/Newspaper
+  // this session; same fix here.
+  const safeLeaderboardSource = () => (dramaLeaderboard.error ? null : dramaLeaderboard())
+
+  const [candidate] = createResource(safeLeaderboardSource, async lb => {
     if (!lb || lb.error) return null
     const games = lb.games ?? []
     if (!games.length) return { error: null, cues: [], tried: [], exhausted: true }
