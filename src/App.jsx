@@ -16,6 +16,7 @@ import { WcBracketOdds } from './components/WcBracketOdds'
 import { BriefReconcile } from './components/BriefReconcile'
 import { BriefArchive } from './components/BriefArchive'
 import { DramaLeaderboard } from './components/DramaLeaderboard'
+import { TheUnwatched } from './components/TheUnwatched'
 import { RelaySystemStatus } from './components/RelaySystemStatus'
 import { MultiDayStreak } from './components/MultiDayStreak'
 import { ErrorBoundaryDemo } from './components/ErrorBoundaryDemo'
@@ -351,6 +352,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.dramaLeaderboard}>
               <DramaLeaderboard />
+            </SafeSection>
+            <SafeSection class={styles.theUnwatched}>
+              <TheUnwatched />
             </SafeSection>
             <SafeSection class={styles.ground}>
               <Ground />

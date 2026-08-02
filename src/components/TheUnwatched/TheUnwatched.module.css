@@ -1,0 +1,136 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.refreshBtn {
+  margin-left: auto;
+  font-size: 12px;
+  background: none;
+  border: none;
+  color: var(--field-text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.refreshBtn:hover {
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.loading, .empty, .error {
+  font-size: 12px;
+  color: var(--field-text-muted);
+  margin-top: 10px;
+}
+
+.error {
+  color: #c44;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 0;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.rowMain {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.matchup {
+  font-size: 12px;
+  color: var(--field-text-primary);
+}
+
+.score {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.arcLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tierBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.cold {
+  background: #1a1a1a;
+  color: var(--field-text-muted);
+}
+
+.warm {
+  background: #2a2410;
+  color: #d4a92e;
+}
+
+.hot {
+  background: #2a1a10;
+  color: #e8862e;
+}
+
+.fire {
+  background: #2a1414;
+  color: #e75c3c;
+}
+
+.arrow {
+  font-size: 11px;
+  color: var(--field-text-muted);
+}
+
+.flipNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}

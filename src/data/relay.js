@@ -220,6 +220,19 @@ async function fetchDramaLeaderboard(sport) {
 
 export const [dramaLeaderboard, { refetch: refetchDramaLeaderboard }] = createResource(dramaSport, fetchDramaLeaderboard)
 
+// --- Unwatched candidates: broader real sample for TheUnwatched, independent ---
+// from dramaLeaderboard's own top-8 resource (separate limit, own signal) so
+// raising this component's sample size never affects DramaLeaderboard's fetch.
+export const [unwatchedSport, setUnwatchedSport] = createSignal('MLB')
+
+async function fetchUnwatchedCandidates(sport) {
+  const res = await fetch(`${RELAY_BASE}/archive/drama/leaderboard?sport=${sport}&limit=30`)
+  if (!res.ok) throw new Error(`drama/leaderboard fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [unwatchedCandidates, { refetch: refetchUnwatchedCandidates }] = createResource(unwatchedSport, fetchUnwatchedCandidates)
+
 // --- Relay system status: real, live, confirmed via a direct probe 2026-07-27 ---
 //
 // GET /health -> NOT JSON -- a single plain-text line:
