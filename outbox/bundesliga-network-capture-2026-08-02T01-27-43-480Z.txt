@@ -1,0 +1,32 @@
+probe_at: 2026-08-02T01:27:43.481Z
+purpose: capture REAL network requests a real browser makes rendering bundesliga.com -- no prior hostname hypothesis, unlike the LaLiga probe
+SAFETY: this script never navigates to or manually requests cp.bundesliga.com (identified paywall vendor) at any point
+
+=== NAVIGATING (real page load, capturing real network activity) ===
+navigation status: 200
+
+=== looking for a real standings/table link on the rendered page ===
+found link: https://www.bundesliga.com/en/bundesliga/table
+navigated to standings page successfully
+
+=== ALL REAL REQUESTS TO *.bundesliga.com ===
+total: 350
+by host: {
+  "www.bundesliga.com": 234,
+  "cp.bundesliga.com": 75,
+  "mt.bundesliga.com": 7,
+  "assets.bundesliga.com": 30,
+  "wapp.bapi.bundesliga.com": 4
+}
+
+=== REQUESTS TO HOSTS NOT ALREADY KNOWN AS NON-DATA (the real candidates) ===
+count: 4
+  GET https://wapp.bapi.bundesliga.com/broadcasters?promoteInHeader=true  (type: fetch, status: 200, content-type: application/json)
+  GET https://wapp.bapi.bundesliga.com/broadcasts/DFL-COM-000001/DFL-DAY-004CBT  (type: fetch, status: 200, content-type: application/json)
+  GET https://wapp.bapi.bundesliga.com/broadcasts/DFL-COM-000001/DFL-DAY-004CBT  (type: fetch, status: 200, content-type: application/json)
+  GET https://wapp.bapi.bundesliga.com/broadcasters?promoteInHeader=true  (type: fetch, status: 200, content-type: application/json)
+
+=== www.bundesliga.com requests that look like DATA, not page assets (xhr/fetch resourceType, or json content-type) ===
+count: 0
+
+=== DONE ===
