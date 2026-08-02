@@ -1,0 +1,39 @@
+probe_at: 2026-08-02T04:48:19.879Z
+purpose: capture the REAL headers/cookies a successful clasificacion request carries, not another guess
+
+=== NAVIGATING to real live standings page ===
+
+=== REAL clasificacion REQUEST, AS THE BROWSER ACTUALLY SENT IT ===
+status: 200
+url: https://apim.laliga.com/public-service/api/v1/digitalassets/clasificacion?contentLanguage=en&countryCode=US&subscription-key=c13c3a8e2f6b46da9c5c425cf61fab3e
+real headers:
+  sec-ch-ua-platform: "Linux"
+  referer: https://www.laliga.com/
+  sec-ch-ua: "Not=A?Brand";v="99", "HeadlessChrome";v="151", "Chromium";v="151"
+  sec-ch-ua-mobile: ?0
+  country-code: US
+  ocp-apim-subscription-key: c13c3a8e2f6b46da9c5c425cf61fab3e
+  accept: application/json, text/plain, */*
+  content-language: en
+  user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36
+
+=== real cookies present for this domain at request time ===
+  urlLang=en
+  urlCountry=US
+  poptin_old_user=true
+  poptin_user_id=0.zi4hahqqp7m
+  country=US
+  __gads=ID=0ef01de0baf33e52:T=1785646102:RT=1785...
+  __gpi=UID=000014bbe8cc276d:T=1785646102:RT=178...
+  __eoi=ID=79d4fd8b8542b062:T=1785646102:RT=1785...
+  poptin_previous_url=
+  poptin_user_ip=20.169.50.38
+  poptin_user_country_code=false
+  poptin_session_account_629c0cad70468=true
+  poptin_c_visitor=true
+  poptin_session=true
+  poptin_last_visit=2026-08-02
+  OptanonConsent=isGpcEnabled=0&datestamp=Sun+Aug+02+2026...
+  laliga5AD3F8B772=uKd7m5qdGdE2bLDoSkebawe7QditfkWGgja7XQoI...
+
+=== DONE ===
