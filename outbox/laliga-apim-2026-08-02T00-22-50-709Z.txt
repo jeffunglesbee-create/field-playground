@@ -1,0 +1,65 @@
+probe_at: 2026-08-02T00:22:50.710Z
+purpose: CC-CMD-2026-08-02-laliga-apim-investigation -- confirm real reachability, find real sub-paths, one targeted probe
+CONSTRAINT: apim-int.laliga.com is never contacted in this script, at any point
+
+=== TASK 1: base host reachability ===
+--- GET https://apim.laliga.com/public-service ---
+  status: 404
+  final URL (after any redirect): https://apim.laliga.com/public-service
+  headers: {"connection":"keep-alive","content-length":"54","content-type":"application/json","date":"Sun, 02 Aug 2026 00:22:51 GMT","x-azure-ref":"20260802T002250Z-156ff8668f9s7jgjhC1BN1kurc00000011s0000000008t90","x-cache":"CONFIG_NOCACHE"}
+  body length: 54
+  body (first 1000 chars): { "statusCode": 404, "message": "Resource not found" }
+
+--- GET https://apim.laliga.com/webview ---
+  status: 404
+  final URL (after any redirect): https://apim.laliga.com/webview
+  headers: {"connection":"keep-alive","content-length":"54","content-type":"application/json","date":"Sun, 02 Aug 2026 00:22:51 GMT","x-azure-ref":"20260802T002251Z-156ff8668f9s7jgjhC1BN1kurc00000011s0000000008ta4","x-cache":"CONFIG_NOCACHE"}
+  body length: 54
+  body (first 1000 chars): { "statusCode": 404, "message": "Resource not found" }
+
+=== TASK 2: real script bundles from laliga.com, searched for real apim paths ===
+homepage status: 200  final URL: https://www.laliga.com/en-US
+real <script src> URLs found: 26
+  https://www.laliga.com/_next/static/chunks/polyfills-c67a75d1b6f99dc8.js
+  https://www.laliga.com/_next/static/chunks/webpack-8f223473bc6c03d3.js
+  https://www.laliga.com/_next/static/chunks/framework-71f483d8069574c5.js
+  https://www.laliga.com/_next/static/chunks/main-e877047df7c15d39.js
+  https://www.laliga.com/_next/static/chunks/pages/_app-76b0b65a05758075.js
+  https://www.laliga.com/_next/static/chunks/5531-4f52f1f8367fa0be.js
+  https://www.laliga.com/_next/static/chunks/7361-18d7c88661eb6357.js
+  https://www.laliga.com/_next/static/chunks/7206-01cd5cee5af7d5f9.js
+  https://www.laliga.com/_next/static/chunks/2948-c0e62a3347337a7e.js
+  https://www.laliga.com/_next/static/chunks/8279-3ddbcc71baf917bf.js
+  https://www.laliga.com/_next/static/chunks/2163-911acb2813811536.js
+  https://www.laliga.com/_next/static/chunks/33-1fdd6c0c27b3e6f0.js
+  https://www.laliga.com/_next/static/chunks/958-70e4bf00c0d4f503.js
+  https://www.laliga.com/_next/static/chunks/6957-1ff27ae45a470698.js
+  https://www.laliga.com/_next/static/chunks/8491-0baa057b1fe9aa16.js
+  https://www.laliga.com/_next/static/chunks/7077-8c04c4af2f135ce8.js
+  https://www.laliga.com/_next/static/chunks/2388-03b33b024a0878d2.js
+  https://www.laliga.com/_next/static/chunks/281-80cb157aa0117f83.js
+  https://www.laliga.com/_next/static/chunks/8912-467724befa3815d0.js
+  https://www.laliga.com/_next/static/chunks/7555-6de47b9108025598.js
+  https://www.laliga.com/_next/static/chunks/2914-99f79ba6a1cf0d80.js
+  https://www.laliga.com/_next/static/chunks/1577-90a1f6581b55ed3c.js
+  https://www.laliga.com/_next/static/chunks/6196-4fa845a0678cbff3.js
+  https://www.laliga.com/_next/static/chunks/pages/index-7cddadadc56e0d2c.js
+  https://www.laliga.com/_next/static/06969d3c68ed97998b7e0f6b97e06766d4a8c93c/_buildManifest.js
+  https://www.laliga.com/_next/static/06969d3c68ed97998b7e0f6b97e06766d4a8c93c/_ssgManifest.js
+
+NOTE: capping bundle fetch at 25 of 26 real script URLs found (logged, not silent)
+
+=== REAL FINDINGS: literal apim/public-service/webview path occurrences ===
+total raw matches: 0
+  NONE FOUND -- no literal apim.laliga.com or /public-service//webview/ path strings
+  in the 25 real bundle(s) fetched. Reporting this plainly, not
+  inventing a plausible-sounding path to test in Task 3.
+
+=== TASK 3: one targeted real probe ===
+No real sub-path was found in Task 2 to target. Per task scope ("do not guess
+additional endpoint paths beyond what Task 2's bundle search actually finds"),
+Task 3 is not performed -- there is nothing real to probe.
+
+=== VERDICT ===
+See TASK 1/2/3 sections above for the real, unguessed findings. apim-int.laliga.com
+was never contacted at any point in this script.
