@@ -54,6 +54,7 @@ import { ScoreTicker } from './components/ScoreTicker'
 import { LiveWpTicker } from './components/LiveWpTicker'
 import { DramaSoundscape } from './components/DramaSoundscape'
 import { BsdXgPanel } from './components/BsdXgPanel'
+import { LaLigaCrossCheck } from './components/LaLigaCrossCheck'
 import { Arbitrage } from './components/Arbitrage'
 import { WcBracketTree } from './components/WcBracketTree'
 import { Newspaper } from './components/Newspaper'
@@ -96,7 +97,7 @@ const TOP_NAV_ID = 'app'
 const TOP_TABS = [
   { key: 'games', label: 'Games', count: 14 },
   { key: 'picks', label: 'Picks', count: 7 },
-  { key: 'stats', label: 'Stats', count: 5 },
+  { key: 'stats', label: 'Stats', count: 6 },
   { key: 'journalism', label: 'Journalism', count: 2 },
   { key: 'social', label: 'Social', count: 3 },
   { key: 'system', label: 'System', count: 2 },
@@ -301,6 +302,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.wcBracketOdds}>
               <WcBracketOdds />
+            </SafeSection>
+            <SafeSection class={styles.laligaCrossCheck}>
+              <LaLigaCrossCheck />
             </SafeSection>
             <SafeSection class={styles.wcBracketTree}>
               <WcBracketTree />
