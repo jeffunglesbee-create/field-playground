@@ -17,6 +17,7 @@ import { BriefReconcile } from './components/BriefReconcile'
 import { BriefArchive } from './components/BriefArchive'
 import { DramaLeaderboard } from './components/DramaLeaderboard'
 import { TheUnwatched } from './components/TheUnwatched'
+import { GameSymphonyArchive } from './components/GameSymphonyArchive'
 import { RelaySystemStatus } from './components/RelaySystemStatus'
 import { MultiDayStreak } from './components/MultiDayStreak'
 import { ErrorBoundaryDemo } from './components/ErrorBoundaryDemo'
@@ -236,6 +237,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.dramaSoundscape}>
               <DramaSoundscape />
+            </SafeSection>
+            <SafeSection class={styles.gameSymphonyArchive}>
+              <GameSymphonyArchive />
             </SafeSection>
             <SafeSection class={styles.bsdXgPanel}>
               <BsdXgPanel />
