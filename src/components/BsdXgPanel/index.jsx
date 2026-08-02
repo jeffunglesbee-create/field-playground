@@ -6,11 +6,22 @@ const RELAY = 'https://field-relay-nba.jeffunglesbee.workers.dev'
 // BsdXgPanel — real, live EPL expected-goals/possession from BSD.
 //
 // WHY THIS EXISTS: BSD's /bsd/events/{id}/shotmap carries genuinely
-// rich, live, per-minute match stats (home_xg, away_xg,
-// possession_home) — confirmed real via the relay's own /bsd/contract
-// doc and a direct probe today. It was completely unwired anywhere in
-// this project until now (confirmed: zero references to bsd/events or
-// bsdLeagueId in the production client).
+// rich, live, per-minute match stats (expected_goals, ball_possession)
+// — confirmed real via a direct probe against a real finished match
+// today (event 383, West Ham 3-0 Leeds, 2026-05-24: home xG 2.03, away
+// xG 1.57). It was completely unwired anywhere in this project until
+// now (confirmed: zero references to bsd/events or bsdLeagueId in the
+// production client at the time this was built).
+//
+// FIELD NAMES CORRECTED (2026-08-02): originally built against
+// /bsd/contract's illustrative example shape (home_xg/away_xg/
+// possession_home), which turned out not to match the real API. The
+// production CC-CMD implementing the same data caught this by probing
+// a real match before writing code; this component's own test match
+// (GW1, unplayed at build time) had every stat field null regardless
+// of the field name used, so the wrong path never surfaced here until
+// checked against real, played-match data. Real shape: stats.home.
+// expected_goals / stats.home.ball_possession (and away.*).
 //
 // TWO REAL BUGS FOUND TODAY, WORKED AROUND CORRECTLY NOT PAPERED OVER:
 //   - /bsd/events/season's `season=` param does not filter results —
@@ -146,20 +157,26 @@ export function BsdXgPanel() {
                     <div class={styles.statRow}>
                       <span class={styles.statLabel}>home xG</span>
                       <span class={styles.statValue}>
-                        {b().stats?.home?.xg?.actual ?? '—'}
+                        {b().stats?.home?.expected_goals ?? '—'}
                       </span>
                     </div>
                     <div class={styles.statRow}>
                       <span class={styles.statLabel}>away xG</span>
                       <span class={styles.statValue}>
-                        {b().stats?.away?.xg?.actual ?? '—'}
+                        {b().stats?.away?.expected_goals ?? '—'}
+                      </span>
+                    </div>
+                    <div class={styles.statRow}>
+                      <span class={styles.statLabel}>possession</span>
+                      <span class={styles.statValue}>
+                        {b().stats?.home?.ball_possession ?? '—'}% / {b().stats?.away?.ball_possession ?? '—'}%
                       </span>
                     </div>
                     {/* Honest state, not a fabricated placeholder — if
                         every field is null, the match genuinely hasn't
                         been played yet. Same principle as LiveWpTicker's
                         synced/unsynced labeling. */}
-                    <Show when={b().stats?.home?.xg?.actual == null && b().stats?.away?.xg?.actual == null}>
+                    <Show when={b().stats?.home?.expected_goals == null && b().stats?.away?.expected_goals == null}>
                       <p class={styles.notStarted}>
                         No xG yet — match hasn't started. Will populate live once EPL's
                         2026-27 season kicks off (Aug 21).
