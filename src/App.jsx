@@ -55,6 +55,7 @@ import { LiveWpTicker } from './components/LiveWpTicker'
 import { DramaSoundscape } from './components/DramaSoundscape'
 import { BsdXgPanel } from './components/BsdXgPanel'
 import { LaLigaCrossCheck } from './components/LaLigaCrossCheck'
+import { BundesligaBroadcasters } from './components/BundesligaBroadcasters'
 import { Arbitrage } from './components/Arbitrage'
 import { WcBracketTree } from './components/WcBracketTree'
 import { Newspaper } from './components/Newspaper'
@@ -95,7 +96,7 @@ const POLL_INTERVAL_MS = 15000
 const TOP_NAV_ID = 'app'
 
 const TOP_TABS = [
-  { key: 'games', label: 'Games', count: 14 },
+  { key: 'games', label: 'Games', count: 15 },
   { key: 'picks', label: 'Picks', count: 7 },
   { key: 'stats', label: 'Stats', count: 6 },
   { key: 'journalism', label: 'Journalism', count: 2 },
@@ -240,6 +241,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.arbitrage}>
               <Arbitrage />
+            </SafeSection>
+            <SafeSection class={styles.bundesligaBroadcasters}>
+              <BundesligaBroadcasters />
             </SafeSection>
             <SafeSection class={styles.deskModes}>
               <DeskModes />
