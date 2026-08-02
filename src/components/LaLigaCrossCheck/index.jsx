@@ -92,7 +92,7 @@ export function LaLigaCrossCheck() {
             <div class={styles.sourceBlock}>
               <span class={styles.sourceLabel}>apim (new, unverified until now)</span>
               <Show when={d().apimError} fallback={
-                <span class={styles.sourceDetail}>real data received — see raw shape below</span>
+                <span class={styles.sourceDetail}>real data received</span>
               }>
                 <span class={styles.errorDetail}>{d().apimError}</span>
               </Show>
@@ -116,6 +116,18 @@ export function LaLigaCrossCheck() {
                 </For>
               </ul>
             </div>
+
+            {/* Real shape, confirmed live: {available, data:{digital_asset:...}}.
+                digital_asset's own internal structure (team list, if any) was
+                never inspected -- this was unbuildable before the route existed.
+                Showing the raw object honestly rather than guessing a parse path
+                that might be wrong. */}
+            <Show when={!d().apimError}>
+              <div class={styles.rawBlock}>
+                <span class={styles.rawLabel}>apim raw response (digital_asset structure not yet parsed)</span>
+                <pre class={styles.raw}>{JSON.stringify(d().apim, null, 2).slice(0, 500)}</pre>
+              </div>
+            </Show>
           </>
         )}
       </Show>
