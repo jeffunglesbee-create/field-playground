@@ -1,0 +1,34 @@
+probe_at: 2026-08-02T01:35:12.628Z
+purpose: capture REAL network requests a real browser makes rendering bundesliga.com -- no prior hostname hypothesis, unlike the LaLiga probe
+SAFETY: this script never navigates to or manually requests cp.bundesliga.com (identified paywall vendor) at any point
+
+=== NAVIGATING (real page load, capturing real network activity) ===
+navigation status: 200
+
+=== looking for a real standings/table link on the rendered page ===
+found link: https://www.bundesliga.com/en/bundesliga/table
+navigated to standings page successfully
+
+=== CHECKING IF THE TABLE IS SERVER-RENDERED (real team names already in DOM) ===
+real team names found in rendered DOM: Bayern, Dortmund, Leipzig, Leverkusen, Stuttgart (of 5 checked)
+body text length: 2109
+STRONG SIGNAL: table data is present in the DOM regardless of any client API -- likely server-rendered
+
+=== ALL CROSS-ORIGIN REQUESTS, ANY HOST (not just bundesliga.com this time) ===
+total: 366
+by host: {
+  "www.bundesliga.com": 234,
+  "cdn.cookielaw.org": 16,
+  "cp.bundesliga.com": 72,
+  "mt.bundesliga.com": 7,
+  "assets.bundesliga.com": 30,
+  "geolocation.onetrust.com": 2,
+  "wapp.bapi.bundesliga.com": 4,
+  "dfl-privacy.my.onetrust.com": 1
+}
+
+=== ANY KNOWN FOOTBALL-DATA-PROVIDER DOMAIN (opta/statsperform/sportradar/etc) ===
+count: 0
+
+=== REQUESTS TO HOSTS NOT ALREADY KNOWN AS NON-DATA (the real candidates, widened) ===
+SCRIPT FAILED: ReferenceError: KNOWN_NON_DATA_HOSTS is not defined
