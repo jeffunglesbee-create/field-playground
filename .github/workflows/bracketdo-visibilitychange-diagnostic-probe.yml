@@ -1,0 +1,43 @@
+name: BracketDO Visibilitychange Diagnostic Probe
+
+# Read-only observation of the live jubilant-bassoon site's real
+# behavior -- why does document.body.classList.contains('wc-mode')
+# read false right after toggleWCView() is called. No production code
+# is touched by this workflow.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm install playwright --no-save
+      - run: npx playwright install chromium --with-deps
+      - name: Diagnose live BracketDO wc-mode behavior
+        timeout-minutes: 3
+        continue-on-error: true
+        run: node scripts/probe-bracketdo-visibilitychange-diagnostic.mjs
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.name "bracketdo-diagnostic-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: bracketdo diagnostic result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
