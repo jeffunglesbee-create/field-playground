@@ -1,0 +1,170 @@
+probe_at: 2026-08-02T19:46:10.517Z
+purpose: does the LaLiga/Bundesliga live-capture method also surface real Serie A / Ligue 1 backends?
+
+=== Serie A: https://www.legaseriea.it/en ===
+navigation status: 307
+by host: {
+  "www.legaseriea.it": 1,
+  "en.legaseriea.it": 80,
+  "www.googletagmanager.com": 1,
+  "embeds.iubenda.com": 1,
+  "www.googletagservices.com": 1,
+  "connect.facebook.net": 3,
+  "cdn.iubenda.com": 4,
+  "www.google-analytics.com": 4,
+  "securepubads.g.doubleclick.net": 4,
+  "img.legaseriea.it": 1,
+  "idb.iubenda.com": 1,
+  "images.legaseriea.it": 35,
+  "media-sdp.legaseriea.it": 20,
+  "blazesdk-prod-cdn.clipro.tv": 4,
+  "api-sdp.legaseriea.it": 1,
+  "divafe-seriea.akamaized.net": 2,
+  "imasdk.googleapis.com": 2,
+  "sdk.mvp.fan": 2,
+  "fonts.googleapis.com": 1,
+  "fonts.gstatic.com": 4,
+  "stories.legaseriea.it": 25,
+  "lma.npaw.com": 2,
+  "": 1,
+  "feedpublisher-seriea.akamaized.net": 1,
+  "infinity-c34.youboranqs01.com": 1,
+  "product-services-cdn.deltatre.digital": 1,
+  "cdnjs.cloudflare.com": 2,
+  "legaseriea-live-prd.cdn.netrw.it": 1
+}
+real candidates (xhr/fetch resourceType, or json content-type, excluding the site's own www host):
+  GET https://en.legaseriea.it/api/auth/session  (status: 200, content-type: application/json)
+  GET https://en.legaseriea.it/serie-a?_rsc=tDNYhkFNlAF1EkKN  (status: 200, content-type: text/x-component)
+  POST https://www.google-analytics.com/g/collect?v=2&tid=G-C9786Q6TZQ&gtm=45je67t1v893326652za200zd893326652&_p=1785699974541&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&tcfd=10000&gdid=dZTJkMz&_eu=AAAAAGA&are=1&cid=458124432.1785699975&frm=0&pscdl=denied&rcb=19&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=0&uap=Linux&uapv=&uaw=0&ul=en-us&gaf=2&_s=1&tag_exp=115938465~115938469~118395334~118897920~118897930~119527020~119896803&sid=1785699974&sct=1&seg=0&dl=https%3A%2F%2Fen.legaseriea.it%2F&dt=Lega%20Serie%20A%20%7C%20Official%20Website&_tu=CA&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=3813  (status: 204, content-type: text/plain)
+  GET https://cdn.iubenda.com/cs/tcf/v3-versioned/vendorlist.170.json  (status: 200, content-type: application/json)
+  GET https://cdn.iubenda.com/cs/tcf/gac-vendors.json  (status: 200, content-type: application/json)
+  POST https://idb.iubenda.com/csdata?db=hits1  (status: 204, content-type: ?)
+  POST https://www.google-analytics.com/g/collect?v=2&tid=G-C9786Q6TZQ&gtm=45je67t1v893326652za200zd893326652&_p=1785699974541&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&tcfd=10000&gdid=dZTJkMz&_eu=AEAAAGA&ae=a&are=1&cid=458124432.1785699975&frm=0&gtm_up=1&pscdl=denied&rcb=19&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=0&uap=Linux&uapv=&uaw=0&ul=en-us&gaf=2&_s=2&tag_exp=115938465~115938469~118395334~118897920~118897930~119527020~119896803&sid=1785699974&sct=1&seg=0&dl=https%3A%2F%2Fen.legaseriea.it%2F&dt=Lega%20Serie%20A%20%7C%20Official%20Website&_tu=CA&en=scroll&epn.percent_scrolled=90&_et=6&tfd=4462  (status: 204, content-type: text/plain)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  GET https://en.legaseriea.it/coppa-italia?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/supercoppa?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/primavera/fixtures-results?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/coppa-italia-primavera/fixtures-results?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/supercoppa-primavera/fixtures-results?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/serie-a/fixtures-results?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/serie-a/standings?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/serie-a/videos/highlights?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  POST https://www.google-analytics.com/g/collect?v=2&tid=G-C9786Q6TZQ&gtm=45je67t1v893326652za200zd893326652&_p=1785699974541&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&tcfd=10000&gdid=dZTJkMz&_eu=AAAAAGA&are=1&cid=458124432.1785699975&frm=0&gtm_up=1&ni=1&pscdl=denied&rcb=19&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=0&uap=Linux&uapv=&uaw=0&ul=en-us&gaf=2&_s=3&tag_exp=115938465~115938469~118395334~118897920~118897930~119527020~119896803&sid=1785699974&sct=1&seg=0&dl=https%3A%2F%2Fen.legaseriea.it%2F&dt=Lega%20Serie%20A%20%7C%20Official%20Website&_tu=CA&en=FCP&_ee=1&epn.value=4444&ep.event_label=v4-1785699974542-6789746609122&_et=642&tfd=5913  (status: 204, content-type: text/plain)
+  GET https://blazesdk-prod-cdn.clipro.tv/api/blazesdk/v1.3/AppConfigurations?ApiKey=123552fcd5c74450ac516bca63605ebe&clientPlatform=Web  (status: 200, content-type: application/json; charset=utf-8; x-api-version=1.3)
+  GET https://api-sdp.legaseriea.it/v1/serie-a/football/seasons/serie-a%3A%3AFootball_Season%3A%3Aed7fdc2a3e7b408b942ec177b7b956b5/standings/overall?locale=en-GB  (status: 200, content-type: application/json; charset=utf-8)
+  GET https://divafe-seriea.akamaized.net/diva5/settings/linear/html5  (status: 200, content-type: application/json)
+  HEAD https://en.legaseriea.it/geo.json  (status: 200, content-type: application/json; charset=UTF-8)
+  POST https://www.google-analytics.com/g/collect?v=2&tid=G-C9786Q6TZQ&gtm=45je67t1v893326652za200zd893326652&_p=1785699974541&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&tcfd=10000&gdid=dZTJkMz&_eu=AEAAAGA&ae=a&are=1&cid=458124432.1785699975&frm=0&gtm_up=1&pscdl=denied&rcb=19&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253DA%253FBrand%3B99.0.0.0%7CHeadlessChrome%3B151.0.7922.34%7CChromium%3B151.0.7922.34&uam=&uamb=0&uap=Linux&uapv=&uaw=0&ul=en-us&gaf=2&_s=4&tag_exp=115938465~115938469~118395334~118897920~118897930~119527020~119896803&dl=https%3A%2F%2Fen.legaseriea.it%2Fserie-a&dr=https%3A%2F%2Fen.legaseriea.it%2F&sid=1785699974&sct=1&seg=1&dt=Serie%20A%20Enilive%20%7C%20Lega%20Serie%20A&_tu=CA&en=page_view&_et=1450&tfd=6020  (status: 204, content-type: text/plain)
+  POST https://blazesdk-prod-cdn.clipro.tv/api/blazesdk/v1.3/UserManagement?ApiKey=123552fcd5c74450ac516bca63605ebe&clientPlatform=Web  (status: 200, content-type: application/json; charset=utf-8; x-api-version=1.3)
+  HEAD https://securepubads.g.doubleclick.net/pagead/ppub_config  (status: 200, content-type: ?)
+  HEAD https://imasdk.googleapis.com/js/sdkloader/ima3.js  (status: 200, content-type: text/javascript; charset=UTF-8)
+  GET https://en.legaseriea.it/serie-a/statistiche?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/team/index?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://blazesdk-prod-cdn.clipro.tv/api/blazesdk/v1.3/moments?ApiKey=123552fcd5c74450ac516bca63605ebe&clientPlatform=Web&orderType=RecentlyUpdatedFirst&labelsFilterExpression=video_page_moments&maxItems=10  (status: 200, content-type: application/json; charset=utf-8; x-api-version=1.3)
+  GET https://blazesdk-prod-cdn.clipro.tv/api/blazesdk/v1.3/stories?ApiKey=123552fcd5c74450ac516bca63605ebe&clientPlatform=Web&orderType=RecentlyUpdatedFirst&labelsFilterExpression=%5Band%2C+home_stories_top%2C+serie_a%5D&maxItems=10  (status: 200, content-type: application/json; charset=utf-8; x-api-version=1.3)
+  GET https://en.legaseriea.it/radiotv?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/lega-serie-a/documentazione?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://divafe-seriea.akamaized.net/diva5/dictionaries/en-GB.json  (status: 200, content-type: application/json)
+  GET https://en.legaseriea.it/search?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/serie-a/match/1cc7b922e8d44f93a52fb4bf8858e454/inter-vs-monza?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/serie-a/match/50b79ed0dfd04af4804eb12f69123766/udinese-vs-como?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/serie-a/match/160ddffa5500412baf2c48c2ea255675/genoa-vs-napoli?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/serie-a/match/5e0f7484954c4f8c823ff624cc0ab888/parma-vs-cagliari?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://lma.npaw.com/configuration?system=lega-serie-a&pluginVersion=7.3.17-js-sdk&requestNumber=0.9008464116720627&timemark=1785699978061&outputFormat=json  (status: 200, content-type: application/json)
+  GET https://lma.npaw.com/data?system=lega-serie-a&pluginVersion=7.3.17-js-sdk&requestNumber=0.6739451073380801&timemark=1785699978062&outputFormat=json  (status: 200, content-type: application/json)
+  GET https://feedpublisher-seriea.akamaized.net/divauni/seriea/fe/video/videodata/v2/661803d9-7d20-4569-9870-b0add6708f1e  (status: 200, content-type: application/json)
+  GET https://en.legaseriea.it/serie-a/match/87efe7bc3660456ca4b7c9426ad0fa85/frosinone-vs-juventus?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  GET https://en.legaseriea.it/serie-a/videos/youtube/il-meglio-di-artem-dovbyk?_rsc=QKUNjWEI5MrceHFA  (status: 200, content-type: text/x-component)
+  POST https://infinity-c34.youboranqs01.com/init?timemark=1785699978810&code=V_40000106_1kjd84cmaozgvpb7_1785699978799&sessionRoot=V_40000106_1kjd84cmaozgvpb7&system=lega-serie-a&sessionId=V_40000106_1kjd84cmaozgvpb7  (status: 200, content-type: text/plain)
+  POST https://product-services-cdn.deltatre.digital/seriea/entitlement/api/v2/main/videos  (status: 200, content-type: application/json; charset=utf-8)
+  GET https://legaseriea-live-prd.cdn.netrw.it/out/v1/s-prd/ch-01-prd-s-v2/dash-ch-01-prd-s-hd/index.mpd?hdnts=st=1785699969~exp=1785700009~acl=/*~hmac=e2bd3619afc30bef0e60a8547ae5847198fb4bee7b7173f83c5757cf2251d157&hdcore=2.11.3  (status: ?, content-type: ?)
+
+=== Ligue 1: https://www.ligue1.com/ ===
+navigation status: 200
+by host: {
+  "www.ligue1.com": 1,
+  "ligue1.com": 169,
+  "pagead2.googlesyndication.com": 6,
+  "sdk.privacy-center.org": 2,
+  "cdn.adjust.com": 2,
+  "www.googletagmanager.com": 3,
+  "mpg-front-assets.s3.eu-west-3.amazonaws.com": 3,
+  "c.amazon-adsystem.com": 2,
+  "js.adsrvr.org": 2,
+  "ma-api.ligue1.fr": 4,
+  "unpkg.com": 1,
+  "aax-eu.amazon-adsystem.com": 2,
+  "app.adjust.com": 1,
+  "ara.paa-reporting-advertising.amazon": 1,
+  "insight.adsrvr.org": 2,
+  "api.eu.amplitude.com": 1,
+  "ad.doubleclick.net": 1,
+  "www.google.com": 1,
+  "match.adsrvr.org": 4,
+  "dpm.demdex.net": 2,
+  "pixel.rubiconproject.com": 1,
+  "cm.g.doubleclick.net": 2,
+  "s3.eu-west-1.amazonaws.com": 36,
+  "api.mpg.football": 1,
+  "s3.eu-west-3.amazonaws.com": 10,
+  "sr-client-cfg.eu.amplitude.com": 1,
+  "ipapi.co": 1,
+  "blazesdk-prod-cdn.clipro.tv": 3,
+  "securepubads.g.doubleclick.net": 2,
+  "imasdk.googleapis.com": 2,
+  "sdk.mvp.fan": 2,
+  "fonts.googleapis.com": 1,
+  "blaze-audit.clipro.tv": 2,
+  "fonts.gstatic.com": 1,
+  "d15p3b0g8fdgj4.cloudfront.net": 6
+}
+real candidates (xhr/fetch resourceType, or json content-type, excluding the site's own www host):
+  GET https://pagead2.googlesyndication.com/pagead/ppub_config?ippd=ligue1.com  (status: 200, content-type: application/json; charset=UTF-8)
+  GET https://mpg-front-assets.s3.eu-west-3.amazonaws.com/locales_l1_prod/common/fr.json  (status: 200, content-type: application/octet-stream)
+  GET https://ma-api.ligue1.fr/headers  (status: 200, content-type: application/json; charset=utf-8)
+  GET https://ligue1.com/api/auth/me  (status: 204, content-type: ?)
+  GET https://ma-api.ligue1.fr/article/categories  (status: 200, content-type: application/json; charset=utf-8)
+  GET https://unpkg.com/@rive-app/canvas@2.31.6/rive.wasm  (status: 200, content-type: application/wasm)
+  GET https://c.amazon-adsystem.com/aat/amzn.js  (status: 200, content-type: application/javascript)
+  GET https://aax-eu.amazon-adsystem.com/s/iu3?pid=2393f595-640b-49a8-8f46-81af787b91d8&event=PageView&ts=1785699982931&eventSource=amzn.js&uuid=8b8efb2d-b911-4ca6-88b7-fa11bfa40f8c  (status: 302, content-type: ?)
+  GET https://ligue1.com/images/rive/loader.riv  (status: 200, content-type: application/octet-stream)
+  POST https://app.adjust.com/session  (status: 400, content-type: application/json; charset=utf-8)
+  GET https://aax-eu.amazon-adsystem.com/s/iu3?pid=2393f595-640b-49a8-8f46-81af787b91d8&event=PageView&ts=1785699982931&eventSource=amzn.js&uuid=8b8efb2d-b911-4ca6-88b7-fa11bfa40f8c&dcc=t  (status: 200, content-type: ?)
+  GET https://ara.paa-reporting-advertising.amazon/aat?pid=2393f595-640b-49a8-8f46-81af787b91d8&event=PageView&ts=1785699982931&eventSource=amzn.js&uuid=8b8efb2d-b911-4ca6-88b7-fa11bfa40f8c  (status: 200, content-type: application/json)
+  POST https://api.eu.amplitude.com/2/httpapi  (status: 200, content-type: application/json)
+  POST https://ad.doubleclick.net/ccm/s/collect?auid=1583493049.1785699984&gtm=45fe67t1v9190476551za200zb9200027887zd9200027887xec  (status: 204, content-type: ?)
+  POST https://www.google.com/ccm/collect?rcb=3&frm=0&auid=1583493049.1785699984&dt=Official%20website%20of%20Ligue%201%20McDonald%E2%80%99s%20and%20Ligue%202%20BKT&en=page_view&dl=https%3A%2F%2Fligue1.com%2F&scrsrc=www.googletagmanager.com&rnd=32345090.1785699984&navt=n&npa=0&gtm=45fe67t1v9190476551za200zb9200027887zd9200027887xec&gcd=13l3l3l3l1l1&dma=0&tcfd=1000g&tag_exp=115938466~115938469~118131809~118395335~118897920~118897930~119896803&apvc=1&tids=DC-9083781&tid=DC-9083781&tft=1785699983899&tfd=3695&fmt=8  (status: 200, content-type: ?)
+  GET https://ligue1.com/_next/data/Gg5HGHTdW_CaLtwQuZtBV/catchAll/calendar.json  (status: 307, content-type: ?)
+  GET https://ligue1.com/_next/data/Gg5HGHTdW_CaLtwQuZtBV/catchAll/videos.json  (status: 307, content-type: ?)
+  GET https://ligue1.com/_next/data/Gg5HGHTdW_CaLtwQuZtBV/catchAll/fantasy.json  (status: 307, content-type: ?)
+  GET https://ligue1.com/_next/data/Gg5HGHTdW_CaLtwQuZtBV/catchAll/articles/mercato.json  (status: 307, content-type: ?)
+  GET https://ligue1.com/_next/data/Gg5HGHTdW_CaLtwQuZtBV/catchAll/offres-ligue1plus.json  (status: 307, content-type: ?)
+  GET https://ma-api.ligue1.fr/championship-matches/championship/1/current  (status: 200, content-type: application/json; charset=utf-8)
+  GET https://ma-api.ligue1.fr/page/HOME  (status: 200, content-type: application/json; charset=utf-8)
+  GET https://api.mpg.football/fantasy/result/layout-tile?pageTemplateType=JM1  (status: 200, content-type: application/json; charset=utf-8)
+  GET https://mpg-front-assets.s3.eu-west-3.amazonaws.com/locales_l1_prod/club/catchAll.json  (status: 403, content-type: application/xml)
+  GET https://mpg-front-assets.s3.eu-west-3.amazonaws.com/locales_l1_prod/club/en.json  (status: 200, content-type: application/octet-stream)
+  GET https://sr-client-cfg.eu.amplitude.com/config?api_key=e5b54607e2c7a254c1f4e9d5f92252c3&config_keys=sessionReplay&session_id=1785699982831  (status: 200, content-type: application/json)
+  GET https://ipapi.co/country/  (status: 200, content-type: text/plain; charset=utf-8)
+  GET https://blazesdk-prod-cdn.clipro.tv/api/blazesdk/v1.3/AppConfigurations?ApiKey=5dbce953b91247daa0981ba89a95e9da&clientPlatform=Web  (status: 200, content-type: application/json; charset=utf-8; x-api-version=1.3)
+  POST https://blazesdk-prod-cdn.clipro.tv/api/blazesdk/v1.3/UserManagement?ApiKey=5dbce953b91247daa0981ba89a95e9da&clientPlatform=Web  (status: 200, content-type: application/json; charset=utf-8; x-api-version=1.3)
+  HEAD https://securepubads.g.doubleclick.net/pagead/ppub_config  (status: 200, content-type: ?)
+  HEAD https://imasdk.googleapis.com/js/sdkloader/ima3.js  (status: 200, content-type: text/javascript; charset=UTF-8)
+  POST https://insight.adsrvr.org/track/realtimeconversion  (status: 200, content-type: application/json)
+  GET https://blazesdk-prod-cdn.clipro.tv/api/blazesdk/v1.3/stories?ApiKey=5dbce953b91247daa0981ba89a95e9da&clientPlatform=Web&orderType=RecentlyUpdatedFirst&labelsFilterExpression=%5Band%2C+local_en%2C+%5Bor%2C+ingame_mhl%2C+homepage%2C+post_mhl%5D%5D&labelsPriority=%5Bingame_mhl%2Chomepage%2Cpost_mhl%5D  (status: 200, content-type: application/json; charset=utf-8; x-api-version=1.3)
+  POST https://blaze-audit.clipro.tv/api/eventaudit/v1/events?api_key=5dbce953b91247daa0981ba89a95e9da  (status: 202, content-type: application/json)
+  POST https://blaze-audit.clipro.tv/api/eventaudit/v1/events?api_key=5dbce953b91247daa0981ba89a95e9da  (status: 202, content-type: application/json)
+
+=== DONE ===
