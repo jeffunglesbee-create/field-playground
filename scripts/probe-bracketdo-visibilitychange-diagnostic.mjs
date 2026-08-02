@@ -75,6 +75,31 @@ async function main() {
   })
   log(JSON.stringify(toggleResult, null, 2))
 
+  // THE REAL REMAINING QUESTION: the toggle itself just worked
+  // correctly above. The original stalled probe waited 1.5s after
+  // this exact point before checking state again -- and a real 403
+  // showed up in that run's console errors. toggleWCView() triggers
+  // renderWCSection(), which fires 4 parallel data fetches
+  // (standings/results/odds/live-games). If wc-mode gets reset
+  // between now and 1.5s from now, something in that async chain is
+  // the real cause, not the toggle or the guard.
+  log('')
+  log('=== WAITING 1.5s (matching the original probe\'s exact timing) THEN RE-CHECKING ===')
+  await page.waitForTimeout(1500)
+  const afterWait = await page.evaluate(() => ({
+    wcMode: document.body.classList.contains('wc-mode'),
+    bodyClassList: document.body.className,
+    liveIndicator: document.getElementById('wc-tab-bracket-btn')?.classList.contains('bracket-live') || false,
+  }))
+  log(JSON.stringify(afterWait, null, 2))
+  if (!afterWait.wcMode) {
+    log('')
+    log('CONFIRMED: wc-mode was present immediately after toggle, but is GONE 1.5s later. Something in that window resets it -- likely renderWCSection()\'s own async chain, not the toggle or the visibilitychange guard.')
+  } else {
+    log('')
+    log('wc-mode persisted through the wait -- the original stalled probe\'s failure was not this specific reset. Real cause remains elsewhere.')
+  }
+
   log('')
   log('=== console errors captured ===')
   log('count: ' + consoleErrors.length)
