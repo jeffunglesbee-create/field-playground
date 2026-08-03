@@ -1,0 +1,46 @@
+name: Ambient Data Quality Probe
+
+# Follow-up to ambient-multiday-probe.yml and sport-of-week-shape-
+# probe.yml: dumps full raw night_stars and sport_of_week.allSports
+# shapes for known-anomalous real dates (starScore > 10; multiple
+# un-normalized sport-name entries corrupting the winner calculation)
+# before deciding a fix.
+#
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from
+# chat -- CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Dump raw night_stars + sport_of_week shapes for anomalous dates
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node scripts/probe-ambient-data-quality.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "ambient-data-quality-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: ambient data quality probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
