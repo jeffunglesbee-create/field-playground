@@ -1,0 +1,13 @@
+probe_at: 2026-08-03T19:12:01.355Z
+purpose: are BSD expected_goals/ball_possession valid, not just resolving?
+
+real event IDs collected: 0 (0 finished), sampling: 0
+
+
+=== RESULT ===
+events checked: 0  entries with a real non-null expected_goals: 0
+NONE -- every expected_goals/ball_possession checked was valid, and home+away possession summed to ~100 whenever both were present.
+
+=== VERDICT ===
+INCONCLUSIVE: zero real non-null expected_goals values in this sample -- cannot confirm the numeric bound,
+only that ball_possession (where present) and the null-handling itself are consistent. Report honestly, not as a pass.
