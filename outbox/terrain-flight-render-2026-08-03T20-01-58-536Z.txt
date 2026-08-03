@@ -1,0 +1,17 @@
+probe_at: 2026-08-03T20:01:58.536Z
+direct real fetch: 50 real games returned
+direct real fetch: 50 with a parseable drama_arc, 50 with length >= 10
+purpose: does Terrain Flight actually render real 3D terrain from real esm.sh + real archived data?
+
+app loaded: http://127.0.0.1:4173
+clicked Lab tab
+honest error state shown: true
+exact error text: "No real archived game with a usable drama_arc in the current sample."
+canvas elements present: 0
+
+page errors: []
+console errors: []
+
+=== VERDICT ===
+REAL ERROR STATE, not a crash -- but the actual 3D render was NOT confirmed this run.
+Report the exact error text honestly, do not treat this as a pass.
