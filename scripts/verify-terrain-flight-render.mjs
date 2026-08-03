@@ -19,7 +19,7 @@ const outPath = 'outbox/terrain-flight-render-' + stamp + '.txt'
 const out = []
 const log = s => { out.push(s); console.log(s); try { writeFileSync(outPath, out.join('\n')) } catch {} }
 
-const BASE_URL = process.env.PREVIEW_URL || 'http://localhost:4173'
+const BASE_URL = process.env.PREVIEW_URL || 'http://127.0.0.1:4173'
 
 async function main() {
   log('probe_at: ' + new Date().toISOString())

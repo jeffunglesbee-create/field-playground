@@ -30,24 +30,33 @@ jobs:
         timeout-minutes: 4
         continue-on-error: true
         env:
-          PREVIEW_URL: http://localhost:4173
+          PREVIEW_URL: http://127.0.0.1:4173
         run: |
-          # Backgrounding a server in one CI step and testing it in a
-          # separate step doesn't reliably survive the step boundary in
-          # GitHub Actions (the process can be reaped when the step's
-          # own shell exits) -- confirmed the hard way: the first
-          # version of this workflow split serve/verify into two steps
-          # and every run timed out on page.goto with nothing listening
-          # on the port. Serve and verify in the SAME step instead,
-          # matching the exact nohup+disown pattern already used
-          # throughout this session's local verification runs.
-          nohup npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
+          # Round 1: split serve/verify into two steps -- every run
+          # timed out with nothing listening (step boundary didn't
+          # preserve the backgrounded process). Round 2: combined into
+          # one step with nohup+disown -- STILL timed out, same
+          # symptom, so that wasn't the only real cause. Two real
+          # fixes this round, not another guess: (1) `localhost` can
+          # resolve to ::1 on some CI runners while vite preview binds
+          # an IPv4-only 127.0.0.1 by default -- a known real Node/CI
+          # mismatch -- so both the curl wait and PREVIEW_URL now use
+          # 127.0.0.1 explicitly everywhere, removing the ambiguity
+          # rather than hoping resolution lines up. (2) preview.log
+          # was only ever `cat` to ephemeral CI console output this
+          # script can't see after the fact -- committed to outbox/
+          # now so a THIRD failure is diagnosable instead of another
+          # blind guess.
+          mkdir -p outbox
+          nohup npx vite preview --port 4173 --strictPort --host 127.0.0.1 > outbox/terrain-flight-preview.log 2>&1 &
           disown
+          ok=0
           for i in $(seq 1 30); do
-            curl -sf http://localhost:4173 > /dev/null && break
+            if curl -sf http://127.0.0.1:4173 > /dev/null; then ok=1; break; fi
             sleep 1
           done
-          cat preview.log
+          echo "server_ready=$ok" >> outbox/terrain-flight-preview.log
+          cat outbox/terrain-flight-preview.log
           node scripts/verify-terrain-flight-render.mjs
 
       - name: Commit probe result + screenshot
