@@ -64,6 +64,10 @@ async function main() {
   const bodyText = await page.locator('body').innerText()
   const hadError = /unable to load the real 3d renderer|no real archived game/i.test(bodyText)
   log('honest error state shown: ' + hadError)
+  if (hadError) {
+    const errLine = bodyText.split('\n').find(l => /unable to load|no real archived game/i.test(l))
+    log('exact error text: ' + JSON.stringify(errLine))
+  }
 
   const canvasCount = await page.locator('canvas').count()
   log('canvas elements present: ' + canvasCount)
