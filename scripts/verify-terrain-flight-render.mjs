@@ -34,7 +34,17 @@ async function main() {
   page.on('pageerror', e => pageErrors.push(String(e.message)))
   page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()) })
 
-  await page.goto(BASE_URL, { waitUntil: 'networkidle', timeout: 30000 })
+  // 'networkidle' is the wrong wait condition for this specific real
+  // app -- confirmed the hard way: the preview server itself was
+  // reachable the whole time (server_ready=1, outbox/terrain-flight-
+  // preview-output.txt), and page.goto still timed out. This app
+  // polls continuously by real design (HealthPanel, ScoreTicker,
+  // AmbientWeek's own 10 sequential real day fetches, ...), so true
+  // network silence structurally never happens. 'domcontentloaded' is
+  // enough here -- the actual meaningful wait condition is the
+  // explicit waitForFunction below, which checks for Terrain Flight's
+  // own real state, not "nothing on the page is fetching."
+  await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 })
   log('app loaded: ' + BASE_URL)
 
   const labTab = page.getByText('Lab', { exact: false }).first()
