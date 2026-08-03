@@ -21,8 +21,35 @@ const log = s => { out.push(s); console.log(s); try { writeFileSync(outPath, out
 
 const BASE_URL = process.env.PREVIEW_URL || 'http://127.0.0.1:4173'
 
+async function checkRealDataDirectly() {
+  // Independent of the browser/app entirely -- the render probe found
+  // "no real archived game with a usable drama_arc," which could be a
+  // real, temporary data gap OR a real code bug (buildTerrainMesh/
+  // analyzeGameArc). Fetching the exact same real endpoint directly
+  // tells the difference instead of guessing at the React internals.
+  try {
+    const res = await fetch('https://field-relay-nba.jeffunglesbee.workers.dev/archive/drama/leaderboard?sport=MLB&limit=50')
+    if (!res.ok) { log('direct real fetch failed: HTTP ' + res.status); return }
+    const data = await res.json()
+    const games = data?.games ?? []
+    log('direct real fetch: ' + games.length + ' real games returned')
+    let parseable = 0, usable = 0
+    for (const g of games) {
+      let arc
+      try { arc = JSON.parse(g.drama_arc) } catch { continue }
+      if (!Array.isArray(arc)) continue
+      parseable++
+      if (arc.length >= 10) usable++
+    }
+    log('direct real fetch: ' + parseable + ' with a parseable drama_arc, ' + usable + ' with length >= 10')
+  } catch (e) {
+    log('direct real fetch threw: ' + String(e))
+  }
+}
+
 async function main() {
   log('probe_at: ' + new Date().toISOString())
+  await checkRealDataDirectly()
   log('purpose: does Terrain Flight actually render real 3D terrain from real esm.sh + real archived data?')
   log('')
 
