@@ -56,7 +56,7 @@ export function AmbientWeek() {
           <p class={styles.summary}>
             {okDays().length}/{days().length} real days resolved
             <Show when={best()}>
-              {' '}· best night: {best().date} ({best().data.night_stars.starScore.toFixed(1)}/10)
+              {' '}· best night: {best().date} (drama intensity {best().data.night_stars.starScore.toFixed(1)})
             </Show>
           </p>
           <ul class={styles.rows}>
@@ -66,8 +66,8 @@ export function AmbientWeek() {
                   <span class={styles.date}>{d.date}</span>
                   <Show when={d.ok} fallback={<span class={styles.unavailable}>unavailable</span>}>
                     <Show when={d.data.night_stars} fallback={<span class={styles.noStars}>no rating</span>}>
-                      <span class={styles.stars} title={`${d.data.night_stars.starScore}/10`}>
-                        {'★'.repeat(d.data.night_stars.stars)}{'☆'.repeat(Math.max(0, 5 - d.data.night_stars.stars))}
+                      <span class={styles.stars} title={`drama intensity ${d.data.night_stars.starScore}`}>
+                        {'★'.repeat(Math.min(5, d.data.night_stars.stars))}{'☆'.repeat(Math.max(0, 5 - d.data.night_stars.stars))}
                       </span>
                     </Show>
                     <span class={styles.claim}>{d.data.truth_is?.headline ?? '—'}</span>

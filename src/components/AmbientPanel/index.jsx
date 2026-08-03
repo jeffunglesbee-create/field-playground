@@ -2,6 +2,7 @@ import { Show, For, createMemo, createSignal, createEffect } from 'solid-js'
 import { createStore, produce } from 'solid-js/store'
 import { ambientData, deskStore } from '../../data/relay'
 import { outcomes, setOutcome, clearOutcome, annotations, setAnnotation } from '../../data/outcomes'
+import { recomputeSportOfWeek } from '../../data/sportOfWeek'
 import { picks, NON_MATCHUP_SPORTS } from '../PickEm'
 import { setHighlightedGameId } from '../DeskCard'
 import { useTimeOfDay } from '../../data/timeOfDay'
@@ -221,16 +222,24 @@ function StreakBoard(props) {
 // confirmed via a direct probe 2026-08-03 (outbox/sport-of-week-shape-
 // probe-2026-08-03T18-07-46-260Z.txt) after a multi-day sample check
 // found this rendering as the literal text "[object Object]" on real
-// dates including that same day. `summary` is the real, ready-made
-// human-readable one-liner ("MLB (141/171 high-quality) edged WNBA
-// (19/19)."); `null` on quiet days is a real, already-correctly-handled
-// case via <Show when={props.sport}>, not part of this bug.
+// dates including that same day. `null` on quiet days is a real,
+// already-correctly-handled case via <Show when={props.sport}>, not
+// part of this bug.
+//
+// A SECOND real bug found in the same investigation: the backend's own
+// `summary`/`winner`/`dramaTotal` are computed from allSports entries
+// split across multiple un-normalized casings for the same sport
+// ("MLB"/"mlb"/"Baseball (MLB)"), undercounting real totals. Routed
+// through recomputeSportOfWeek (src/data/sportOfWeek.js) to show the
+// real, correctly-combined numbers instead of trusting the backend's
+// pre-aggregated (buggy) fields.
 function SportOfWeekBanner(props) {
+  const corrected = () => recomputeSportOfWeek(props.sport)
   return (
-    <Show when={props.sport?.summary}>
+    <Show when={corrected()?.summary}>
       <div class={styles.sportOfWeek}>
         <span class={styles.sportOfWeekLabel}>Sport of the Week</span>
-        <span class={styles.sportOfWeekValue}>{props.sport.summary}</span>
+        <span class={styles.sportOfWeekValue}>{corrected().summary}</span>
       </div>
     </Show>
   )
@@ -272,6 +281,19 @@ function TensionCard(props) {
 // a real slate-quality rating (dramaGames/closeGames/walkoffs behind a
 // 0-5 star score), a different signal from qualitySharpness above, which
 // measures editorial PROSE quality, not the GAMES' quality.
+//
+// starScore is NOT actually bounded to 10 despite the "/10" this used to
+// claim -- confirmed 2026-08-03 (outbox/ambient-data-quality-probe-
+// 2026-08-03T18-34-38-052Z.txt) by reverse-engineering the real formula
+// from 4 real samples, all matching exactly: starScore = dramaGames +
+// closeGames * 0.5, with no cap. A big slate with several close games
+// pushes it past 10 (17, 12, 10.5 all seen on real dates). Rather than
+// clamp the real number (losing real information about how dramatic a
+// night was) or keep a false "/10" claim, this drops the denominator and
+// labels it for what it is. `stars` (the 1-5 field behind the ★ icons)
+// is separately real and was 5 in every sample checked, but not proven
+// bounded beyond that sample -- Math.min guards the render defensively
+// either way, same posture as DeskCard's own input clamp.
 function SlateVerdict(props) {
   const p = () => props.pick
   const stars = () => props.nightStars
@@ -285,11 +307,11 @@ function SlateVerdict(props) {
           <div class={styles.verdictStars}>
             <span
               class={styles.starRating}
-              title={`${stars().starScore} / 10`}
+              title={`drama intensity ${stars().starScore}`}
               role="img"
-              aria-label={`${stars().stars} out of 5 stars with a score of ${stars().starScore} / 10`}
+              aria-label={`${Math.min(5, stars().stars)} out of 5 stars, drama intensity ${stars().starScore}`}
             >
-              {'★'.repeat(stars().stars)}{'☆'.repeat(Math.max(0, 5 - stars().stars))}
+              {'★'.repeat(Math.min(5, stars().stars))}{'☆'.repeat(Math.max(0, 5 - stars().stars))}
             </span>
             <span class={styles.starDetail}>
               {stars().dramaGames} drama · {stars().closeGames} close · {stars().walkoffs} walkoff{stars().walkoffs === 1 ? '' : 's'}
