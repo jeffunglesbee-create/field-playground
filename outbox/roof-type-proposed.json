@@ -525,7 +525,7 @@
     "name": "Etihad Stadium",
     "currentRoofType": "open",
     "wikipediaRoofType": "open",
-    "leadSentence": "The City of Manchester Stadium, currently known as Etihad Stadium for sponsorship reasons, is the home of Premier League club Manchester City, with a domestic football capacity of 61,038, making it the 6th-largest football stadium in England and 8th-largest stadium in the United Kingdom.",
+    "leadSentence": "The Etihad Stadium is the home of Premier League club Manchester City, with a domestic football capacity of 61,038, making it the 6th-largest football stadium in England and 8th-largest stadium in the United Kingdom.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -605,11 +605,11 @@
   {
     "name": "MKM Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The MKM Stadium is a multi-purpose stadium in Kingston upon Hull, England.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "The Den",
@@ -704,20 +704,20 @@
   {
     "name": "Foro Italico",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Foro Italico is a sports complex in Rome, Italy, on the slopes of Monte Mario.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Rajiv Gandhi International Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Rajiv Gandhi International Cricket Stadium, commonly known as Uppal Stadium, is an international cricket stadium in Hyderabad, Telangana, India.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Sawai Mansingh Stadium",
@@ -812,11 +812,11 @@
   {
     "name": "TPC Scottsdale",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "TPC Scottsdale is a 36-hole golf complex in the southwestern United States, located in Scottsdale, Arizona, northeast of Phoenix.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Muirfield Village Golf Club",

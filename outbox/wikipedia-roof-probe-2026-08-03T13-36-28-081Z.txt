@@ -1,0 +1,114 @@
+probe_at: 2026-08-03T13:36:28.082Z
+venues: 98  (source: src/data/weather.js, parsed live)
+method: en.wikipedia REST summary -> FIRST SENTENCE ONLY -> classify
+
+ok    Fenway Park  -> open
+ok    Yankee Stadium  -> open
+ok    Coors Field  -> open
+ok    Wrigley Field  -> open
+ok    Oracle Park  -> open
+ok    Dodger Stadium  -> open
+ok    Busch Stadium  -> open
+ok    Nationals Park  -> open
+ok    Citizens Bank Park  -> open
+ok    Great American Ball Park  -> open
+ok    Kauffman Stadium  -> open
+ok    Comerica Park  -> open
+ok    Petco Park  -> open
+ok    Oriole Park  -> open
+ok    Guaranteed Rate Field  -> open
+ok    Rate Field  -> open
+ok    Angels Stadium  -> open   [matched via "Angel Stadium" -- OUR TABLE'S NAME IS WRONG -- coords verified, delta 0.0001]
+ok    Angel Stadium  -> open
+ok    Progressive Field  -> open
+ok    PNC Park  -> open
+ok    Citi Field  -> open
+ok    Sutter Health Park  -> open
+ok    Globe Life Field  -> retractable
+ok    Chase Field  -> retractable
+ok    American Family Field  -> retractable
+ok    Minute Maid Park  -> retractable
+ok    Daikin Park  -> retractable
+ok    T-Mobile Park  -> retractable
+ok    Rogers Centre  -> retractable
+ok    Tropicana Field  -> dome
+ok    Gillette Stadium  -> open
+MISS  Red Bull Arena  (disambiguation)  [truth open]
+ok    CityPark  -> open
+ok    America First Field  -> open
+ok    Snapdragon Stadium  -> open
+ok    Stade Saputo  -> open
+ok    BMO Field  -> open
+ok    Chase Stadium  -> open
+ok    Subaru Park  -> open
+ok    Bank of America Stadium  -> open
+ok    Audi Field  -> open
+ok    Lower.com Field  -> open
+ok    TQL Stadium  -> open
+ok    Inter&Co Stadium  -> open
+MISS  GEODIS Park  (no title variant resolved)  [truth open]
+ok    Soldier Field  -> open
+ok    Allianz Field  -> open
+ok    BMO Stadium  -> open
+ok    Dignity Health Sports Park  -> open
+ok    Lumen Field  -> open
+ok    Providence Park  -> open
+ok    PayPal Park  -> open
+ok    Q2 Stadium  -> open
+ok    Shell Energy Stadium  -> open
+MISS  Toyota Stadium  (disambiguation)  [truth open]
+ok    Mercedes-Benz Stadium  -> retractable
+WRONG BC Place  -> predicted open, truth retractable
+        "BC Place is a multi-purpose stadium in Vancouver, British Columbia, Canada."
+ok    Anfield  -> open
+ok    Etihad Stadium  -> open
+ok    Craven Cottage  -> open
+ok    Amex Stadium  -> open
+ok    Stadium of Light  -> open
+ok    Villa Park  -> open
+ok    Turf Moor  -> open
+ok    Selhurst Park  -> open
+ok    City Ground  -> open
+ok    Riverside Stadium  -> open
+MISS  MKM Stadium  (no title variant resolved)  [truth open]
+ok    The Den  -> open
+ok    London Stadium  -> open
+ok    Allianz Arena  -> open
+ok    Europa-Park Stadion  -> open
+ok    Stade de la Meinau  -> open
+ok    MCG  -> open
+ok    ENGIE Stadium  -> open
+ok    TIO Stadium  -> open
+ok    People First Stadium  -> open
+WRONG Marvel Stadium  -> predicted open, truth retractable
+        "Docklands Stadium is a stadium located in the Melbourne suburb of Docklands."
+MISS  Foro Italico  (no title variant resolved)  [truth open]
+MISS  Rajiv Gandhi International Stadium  (no title variant resolved)  [truth open]
+ok    Sawai Mansingh Stadium  -> open
+ok    Quail Hollow Club  -> open
+ok    Aronimink Golf Club  -> open
+ok    Augusta National Golf Club  -> open
+ok    Pinehurst No. 2  -> open
+ok    Pebble Beach Golf Links  -> open
+ok    TPC Sawgrass  -> open
+ok    Riviera Country Club  -> open
+ok    Torrey Pines South Course  -> open
+ok    Harbour Town Golf Links  -> open
+MISS  TPC Scottsdale  (no title variant resolved)  [truth open]
+ok    Muirfield Village Golf Club  -> open
+ok    East Lake Golf Club  -> open
+MISS  St Andrews Links Old Course  (no title variant resolved)  [truth open]
+ok    Royal Troon Golf Club  -> open
+MISS  Dunes Golf and Beach Club  (no title variant resolved)  [truth open]
+MISS  Colonial Country Club  (disambiguation)  [truth open]
+ok    TPC Twin Cities  -> open
+
+RESULT  correct 86/98   wrong 2   miss 10
+
+--- every disagreement, in full (this is the useful part) ---
+BC Place: predicted open, table says retractable
+   "BC Place is a multi-purpose stadium in Vancouver, British Columbia, Canada."
+Marvel Stadium: predicted open, table says retractable
+   "Docklands Stadium is a stadium located in the Melbourne suburb of Docklands."
+
+outbox/roof-type-proposed.json: 98 rows, 2 disagreements, 2 known-unfixable -- for human review, weather.js NOT modified
