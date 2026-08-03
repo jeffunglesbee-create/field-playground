@@ -156,21 +156,40 @@ physical hardware no CI environment has.
 
 ---
 
+## Addendum: real iOS device confirmation (user-tested, 2026-08-03)
+
+The user tested Terrain Flight directly on a real iPhone. Confirmed:
+the render + flythrough loaded and ran, and tilt worked end to end —
+the real iOS Safari motion-permission prompt appeared on tapping
+"Enable tilt controls," was granted, and physically tilting the device
+actually steered the camera. This is the exact gap CI-as-proxy
+disclosed it could never close (no physical device, and Chromium
+doesn't implement `DeviceOrientationEvent.requestPermission()` at
+all) — now closed by the only evidence that actually could close it.
+
+Audio was not part of this device test, so it remains at its prior
+tier: CI-confirmed as a real, correctly-wired `AudioContext` +
+HRTF `PannerNode` with live position updates, but not yet confirmed as
+audible sound on real hardware.
+
+---
+
 ## Confidence gate
 
-**98/100 — commit stands.**
+**99/100 — commit stands.**
 
 Full render pipeline (CDN load → WebGL2 render → real archived data →
 audio wiring → landmark logic → disposal-on-cleanup) is directly,
 visually confirmed via a real screenshot and a real matchup line, with
 the one real bug found while building (the `onMount` race) fixed at
-its root cause and reconfirmed deterministic. Tilt and audio, the two
-gaps in the original 95/100 score, are now also confirmed live and
-correctly wired via real (not mocked) browser APIs, closing everything
-CI-as-proxy can reach. The remaining 2 points are the genuine, disclosed,
-permanent ceiling of a headless CI runner — real accelerometer input,
-the iOS permission-prompt flow, and audible sound — not a defect, and
-not closeable by any amount of further CI work on this runner.
+its root cause and reconfirmed deterministic. Tilt is now confirmed at
+the highest possible tier: a real user, on a real iPhone, granting the
+real iOS permission prompt and physically steering the camera by
+tilting the device — closing the one gap CI structurally could never
+reach. The remaining 1 point is real audible sound on physical
+speakers, still open — everything short of actually hearing it (real
+`AudioContext`, real HRTF `PannerNode`, live per-frame position
+updates) is CI-confirmed, but no one has listened yet.
 
 ---
 
