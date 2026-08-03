@@ -140,10 +140,20 @@ async function main() {
     log('WebGL canvas pixel readback (2D grid sample): ' + JSON.stringify(pixelVariance))
 
     const fullBodyText = await page.locator('body').innerText()
-    matchupFound = / @ /.test(fullBodyText) && fullBodyText.includes('Terrain Flight')
+    const atSignFound = / @ /.test(fullBodyText)
+    const titleFound = fullBodyText.includes('Terrain Flight')
+    matchupFound = atSignFound && titleFound
     indexFound = /index \d+\/\d+/.test(fullBodyText)
-    log('real matchup text (" @ ") found: ' + matchupFound)
+    log('real matchup text (" @ ") found: ' + matchupFound + ' (atSign=' + atSignFound + ' title=' + titleFound + ')')
     log('real "index N/M" text found: ' + indexFound)
+    // Diagnostic for a real, unexplained mismatch seen 2026-08-03:
+    // indexFound true (same <p> as the matchup text) but matchupFound
+    // false. Log the actual matchup-line text directly instead of
+    // guessing at why the regex didn't match.
+    if (indexFound && !matchupFound) {
+      const idxLine = fullBodyText.split('\n').find(l => /index \d+\/\d+/.test(l))
+      log('DIAGNOSTIC matchup-line raw text: ' + JSON.stringify(idxLine))
+    }
   }
 
   log('')
