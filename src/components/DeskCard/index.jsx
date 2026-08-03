@@ -4,6 +4,7 @@ import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, re
 import { picks, NON_MATCHUP_SPORTS } from '../PickEm'
 import { clearAllOutcomes } from '../../data/outcomes'
 import { showToast } from '../Toast'
+import { safeResource } from '../../data/safeResource'
 import styles from './DeskCard.module.css'
 import shared from '../shared.module.css'
 
@@ -714,8 +715,15 @@ function GameRow(props) {
 }
 
 function EmptyNight() {
-  const truthIs = () => ambientData()?.truth_is
-  const contradiction = () => ambientData()?.contradiction
+  // FOUND 2026-08-03 by scripts/check-resource-safety.mjs's own second
+  // check: ambientData was called directly here with no .error guard
+  // anywhere in this file -- a genuine resource error would throw here
+  // instead of falling through to the "quiet night" default below,
+  // taking down DeskCard's whole SafeSection (all today's games, on an
+  // otherwise-ordinary error) rather than just this one editorial line.
+  const safeAmbientData = safeResource(ambientData)
+  const truthIs = () => safeAmbientData()?.truth_is
+  const contradiction = () => safeAmbientData()?.contradiction
   return (
     <div class={styles.emptyNight}>
       <p class={styles.emptyNightHeadline}>No games today.</p>

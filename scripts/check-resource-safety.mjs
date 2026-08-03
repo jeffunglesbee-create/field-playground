@@ -14,20 +14,34 @@
 // hardcoded -- stays correct as relay.js grows) and is NOT wrapped in
 // `safeResource(...)` or a function.
 //
-// WHAT THIS DOES NOT CATCH, stated honestly rather than silently:
-//   - The other real manifestation of the same bug (a bare resource
-//     accessor called directly in JSX, e.g. `<Show when={resource()}>`,
-//     without a preceding `.error` check) -- reliably distinguishing a
-//     safe render-prop call (`d()` inside `{d => ...}`) from an unsafe
-//     direct resource call needs real scope tracking, not a regex.
-//     Caught by code review / artifact-check.yml's real render test
-//     instead.
+// SECOND CHECK, added 2026-08-02 (same file, same run): a heuristic
+// guard for the OTHER real manifestation -- a resource called directly
+// in JSX/a memo (e.g. `<Show when={resource()}>`) with no error
+// handling anywhere in the file at all. True control-flow analysis
+// (does THIS specific call site only execute when `.error` is falsy?)
+// needs a real AST and scope tracking, which this deliberately does not
+// attempt -- every instance of this bug actually found this session
+// looked like "never checked `.error` for this resource anywhere in the
+// file," not "checked it in the wrong place." A file-wide co-occurrence
+// check (resource called as a function AND `.error` never referenced
+// for it anywhere, AND never routed through `safeResource(...)`) covers
+// that real shape with a much lower false-positive rate than trying to
+// be precise, at the honest cost of being unable to catch a resource
+// whose `.error` IS checked somewhere in the file but doesn't actually
+// gate every unsafe call site.
+//
+// WHAT NEITHER CHECK CATCHES, stated honestly rather than silently:
+//   - A resource whose `.error` is checked somewhere in the file but
+//     doesn't actually gate every direct call site (needs real
+//     control-flow analysis).
 //   - Resources imported under a renamed local binding (`import {
 //     ambientData as ad }`) -- not seen in this codebase today, but a
 //     real blind spot if introduced.
 //   - Single-argument `createResource(fetcher)` calls, which don't have
-//     a separate source-read step at all and so can't exhibit this
-//     specific risk.
+//     a separate source-read step at all and so can't exhibit the
+//     first check's specific risk.
+//   - Anything outside `src/components/*/index.jsx` (helper modules
+//     under a component's own directory, `src/data/*.js` consumers).
 
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -88,33 +102,73 @@ function checkFile(filePath, resourceNames) {
   return violations
 }
 
+// Second check: does this file call `resourceName(` anywhere, while
+// never referencing `resourceName.error` and never routing the call
+// through `safeResource(resourceName, ...)`?
+function checkUnguardedDirectCalls(filePath, resourceNames) {
+  const src = readFileSync(filePath, 'utf-8')
+  const violations = []
+  for (const name of resourceNames) {
+    const calledRe = new RegExp(`\\b${name}\\s*\\(`)
+    if (!calledRe.test(src)) continue // never called as a function at all -- nothing to guard
+
+    const errorCheckRe = new RegExp(`\\b${name}\\.error\\b`)
+    const wrappedRe = new RegExp(`safeResource\\(\\s*${name}\\b`)
+    if (errorCheckRe.test(src) || wrappedRe.test(src)) continue // guarded somewhere
+
+    violations.push({ resource: name })
+  }
+  return violations
+}
+
 function main() {
   const relaySource = readFileSync(RELAY_PATH, 'utf-8')
   const resourceNames = findResourceNames(relaySource)
   console.log(`Real createResource accessors found in relay.js: ${[...resourceNames].join(', ')}`)
   console.log('')
 
-  const allViolations = []
+  const sourceViolations = []
+  const directCallViolations = []
   for (const dir of readdirSync(COMPONENTS_DIR, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue
+    const relPath = `src/components/${dir.name}/index.jsx`
     const indexPath = join(COMPONENTS_DIR, dir.name, 'index.jsx')
+    let src
     try {
-      const violations = checkFile(indexPath, resourceNames)
-      for (const v of violations) allViolations.push({ file: `src/components/${dir.name}/index.jsx`, ...v })
+      src = readFileSync(indexPath, 'utf-8')
     } catch (e) {
-      if (e.code !== 'ENOENT') throw e
+      if (e.code === 'ENOENT') continue
+      throw e
     }
+
+    for (const v of checkFile(indexPath, resourceNames)) sourceViolations.push({ file: relPath, ...v })
+    for (const v of checkUnguardedDirectCalls(indexPath, resourceNames)) directCallViolations.push({ file: relPath, ...v })
   }
 
-  if (allViolations.length) {
-    console.error('VIOLATIONS FOUND -- a real resource accessor is passed directly as a createResource source:')
-    for (const v of allViolations) {
+  let failed = false
+
+  if (sourceViolations.length) {
+    failed = true
+    console.error('VIOLATIONS (createResource source parameter) -- a real resource accessor is passed directly as a createResource source:')
+    for (const v of sourceViolations) {
       console.error(`  ${v.file}:${v.line} -- createResource(${v.resource}, ...) -- wrap with safeResource(${v.resource}, fallback) from src/data/safeResource.js`)
     }
-    process.exit(1)
+  } else {
+    console.log('Check 1 clean: no bare resource accessor found as a createResource source.')
   }
 
-  console.log('Clean: no bare resource accessor found as a createResource source.')
+  if (directCallViolations.length) {
+    failed = true
+    console.error('')
+    console.error('VIOLATIONS (unguarded direct call) -- a real resource is called as a function but its .error is never checked anywhere in the file, and it is never routed through safeResource(...):')
+    for (const v of directCallViolations) {
+      console.error(`  ${v.file} -- calls ${v.resource}() somewhere with no .error handling anywhere in the file -- guard with safeResource(${v.resource}, fallback) or an inline (${v.resource}.error ? fallback : ${v.resource}()) check`)
+    }
+  } else {
+    console.log('Check 2 clean: every directly-called resource has .error handling somewhere in its file.')
+  }
+
+  if (failed) process.exit(1)
 }
 
 main()
