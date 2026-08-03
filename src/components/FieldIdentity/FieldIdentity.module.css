@@ -1,0 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+.root {
+  --field-void: #0a0e12;
+  --field-void-panel: #10151b;
+  --field-signal: #e8ecef;
+  --field-signal-dim: #8b98a3;
+  --field-hairline: #1c242c;
+
+  --tier-cold: #3a4551;
+  --tier-warm: #c9a227;
+  --tier-hot: #e0692e;
+  --tier-fire: #e23838;
+
+  background: var(--field-void);
+  color: var(--field-signal);
+  padding: 20px 18px;
+  border-radius: 6px;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+/* ── Masthead ─────────────────────────────────────────── */
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--field-hairline);
+  flex-wrap: wrap;
+}
+
+.wordmark {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.02em;
+  color: var(--field-signal);
+}
+
+.tagline {
+  font-size: 11px;
+  color: var(--field-signal-dim);
+  letter-spacing: 0.01em;
+}
+
+/* ── Panels ───────────────────────────────────────────── */
+
+.panel {
+  background: var(--field-void-panel);
+  border: 1px solid var(--field-hairline);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.panelLabel {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--field-signal-dim);
+  margin-bottom: 12px;
+}
+
+/* ── Signature: bracketed condition tags ─────────────────
+   The one place this design spends real boldness. Monospace,
+   all-caps, a tier-colored glow standing in for the raw score
+   this constraint deliberately never shows for a live game. */
+
+.conditionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.conditionTag {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tagText {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+}
+
+.tagNote {
+  font-size: 11px;
+  color: var(--field-signal-dim);
+}
+
+.conditionTag.cold .tagText { color: var(--tier-cold); }
+.conditionTag.warm .tagText { color: var(--tier-warm); box-shadow: 0 0 10px -2px var(--tier-warm); }
+.conditionTag.hot .tagText { color: var(--tier-hot); box-shadow: 0 0 12px -2px var(--tier-hot); }
+.conditionTag.fire .tagText { color: var(--tier-fire); box-shadow: 0 0 14px -1px var(--tier-fire); }
+
+/* ── Heat spectrum ────────────────────────────────────── */
+
+.spectrumRow {
+  display: flex;
+  gap: 4px;
+}
+
+.spectrumBlock {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  color: var(--field-void);
+}
+
+.spectrumBlock.cold { background: var(--tier-cold); color: var(--field-signal); }
+.spectrumBlock.warm { background: var(--tier-warm); }
+.spectrumBlock.hot { background: var(--tier-hot); }
+.spectrumBlock.fire { background: var(--tier-fire); }
+
+/* ── Type sample ──────────────────────────────────────── */
+
+.typeSample {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.displaySample {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.01em;
+}
+
+.bodySample {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--field-signal-dim);
+  line-height: 1.5;
+}
+
+.dataSample {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: var(--field-signal);
+}
+
+/* ── Arbitrage table ──────────────────────────────────── */
+
+.arbTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.arbRow {
+  border-bottom: 1px solid var(--field-hairline);
+}
+
+.arbRow:last-child {
+  border-bottom: none;
+}
+
+.arbService {
+  padding: 8px 4px;
+  font-size: 12px;
+}
+
+.arbCost {
+  padding: 8px 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.arbIncludes {
+  padding: 8px 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-align: right;
+  width: 90px;
+}
+
+.arbIncludes.yes { color: var(--tier-warm); }
+.arbIncludes.no { color: var(--field-signal-dim); }
+
+/* ── Reduced motion / accessibility floor ────────────────
+   No motion used in this identity test, so nothing to gate here
+   beyond confirming focus visibility isn't removed anywhere above. */
