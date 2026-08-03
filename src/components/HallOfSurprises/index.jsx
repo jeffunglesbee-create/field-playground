@@ -16,12 +16,21 @@ import styles from './HallOfSurprises.module.css'
 //
 // HONEST SCOPING, checked before building rather than assumed: a
 // mirror-image "hot early, fizzled by the end" direction was checked
-// against a real, current 30-game sample (outbox/hall-of-surprises-
-// fizzle-check-2026-08-03T03-28-11-480Z.txt, 2026-08-03) and NOT found
-// -- zero real instances in that sample. Not shipped as a ranking
-// direction here; this only surfaces the one direction with real,
-// confirmed instances.
+// against a real, current 30-game sample (2026-08-03) and NOT found
+// at first. That negative result held for two real, since-corrected
+// reasons, not a genuine absence: (1) the underlying drama_arc data
+// had a real computation bug (situational fields read from a
+// nonexistent nested path, confirmed and fixed 2026-08-03) that made
+// most of a game's arc collapse to a single flat value, and (2) the
+// original check only sampled MLB's top 30 by drama_peak, which is
+// structurally biased against finding this shape (a game that peaked
+// early then cooled will almost always have a lower overall peak than
+// one that built to a late climax, so it's under-represented in any
+// peak-sorted cut). A corrected, multi-sport, wider-pool re-check
+// (probe-hall-of-surprises-fizzle-check-v2.mjs, same day) found 5 real
+// WNBA games matching the pattern. Both directions are now shown.
 const RESULT_LIMIT = 15
+const FIZZLE_LIMIT = 10
 const MEDALS = ['🥇', '🥈', '🥉']
 
 export function HallOfSurprises() {
@@ -36,6 +45,17 @@ export function HallOfSurprises() {
       .slice(0, RESULT_LIMIT)
   })
 
+  const fizzled = createMemo(() => {
+    const data = hallOfSurprisesCandidates.error ? undefined : hallOfSurprisesCandidates()
+    const games = data?.games ?? []
+    return games
+      .map(analyzeGameArc)
+      .filter(Boolean)
+      .filter(a => a.isFizzle)
+      .sort((a, b) => b.fizzleGap - a.fizzleGap)
+      .slice(0, FIZZLE_LIMIT)
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -44,8 +64,7 @@ export function HallOfSurprises() {
       </header>
       <p class={styles.note}>
         The biggest real gaps between a game's early read and where it actually ended up, ranked.
-        One direction only -- early doubt that turned into real drama. A "hot early, fizzled late"
-        reverse direction was checked against real data and not found; not shown here until it is.
+        Early doubt that turned into real drama below; games that peaked early then cooled off, above.
       </p>
 
       <Show when={hallOfSurprisesCandidates.error}>
@@ -54,6 +73,36 @@ export function HallOfSurprises() {
 
       <Show when={!hallOfSurprisesCandidates.error}>
         <Show when={hallOfSurprisesCandidates()} fallback={<p class={styles.loading}>Loading…</p>}>
+          <Show when={fizzled().length}>
+            <div class={styles.sectionLabel}>Peaked early, cooled off</div>
+            <ol class={styles.rows}>
+              <For each={fizzled()}>
+                {(r, i) => (
+                  <li class={styles.row}>
+                    <span class={styles.rank}>#{i() + 1}</span>
+                    <div class={styles.rowBody}>
+                      <div class={styles.rowMain}>
+                        <span class={styles.matchup}>{r.game.away} @ {r.game.home}</span>
+                        <span class={styles.score}>{r.game.away_score}–{r.game.home_score}</span>
+                      </div>
+                      <div class={styles.arcLine}>
+                        <span class={`${styles.tierBadge} ${styles[r.finalTier]}`}>
+                          {dramaLabel(r.finalPeak)} {r.finalTier} peak
+                        </span>
+                        <span class={styles.arrow}>→</span>
+                        <span class={`${styles.tierBadge} ${styles[r.lateTier]}`}>
+                          {dramaLabel(r.lateMax) || '○'} {r.lateTier} late
+                        </span>
+                        <span class={styles.gapNote}>−{r.fizzleGap} pts</span>
+                      </div>
+                    </div>
+                  </li>
+                )}
+              </For>
+            </ol>
+          </Show>
+
+          <div class={styles.sectionLabel}>Early doubt, real drama</div>
           <Show when={ranked().length} fallback={<p class={styles.empty}>No surprises in today's sample.</p>}>
             <ol class={styles.rows}>
               <For each={ranked()}>
