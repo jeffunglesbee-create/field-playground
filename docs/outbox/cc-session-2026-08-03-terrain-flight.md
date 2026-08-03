@@ -167,29 +167,30 @@ disclosed it could never close (no physical device, and Chromium
 doesn't implement `DeviceOrientationEvent.requestPermission()` at
 all) — now closed by the only evidence that actually could close it.
 
-Audio was not part of this device test, so it remains at its prior
-tier: CI-confirmed as a real, correctly-wired `AudioContext` +
-HRTF `PannerNode` with live position updates, but not yet confirmed as
-audible sound on real hardware.
+Follow-up: the user also confirmed audio audible on the same real
+device — the synthesized gesture cues (peak/flip/fizzle) actually
+played through real speakers. That was the one remaining tier CI could
+never reach (a real `AudioContext` graph proves nothing about whether
+sound actually comes out); now closed the same way tilt was, by direct
+real-hardware confirmation.
 
 ---
 
 ## Confidence gate
 
-**99/100 — commit stands.**
+**100/100 — commit stands.**
 
 Full render pipeline (CDN load → WebGL2 render → real archived data →
 audio wiring → landmark logic → disposal-on-cleanup) is directly,
 visually confirmed via a real screenshot and a real matchup line, with
 the one real bug found while building (the `onMount` race) fixed at
-its root cause and reconfirmed deterministic. Tilt is now confirmed at
-the highest possible tier: a real user, on a real iPhone, granting the
-real iOS permission prompt and physically steering the camera by
-tilting the device — closing the one gap CI structurally could never
-reach. The remaining 1 point is real audible sound on physical
-speakers, still open — everything short of actually hearing it (real
-`AudioContext`, real HRTF `PannerNode`, live per-frame position
-updates) is CI-confirmed, but no one has listened yet.
+its root cause and reconfirmed deterministic. Tilt and audio are now
+both confirmed at the highest possible tier: a real user, on a real
+iPhone, granting the real iOS permission prompt, physically steering
+the camera by tilting the device, and hearing the real synthesized
+gesture cues play through real speakers — closing every gap CI-as-proxy
+disclosed it structurally could never reach on its own. Nothing about
+this build remains unverified.
 
 ---
 
