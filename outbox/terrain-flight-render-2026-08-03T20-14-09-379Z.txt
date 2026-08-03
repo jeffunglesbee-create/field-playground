@@ -1,0 +1,21 @@
+probe_at: 2026-08-03T20:14:09.380Z
+direct real fetch: 50 real games returned
+direct real fetch: 50 with a parseable drama_arc, 50 with length >= 10
+purpose: does Terrain Flight actually render real 3D terrain from real esm.sh + real archived data?
+
+app loaded: http://127.0.0.1:4173
+clicked Lab tab
+honest error state shown: false
+canvas elements present: 1
+real screenshot committed: outbox/terrain-flight-render-2026-08-03T20-14-09-379Z.png (10457 bytes)
+WebGL canvas pixel readback (2D grid sample): {"w":371,"h":209,"distinctColorsSampled":20}
+real matchup text (" @ ") found: false (atSign=true title=false)
+real "index N/M" text found: true
+DIAGNOSTIC matchup-line raw text: "Guardians @ Twins · 5–6· index 5/674"
+
+page errors: []
+console errors: []
+
+=== VERDICT ===
+INCONCLUSIVE OR FAILED: canvas present but render could not be fully confirmed -- report exactly what was observed.
+screenshotLooksReal=true matchupFound=false indexFound=true
