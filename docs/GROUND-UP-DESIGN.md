@@ -148,6 +148,32 @@ git's conflict detection to surface them rather than hide them, and
 don't mistake "no collision yet" for "coordinated" — it usually just
 means nobody's touched the same file yet.
 
+## 10. A probe's verdict must check validity, not just that data resolved and varied (NEW, 2026-08-03)
+
+Two probes this session (`probe-ambient-multiday.mjs`,
+`probe-sport-of-week-shape.mjs`) each reached a "CONFIRMED, safe to
+build on" verdict while sitting on real, live bugs their own raw output
+already contained: `night_stars.starScore` exceeding the "/10" bound
+the UI claimed for it (17, 12, 10.5 seen on real dates — the real
+formula, reverse-engineered from the data, is `dramaGames + closeGames
+* 0.5`, uncapped), and `sport_of_week.allSports` counting the same real
+sport under three separate un-normalized casings ("MLB"/"mlb"/"Baseball
+(MLB)"), corrupting the winner calculation it fed. Both bugs were
+sitting in the probes' own printed output the whole time — neither
+probe's pass/fail criterion ever asked "are these values actually
+sane," only "did the request succeed" and "did the values differ from
+each other." A separate review reading the same raw output caught both
+in minutes.
+
+The fix isn't a smarter probe script — it's a standing discipline: once
+an endpoint is confirmed to resolve and vary, look at the actual
+numbers/strings it returned and ask whether they're valid on their own
+terms (bounded where a bound is claimed or implied, deduplicated where
+identity matters, internally consistent with any derived field built
+from them) before calling anything "safe to build on." Resolving and
+varying is necessary; it was never sufficient, and treating it as
+sufficient is exactly how both of these shipped un-flagged.
+
 ---
 
 ## What's already right — keep this, don't rebuild it

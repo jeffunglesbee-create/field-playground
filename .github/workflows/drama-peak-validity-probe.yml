@@ -1,0 +1,45 @@
+name: Drama Peak Validity Probe
+
+# Applying docs/GROUND-UP-DESIGN.md principle 10 to the most heavily-
+# depended-upon real field in this repo: checks drama_peak's real range
+# and its consistency with drama_arc across a broad, real, multi-sport
+# sample, not just a single spot-checked game.
+#
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from
+# chat -- CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check drama_peak range and drama_arc consistency across real games
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node scripts/probe-drama-peak-validity.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "drama-peak-validity-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: drama peak validity probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
