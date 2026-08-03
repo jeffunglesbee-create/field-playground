@@ -26,20 +26,29 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
 
-      - name: Serve the real built app
+      - name: Serve the real built app and verify Terrain Flight's real 3D render
+        timeout-minutes: 4
+        continue-on-error: true
+        env:
+          PREVIEW_URL: http://localhost:4173
         run: |
-          npx vite preview --port 4173 --strictPort &
+          # Backgrounding a server in one CI step and testing it in a
+          # separate step doesn't reliably survive the step boundary in
+          # GitHub Actions (the process can be reaped when the step's
+          # own shell exits) -- confirmed the hard way: the first
+          # version of this workflow split serve/verify into two steps
+          # and every run timed out on page.goto with nothing listening
+          # on the port. Serve and verify in the SAME step instead,
+          # matching the exact nohup+disown pattern already used
+          # throughout this session's local verification runs.
+          nohup npx vite preview --port 4173 --strictPort > preview.log 2>&1 &
+          disown
           for i in $(seq 1 30); do
             curl -sf http://localhost:4173 > /dev/null && break
             sleep 1
           done
-
-      - name: Verify Terrain Flight's real 3D render
-        timeout-minutes: 3
-        continue-on-error: true
-        env:
-          PREVIEW_URL: http://localhost:4173
-        run: node scripts/verify-terrain-flight-render.mjs
+          cat preview.log
+          node scripts/verify-terrain-flight-render.mjs
 
       - name: Commit probe result + screenshot
         if: always()
