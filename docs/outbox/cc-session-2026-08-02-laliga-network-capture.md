@@ -48,13 +48,21 @@ not something extracted by force):
 backendUrl: https://apim.laliga.com/public-service
 backendServerUrl: https://apim-int.laliga.com/public-service   (internal — confirmed, never contacted)
 webviewUrl: https://apim.laliga.com/webview
-backendSubscription: c13c3a8e2f6b46da9c5c425cf61fab3e
-webviewSubscription: ee7fcd5c543f4485ba2a48856fc7ece9
+backendSubscription: [real 32-char hex key, redacted here 2026-08-02 —
+                       full value in the raw probe capture below]
+webviewSubscription: [real 32-char hex key, redacted here 2026-08-02 —
+                       full value in the raw probe capture below]
 ```
 These subscription keys are shipped in plaintext to every real visitor
 of laliga.com's homepage — they are the site's own public, client-side
 API keys (standard Azure APIM "product subscription key" pattern), not
-secrets obtained by any bypass.
+secrets obtained by any bypass. Redacted from this writeup (not from
+the raw probe file itself, which stays as the actual, unedited research
+capture) because a polished summary doc repeating them serves no
+evidentiary purpose the raw capture doesn't already serve — no reason
+to duplicate a credential-shaped string a third time when twice
+(the two raw `outbox/laliga-*.txt` probe results) already proves the
+finding.
 
 **The real browser made 10 real XHR requests to `apim.laliga.com`
 during normal page render — all HTTP 200:**

@@ -17,6 +17,13 @@ name: Build Check
 # have landed on main undetected the entire time. Daily rather than
 # weekly, since a broken build is the kind of regression worth
 # catching sooner than a slow-drifting data table.
+#
+# Resource-safety check added 2026-08-02: the same createResource
+# source-accessor re-throw bug (src/data/safeResource.js) had been
+# independently hand-fixed 4+ times in different components before a
+# real automated guard existed. Runs scripts/check-resource-safety.mjs
+# right after the build step, same low-ceremony posture as the rest of
+# this workflow.
 
 on:
   push:
@@ -35,6 +42,8 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run build
+      - name: Check for the resource-accessor re-throw bug class
+        run: node scripts/check-resource-safety.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY
