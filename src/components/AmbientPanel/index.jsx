@@ -216,12 +216,21 @@ function StreakBoard(props) {
   )
 }
 
+// sport_of_week is a real object ({winner, dramaTotal, gamesPlayed,
+// runnerUp, runnerUpDrama, summary, allSports[]}), not a plain string --
+// confirmed via a direct probe 2026-08-03 (outbox/sport-of-week-shape-
+// probe-2026-08-03T18-07-46-260Z.txt) after a multi-day sample check
+// found this rendering as the literal text "[object Object]" on real
+// dates including that same day. `summary` is the real, ready-made
+// human-readable one-liner ("MLB (141/171 high-quality) edged WNBA
+// (19/19)."); `null` on quiet days is a real, already-correctly-handled
+// case via <Show when={props.sport}>, not part of this bug.
 function SportOfWeekBanner(props) {
   return (
-    <Show when={props.sport}>
+    <Show when={props.sport?.summary}>
       <div class={styles.sportOfWeek}>
         <span class={styles.sportOfWeekLabel}>Sport of the Week</span>
-        <span class={styles.sportOfWeekValue}>{props.sport}</span>
+        <span class={styles.sportOfWeekValue}>{props.sport.summary}</span>
       </div>
     </Show>
   )

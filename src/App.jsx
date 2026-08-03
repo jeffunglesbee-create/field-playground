@@ -15,6 +15,7 @@ import { QualityReport } from './components/QualityReport'
 import { WcBracketOdds } from './components/WcBracketOdds'
 import { BriefReconcile } from './components/BriefReconcile'
 import { BriefArchive } from './components/BriefArchive'
+import { AmbientWeek } from './components/AmbientWeek'
 import { DramaLeaderboard } from './components/DramaLeaderboard'
 import { TheUnwatched } from './components/TheUnwatched'
 import { HallOfSurprises } from './components/HallOfSurprises'
@@ -351,6 +352,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.briefArchive}>
               <BriefArchive />
+            </SafeSection>
+            <SafeSection class={styles.ambientWeek}>
+              <AmbientWeek />
             </SafeSection>
           </Show>
 
