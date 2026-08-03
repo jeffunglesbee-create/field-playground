@@ -1,0 +1,23 @@
+probe_at: 2026-08-03T18:06:10.315Z
+purpose: does /analytics/newspaper/{date} return real, varied data across multiple real dates?
+
+2026-08-03: stars=9.5/10  drama=8  alerts=12  sport=[object Object]  claim="9 unusual finishes — led by Phillies shut out Orioles 8-0."
+2026-08-02: stars=17/10  drama=8  alerts=11  sport=n/a  claim="4 unusual finishes — led by Sky beat Aces 84-83 as a +205 underdog."
+2026-08-01: stars=5/10  drama=4  alerts=10  sport=n/a  claim="Yankees shut out Cubs 2-0."
+2026-07-31: stars=10/10  drama=7  alerts=10  sport=n/a  claim="Lynx routed Tempo 104-72 — 32-point margin."
+2026-07-30: stars=10/10  drama=7  alerts=10  sport=n/a  claim="5 unusual finishes — led by Diamondbacks shut out Pirates 3-0."
+2026-07-29: stars=12/10  drama=8  alerts=10  sport=n/a  claim="5 unusual finishes — led by Reds shut out Guardians 2-0."
+2026-07-28: stars=6.5/10  drama=5  alerts=10  sport=n/a  claim="Mets routed Braves 14-3 — 11-point margin."
+2026-07-27: stars=6.5/10  drama=4  alerts=10  sport=[object Object]  claim="3 unusual finishes — led by Rays shut out Guardians 1-0."
+2026-07-26: stars=10.5/10  drama=4  alerts=12  sport=n/a  claim="13 unusual finishes — led by Blue Jays shut out Red Sox 6-0."
+2026-07-25: stars=10.5/10  drama=7  alerts=12  sport=n/a  claim="4 unusual finishes — led by Rockies beat Brewers 5-2 as a +208 underdog."
+
+=== RESULT ===
+dates resolved: 10 / 10
+distinct starScore values: 7 / 10
+distinct editorial claims: 10 / 10
+distinct alert_count values: 3 / 10
+
+=== VERDICT ===
+CONFIRMED: the real per-date endpoint resolves across multiple real recent dates with genuinely
+varying real content -- safe to build a client-side multi-day aggregation view on this.
