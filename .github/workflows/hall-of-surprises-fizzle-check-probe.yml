@@ -1,0 +1,47 @@
+name: Hall of Surprises Fizzle Check Probe
+
+# Pre-build check for Hall of Surprises's second, distinct ranking
+# direction: does a real "hot/fire early or mid-game, fizzled by the
+# end" pattern actually occur in real archived drama_arc data? The only
+# full real arc hand-verified this session (Rays @ Orioles, 2026-08-02,
+# for TheUnwatched) was a climber, not a fizzle -- not assumed to
+# generalize.
+#
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from
+# chat -- CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check for a real fizzle pattern in real archived drama_arc data
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node scripts/probe-hall-of-surprises-fizzle-check.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "hall-of-surprises-fizzle-check-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: hall of surprises fizzle check probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
