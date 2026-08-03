@@ -63,6 +63,7 @@ import { LaLigaCrossCheck } from './components/LaLigaCrossCheck'
 import { FutureFootballFixtures } from './components/FutureFootballFixtures'
 import { BundesligaBroadcasters } from './components/BundesligaBroadcasters'
 import { FieldIdentity } from './components/FieldIdentity'
+import { TerrainFlight } from './components/TerrainFlight'
 import { Arbitrage } from './components/Arbitrage'
 import { WcBracketTree } from './components/WcBracketTree'
 import { Newspaper } from './components/Newspaper'
@@ -397,6 +398,9 @@ export default function App() {
           <Show when={activeTab() === 'lab'}>
             <SafeSection class={styles.fieldIdentity}>
               <FieldIdentity />
+            </SafeSection>
+            <SafeSection class={styles.terrainFlight}>
+              <TerrainFlight />
             </SafeSection>
             <SafeSection class={styles.controlGroup}>
               <ControlGroup />

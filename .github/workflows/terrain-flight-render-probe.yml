@@ -1,0 +1,57 @@
+name: Terrain Flight Render Probe
+
+# The one thing that could not be verified locally before committing:
+# a real Three.js CDN load (esm.sh returns 403 from direct chat-sandbox
+# access) and a real WebGL render, against real archived-game data.
+# Serves the real built app (npm run preview), not page.setContent(),
+# so real relay + real esm.sh fetches behave exactly as a real visitor
+# would experience them.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+
+      - name: Serve the real built app
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4173 > /dev/null && break
+            sleep 1
+          done
+
+      - name: Verify Terrain Flight's real 3D render
+        timeout-minutes: 3
+        continue-on-error: true
+        env:
+          PREVIEW_URL: http://localhost:4173
+        run: node scripts/verify-terrain-flight-render.mjs
+
+      - name: Commit probe result + screenshot
+        if: always()
+        run: |
+          git config user.name "terrain-flight-render-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: terrain flight render probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
