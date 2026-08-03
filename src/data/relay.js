@@ -233,6 +233,35 @@ async function fetchUnwatchedCandidates(sport) {
 
 export const [unwatchedCandidates, { refetch: refetchUnwatchedCandidates }] = createResource(unwatchedSport, fetchUnwatchedCandidates)
 
+// --- Beat the Model candidates: own resource, same real endpoint, ---
+// independent from unwatchedCandidates/dramaLeaderboard for the same
+// reason those two are independent -- a guessing game reshuffling its
+// own sample shouldn't ever affect TheUnwatched's or DramaLeaderboard's
+// fetch.
+export const [beatTheModelSport, setBeatTheModelSport] = createSignal('MLB')
+
+async function fetchBeatTheModelCandidates(sport) {
+  const res = await fetch(`${RELAY_BASE}/archive/drama/leaderboard?sport=${sport}&limit=30`)
+  if (!res.ok) throw new Error(`drama/leaderboard fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [beatTheModelCandidates, { refetch: refetchBeatTheModelCandidates }] = createResource(beatTheModelSport, fetchBeatTheModelCandidates)
+
+// --- Hall of Surprises candidates: own resource, larger real sample ---
+// (limit=50) than unwatchedCandidates' 30 -- a browsable hall-of-fame
+// gallery wants more real games to rank through than a flagged-anomaly
+// ledger does.
+export const [hallOfSurprisesSport, setHallOfSurprisesSport] = createSignal('MLB')
+
+async function fetchHallOfSurprisesCandidates(sport) {
+  const res = await fetch(`${RELAY_BASE}/archive/drama/leaderboard?sport=${sport}&limit=50`)
+  if (!res.ok) throw new Error(`drama/leaderboard fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [hallOfSurprisesCandidates, { refetch: refetchHallOfSurprisesCandidates }] = createResource(hallOfSurprisesSport, fetchHallOfSurprisesCandidates)
+
 // --- Relay system status: real, live, confirmed via a direct probe 2026-07-27 ---
 //
 // GET /health -> NOT JSON -- a single plain-text line:

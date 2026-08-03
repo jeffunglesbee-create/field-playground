@@ -17,6 +17,8 @@ import { BriefReconcile } from './components/BriefReconcile'
 import { BriefArchive } from './components/BriefArchive'
 import { DramaLeaderboard } from './components/DramaLeaderboard'
 import { TheUnwatched } from './components/TheUnwatched'
+import { HallOfSurprises } from './components/HallOfSurprises'
+import { BeatTheModel } from './components/BeatTheModel'
 import { GameSymphonyArchive } from './components/GameSymphonyArchive'
 import { RelaySystemStatus } from './components/RelaySystemStatus'
 import { MultiDayStreak } from './components/MultiDayStreak'
@@ -363,6 +365,12 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.theUnwatched}>
               <TheUnwatched />
+            </SafeSection>
+            <SafeSection class={styles.hallOfSurprises}>
+              <HallOfSurprises />
+            </SafeSection>
+            <SafeSection class={styles.beatTheModel}>
+              <BeatTheModel />
             </SafeSection>
             <SafeSection class={styles.ground}>
               <Ground />

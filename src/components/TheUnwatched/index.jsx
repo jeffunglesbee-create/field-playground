@@ -1,6 +1,7 @@
 import { For, Show, createMemo } from 'solid-js'
 import { unwatchedCandidates, refetchUnwatchedCandidates } from '../../data/relay'
-import { dramaTier, dramaLabel } from '../DeskCard'
+import { dramaLabel } from '../DeskCard'
+import { analyzeGameArc } from '../../data/dramaArcAnalysis'
 import styles from './TheUnwatched.module.css'
 
 // The Unwatched — the inverse of this whole project's thesis. Every
@@ -21,10 +22,12 @@ import styles from './TheUnwatched.module.css'
 // That's a real, concrete example of exactly the pattern this
 // component surfaces, confirmed on real numbers before any UI existed.
 //
-// dramaTier/dramaLabel reused verbatim from DeskCard (jubilant-
-// bassoon's own real thresholds, already ported there) -- not
-// re-derived, so "warm"/"hot"/"fire" mean the same thing here as
-// everywhere else in this app.
+// dramaLabel reused verbatim from DeskCard (jubilant-bassoon's own
+// real thresholds, already ported there) -- not re-derived, so
+// "warm"/"hot"/"fire" mean the same thing here as everywhere else in
+// this app. The early-window/gap math itself lives in
+// src/data/dramaArcAnalysis.js, shared with HallOfSurprises (extracted
+// 2026-08-03) rather than kept as a second independent copy.
 //
 // EARLY WINDOW: first 20% of the real arc, floor of 5 points so very
 // short arcs still get a meaningful sample. This is an honest,
@@ -33,44 +36,12 @@ import styles from './TheUnwatched.module.css'
 // archived post-hoc data (RUWT/ADR-002: never live), so this is a
 // retrospective "if you judged early, you'd have been wrong" framing,
 // not a live forecast.
-const EARLY_WINDOW_FRACTION = 0.2
-const EARLY_WINDOW_MIN_POINTS = 5
-
-function analyzeGame(g) {
-  let arc
-  try {
-    arc = JSON.parse(g.drama_arc)
-  } catch {
-    return null
-  }
-  if (!Array.isArray(arc) || arc.length < EARLY_WINDOW_MIN_POINTS) return null
-
-  const windowSize = Math.max(EARLY_WINDOW_MIN_POINTS, Math.round(arc.length * EARLY_WINDOW_FRACTION))
-  const earlySlice = arc.slice(0, windowSize)
-  const earlyPeak = Math.max(...earlySlice)
-  const finalPeak = typeof g.drama_peak === 'number' ? g.drama_peak : Math.max(...arc)
-
-  const earlyTier = dramaTier(earlyPeak) || 'cold'
-  const finalTier = dramaTier(finalPeak) || 'cold'
-
-  // "Unwatched": the early read never reached 'hot' (i.e., stuck at
-  // warm/cold), but the real game did.
-  const isUnwatched = earlyPeak < 60 && finalPeak >= 60
-
-  const hotIdx = arc.findIndex(v => v >= 60)
-  const flipPercent = hotIdx >= 0 ? Math.round((hotIdx / arc.length) * 100) : null
-
-  return {
-    game: g, arc, earlyPeak, finalPeak, earlyTier, finalTier, isUnwatched, flipPercent,
-    gap: finalPeak - earlyPeak,
-  }
-}
 
 export function TheUnwatched() {
   const analyzed = createMemo(() => {
     const data = unwatchedCandidates.error ? undefined : unwatchedCandidates()
     const games = data?.games ?? []
-    return games.map(analyzeGame).filter(Boolean)
+    return games.map(analyzeGameArc).filter(Boolean)
   })
 
   const unwatched = createMemo(() =>
