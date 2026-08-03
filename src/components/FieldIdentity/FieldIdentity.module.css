@@ -56,6 +56,9 @@
 }
 
 .panelLabel {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 600;
   font-size: 11px;
@@ -63,6 +66,43 @@
   text-transform: uppercase;
   color: var(--field-signal-dim);
   margin-bottom: 12px;
+}
+
+.refreshBtn {
+  margin-left: auto;
+  font-size: 12px;
+  background: none;
+  border: none;
+  color: var(--field-signal-dim);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.refreshBtn:hover {
+  color: var(--field-signal);
+}
+
+.errorNote, .loadingNote {
+  font-size: 11px;
+  color: var(--field-signal-dim);
+  margin: 0;
+}
+
+.errorNote {
+  color: var(--tier-fire);
+}
+
+.conditionScroll {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.arbScroll {
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 /* ── Signature: bracketed condition tags ─────────────────
@@ -194,8 +234,9 @@
   width: 90px;
 }
 
-.arbIncludes.yes { color: var(--tier-warm); }
-.arbIncludes.no { color: var(--field-signal-dim); }
+.arbIncludes.budget { color: var(--tier-cold); }
+.arbIncludes.mid { color: var(--tier-warm); }
+.arbIncludes.premium { color: var(--tier-fire); }
 
 /* ── Reduced motion / accessibility floor ────────────────
    No motion used in this identity test, so nothing to gate here
