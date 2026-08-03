@@ -61,6 +61,7 @@ import { BsdXgPanel } from './components/BsdXgPanel'
 import { LaLigaCrossCheck } from './components/LaLigaCrossCheck'
 import { FutureFootballFixtures } from './components/FutureFootballFixtures'
 import { BundesligaBroadcasters } from './components/BundesligaBroadcasters'
+import { FieldIdentity } from './components/FieldIdentity'
 import { Arbitrage } from './components/Arbitrage'
 import { WcBracketTree } from './components/WcBracketTree'
 import { Newspaper } from './components/Newspaper'
@@ -107,7 +108,7 @@ const TOP_TABS = [
   { key: 'journalism', label: 'Journalism', count: 2 },
   { key: 'social', label: 'Social', count: 3 },
   { key: 'system', label: 'System', count: 2 },
-  { key: 'lab', label: 'Lab', count: 17 },
+  { key: 'lab', label: 'Lab', count: 18 },
 ]
 
 function sectionFallback(err, reset) {
@@ -390,6 +391,9 @@ export default function App() {
           </Show>
 
           <Show when={activeTab() === 'lab'}>
+            <SafeSection class={styles.fieldIdentity}>
+              <FieldIdentity />
+            </SafeSection>
             <SafeSection class={styles.controlGroup}>
               <ControlGroup />
             </SafeSection>
