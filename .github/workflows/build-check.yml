@@ -44,6 +44,17 @@ name: Build Check
 # by fault-injecting a throwing localStorage.setItem against the real,
 # fixed outcomes.js and confirming it survives (and against the
 # pre-fix version, confirming it would have thrown).
+#
+# Undisposed-WebGLRenderer check added 2026-08-03 (same day, fourth real
+# risk class): building Terrain Flight (src/components/TerrainFlight,
+# real Three.js via esm.sh) introduced this codebase's first real GPU
+# resource -- a WebGLRenderer leaks a real GPU context and its buffers
+# on every unmount if not disposed in onCleanup. TerrainFlight itself
+# does this correctly; scripts/check-webgl-disposal.mjs exists so the
+# next WebGL-creating component can't regress it silently. Validated by
+# reproducing an undisposed renderer and a renderer disposed outside
+# onCleanup (both flagged), and confirming the real, correct
+# TerrainFlight component is not flagged.
 
 on:
   push:
@@ -68,6 +79,8 @@ jobs:
         run: node scripts/check-unread-memos.mjs
       - name: Check for unguarded localStorage calls
         run: node scripts/check-localstorage-guards.mjs
+      - name: Check for undisposed WebGLRenderer instances
+        run: node scripts/check-webgl-disposal.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

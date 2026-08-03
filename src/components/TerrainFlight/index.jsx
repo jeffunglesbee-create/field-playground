@@ -179,6 +179,24 @@ export function TerrainFlight() {
     }
     if (disposed) return
 
+    // hallOfSurprisesCandidates is a real async createResource, racing
+    // against the esm.sh CDN fetch above (and against dozens of other
+    // real requests the rest of the app fires on the same page load).
+    // Checking mesh() once here without waiting for the resource to
+    // actually settle would read an empty candidates() -- and
+    // permanently latch a false "no usable game" error -- whenever the
+    // CDN load happens to resolve first. Wait for the resource itself.
+    while (hallOfSurprisesCandidates.loading) {
+      await new Promise(r => setTimeout(r, 50))
+      if (disposed) return
+    }
+    if (disposed) return
+
+    if (hallOfSurprisesCandidates.error) {
+      setLoadError('Real archived-game data failed to load: ' + String(hallOfSurprisesCandidates.error?.message ?? hallOfSurprisesCandidates.error))
+      return
+    }
+
     const m = mesh()
     if (!m) {
       setLoadError('No real archived game with a usable drama_arc in the current sample.')
