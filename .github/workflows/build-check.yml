@@ -24,6 +24,13 @@ name: Build Check
 # real automated guard existed. Runs scripts/check-resource-safety.mjs
 # right after the build step, same low-ceremony posture as the rest of
 # this workflow.
+#
+# Unread-createMemo check added 2026-08-03: a different real, documented
+# Solid.js bug class from this session's own history (DramaSoundscape,
+# found 2026-07-31) -- a createMemo with zero consumers runs once and
+# never re-runs, silently. scripts/check-unread-memos.mjs was validated
+# against both the historical bug shape and a legitimate false-positive
+# candidate before being wired in here.
 
 on:
   push:
@@ -44,6 +51,8 @@ jobs:
       - run: npm run build
       - name: Check for the resource-accessor re-throw bug class
         run: node scripts/check-resource-safety.mjs
+      - name: Check for unread createMemo declarations
+        run: node scripts/check-unread-memos.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY
