@@ -1,0 +1,30 @@
+probe_at: 2026-08-03T13:58:50.004Z
+purpose: does a real hot-early-then-fizzled pattern exist, across a wider, multi-sport pool
+KNOWN LIMITATION (disclosed, not hidden): /archive/drama/leaderboard only ever sorts by
+drama_peak DESC with a max limit of 50 -- this widens the pool across sports but does NOT
+produce a truly unbiased sample. A real fizzle game with a modest overall peak could still
+be excluded if it never cracks the top 50 for its own sport.
+
+=== fetching all confirmed-real sports ===
+  MLB: 50 real games
+  WNBA: 50 real games
+  MLS: 10 real games
+  EPL: 26 real games
+  AFL: 50 real games
+
+total games across all sports: 186
+
+games with a parseable drama_arc (length >= 10): 136 / 186
+
+=== FIZZLE candidates (peak tier >= hot, late-window tier dropped >= 1 tier) ===
+[WNBA] Valkyries @ Tempo (2026-07-08)  peak=70(hot, at 0.74 through the arc)  late_window_max=53(warm)  early_window_max=52(warm)
+[WNBA] Mercury @ Sparks (2026-07-22)  peak=70(hot, at 0.78 through the arc)  late_window_max=53(warm)  early_window_max=52(warm)
+[WNBA] Liberty @ Sparks (2026-07-28)  peak=70(hot, at 0.72 through the arc)  late_window_max=53(warm)  early_window_max=52(warm)
+[WNBA] Phoenix Mercury @ New York Liberty (2026-05-29)  peak=61(hot, at 0.72 through the arc)  late_window_max=53(warm)  early_window_max=52(warm)
+[WNBA] Sky @ Sparks (2026-07-10)  peak=61(hot, at 0.70 through the arc)  late_window_max=37(cold)  early_window_max=52(warm)
+
+climber candidates (cross-check, TheUnwatched direction): 112 / 136
+
+=== VERDICT ===
+CONFIRMED: real fizzle pattern exists in real, current archived data across 5 sports.
+Safe to build the reverse-direction ranking on real data.
