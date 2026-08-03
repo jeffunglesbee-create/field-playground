@@ -31,6 +31,19 @@ name: Build Check
 # never re-runs, silently. scripts/check-unread-memos.mjs was validated
 # against both the historical bug shape and a legitimate false-positive
 # candidate before being wired in here.
+#
+# Unguarded-localStorage check added 2026-08-03 (same day, third real
+# bug class): a hand-audit of every localStorage call site in the
+# codebase found src/data/outcomes.js -- load-bearing pick-tracking
+# code read directly by 4 other components -- calling
+# localStorage.setItem 10 times with no try/catch, unlike every other
+# localStorage consumer in this codebase (all already guarded).
+# scripts/check-localstorage-guards.mjs was validated by reproducing
+# the exact unguarded shape and confirming three guarded variants
+# (one-line, multi-line, mixed-within-function) are not flagged, then
+# by fault-injecting a throwing localStorage.setItem against the real,
+# fixed outcomes.js and confirming it survives (and against the
+# pre-fix version, confirming it would have thrown).
 
 on:
   push:
@@ -53,6 +66,8 @@ jobs:
         run: node scripts/check-resource-safety.mjs
       - name: Check for unread createMemo declarations
         run: node scripts/check-unread-memos.mjs
+      - name: Check for unguarded localStorage calls
+        run: node scripts/check-localstorage-guards.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

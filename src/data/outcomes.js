@@ -33,16 +33,30 @@ const [annotations, setAnnotationsSignal] = createSignal(load(NOTE_KEY, {}))
 // that doesn't exist for picks marked before this feature shipped.
 const [confidence, setConfidenceSignal] = createSignal(load(CONFIDENCE_KEY, {}))
 
+// Every write below is wrapped in try/catch -- localStorage.setItem can
+// throw for real reasons (Safari private browsing historically threw on
+// any access, quota exceeded, storage disabled), and this module is read
+// directly by PickRow, Agreement, CrossCheck, and DeskCard's untrack
+// snapshot (see the comment above pickMeta), so an uncaught throw here
+// would break a real pick-click interaction, not a rare path. Matches
+// the established convention already used by every other localStorage
+// consumer in this codebase (PickEm, LocalNoteLayer, GameSymphonyArchive,
+// teamAffinity.js, myServices.js, beatTheModel.js) -- found by
+// scripts/check-localstorage-guards.mjs, 2026-08-03.
+function save(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)) } catch { /* best effort */ }
+}
+
 export function setOutcome(gameId, result, tier) {
   const next = { ...outcomes(), [gameId]: result }
   setOutcomesSignal(next)
-  localStorage.setItem(KEY, JSON.stringify(next))
+  save(KEY, next)
 
   if (tier !== undefined) {
     const dateMatch = gameId.match(/^(\d{4}-\d{2}-\d{2})/)
     const nextMeta = { ...pickMeta(), [gameId]: { tier, date: dateMatch ? dateMatch[1] : null } }
     setPickMetaSignal(nextMeta)
-    localStorage.setItem(META_KEY, JSON.stringify(nextMeta))
+    save(META_KEY, nextMeta)
   }
 }
 
@@ -50,26 +64,26 @@ export function clearOutcome(gameId) {
   const next = { ...outcomes() }
   delete next[gameId]
   setOutcomesSignal(next)
-  localStorage.setItem(KEY, JSON.stringify(next))
+  save(KEY, next)
 }
 
 export function clearAllOutcomes() {
   setOutcomesSignal({})
-  localStorage.setItem(KEY, JSON.stringify({}))
+  save(KEY, {})
 }
 
 export function setConfidence(gameId, pct) {
   const clamped = Math.max(0, Math.min(100, Math.round(pct)))
   const next = { ...confidence(), [gameId]: clamped }
   setConfidenceSignal(next)
-  localStorage.setItem(CONFIDENCE_KEY, JSON.stringify(next))
+  save(CONFIDENCE_KEY, next)
 }
 
 export function clearConfidence(gameId) {
   const next = { ...confidence() }
   delete next[gameId]
   setConfidenceSignal(next)
-  localStorage.setItem(CONFIDENCE_KEY, JSON.stringify(next))
+  save(CONFIDENCE_KEY, next)
 }
 
 export function setAnnotation(gameId, text) {
@@ -80,7 +94,7 @@ export function setAnnotation(gameId, text) {
     delete next[gameId]
   }
   setAnnotationsSignal(next)
-  localStorage.setItem(NOTE_KEY, JSON.stringify(next))
+  save(NOTE_KEY, next)
 }
 
 // --- BroadcastChannel sync: cross-tab outcomes ---
@@ -108,15 +122,15 @@ export function initOutcomesSync() {
     if (!d) return
     if (d.outcomes && JSON.stringify(d.outcomes) !== JSON.stringify(outcomes())) {
       setOutcomesSignal(d.outcomes)
-      localStorage.setItem(KEY, JSON.stringify(d.outcomes))
+      save(KEY, d.outcomes)
     }
     if (d.meta && JSON.stringify(d.meta) !== JSON.stringify(pickMeta())) {
       setPickMetaSignal(d.meta)
-      localStorage.setItem(META_KEY, JSON.stringify(d.meta))
+      save(META_KEY, d.meta)
     }
     if (d.confidence && JSON.stringify(d.confidence) !== JSON.stringify(confidence())) {
       setConfidenceSignal(d.confidence)
-      localStorage.setItem(CONFIDENCE_KEY, JSON.stringify(d.confidence))
+      save(CONFIDENCE_KEY, d.confidence)
     }
   }
 
