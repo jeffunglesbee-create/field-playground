@@ -1,0 +1,8 @@
+probe_at: 2026-08-03T19:46:07.414Z
+purpose: does Terrain Flight actually render real 3D terrain from real esm.sh + real archived data?
+
+FAILED: page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "http://localhost:4173/", waiting until "networkidle"
+
+    at main (/home/runner/work/field-playground/field-playground/scripts/verify-terrain-flight-render.mjs:37:14)
