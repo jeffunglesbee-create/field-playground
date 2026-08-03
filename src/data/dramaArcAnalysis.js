@@ -33,8 +33,25 @@ export function analyzeGameArc(g) {
   const hotIdx = arc.findIndex(v => v >= 60)
   const flipPercent = hotIdx >= 0 ? Math.round((hotIdx / arc.length) * 100) : null
 
+  // "Fizzle": the mirror-image direction of unwatched -- the game
+  // reached real drama (finalPeak, the true overall max wherever it
+  // occurred) but had already cooled off by the late window. finalPeak
+  // alone can't express this (it's the same number whether the peak
+  // happened at minute 5 or minute 55); lateMax is the real, distinct
+  // signal needed. Confirmed real via a corrected, multi-sport probe
+  // (2026-08-03) after the original biased single-sport/top-N-by-peak
+  // check found none -- 5 real WNBA games matched this exact shape.
+  const lateSlice = arc.slice(-windowSize)
+  const lateMax = Math.max(...lateSlice)
+  const lateTier = dramaTier(lateMax) || 'cold'
+  const isFizzle = finalTier === 'fire' || finalTier === 'hot'
+    ? (lateTier === 'cold' || lateTier === 'warm') && lateMax < finalPeak
+    : false
+  const fizzleGap = finalPeak - lateMax
+
   return {
     game: g, arc, earlyPeak, finalPeak, earlyTier, finalTier, isUnwatched, flipPercent,
+    lateMax, lateTier, isFizzle, fizzleGap,
     gap: finalPeak - earlyPeak,
   }
 }
