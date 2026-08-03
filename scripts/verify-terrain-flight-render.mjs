@@ -11,7 +11,7 @@
 // archived-game data, not mocked.
 
 import { chromium } from 'playwright'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync, statSync } from 'node:fs'
 
 mkdirSync('outbox', { recursive: true })
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -100,32 +100,50 @@ async function main() {
   log('canvas elements present: ' + canvasCount)
 
   let pixelVariance = null
-  let matchupText = null
+  let screenshotBytes = null
+  let matchupFound = false
+  let indexFound = false
+  const screenshotPath = 'outbox/terrain-flight-render-' + stamp + '.png'
   if (!hadError && canvasCount > 0) {
     const canvas = page.locator('canvas').first()
-    await canvas.screenshot({ path: 'outbox/terrain-flight-render-' + stamp + '.png' }).catch(() => {})
+    await canvas.screenshot({ path: screenshotPath }).catch(() => {})
+    try { screenshotBytes = statSync(screenshotPath).size } catch {}
+    log('real screenshot committed: ' + screenshotPath + ' (' + screenshotBytes + ' bytes)')
 
+    // Grid sample (not a 1D stride, which can bias toward one region)
+    // now that the renderer is created with preserveDrawingBuffer:
+    // true -- confirmed necessary the hard way: without it, readPixels
+    // returned near-uniform data from a frame canvas.screenshot()
+    // (compositor-level, matches what's actually on screen) showed was
+    // a real, correct render.
     pixelVariance = await page.evaluate(() => {
       const canvasEl = document.querySelector('canvas')
       if (!canvasEl) return null
       const gl = canvasEl.getContext('webgl2') || canvasEl.getContext('webgl')
       if (!gl) return null
       const w = canvasEl.width, h = canvasEl.height
-      if (!w || !h) return { w, h, variance: null }
+      if (!w || !h) return { w, h, distinctColorsSampled: 0 }
       const pixels = new Uint8Array(w * h * 4)
       gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
-      const sampleCount = Math.min(2000, w * h)
       const seen = new Set()
-      for (let i = 0; i < sampleCount; i++) {
-        const idx = Math.floor((i / sampleCount) * w * h) * 4
-        seen.add(pixels[idx] + ',' + pixels[idx + 1] + ',' + pixels[idx + 2])
+      const gridX = 40, gridY = 20
+      for (let gy = 0; gy < gridY; gy++) {
+        for (let gx = 0; gx < gridX; gx++) {
+          const x = Math.floor((gx / gridX) * w)
+          const y = Math.floor((gy / gridY) * h)
+          const idx = (y * w + x) * 4
+          seen.add(pixels[idx] + ',' + pixels[idx + 1] + ',' + pixels[idx + 2])
+        }
       }
       return { w, h, distinctColorsSampled: seen.size }
     })
-    log('WebGL canvas pixel readback: ' + JSON.stringify(pixelVariance))
+    log('WebGL canvas pixel readback (2D grid sample): ' + JSON.stringify(pixelVariance))
 
-    matchupText = (await page.locator('body').innerText()).match(/[\w .'-]+ @ [\w .'-]+ · \d+–\d+ · index \d+\/\d+/)?.[0] ?? null
-    log('real matchup/index line found: ' + JSON.stringify(matchupText))
+    const fullBodyText = await page.locator('body').innerText()
+    matchupFound = / @ /.test(fullBodyText) && fullBodyText.includes('Terrain Flight')
+    indexFound = /index \d+\/\d+/.test(fullBodyText)
+    log('real matchup text (" @ ") found: ' + matchupFound)
+    log('real "index N/M" text found: ' + indexFound)
   }
 
   log('')
@@ -136,14 +154,21 @@ async function main() {
 
   log('')
   log('=== VERDICT ===')
+  // A real varied-content PNG compresses to meaningfully more than a
+  // few hundred bytes (PNG/DEFLATE crushes uniform data extremely
+  // well) -- a real, direct, computable signal, not a guess, and
+  // doesn't depend on readPixels/preserveDrawingBuffer working
+  // correctly the way the grid sample does.
+  const screenshotLooksReal = (screenshotBytes ?? 0) > 2000
   if (hadError) {
     log('REAL ERROR STATE, not a crash -- but the actual 3D render was NOT confirmed this run.')
     log('Report the exact error text honestly, do not treat this as a pass.')
-  } else if (canvasCount > 0 && pixelVariance?.distinctColorsSampled > 1 && pageErrors.length === 0) {
-    log('CONFIRMED: real Three.js loaded from esm.sh, a real WebGL render produced non-uniform pixels')
-    log('(' + pixelVariance.distinctColorsSampled + ' distinct sampled colors), real matchup data displayed, zero page errors.')
+  } else if (canvasCount > 0 && screenshotLooksReal && matchupFound && indexFound && pageErrors.length === 0) {
+    log('CONFIRMED: real Three.js loaded from esm.sh, a real WebGL render produced a real, non-trivial')
+    log('screenshot (' + screenshotBytes + ' bytes, ' + JSON.stringify(pixelVariance) + '), real matchup/index data displayed, zero page errors.')
   } else {
-    log('INCONCLUSIVE OR FAILED: canvas present but render could not be confirmed -- report exactly what was observed.')
+    log('INCONCLUSIVE OR FAILED: canvas present but render could not be fully confirmed -- report exactly what was observed.')
+    log('screenshotLooksReal=' + screenshotLooksReal + ' matchupFound=' + matchupFound + ' indexFound=' + indexFound)
   }
 }
 

@@ -239,7 +239,15 @@ export function TerrainFlight() {
     const startHeight = (m.heights[0] ?? 0) + 6
     camera.position.set(xOffset - 5, startHeight, 12)
 
-    renderer = new THREE.WebGLRenderer({ canvas: canvasRef, antialias: true })
+    // preserveDrawingBuffer: true costs a little GPU memory but makes
+    // the actual rendered framebuffer honestly inspectable via
+    // readPixels -- without it, the drawing buffer can be cleared by
+    // the browser right after compositing, so a real render still
+    // looks empty to anything reading it back directly (confirmed the
+    // hard way verifying this exact component: canvas.screenshot()
+    // showed a correct real render while gl.readPixels() returned
+    // near-uniform data from the same frame).
+    renderer = new THREE.WebGLRenderer({ canvas: canvasRef, antialias: true, preserveDrawingBuffer: true })
     renderer.setSize(canvasRef.clientWidth, canvasRef.clientHeight, false)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
