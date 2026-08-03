@@ -1,0 +1,17 @@
+probe_at: 2026-08-03T13:49:18.442Z
+purpose: does a real hot-early-then-fizzled pattern exist in real drama_arc data?
+
+games returned: 30
+
+games with a parseable drama_arc (length >= 10): 30 / 30
+drama_peak field always equals max(arc) in this sample: checked below per-row
+
+=== FIZZLE candidates (peak tier >= hot, late-window tier dropped >= 1 tier) ===
+NONE FOUND in this sample.
+
+climber candidates found (TheUnwatched direction, cross-check): 30
+
+=== VERDICT ===
+NOT CONFIRMED in this sample: no real fizzle found among 30 parsed games.
+Do not ship a "fizzle" ranking direction as if it reflects real, observed games until a real
+instance is found -- report this honestly rather than building on an unconfirmed claim.
