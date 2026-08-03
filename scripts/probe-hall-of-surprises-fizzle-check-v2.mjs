@@ -64,7 +64,7 @@ async function main() {
   log('KNOWN LIMITATION (disclosed, not hidden): /archive/drama/leaderboard only ever sorts by')
   log('drama_peak DESC with a max limit of 50 -- this widens the pool across sports but does NOT')
   log('produce a truly unbiased sample. A real fizzle game with a modest overall peak could still')
-  log('be excluded if it never cracks its own sport\\'s top 50.')
+  log('be excluded if it never cracks the top 50 for its own sport.')
   log('')
   log('=== fetching all confirmed-real sports ===')
 
