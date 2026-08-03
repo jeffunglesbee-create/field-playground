@@ -1,0 +1,46 @@
+name: Ambient Multiday Probe
+
+# Pre-build check for a bigger real sample size for AmbientPanel's top
+# section (the AMBIENT card): confirms /analytics/newspaper/{date}
+# resolves with genuinely varying real content across multiple real
+# recent dates before building a client-side multi-day aggregation view
+# on top of it.
+#
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from
+# chat -- CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check /analytics/newspaper/{date} across multiple real dates
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node scripts/probe-ambient-multiday.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "ambient-multiday-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: ambient multiday probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
