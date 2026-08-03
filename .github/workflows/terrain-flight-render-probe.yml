@@ -32,31 +32,29 @@ jobs:
         env:
           PREVIEW_URL: http://127.0.0.1:4173
         run: |
-          # Round 1: split serve/verify into two steps -- every run
-          # timed out with nothing listening (step boundary didn't
-          # preserve the backgrounded process). Round 2: combined into
-          # one step with nohup+disown -- STILL timed out, same
-          # symptom, so that wasn't the only real cause. Two real
-          # fixes this round, not another guess: (1) `localhost` can
-          # resolve to ::1 on some CI runners while vite preview binds
-          # an IPv4-only 127.0.0.1 by default -- a known real Node/CI
-          # mismatch -- so both the curl wait and PREVIEW_URL now use
-          # 127.0.0.1 explicitly everywhere, removing the ambiguity
-          # rather than hoping resolution lines up. (2) preview.log
-          # was only ever `cat` to ephemeral CI console output this
-          # script can't see after the fact -- committed to outbox/
-          # now so a THIRD failure is diagnosable instead of another
-          # blind guess.
+          # Round 1: split serve/verify into two steps -- timed out,
+          # step boundary didn't preserve the backgrounded process.
+          # Round 2: combined into one step with nohup+disown -- STILL
+          # timed out. Round 3: made curl/PREVIEW_URL use 127.0.0.1
+          # explicitly (localhost/::1 CI mismatch is a real, known
+          # issue) and tried to commit preview.log for visibility --
+          # STILL timed out, and the log was invisible: `.gitignore`
+          # has `*.log`, so `git add outbox/` silently never staged it
+          # every single round. Real, embarrassing, fixable diagnostic
+          # gap, not a guess -- renamed to .txt (matching every other
+          # real probe output in this repo) so round 4 either finds
+          # the actual cause or, if it's STILL the connectivity issue,
+          # this run finally shows real evidence instead of nothing.
           mkdir -p outbox
-          nohup npx vite preview --port 4173 --strictPort --host 127.0.0.1 > outbox/terrain-flight-preview.log 2>&1 &
+          nohup npx vite preview --port 4173 --strictPort --host 127.0.0.1 > outbox/terrain-flight-preview-output.txt 2>&1 &
           disown
           ok=0
           for i in $(seq 1 30); do
             if curl -sf http://127.0.0.1:4173 > /dev/null; then ok=1; break; fi
             sleep 1
           done
-          echo "server_ready=$ok" >> outbox/terrain-flight-preview.log
-          cat outbox/terrain-flight-preview.log
+          echo "server_ready=$ok" >> outbox/terrain-flight-preview-output.txt
+          cat outbox/terrain-flight-preview-output.txt
           node scripts/verify-terrain-flight-render.mjs
 
       - name: Commit probe result + screenshot
