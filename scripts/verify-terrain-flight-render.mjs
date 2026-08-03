@@ -140,19 +140,23 @@ async function main() {
     log('WebGL canvas pixel readback (2D grid sample): ' + JSON.stringify(pixelVariance))
 
     const fullBodyText = await page.locator('body').innerText()
+    // page.locator('body').innerText() reflects rendered text, which
+    // includes CSS text-transform -- the real header label is
+    // literally "Terrain Flight" in source
+    // (TerrainFlight/index.jsx), but .label has a real, legitimate
+    // `text-transform: uppercase` (TerrainFlight.module.css), so the
+    // rendered text is "TERRAIN FLIGHT". A case-sensitive check here
+    // was a probe-script bug, not an app bug -- confirmed directly via
+    // the raw diagnostic line logged below on a prior run.
     const atSignFound = / @ /.test(fullBodyText)
-    const titleFound = fullBodyText.includes('Terrain Flight')
+    const titleFound = /terrain flight/i.test(fullBodyText)
     matchupFound = atSignFound && titleFound
     indexFound = /index \d+\/\d+/.test(fullBodyText)
     log('real matchup text (" @ ") found: ' + matchupFound + ' (atSign=' + atSignFound + ' title=' + titleFound + ')')
     log('real "index N/M" text found: ' + indexFound)
-    // Diagnostic for a real, unexplained mismatch seen 2026-08-03:
-    // indexFound true (same <p> as the matchup text) but matchupFound
-    // false. Log the actual matchup-line text directly instead of
-    // guessing at why the regex didn't match.
-    if (indexFound && !matchupFound) {
+    if (indexFound) {
       const idxLine = fullBodyText.split('\n').find(l => /index \d+\/\d+/.test(l))
-      log('DIAGNOSTIC matchup-line raw text: ' + JSON.stringify(idxLine))
+      log('matchup-line raw text: ' + JSON.stringify(idxLine))
     }
   }
 
