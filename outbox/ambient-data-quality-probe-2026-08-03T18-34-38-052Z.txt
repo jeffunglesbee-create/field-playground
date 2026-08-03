@@ -1,0 +1,17 @@
+probe_at: 2026-08-03T18:34:38.052Z
+
+=== 2026-08-02 ===
+full raw night_stars: {"stars":5,"starScore":17,"dramaGames":8,"closeGames":18,"extras":0,"walkoffs":0,"totalGames":39,"degraded":false}
+sport_of_week: null
+
+=== 2026-07-29 ===
+full raw night_stars: {"stars":5,"starScore":12,"dramaGames":8,"closeGames":8,"extras":0,"walkoffs":0,"totalGames":20,"degraded":false}
+sport_of_week: null
+
+=== 2026-07-26 ===
+full raw night_stars: {"stars":5,"starScore":10.5,"dramaGames":4,"closeGames":13,"extras":0,"walkoffs":0,"totalGames":46,"degraded":false}
+sport_of_week: null
+
+=== 2026-07-30 ===
+full raw night_stars: {"stars":5,"starScore":10,"dramaGames":7,"closeGames":6,"extras":0,"walkoffs":0,"totalGames":18,"degraded":false}
+sport_of_week: null
