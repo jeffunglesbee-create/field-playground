@@ -1,0 +1,20 @@
+probe_at: 2026-08-03T19:01:39.031Z
+=== PART 1: MLB standings field validity ===
+2026-08-03: 30 real team records
+2026-08-01: 30 real team records
+2026-07-28: 30 real team records
+teams checked: 90
+NONE -- every gamesBack/wildCardGamesBack/divisionRank checked is either "-" or a valid, sane value.
+
+=== PART 2: Savant win probability bound (must be in [0,1] after /100) ===
+Guardians @ Twins: 86 real WP entries checked
+Astros @ Angels: 83 real WP entries checked
+Yankees @ White Sox: 86 real WP entries checked
+Tampa Bay Rays @ Baltimore Orioles: 109 real WP entries checked
+Cubs @ Brewers: 83 real WP entries checked
+Tigers @ Yankees: 85 real WP entries checked
+Orioles @ Astros: 88 real WP entries checked
+Braves @ Orioles: 93 real WP entries checked
+
+games checked: 8  total WP entries checked: 713
+NONE -- every real homeTeamWinProbability entry, scaled /100, fell within [0, 1].
