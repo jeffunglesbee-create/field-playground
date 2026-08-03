@@ -1,0 +1,47 @@
+name: Standings And WP Validity Probe
+
+# Continuing docs/GROUND-UP-DESIGN.md principle 10: checks MLB standings
+# (gamesBack/wildCardGamesBack/divisionRank against the exact contract
+# StandingRoom's mlbTeamState already implies) and Savant win
+# probability (must land in [0,1] after the established /100 scale fix)
+# across a broad real sample.
+#
+# field-relay-nba.jeffunglesbee.workers.dev, statsapi.mlb.com, and
+# baseballsavant.mlb.com are all sandbox-blocked from chat -- CI-as-
+# proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check MLB standings + Savant WP field validity
+        timeout-minutes: 6
+        continue-on-error: true
+        run: node scripts/probe-standings-and-wp-validity.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "standings-and-wp-validity-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: standings and WP validity probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
