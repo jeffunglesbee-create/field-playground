@@ -1,4 +1,4 @@
-probe_at: 2026-07-27T18:59:16Z
+probe_at: 2026-08-03T12:48:05Z
 
 Verifies two changes to src/data/weather.js's VENUE_COORDS, both run
 from a GitHub Actions runner because this sandbox's egress allowlist
@@ -14,22 +14,22 @@ Coordinates below are read directly out of src/data/weather.js's
 VENUE_COORDS at run time (not a hand-copied fixture) so this probe
 can't silently drift from the table it's meant to verify.
 
-Globe Life Field [retractable]: http=200 temp_f=97.8
-loanDepot park [retractable]: http=200 temp_f=85.2
-Rogers Centre [retractable]: http=200 temp_f=80.5
-Daikin Park [retractable]: http=200 temp_f=91.0
-Tropicana Field [dome]: http=200 temp_f=79.4
-PNC Park [open]: http=200 temp_f=86.0
-Citi Field [open]: http=200 temp_f=81.4
-Sutter Health Park [open]: http=200 temp_f=83.6
-Comerica Park [open]: http=200 temp_f=89.9
-Nationals Park [open]: http=200 temp_f=88.1
-Great American Ball Park [open]: http=200 temp_f=87.1
-Rate Field [open]: http=200 temp_f=72.7
-Busch Stadium [open]: http=200 temp_f=97.7
-Angel Stadium [open]: http=200 temp_f=86.9
-Oracle Park [open]: http=200 temp_f=66.3
-TPC Twin Cities [open]: http=200 temp_f=96.1
+Globe Life Field [retractable]: http=200 temp_f=76.8
+loanDepot park [retractable]: http=200 temp_f=81.7
+Rogers Centre [retractable]: http=200 temp_f=66.0
+Daikin Park [retractable]: http=200 temp_f=79.7
+Tropicana Field [dome]: http=200 temp_f=78.8
+PNC Park [open]: http=200 temp_f=69.0
+Citi Field [open]: http=200 temp_f=75.9
+Sutter Health Park [open]: http=200 temp_f=65.3
+Comerica Park [open]: http=200 temp_f=64.9
+Nationals Park [open]: http=200 temp_f=76.4
+Great American Ball Park [open]: http=200 temp_f=68.0
+Rate Field [open]: http=200 temp_f=66.2
+Busch Stadium [open]: http=200 temp_f=67.7
+Angel Stadium [open]: http=200 temp_f=69.7
+Oracle Park [open]: http=200 temp_f=54.2
+TPC Twin Cities [open]: http=200 temp_f=69.7
 
 === VERDICT ===
 All 16 venues resolved: http=200 and a real
