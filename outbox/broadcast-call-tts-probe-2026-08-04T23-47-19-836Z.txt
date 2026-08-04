@@ -1,0 +1,18 @@
+probe_at: 2026-08-04T23:47:19.837Z
+--- direct /audio/tts check ---
+HTTP status: 200
+Content-Type: audio/mpeg
+audio bytes: 26064
+content-type is audio: true, byte size looks real: true
+
+--- real browser run against the built app ---
+app loaded: http://127.0.0.1:4173
+clicked Lab tab
+"Call the game" button present: false
+voice outcome: not reached
+
+page errors: []
+console errors: []
+
+=== VERDICT ===
+PARTIAL: the real /audio/tts endpoint works directly (26064 bytes), but the component run did not confirm the cloud path (not reached). Report exactly what was observed -- may be real network variance, not a code bug.
