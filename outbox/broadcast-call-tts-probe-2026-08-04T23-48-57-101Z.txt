@@ -1,0 +1,19 @@
+probe_at: 2026-08-04T23:48:57.102Z
+--- direct /audio/tts check ---
+HTTP status: 200
+Content-Type: audio/mpeg
+audio bytes: 30528
+content-type is audio: true, byte size looks real: true
+
+--- real browser run against the built app ---
+app loaded: http://127.0.0.1:4173
+clicked Lab tab
+"Call the game" button present: true
+clicked "Call the game"
+voice outcome: cloud
+
+page errors: []
+console errors: []
+
+=== VERDICT ===
+CONFIRMED: real /audio/tts endpoint returns real audio (30528 bytes), and the real BroadcastCall component in a real browser successfully used the real Cloudflare voice end-to-end, zero page errors.
