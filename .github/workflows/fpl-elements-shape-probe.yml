@@ -1,0 +1,46 @@
+name: FPL Elements Shape Probe
+
+# Verifies the real shape of /fpl/bootstrap-static's `elements` array
+# (real player transfer prices/points) before Value Night gets built
+# against field names nobody has confirmed live -- same discipline that
+# caught BsdXgPanel's originally-wrong field names (see that
+# component's own header comment).
+#
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from
+# chat -- CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check FPL elements[] real field shape
+        timeout-minutes: 6
+        continue-on-error: true
+        run: node scripts/probe-fpl-elements-shape.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "fpl-elements-shape-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: FPL elements shape probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
