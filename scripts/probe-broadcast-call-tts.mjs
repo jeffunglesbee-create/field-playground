@@ -67,7 +67,16 @@ async function main() {
   await page.getByText('Lab', { exact: false }).first().click()
   log('clicked Lab tab')
 
-  await page.waitForFunction(() => document.body.innerText.includes('THE BROADCAST CALL'), { timeout: 20000 }).catch(() => log('WARNING: "The Broadcast Call" header not found within 20s'))
+  // The header renders immediately regardless of data state -- waiting on
+  // it alone (as an earlier version of this probe did) checks for the
+  // button before broadcastCallCandidates (a real async fetch, competing
+  // with the rest of the app's concurrent page-load requests) has had a
+  // chance to resolve. Wait for an actual data-dependent outcome instead:
+  // the button itself, or the honest empty-sample message.
+  await page.waitForFunction(() => {
+    const t = document.body.innerText
+    return t.includes('Call the game') || t.includes('No real archived game with a usable drama_arc')
+  }, { timeout: 20000 }).catch(() => log('WARNING: neither the call button nor the empty-sample message appeared within 20s -- broadcastCallCandidates may still be pending'))
 
   const callBtn = page.getByText('Call the game', { exact: false })
   const hasBtn = await callBtn.count() > 0
