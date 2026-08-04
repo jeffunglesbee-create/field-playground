@@ -1,0 +1,59 @@
+name: Broadcast Call TTS Probe
+
+# Verifies field-relay-nba's real /audio/tts route (Workers AI, Deepgram
+# aura-2-en) two ways: a direct fetch against the real relay, and a real
+# browser run of the built app hitting the same real relay end-to-end.
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from chat --
+# CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+
+      - name: Serve the real built app and verify the real Broadcast Call TTS path
+        timeout-minutes: 4
+        continue-on-error: true
+        env:
+          PREVIEW_URL: http://127.0.0.1:4173
+        run: |
+          mkdir -p outbox
+          nohup npx vite preview --port 4173 --strictPort --host 127.0.0.1 > outbox/broadcast-call-preview-output.txt 2>&1 &
+          disown
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:4173 > /dev/null; then ok=1; break; fi
+            sleep 1
+          done
+          echo "server_ready=$ok" >> outbox/broadcast-call-preview-output.txt
+          cat outbox/broadcast-call-preview-output.txt
+          node scripts/probe-broadcast-call-tts.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "broadcast-call-tts-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: broadcast call TTS probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1

@@ -1,5 +1,9 @@
 import { analyzeGameArc } from './dramaArcAnalysis'
 
+const RELAY_BASE = import.meta.env.DEV
+  ? ''
+  : 'https://field-relay-nba.jeffunglesbee.workers.dev'
+
 const TIER_CALL = { fire: 'an absolute fire game', hot: 'a hot one', warm: 'a warm one', '': 'a quiet one' }
 
 // Builds a real narration script from real archived-game data --
@@ -26,4 +30,26 @@ export function buildCallScript(game) {
   }
 
   return { text: sentences.join(' '), analyzed }
+}
+
+// Real neural TTS via field-relay-nba's /audio/tts (Workers AI, Deepgram
+// aura-2-en) -- confirmed live 2026-08-04, real free tier (Workers AI's own
+// 10,000 neurons/day, no separate account). Returns a real audio Blob or
+// throws with the real error text the relay returned (missing AI binding,
+// text too long, upstream failure) -- never fabricates success.
+export async function fetchCloudTts(text) {
+  const res = await fetch(`${RELAY_BASE}/audio/tts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  })
+  if (!res.ok) {
+    let msg = 'HTTP ' + res.status
+    try {
+      const body = await res.json()
+      if (body?.error) msg = body.error
+    } catch { /* non-JSON error body, keep the HTTP status */ }
+    throw new Error(msg)
+  }
+  return res.blob()
 }

@@ -97,7 +97,23 @@
   background: #361a1a;
 }
 
-.unsupported {
-  font-size: 11px;
-  color: var(--field-text-muted);
+.callBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.voiceBadge, .voiceBadgeFallback {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.voiceBadge {
+  background: #1a2a1a;
+  color: #6ecb6e;
+}
+
+.voiceBadgeFallback {
+  background: #2a2410;
+  color: #d4a92e;
 }
