@@ -270,6 +270,22 @@ function mockRelay() {
     },
   }
 
+  // Real captured element from a direct CI probe of /fpl/bootstrap-static,
+  // 2026-08-04 -- not synthesized (scripts/probe-fpl-elements-shape.mjs,
+  // outbox/fpl-elements-shape-*.txt). Trimmed to one real player (the
+  // real David Raya record) and his real team, same "trade unused
+  // fields for a smaller mock" convention as wcProjectionsMock/
+  // dramaLeaderboardMock above -- Value Night only needs enough of a
+  // real sample to render without crashing in dev; production reads
+  // the real, live, full 568-player endpoint.
+  const fplBootstrapMock = {
+    teams: [{ id: 1, name: 'Arsenal' }],
+    elements: [{
+      web_name: 'Raya', team: 1, element_type: 1, now_cost: 60,
+      total_points: 162, minutes: 3330, code: 154561,
+    }],
+  }
+
   return {
     name: 'mock-relay',
     configureServer(server) {
@@ -309,6 +325,10 @@ function mockRelay() {
           res.setHeader('Content-Type', 'application/json')
           if (date === '2026-07-26') return res.end(JSON.stringify(archiveQueryMock))
           return res.end(JSON.stringify({ ok: true, count: 0, results: [] }))
+        }
+        if (req.url === '/fpl/bootstrap-static') {
+          res.setHeader('Content-Type', 'application/json')
+          return res.end(JSON.stringify(fplBootstrapMock))
         }
         if (req.url === '/health') {
           res.setHeader('Content-Type', 'text/plain')

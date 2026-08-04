@@ -1,0 +1,107 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.search {
+  width: 100%;
+  box-sizing: border-box;
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--field-text-primary);
+  margin-bottom: 10px;
+}
+
+.search:focus {
+  outline: none;
+  border-color: #3a3a3a;
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--field-text-muted);
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.row {
+  padding: 8px 0;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.rowHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.phraseBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #2a1414;
+  color: #e75c3c;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.fileNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sentence {
+  font-size: 12px;
+  color: var(--field-text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.more {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 8px 0 0 0;
+}

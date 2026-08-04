@@ -1,0 +1,217 @@
+{
+  "generatedFrom": "89 real docs in docs/outbox/",
+  "phrases": [
+    "turned out to be",
+    "turned out not",
+    "was wrong",
+    "originally built",
+    "originally assumed",
+    "originally thought",
+    "corrected",
+    "did not match",
+    "didn't match",
+    "misclassified",
+    "false negative",
+    "false positive",
+    "regressed"
+  ],
+  "findingCount": 28,
+  "findings": [
+    {
+      "file": "cc-session-2026-07-24-pick-outcomes.md",
+      "title": "cc-session-2026-07-24-pick-outcomes",
+      "date": "2026-07-24",
+      "phrase": "was wrong",
+      "sentence": "**What was wrong:** the playground column said \"Not prevented — same footgun\" and carried a `verdict-neutral` badge."
+    },
+    {
+      "file": "cc-session-2026-07-25-odds-countdown-seasons-verify.md",
+      "title": "CC Session Outbox — Odds/Countdown Fix Verification, Seasons Check, Dead Code Cleanup",
+      "date": "2026-07-25",
+      "phrase": "turned out to be",
+      "sentence": "Went looking for it via Cloudflare's Workers list — found a worker named `field-deploy` that looked promising by name and recent-modified timestamp, but its source turned out to be a CI deploy-courier (pushes files to GitHub, manages Action secrets, runs AI screenshot review for a *different* FIELD app's PWA) — not a static host for field-playground at all."
+    },
+    {
+      "file": "cc-session-2026-07-25-personal-product-surfaces.md",
+      "title": "CC Session Outbox — Personal Product Surfaces",
+      "date": "2026-07-25",
+      "phrase": "originally assumed",
+      "sentence": "**Bug found and fixed during review (CodeRabbit) — this one was real:** the score string is **away–home** ordered, not home–away as originally assumed (mirroring DeskCard's own `${displayAway()}–${displayHome()}` convention)."
+    },
+    {
+      "file": "cc-session-2026-07-26-gamecard-mechanisms.md",
+      "title": "CC Session Outbox — Gamecard-Derived Mechanisms",
+      "date": "2026-07-26",
+      "phrase": "corrected",
+      "sentence": "Corrected to \"the selected date's slate.\" 3."
+    },
+    {
+      "file": "cc-session-2026-07-26-orthogonal-mechanisms-and-health-panel.md",
+      "title": "CC Session Outbox — Orthogonal Mechanism Demos + Health Panel",
+      "date": "2026-07-26",
+      "phrase": "corrected",
+      "sentence": "`LatencyHistogram` — p95 index used `Math.floor(n * 0.95)` (selects the max at exact bucket boundaries); corrected to nearest-rank `Math.ceil(n * 0.95) - 1`."
+    },
+    {
+      "file": "cc-session-2026-07-26-real-weather-and-geocode-race.md",
+      "title": "CC Session Outbox — Real Open-Meteo Weather + VenueGeocodeRace",
+      "date": "2026-07-26",
+      "phrase": "false negative",
+      "sentence": "**A real methodology bug, caught and fixed mid-investigation:** the first CORS probe used plain `curl` with no `Origin` header, so no `access-control-allow-origin` could ever come back — a false negative that would have pointed the fix toward building an unnecessary relay proxy."
+    },
+    {
+      "file": "cc-session-2026-07-26-real-weather-and-geocode-race.md",
+      "title": "CC Session Outbox — Real Open-Meteo Weather + VenueGeocodeRace",
+      "date": "2026-07-26",
+      "phrase": "false positive",
+      "sentence": "Indoor venues (Footprint Center, Target Center) excluded by simply having no coordinate entry — deliberately not porting production's fuzzy indoor-keyword classifier, which has a real false positive on this repo's venue list (`\"Red Bull Arena\"` contains `\"arena\"` but is an outdoor MLS stadium)."
+    },
+    {
+      "file": "cc-session-2026-07-26-venue-coord-audit-fix.md",
+      "title": "CC Session Outbox — Venue Coordinate Audit (Globe Life Field Dome Bug)",
+      "date": "2026-07-26",
+      "phrase": "misclassified",
+      "sentence": "**Globe Life Field was misclassified as outdoor.** Production's own table files it under `// MLB retractable-roof / dome -> false` — a closed dome, not a real weather venue."
+    },
+    {
+      "file": "cc-session-2026-07-26-venue-coord-audit-fix.md",
+      "title": "CC Session Outbox — Venue Coordinate Audit (Globe Life Field Dome Bug)",
+      "date": "2026-07-26",
+      "phrase": "corrected",
+      "sentence": "`src/data/weather.js`: removed Globe Life Field from `VENUE_COORDS` entirely (it now joins Footprint Center and Target Center as venues with no coordinate entry -- the existing, correct pattern for \"no weather fetch here\"); corrected America First Field, Red Bull Arena, and Dick's Sporting Goods Park to production's confirmed coordinates."
+    },
+    {
+      "file": "cc-session-2026-07-26-venue-coord-audit-fix.md",
+      "title": "CC Session Outbox — Venue Coordinate Audit (Globe Life Field Dome Bug)",
+      "date": "2026-07-26",
+      "phrase": "corrected",
+      "sentence": "Playwright against the real dev server confirmed `VenueGeocodeRace`'s static-table hit count correctly dropped from 6/8 to 5/8, Globe Life Field now reports `table: miss`, and the three corrected venues show their exact new coordinates in the live comparison table."
+    },
+    {
+      "file": "cc-session-2026-07-27-broad-sweep.md",
+      "title": "CC Session Outbox — Broad Health Sweep: 8 Components Fixed",
+      "date": "2026-07-27",
+      "phrase": "corrected",
+      "sentence": "Corrected to wrap the read in `<Show when={!data.error}>`, which SolidJS re-evaluates reactively on every update -- matching the pattern already used correctly elsewhere (`SuspenseDemo`'s own fix, applied first, got this right the first time)."
+    },
+    {
+      "file": "cc-session-2026-07-27-controlgroup-mutation-kind-layoutshift.md",
+      "title": "CC Session Outbox — ControlGroup mutation-kind classification + layout-shift",
+      "date": "2026-07-27",
+      "phrase": "misclassified",
+      "sentence": "A single reposition (the same node removed from its old spot and reinserted elsewhere) can arrive as separate remove/add records in either order -- browsers don't guarantee add-before-remove for what is logically one move -- so a remove-first ordering misclassified a real move as removed+created."
+    },
+    {
+      "file": "cc-session-2026-07-31-fix-savant-wp-scale.md",
+      "title": "CC Session Outbox — fix Savant WP scale bug in field-playground",
+      "date": "2026-07-31",
+      "phrase": "corrected",
+      "sentence": "**Date:** 2026-07-31 **Commit:** 99886d7 (fix), a26b52e + c1a213b (CI re-runs, corrected results), 04b0a17 (gitignore cleanup)"
+    },
+    {
+      "file": "cc-session-2026-08-01-drama-soundscape-tinysynth-swap.md",
+      "title": "CC Session Outbox — DramaSoundscape synth engine swap + deploy pipeline fix",
+      "date": "2026-08-01",
+      "phrase": "corrected",
+      "sentence": "- `scripts/probe-soundscape-cdn-load.mjs`'s own log text corrected — it still said \"Tone.js\" throughout despite testing a different library; now generic."
+    },
+    {
+      "file": "cc-session-2026-08-02-followup-fixes.md",
+      "title": "CC Session Outbox — follow-up fixes from a self-assessment",
+      "date": "2026-08-02",
+      "phrase": "turned out to be",
+      "sentence": "Confirmed clean everywhere except the known instances; `SuspenseDemo`'s apparently- unguarded read turned out to be intentional and already correctly separated from its own `.error` check (verified by reading it, not assumed)."
+    },
+    {
+      "file": "cc-session-2026-08-02-second-order-followups.md",
+      "title": "CC Session Outbox — second-order follow-ups",
+      "date": "2026-08-02",
+      "phrase": "false positive",
+      "sentence": "Then confirmed zero false positives against the three legitimate safe patterns (`safeResource(...)` wrapper, a plain-signal source, and an inline arrow-function wrapper) — checker passed clean."
+    },
+    {
+      "file": "cc-session-2026-08-02-second-order-followups.md",
+      "title": "CC Session Outbox — second-order follow-ups",
+      "date": "2026-08-02",
+      "phrase": "false positive",
+      "sentence": "- `scripts/check-resource-safety.mjs` — run directly: passes clean against the real, current codebase; genuinely catches an intentionally-reintroduced instance of the real bug; genuinely produces zero false positives against all three known-safe patterns."
+    },
+    {
+      "file": "cc-session-2026-08-03-ambient-data-quality-fixes.md",
+      "title": "CC Session Outbox — two real bugs found reviewing my own probes",
+      "date": "2026-08-03",
+      "phrase": "corrected",
+      "sentence": "The real, corrected sentence is \"MLB (171/202 high-quality) edged MLS (35/39).\" Today's winner (MLB) still happens to be correct either way, but the stated numbers and runner-up were both genuinely wrong."
+    },
+    {
+      "file": "cc-session-2026-08-03-ambient-data-quality-fixes.md",
+      "title": "CC Session Outbox — two real bugs found reviewing my own probes",
+      "date": "2026-08-03",
+      "phrase": "corrected",
+      "sentence": "- `src/data/sportOfWeek.js` — `recomputeSportOfWeek(raw)`: re-aggregates the real `allSports` array by an explicit, verbatim alias table (every real variant seen across two real dates this session, matching `Arbitrage`'s own established precedent for real-not-guessed service aliasing) and recomputes winner/runnerUp/summary from the corrected totals."
+    },
+    {
+      "file": "cc-session-2026-08-03-ambient-data-quality-fixes.md",
+      "title": "CC Session Outbox — two real bugs found reviewing my own probes",
+      "date": "2026-08-03",
+      "phrase": "corrected",
+      "sentence": "- Unit-checked `recomputeSportOfWeek` directly against the exact real payload captured earlier (`outbox/sport-of-week-shape-probe-2026-08- 03T18-07-46-260Z.txt`): corrected MLB total 171 (141+18+12, exact), corrected runner-up MLS 35/39 (not the hand-estimated WNBA) — this discrepancy from my own by-hand estimate is exactly why the code was run rather than trusted on arithmetic alone."
+    },
+    {
+      "file": "cc-session-2026-08-03-ambient-data-quality-fixes.md",
+      "title": "CC Session Outbox — two real bugs found reviewing my own probes",
+      "date": "2026-08-03",
+      "phrase": "corrected",
+      "sentence": "- Local browser verification (Playwright, the exact real captured `sport_of_week` payload mocked): corrected summary text (\"171/202 ..."
+    },
+    {
+      "file": "chat-update-2026-07-25-pattern-note.md",
+      "title": "chat-update-2026-07-25-pattern-note",
+      "date": "2026-07-25",
+      "phrase": "corrected",
+      "sentence": "**From:** chat (claude.ai) **Status:** informational — process observation, corrected **HEAD:** 51c8233 (unchanged — no new commits from this note)"
+    },
+    {
+      "file": "chat-update-2026-07-25-pattern-note.md",
+      "title": "chat-update-2026-07-25-pattern-note",
+      "date": "2026-07-25",
+      "phrase": "was wrong",
+      "sentence": "That was wrong, based on incomplete information, and worth correcting directly rather than leaving it standing as if it were still accurate."
+    },
+    {
+      "file": "chat-update-2026-07-25-public-deployment.md",
+      "title": "chat-update-2026-07-25-public-deployment",
+      "date": "2026-07-25",
+      "phrase": "was wrong",
+      "sentence": "**That second claim was wrong.** Read against `field-relay-nba/workers/field-deploy/src/index.js` at HEAD:"
+    },
+    {
+      "file": "chat-update-2026-07-25-reconciliation.md",
+      "title": "chat-update-2026-07-25-reconciliation",
+      "date": "2026-07-25",
+      "phrase": "corrected",
+      "sentence": "Corrected: Agreement now explicitly labels itself as a correlation question, not an assertion the two should match, and points to CrossCheck for the more conservative, no-claims version."
+    },
+    {
+      "file": "chat-update-2026-07-26-harness-tab-aware.md",
+      "title": "chat-update-2026-07-26-harness-tab-aware",
+      "date": "2026-07-26",
+      "phrase": "false negative",
+      "sentence": "Both false negatives this session came from assertions coupled to cosmetic facts."
+    },
+    {
+      "file": "chat-update-2026-07-26-session-handoff.md",
+      "title": "chat-update-2026-07-26-session-handoff",
+      "date": "2026-07-26",
+      "phrase": "corrected",
+      "sentence": "Four claims chat made that were **wrong**, each corrected in place so they don't propagate:"
+    },
+    {
+      "file": "chat-update-2026-07-26-weather-endpoint-investigation.md",
+      "title": "chat-update-2026-07-26-weather-endpoint-investigation",
+      "date": "2026-07-26",
+      "phrase": "false negative",
+      "sentence": "That false negative would have pointed the fix squarely at building a relay proxy that shouldn't exist."
+    }
+  ]
+}

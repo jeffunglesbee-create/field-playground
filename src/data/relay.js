@@ -297,6 +297,54 @@ async function fetchHallOfSurprisesCandidates(sport) {
 
 export const [hallOfSurprisesCandidates, { refetch: refetchHallOfSurprisesCandidates }] = createResource(hallOfSurprisesSport, fetchHallOfSurprisesCandidates)
 
+// --- Leverage Index candidates: own resource, same independence reasoning ---
+export const [leverageIndexSport, setLeverageIndexSport] = createSignal('MLB')
+
+async function fetchLeverageIndexCandidates(sport) {
+  const res = await fetch(`${RELAY_BASE}/archive/drama/leaderboard?sport=${sport}&limit=50`)
+  if (!res.ok) throw new Error(`drama/leaderboard fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [leverageIndexCandidates, { refetch: refetchLeverageIndexCandidates }] = createResource(leverageIndexSport, fetchLeverageIndexCandidates)
+
+// --- The Broadcast Call candidates: own resource, same independence reasoning ---
+export const [broadcastCallSport, setBroadcastCallSport] = createSignal('MLB')
+
+async function fetchBroadcastCallCandidates(sport) {
+  const res = await fetch(`${RELAY_BASE}/archive/drama/leaderboard?sport=${sport}&limit=50`)
+  if (!res.ok) throw new Error(`drama/leaderboard fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [broadcastCallCandidates, { refetch: refetchBroadcastCallCandidates }] = createResource(broadcastCallSport, fetchBroadcastCallCandidates)
+
+// --- Fork Point candidates: own resource, needs a real pool of >= 2 games to splice between ---
+export const [forkPointSport, setForkPointSport] = createSignal('MLB')
+
+async function fetchForkPointCandidates(sport) {
+  const res = await fetch(`${RELAY_BASE}/archive/drama/leaderboard?sport=${sport}&limit=50`)
+  if (!res.ok) throw new Error(`drama/leaderboard fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [forkPointCandidates, { refetch: refetchForkPointCandidates }] = createResource(forkPointSport, fetchForkPointCandidates)
+
+// --- Value Night: real FPL player prices/points, own resource ---
+// /fpl/bootstrap-static already confirmed live and reachable elsewhere
+// this session (BsdXgPanel reads its `teams` array) -- this reads the
+// same real response's `elements` array (real players), unused by any
+// other component. Field shape (now_cost/total_points) verified via a
+// direct CI probe before this was wired up (see
+// scripts/probe-fpl-elements-shape.mjs).
+async function fetchFplElements() {
+  const res = await fetch(`${RELAY_BASE}/fpl/bootstrap-static`)
+  if (!res.ok) throw new Error(`fpl/bootstrap-static fetch failed: ${res.status}`)
+  return res.json()
+}
+
+export const [fplBootstrap, { refetch: refetchFplBootstrap }] = createResource(fetchFplElements)
+
 // --- Relay system status: real, live, confirmed via a direct probe 2026-07-27 ---
 //
 // GET /health -> NOT JSON -- a single plain-text line:

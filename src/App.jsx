@@ -64,6 +64,11 @@ import { FutureFootballFixtures } from './components/FutureFootballFixtures'
 import { BundesligaBroadcasters } from './components/BundesligaBroadcasters'
 import { FieldIdentity } from './components/FieldIdentity'
 import { TerrainFlight } from './components/TerrainFlight'
+import { LeverageIndex } from './components/LeverageIndex'
+import { ContradictionRadar } from './components/ContradictionRadar'
+import { BroadcastCall } from './components/BroadcastCall'
+import { ValueNight } from './components/ValueNight'
+import { ForkPoint } from './components/ForkPoint'
 import { Arbitrage } from './components/Arbitrage'
 import { WcBracketTree } from './components/WcBracketTree'
 import { Newspaper } from './components/Newspaper'
@@ -401,6 +406,21 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.terrainFlight}>
               <TerrainFlight />
+            </SafeSection>
+            <SafeSection class={styles.leverageIndex}>
+              <LeverageIndex />
+            </SafeSection>
+            <SafeSection class={styles.contradictionRadar}>
+              <ContradictionRadar />
+            </SafeSection>
+            <SafeSection class={styles.broadcastCall}>
+              <BroadcastCall />
+            </SafeSection>
+            <SafeSection class={styles.valueNight}>
+              <ValueNight />
+            </SafeSection>
+            <SafeSection class={styles.forkPoint}>
+              <ForkPoint />
             </SafeSection>
             <SafeSection class={styles.controlGroup}>
               <ControlGroup />

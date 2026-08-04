@@ -1,0 +1,145 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.refreshBtn {
+  margin-left: auto;
+  font-size: 12px;
+  background: none;
+  border: none;
+  color: var(--field-text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.refreshBtn:hover {
+  color: var(--field-text-secondary);
+}
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.loading, .empty, .error {
+  font-size: 12px;
+  color: var(--field-text-muted);
+}
+
+.error {
+  color: #c44;
+}
+
+.pickers {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.pickerLabel {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--field-text-muted);
+}
+
+.select {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  color: var(--field-text-primary);
+}
+
+.sliderLabel {
+  display: block;
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.chart {
+  width: 100%;
+  height: 120px;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+}
+
+.originalLine {
+  fill: none;
+  stroke: var(--field-text-muted);
+  stroke-width: 1.5;
+}
+
+.splicedLine {
+  fill: none;
+  stroke: #e75c3c;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--field-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.swatchOriginal, .swatchSpliced {
+  display: inline-block;
+  width: 12px;
+  height: 2px;
+}
+
+.swatchOriginal {
+  background: var(--field-text-muted);
+}
+
+.swatchSpliced {
+  background: #e75c3c;
+}
