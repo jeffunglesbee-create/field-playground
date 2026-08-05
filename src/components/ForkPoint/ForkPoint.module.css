@@ -79,6 +79,91 @@
   color: var(--field-text-primary);
 }
 
+.rankedForks {
+  margin-bottom: 12px;
+}
+
+.rankedForksLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  margin: 0 0 6px 0;
+}
+
+.rankedForksList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rankedForkRow {
+  margin: 0;
+}
+
+.rankedForkBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.rankedForkBtn:hover {
+  border-color: #2a2a2a;
+}
+
+.rankedForkRank {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  min-width: 18px;
+}
+
+.rankedForkText {
+  flex: 1;
+  font-size: 11px;
+  color: var(--field-text-primary);
+  line-height: 1.3;
+}
+
+.rankedForkDelta {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--field-text-muted);
+}
+
+.deltaUp {
+  color: #8fce6e;
+}
+
+.deltaDown {
+  color: #e7826a;
+}
+
+.rankedForksNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  margin: 6px 0 0 0;
+}
+
+.rankedForksEmpty {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 10px 0;
+}
+
 .verdict {
   font-size: 13px;
   color: var(--field-text-primary);

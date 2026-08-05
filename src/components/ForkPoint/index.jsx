@@ -1,7 +1,7 @@
 import { For, Show, createMemo, createSignal, createEffect } from 'solid-js'
 import { forkPointCandidates, refetchForkPointCandidates } from '../../data/relay'
 import { analyzeGameArc } from '../../data/dramaArcAnalysis'
-import { computeFork } from '../../data/forkPoint'
+import { computeFork, findBiggestForks, FORK_SAMPLE_COUNT } from '../../data/forkPoint'
 import { dramaTier } from '../DeskCard'
 import styles from './ForkPoint.module.css'
 
@@ -134,6 +134,35 @@ export function ForkPoint() {
     }
   })
 
+  const sourceLabel = createMemo(() => {
+    const g = games()[sourceIdx()]?.raw
+    return g ? `${g.away} @ ${g.home}` : ''
+  })
+
+  // The real utility isn't "manually pick one arbitrary pairing and see
+  // what happens" -- it's "for THIS real game, which of its own real
+  // turning points would have swung it the most." Scans every other real
+  // game in the current sample against the fixed source game (see
+  // findBiggestForks -- sampled, not exhaustive, disclosed in the UI) and
+  // ranks by real peak swing. Independent of forkIdx/splicePoint: this
+  // recomputes only when the source game or the real game pool changes,
+  // not on every manual slider drag.
+  const biggestForks = createMemo(() => {
+    const gs = games()
+    if (gs.length < 2) return []
+    const source = gs[sourceIdx()]?.raw
+    if (!source) return []
+    const others = gs.filter((_, i) => i !== sourceIdx()).map(g => g.raw)
+    return findBiggestForks(source, others).slice(0, 5)
+  })
+
+  function loadFork(f) {
+    const idx = games().findIndex(g => g.raw === f.forkGame)
+    if (idx === -1) return
+    setForkIdx(idx)
+    setSplicePoint(f.splicePoint)
+  }
+
   // The real, plain-language payoff -- names both real games and the
   // real moment (play count + % through the game + how tense it already
   // was), not just "here," before stating what a real archived game's
@@ -187,6 +216,36 @@ export function ForkPoint() {
                 </select>
               </label>
             </div>
+
+            <Show when={biggestForks().length} fallback={<p class={styles.rankedForksEmpty}>No real forks meet the minimum overlap for {sourceLabel()} in the current sample.</p>}>
+              <div class={styles.rankedForks}>
+                <p class={styles.rankedForksLabel}>Biggest real forks for {sourceLabel()}</p>
+                <ol class={styles.rankedForksList}>
+                  <For each={biggestForks()}>
+                    {(f, i) => {
+                      const pct = f.maxIndex > 0 ? Math.round((f.splicePoint / f.maxIndex) * 100) : 0
+                      return (
+                        <li class={styles.rankedForkRow}>
+                          <button class={styles.rankedForkBtn} onClick={() => loadFork(f)}>
+                            <span class={styles.rankedForkRank}>#{i() + 1}</span>
+                            <span class={styles.rankedForkText}>
+                              onto {f.forkGame.away} @ {f.forkGame.home}, play {f.splicePoint} of {f.maxIndex} (~{pct}%)
+                            </span>
+                            <span class={styles.rankedForkDelta} classList={{ [styles.deltaUp]: f.delta > 0, [styles.deltaDown]: f.delta < 0 }}>
+                              {f.delta > 0 ? '+' : ''}{f.delta}
+                            </span>
+                          </button>
+                        </li>
+                      )
+                    }}
+                  </For>
+                </ol>
+                <p class={styles.rankedForksNote}>
+                  Sampled {FORK_SAMPLE_COUNT} real points per other game, not every real play -- not exhaustive.
+                  Click one to load it below.
+                </p>
+              </div>
+            </Show>
 
             <Show when={result()}>
               {r => (

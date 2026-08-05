@@ -41,3 +41,44 @@ export function computeFork(sourceGame, forkGame, splicePoint) {
     offset,
   }
 }
+
+// "Game vs game, one manual pairing at a time" undersells this: the real
+// utility is "for THIS real game, which of its own real turning points --
+// forked onto some other real game's path -- would have swung it the
+// most." That's answerable from data already on hand: scan every OTHER
+// real game in the sample against a set of real candidate splice points
+// for the fixed source game, and rank by the real resulting peak swing.
+//
+// Not exhaustive: a real per-play arc can run to hundreds of points, and
+// scanning every single one against every other real game doesn't scale
+// client-side, so each (source, fork-game) pair samples FORK_SAMPLE_COUNT
+// real, evenly-spaced candidate points (always including play 0 and the
+// real final shared index) and keeps that pair's single biggest real
+// swing. This is a disclosed sampling choice, not a silent cap -- see the
+// note rendered alongside the ranked list in ForkPoint's UI.
+export const FORK_SAMPLE_COUNT = 12
+
+export function findBiggestForks(sourceGame, otherGames, sampleCount = FORK_SAMPLE_COUNT) {
+  const results = []
+  for (const forkGame of otherGames) {
+    if (forkGame === sourceGame) continue
+    const points = new Set()
+    // Seed with computeFork(..., 0) purely to read the real, shared
+    // maxIndex for this pair before sampling it.
+    const probe = computeFork(sourceGame, forkGame, 0)
+    if (!probe || probe.maxIndex < 1) continue
+    for (let i = 0; i < sampleCount; i++) {
+      points.add(Math.round((i / (sampleCount - 1)) * probe.maxIndex))
+    }
+    let best = null
+    for (const p of points) {
+      const r = computeFork(sourceGame, forkGame, p)
+      if (!r) continue
+      const delta = r.splicedPeak - r.originalPeak
+      if (!best || Math.abs(delta) > Math.abs(best.delta)) best = { ...r, delta }
+    }
+    if (best) results.push(best)
+  }
+  results.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+  return results
+}
