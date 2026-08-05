@@ -1,0 +1,63 @@
+name: Fork Point Real WP Sweep Probe
+
+# Closes the first gap behind the real-WP feature's 92/100 confidence
+# gate (docs/outbox/cc-session-2026-08-05-fork-point-real-wp-splicing.md):
+# the original e2e probe only ever exercised ONE real source/fork
+# pairing. This sweeps several real pairings -- manual selections across
+# the pool plus a couple of the app's own ranked "biggest forks" picks --
+# through the real WP toggle against the ACTUAL real hosts
+# (statsapi.mlb.com, baseballsavant.mlb.com), confirming each renders
+# honestly. Both hosts are sandbox-blocked from chat -- CI-as-proxy, same
+# pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+
+      - name: Serve the real built app and sweep several real WP pairings
+        timeout-minutes: 6
+        continue-on-error: true
+        env:
+          PREVIEW_URL: http://127.0.0.1:4173
+        run: |
+          mkdir -p outbox
+          nohup npx vite preview --port 4173 --strictPort --host 127.0.0.1 > outbox/fork-point-wp-sweep-preview-output.txt 2>&1 &
+          disown
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:4173 > /dev/null; then ok=1; break; fi
+            sleep 1
+          done
+          echo "server_ready=$ok" >> outbox/fork-point-wp-sweep-preview-output.txt
+          cat outbox/fork-point-wp-sweep-preview-output.txt
+          node scripts/probe-fork-point-real-wp-sweep.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "fork-point-real-wp-sweep-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: fork point real WP sweep probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
