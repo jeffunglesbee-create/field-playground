@@ -82,3 +82,41 @@ export function findBiggestForks(sourceGame, otherGames, sampleCount = FORK_SAMP
   results.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
   return results
 }
+
+// Generic version of computeFork's splice, operating on two already-
+// real numeric arrays directly instead of parsing them out of a game's
+// own drama_arc field -- used by the real-WP path (src/data/
+// forkPointWp.js), where the real per-play array comes from a live
+// Baseball Savant fetch, not drama_arc. Exact same mechanic: the real
+// source arc up to the splice point, then the real other arc's own
+// real shape from that point, shifted by one constant so it connects
+// continuously at the seam.
+//
+// Win probability is a real, physically bounded 0-100 metric (unlike
+// drama score, which has no such ceiling) -- when clampMin/clampMax
+// are given, the shifted tail is clamped to that real range so a large
+// seam offset can't produce a nonsensical value like "153% to win."
+export function spliceRealArcs(sourceArc, forkArc, splicePoint, { clampMin, clampMax } = {}) {
+  const maxIndex = Math.min(sourceArc.length, forkArc.length) - 1
+  if (maxIndex < 0) return null
+  const clamped = Math.max(0, Math.min(splicePoint, maxIndex))
+
+  const seamValue = sourceArc[clamped]
+  const forkSeamValue = forkArc[clamped]
+  const offset = seamValue - forkSeamValue
+  const clampFn = v => (clampMin != null || clampMax != null)
+    ? Math.max(clampMin ?? -Infinity, Math.min(clampMax ?? Infinity, v))
+    : v
+  const splicedTail = forkArc.slice(clamped + 1).map(v => clampFn(v + offset))
+  const splicedArc = [...sourceArc.slice(0, clamped + 1), ...splicedTail]
+
+  return {
+    splicePoint: clamped,
+    maxIndex,
+    originalArc: sourceArc,
+    splicedArc,
+    originalEnd: sourceArc[sourceArc.length - 1],
+    splicedEnd: splicedArc[splicedArc.length - 1],
+    offset,
+  }
+}

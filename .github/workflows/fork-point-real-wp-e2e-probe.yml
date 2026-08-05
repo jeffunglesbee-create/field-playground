@@ -1,0 +1,61 @@
+name: Fork Point Real WP E2E Probe
+
+# Confirms Fork Point's real-WP toggle (src/data/forkPointWp.js) works
+# end-to-end against the ACTUAL real hosts -- statsapi.mlb.com and
+# baseballsavant.mlb.com -- from a real browser driving the real built
+# app, not the mocked local Playwright run used to verify the
+# component's own parsing/rendering logic. Both hosts are sandbox-
+# blocked from chat -- CI-as-proxy, same pattern as every prior probe
+# this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+
+      - name: Serve the real built app and verify the real WP toggle end-to-end
+        timeout-minutes: 4
+        continue-on-error: true
+        env:
+          PREVIEW_URL: http://127.0.0.1:4173
+        run: |
+          mkdir -p outbox
+          nohup npx vite preview --port 4173 --strictPort --host 127.0.0.1 > outbox/fork-point-wp-preview-output.txt 2>&1 &
+          disown
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:4173 > /dev/null; then ok=1; break; fi
+            sleep 1
+          done
+          echo "server_ready=$ok" >> outbox/fork-point-wp-preview-output.txt
+          cat outbox/fork-point-wp-preview-output.txt
+          node scripts/probe-fork-point-real-wp-e2e.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "fork-point-real-wp-e2e-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: fork point real WP e2e probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1

@@ -79,6 +79,29 @@
   color: var(--field-text-primary);
 }
 
+.wpToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--field-text-secondary);
+  margin: 0 0 8px 0;
+  cursor: pointer;
+}
+
+.wpStatus {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.wpSourceNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  margin: 6px 0 0 0;
+}
+
 .rankedForks {
   margin-bottom: 12px;
 }

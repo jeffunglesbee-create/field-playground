@@ -1,7 +1,8 @@
-import { For, Show, createMemo, createSignal, createEffect } from 'solid-js'
+import { For, Show, createMemo, createSignal, createEffect, createResource } from 'solid-js'
 import { forkPointCandidates, refetchForkPointCandidates } from '../../data/relay'
 import { analyzeGameArc } from '../../data/dramaArcAnalysis'
-import { computeFork, findBiggestForks, FORK_SAMPLE_COUNT } from '../../data/forkPoint'
+import { computeFork, findBiggestForks, FORK_SAMPLE_COUNT, spliceRealArcs } from '../../data/forkPoint'
+import { fetchRealWpArc } from '../../data/forkPointWp'
 import { dramaTier } from '../DeskCard'
 import styles from './ForkPoint.module.css'
 
@@ -163,6 +164,64 @@ export function ForkPoint() {
     setSplicePoint(f.splicePoint)
   }
 
+  // Real win probability instead of the derived drama score -- the
+  // resolution to "what novel thinking resolves the wp problem?" (see
+  // src/data/forkPointWp.js's header for the full reasoning and the
+  // real coverage probe that confirmed it before this was wired up).
+  // MLB only; direct fetch per selected game, not routed through the
+  // ranked "biggest forks" scan above (which would mean dozens of live
+  // external calls on every source-game change -- not polite to a free
+  // real API).
+  const [useRealWp, setUseRealWp] = createSignal(false)
+  const [wpSplicePoint, setWpSplicePoint] = createSignal(null)
+
+  const [sourceWpArc] = createResource(
+    () => (useRealWp() ? games()[sourceIdx()]?.raw ?? null : null),
+    fetchRealWpArc
+  )
+  const [forkWpArc] = createResource(
+    () => (useRealWp() ? games()[forkIdx()]?.raw ?? null : null),
+    fetchRealWpArc
+  )
+
+  const wpResult = createMemo(() => {
+    const srcArc = sourceWpArc()
+    const forkArc = forkWpArc()
+    if (!srcArc || !forkArc) return null
+    const maxIndex = Math.min(srcArc.length, forkArc.length) - 1
+    if (maxIndex < 1) return null
+    const point = Math.min(wpSplicePoint() ?? Math.floor(maxIndex / 2), maxIndex)
+    return spliceRealArcs(srcArc, forkArc, point, { clampMin: 0, clampMax: 100 })
+  })
+
+  const wpChartMinMax = createMemo(() => {
+    const r = wpResult()
+    if (!r) return [0, 100]
+    const all = [...r.originalArc, ...r.splicedArc]
+    return [Math.min(...all), Math.max(...all)]
+  })
+
+  const wpSharedLength = createMemo(() => {
+    const r = wpResult()
+    if (!r) return 1
+    return Math.max(r.originalArc.length, r.splicedArc.length)
+  })
+
+  // Real win probability is directly interpretable on its own -- "the
+  // home team's real chance to win" -- so the WP verdict reports the
+  // real ending shift, not a peak (a WP curve's peak is often a trivial
+  // ~100% late in a blowout; the ending value is the meaningful one).
+  const wpVerdict = createMemo(() => {
+    const r = wpResult()
+    const src = games()[sourceIdx()]?.raw
+    if (!r || !src) return null
+    const delta = r.splicedEnd - r.originalEnd
+    const base = `${src.home}'s real win probability`
+    if (Math.abs(delta) < 0.5) return { delta, text: `${base} would have ended almost exactly where it did -- ${r.originalEnd.toFixed(1)}%.` }
+    if (delta > 0) return { delta, text: `${base} would have ended at ${r.splicedEnd.toFixed(1)}%, not ${r.originalEnd.toFixed(1)}% -- ${delta.toFixed(1)} points higher.` }
+    return { delta, text: `${base} would have ended at ${r.splicedEnd.toFixed(1)}%, not ${r.originalEnd.toFixed(1)}% -- ${(-delta).toFixed(1)} points lower.` }
+  })
+
   // The real, plain-language payoff -- names both real games and the
   // real moment (play count + % through the game + how tense it already
   // was), not just "here," before stating what a real archived game's
@@ -188,7 +247,9 @@ export function ForkPoint() {
       <p class={styles.note}>
         Splices two real archived drama_arcs at a real chosen index -- "what if this game had followed that
         game's path from here." No win-probability model is rerun (none is exposed client-side); this is an
-        exact splice of two real arrays, shifted to connect at the seam.
+        exact splice of two real arrays, shifted to connect at the seam. For MLB games, the toggle below
+        splices real recorded win probability instead, read live from Baseball Savant -- not a model, not an
+        estimate, the actual real per-play data for that real game.
       </p>
 
       <Show when={forkPointCandidates.error}>
@@ -247,58 +308,127 @@ export function ForkPoint() {
               </div>
             </Show>
 
-            <Show when={result()}>
-              {r => (
+            <label class={styles.wpToggle}>
+              <input type="checkbox" checked={useRealWp()} onChange={e => setUseRealWp(e.currentTarget.checked)} />
+              Splice real win probability instead of drama score (MLB only)
+            </label>
+
+            <Show when={useRealWp()}>
+              <Show when={sourceWpArc.loading || forkWpArc.loading}>
+                <p class={styles.wpStatus}>Fetching real win probability for both games…</p>
+              </Show>
+              <Show when={!sourceWpArc.loading && !forkWpArc.loading && (sourceWpArc() == null || forkWpArc() == null)}>
+                <p class={styles.wpStatus}>
+                  Real win probability unavailable for {sourceWpArc() == null ? spliceContext()?.sourceLabel : spliceContext()?.forkLabel} -- showing drama score below instead.
+                </p>
+              </Show>
+            </Show>
+
+            <Show when={useRealWp() && wpResult()} fallback={
+              <Show when={result()}>
+                {r => (
+                  <>
+                    <p class={styles.verdict} classList={{ [styles.verdictUp]: verdict().delta > 0, [styles.verdictDown]: verdict().delta < 0 }}>
+                      {verdict().text}
+                    </p>
+
+                    <label class={styles.sliderLabel}>
+                      Fork at play {r().splicePoint} of {r().maxIndex} -- {spliceContext()?.tierDescription} (drama score {spliceContext()?.seamValue})
+                      <input
+                        class={styles.slider}
+                        type="range"
+                        min="0"
+                        max={r().maxIndex}
+                        value={r().splicePoint}
+                        onInput={e => setSplicePoint(Number(e.currentTarget.value))}
+                      />
+                    </label>
+
+                    <svg class={styles.chart} viewBox={`0 0 ${CHART_W} ${CHART_H}`} preserveAspectRatio="none">
+                      {/* Real Y-axis: the actual min/max of both real arcs shown, not a guessed 0-100 scale. */}
+                      <text x={PAD_L - 6} y={PAD_T + 4} text-anchor="end" class={styles.axisLabel}>{Math.round(chartMinMax()[1])}</text>
+                      <text x={PAD_L - 6} y={CHART_H - PAD_B} text-anchor="end" class={styles.axisLabel}>{Math.round(chartMinMax()[0])}</text>
+                      <line x1={PAD_L} x2={CHART_W - PAD_R} y1={CHART_H - PAD_B} y2={CHART_H - PAD_B} class={styles.axisLine} />
+
+                      {/* Real X-axis: real play range, shared by both lines -- labeled "play" so the
+                          numbers read as a real unit, not an unexplained index. */}
+                      <text x={PAD_L} y={CHART_H - 4} text-anchor="start" class={styles.axisLabel}>play 0</text>
+                      <text x={CHART_W - PAD_R} y={CHART_H - 4} text-anchor="end" class={styles.axisLabel}>play {sharedLength() - 1}</text>
+
+                      {/* Where the two lines actually diverge -- ties the slider position to the chart directly. */}
+                      <line
+                        x1={xForIndex(r().splicePoint, sharedLength())} x2={xForIndex(r().splicePoint, sharedLength())}
+                        y1={PAD_T} y2={CHART_H - PAD_B}
+                        class={styles.forkMarkerLine}
+                      />
+                      <text x={xForIndex(r().splicePoint, sharedLength())} y={PAD_T - 2} text-anchor={markerAnchor(xForIndex(r().splicePoint, sharedLength()))} class={styles.forkMarkerLabel}>fork {spliceContext()?.pct ?? 0}%</text>
+
+                      <polyline
+                        points={toPoints(r().originalArc, chartMinMax()[0], chartMinMax()[1], sharedLength())}
+                        class={styles.originalLine}
+                      />
+                      <polyline
+                        points={toPoints(r().splicedArc, chartMinMax()[0], chartMinMax()[1], sharedLength())}
+                        class={styles.splicedLine}
+                      />
+                    </svg>
+
+                    <div class={styles.legend}>
+                      <span class={styles.legendItem}><span class={styles.swatchOriginal} /> what actually happened -- {spliceContext()?.sourceLabel} (peak {r().originalPeak})</span>
+                      <span class={styles.legendItem}><span class={styles.swatchSpliced} /> forked onto {spliceContext()?.forkLabel} (peak {r().splicedPeak})</span>
+                    </div>
+                  </>
+                )}
+              </Show>
+            }>
+              {wr => (
                 <>
-                  <p class={styles.verdict} classList={{ [styles.verdictUp]: verdict().delta > 0, [styles.verdictDown]: verdict().delta < 0 }}>
-                    {verdict().text}
+                  <p class={styles.verdict} classList={{ [styles.verdictUp]: wpVerdict().delta > 0.5, [styles.verdictDown]: wpVerdict().delta < -0.5 }}>
+                    {wpVerdict().text}
                   </p>
 
                   <label class={styles.sliderLabel}>
-                    Fork at play {r().splicePoint} of {r().maxIndex} -- {spliceContext()?.tierDescription} (drama score {spliceContext()?.seamValue})
+                    Fork at play {wr().splicePoint} of {wr().maxIndex} -- real win probability {wr().originalArc[wr().splicePoint].toFixed(1)}% at that moment
                     <input
                       class={styles.slider}
                       type="range"
                       min="0"
-                      max={r().maxIndex}
-                      value={r().splicePoint}
-                      onInput={e => setSplicePoint(Number(e.currentTarget.value))}
+                      max={wr().maxIndex}
+                      value={wr().splicePoint}
+                      onInput={e => setWpSplicePoint(Number(e.currentTarget.value))}
                     />
                   </label>
 
                   <svg class={styles.chart} viewBox={`0 0 ${CHART_W} ${CHART_H}`} preserveAspectRatio="none">
-                    {/* Real Y-axis: the actual min/max of both real arcs shown, not a guessed 0-100 scale. */}
-                    <text x={PAD_L - 6} y={PAD_T + 4} text-anchor="end" class={styles.axisLabel}>{Math.round(chartMinMax()[1])}</text>
-                    <text x={PAD_L - 6} y={CHART_H - PAD_B} text-anchor="end" class={styles.axisLabel}>{Math.round(chartMinMax()[0])}</text>
+                    <text x={PAD_L - 6} y={PAD_T + 4} text-anchor="end" class={styles.axisLabel}>{Math.round(wpChartMinMax()[1])}%</text>
+                    <text x={PAD_L - 6} y={CHART_H - PAD_B} text-anchor="end" class={styles.axisLabel}>{Math.round(wpChartMinMax()[0])}%</text>
                     <line x1={PAD_L} x2={CHART_W - PAD_R} y1={CHART_H - PAD_B} y2={CHART_H - PAD_B} class={styles.axisLine} />
 
-                    {/* Real X-axis: real play range, shared by both lines -- labeled "play" so the
-                        numbers read as a real unit, not an unexplained index. */}
                     <text x={PAD_L} y={CHART_H - 4} text-anchor="start" class={styles.axisLabel}>play 0</text>
-                    <text x={CHART_W - PAD_R} y={CHART_H - 4} text-anchor="end" class={styles.axisLabel}>play {sharedLength() - 1}</text>
+                    <text x={CHART_W - PAD_R} y={CHART_H - 4} text-anchor="end" class={styles.axisLabel}>play {wpSharedLength() - 1}</text>
 
-                    {/* Where the two lines actually diverge -- ties the slider position to the chart directly. */}
                     <line
-                      x1={xForIndex(r().splicePoint, sharedLength())} x2={xForIndex(r().splicePoint, sharedLength())}
+                      x1={xForIndex(wr().splicePoint, wpSharedLength())} x2={xForIndex(wr().splicePoint, wpSharedLength())}
                       y1={PAD_T} y2={CHART_H - PAD_B}
                       class={styles.forkMarkerLine}
                     />
-                    <text x={xForIndex(r().splicePoint, sharedLength())} y={PAD_T - 2} text-anchor={markerAnchor(xForIndex(r().splicePoint, sharedLength()))} class={styles.forkMarkerLabel}>fork {spliceContext()?.pct ?? 0}%</text>
+                    <text x={xForIndex(wr().splicePoint, wpSharedLength())} y={PAD_T - 2} text-anchor={markerAnchor(xForIndex(wr().splicePoint, wpSharedLength()))} class={styles.forkMarkerLabel}>fork</text>
 
                     <polyline
-                      points={toPoints(r().originalArc, chartMinMax()[0], chartMinMax()[1], sharedLength())}
+                      points={toPoints(wr().originalArc, wpChartMinMax()[0], wpChartMinMax()[1], wpSharedLength())}
                       class={styles.originalLine}
                     />
                     <polyline
-                      points={toPoints(r().splicedArc, chartMinMax()[0], chartMinMax()[1], sharedLength())}
+                      points={toPoints(wr().splicedArc, wpChartMinMax()[0], wpChartMinMax()[1], wpSharedLength())}
                       class={styles.splicedLine}
                     />
                   </svg>
 
                   <div class={styles.legend}>
-                    <span class={styles.legendItem}><span class={styles.swatchOriginal} /> what actually happened -- {spliceContext()?.sourceLabel} (peak {r().originalPeak})</span>
-                    <span class={styles.legendItem}><span class={styles.swatchSpliced} /> forked onto {spliceContext()?.forkLabel} (peak {r().splicedPeak})</span>
+                    <span class={styles.legendItem}><span class={styles.swatchOriginal} /> what actually happened -- {spliceContext()?.sourceLabel} real WP (ended {wr().originalEnd.toFixed(1)}%)</span>
+                    <span class={styles.legendItem}><span class={styles.swatchSpliced} /> forked onto {spliceContext()?.forkLabel}'s real WP path (ended {wr().splicedEnd.toFixed(1)}%)</span>
                   </div>
+                  <p class={styles.wpSourceNote}>Source: real per-play win probability, Baseball Savant -- not an estimate, not a rerun model.</p>
                 </>
               )}
             </Show>
