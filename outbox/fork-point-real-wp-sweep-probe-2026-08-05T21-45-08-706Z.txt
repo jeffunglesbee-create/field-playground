@@ -1,0 +1,25 @@
+probe_at: 2026-08-05T21:45:08.707Z
+purpose: sweep several REAL source/fork pairings (not just the default) through the real-WP
+toggle against the ACTUAL real hosts -- confirms each renders honestly, closing the gap the
+first e2e probe (single pairing) left open.
+
+real candidate pool size (from Source game dropdown): 25
+real WP toggle switched on.
+
+pairing 0 (already covered by the first e2e probe): default source=0, fork=1 -> real-wp  Twins's real win probability would have ended at 0.0%, not 100.0% -- 100.0 points lower.
+manual pairing 1: source=3, fork=6 -> real-wp  Baltimore Orioles's real win probability would have ended at 5.7%, not 100.0% -- 94.3 points lower.
+manual pairing 2: source=6, fork=9 -> real-wp  Astros's real win probability would have ended at 100.0%, not 0.0% -- 100.0 points higher.
+manual pairing 3: source=9, fork=12 -> real-wp  White Sox's real win probability would have ended at 0.0%, not 100.0% -- 100.0 points lower.
+manual pairing 4: source=12, fork=15 -> real-wp  Diamondbacks's real win probability would have ended at 100.0%, not 0.0% -- 100.0 points higher.
+manual pairing 5: source=15, fork=18 -> real-wp  St. Louis Cardinals's real win probability would have ended at 0.0%, not 100.0% -- 100.0 points lower.
+manual pairing 6: source=18, fork=21 -> real-wp  Tigers's real win probability would have ended at 23.2%, not 0.0% -- 23.2 points higher.
+ranked pairing 1 (#1onto Yankees @ White Sox, play 63 of 693 (~9%)+43): source unchanged, fork set by ranked pick -> real-wp  Tigers's real win probability would have ended at 100.0%, not 0.0% -- 100.0 points higher.
+ranked pairing 2 (#2onto Tigers @ Cubs, play 63 of 693 (~9%)+37): source unchanged, fork set by ranked pick -> real-wp  Tigers's real win probability would have ended at 50.4%, not 0.0% -- 50.4 points higher.
+
+=== RESULT ===
+9 real pairings swept: 9 real-WP, 0 honest-unavailable, 0 unknown/neither
+page errors: []
+
+=== VERDICT ===
+CONFIRMED: every real pairing swept rendered honestly -- real WP data or the disclosed
+unavailable message, never silence. 0/9 hit the unavailable path this run (none observed, not a guarantee it never will).
