@@ -1,0 +1,31 @@
+probe_at: 2026-08-05T16:55:23.618Z
+purpose: does real gamePk resolution + real Savant WP coverage hold across Fork Point's
+FULL real candidate pool (limit=50), especially its OLDEST real games -- not just recent ones?
+
+real candidate pool size (with a usable date): 50
+real date spread: 2026-05-25 .. 2026-07-30
+
+sampling 13 real games across the full spread (oldest-weighted):
+
+OK    2026-05-25 (73d old)  Tampa Bay Rays @ Baltimore Orioles  gamePk=824838  wp_points=109
+OK    2026-05-26 (72d old)  Minnesota Twins @ Chicago White Sox  gamePk=824597  wp_points=82
+OK    2026-05-31 (67d old)  Arizona Diamondbacks @ Seattle Mariners  gamePk=823133  wp_points=80
+OK    2026-06-02 (65d old)  Kansas City Royals @ Cincinnati Reds  gamePk=824511  wp_points=78
+OK    2026-06-03 (64d old)  Athletics @ Chicago Cubs  gamePk=824671  wp_points=79
+OK    2026-06-06 (61d old)  Cincinnati Reds @ St. Louis Cardinals  gamePk=823048  wp_points=77
+OK    2026-07-30 (7d old)  Yankees @ White Sox  gamePk=824568  wp_points=86
+OK    2026-07-30 (7d old)  Pirates @ Reds  gamePk=824488  wp_points=78
+OK    2026-07-30 (7d old)  Royals @ Twins  gamePk=823674  wp_points=69
+OK    2026-06-23 (44d old)  Astros @ Blue Jays  gamePk=822799  wp_points=102
+OK    2026-07-06 (31d old)  Rockies @ Dodgers  gamePk=823930  wp_points=93
+OK    2026-07-17 (20d old)  Padres @ Royals  gamePk=824090  wp_points=86
+OK    2026-07-26 (11d old)  Braves @ Orioles  gamePk=824810  wp_points=93
+
+=== RESULT ===
+resolved with real Savant WP data: 13 / 13
+oldest real game that STILL resolved: 2026-05-25 (73d old)
+
+=== VERDICT ===
+CONFIRMED: real gamePk + real Savant WP coverage holds across the FULL real date spread this
+sample pool actually has, including its oldest real games. Safe to build real-WP splicing for
+MLB Fork Point candidates on this exact method -- no coverage gap found at this sample size.
