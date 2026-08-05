@@ -1,0 +1,109 @@
+probe_at: 2026-08-05T17:44:14.602Z
+purpose: does the real-WP toggle work end-to-end against the ACTUAL real hosts,
+in a real built app, real browser -- not mocked?
+
+Fork Point real candidate data loaded.
+Real WP toggle clicked on for the real default source/fork pairing.
+
+=== RENDERED STATE ===
+FORK POINT
+↻
+
+Splices two real archived drama_arcs at a real chosen index -- "what if this game had followed that game's path from here." No win-probability model is rerun (none is exposed client-side); this is an exact splice of two real arrays, shifted to connect at the seam. For MLB games, the toggle below splices real recorded win probability instead, read live from Baseball Savant -- not a model, not an estimate, the actual real per-play data for that real game.
+
+SOURCE GAME
+Guardians @ Twins (5–6)
+Astros @ Angels (6–4)
+Yankees @ White Sox (1–2)
+Tampa Bay Rays @ Baltimore Orioles (7–9)
+Cubs @ Brewers (4–3)
+Tigers @ Yankees (6–2)
+Orioles @ Astros (4–2)
+Braves @ Orioles (3–2)
+Diamondbacks @ Pirates (2–3)
+Yankees @ White Sox (5–6)
+Arizona Diamondbacks @ Seattle Mariners (2–3)
+Astros @ Blue Jays (9–7)
+Brewers @ Diamondbacks (7–4)
+Marlins @ Brewers (1–2)
+Giants @ Mariners (3–4)
+Cincinnati Reds @ St. Louis Cardinals (5–6)
+Seattle Mariners @ Baltimore Orioles (6–5)
+Cincinnati Reds @ San Diego Padres (5–3)
+Astros @ Tigers (7–5)
+Padres @ Royals (6–7)
+Tigers @ Cubs (8–6)
+Braves @ Orioles (7–6)
+Pirates @ Reds (2–3)
+Royals @ White Sox (1–2)
+Mets @ Braves (7–6)
+FORK INTO
+Guardians @ Twins (5–6)
+Astros @ Angels (6–4)
+Yankees @ White Sox (1–2)
+Tampa Bay Rays @ Baltimore Orioles (7–9)
+Cubs @ Brewers (4–3)
+Tigers @ Yankees (6–2)
+Orioles @ Astros (4–2)
+Braves @ Orioles (3–2)
+Diamondbacks @ Pirates (2–3)
+Yankees @ White Sox (5–6)
+Arizona Diamondbacks @ Seattle Mariners (2–3)
+Astros @ Blue Jays (9–7)
+Brewers @ Diamondbacks (7–4)
+Marlins @ Brewers (1–2)
+Giants @ Mariners (3–4)
+Cincinnati Reds @ St. Louis Cardinals (5–6)
+Seattle Mariners @ Baltimore Orioles (6–5)
+Cincinnati Reds @ San Diego Padres (5–3)
+Astros @ Tigers (7–5)
+Padres @ Royals (6–7)
+Tigers @ Cubs (8–6)
+Braves @ Orioles (7–6)
+Pirates @ Reds (2–3)
+Royals @ White Sox (1–2)
+Mets @ Braves (7–6)
+
+BIGGEST REAL FORKS FOR GUARDIANS @ TWINS
+
+#1
+onto Royals @ White Sox, play 192 of 528 (~36%)
+-46
+#2
+onto Cincinnati Reds @ St. Louis Cardinals, play 212 of 582 (~36%)
+-44
+#3
+onto Yankees @ White Sox, play 245 of 674 (~36%)
++42
+#4
+onto Padres @ Royals, play 176 of 646 (~27%)
+-42
+#5
+onto Astros @ Angels, play 476 of 655 (~73%)
++39
+
+Sampled 12 real points per other game, not every real play -- not exhaustive. Click one to load it below.
+
+Splice real win probability instead of drama score (MLB only)
+
+Twins's real win probability would have ended at 0.0%, not 100.0% -- 100.0 points lower.
+
+Fork at play 41 of 82 -- real win probability 50.0% at that moment
+100%
+0%
+play 0
+play 85
+FORK
+what actually happened -- Guardians @ Twins real WP (ended 100.0%)
+forked onto Astros @ Angels's real WP path (ended 0.0%)
+
+Source: real per-play win probability, Baseball Savant -- not an estimate, not a rerun model.
+
+=== RESULT ===
+real WP verdict rendered: true
+honest unavailable message rendered: false
+page errors: []
+
+=== VERDICT ===
+CONFIRMED: real-WP toggle behaves honestly end-to-end against the real hosts -- either
+real Savant data rendered, or a disclosed unavailable message did, never a silent blank state.
