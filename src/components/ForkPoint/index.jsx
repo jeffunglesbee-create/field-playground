@@ -2,7 +2,22 @@ import { For, Show, createMemo, createSignal, createEffect } from 'solid-js'
 import { forkPointCandidates, refetchForkPointCandidates } from '../../data/relay'
 import { analyzeGameArc } from '../../data/dramaArcAnalysis'
 import { computeFork } from '../../data/forkPoint'
+import { dramaTier } from '../DeskCard'
 import styles from './ForkPoint.module.css'
+
+// The relay doesn't expose per-play descriptions or clock for archived
+// games (confirmed: /archive/drama/leaderboard returns only drama_arc +
+// drama_peak, docs/REAL-API-SURFACE.md) -- so "play N of M" alone still
+// means nothing to a user who didn't watch the game. What IS real and
+// available is the drama score AT that play, and this repo already has
+// a real, ported classification for that score (dramaTier, used on
+// DeskCard) -- reused here rather than inventing a new scale.
+const TIER_DESCRIPTION = {
+  fire: 'a red-hot moment',
+  hot: 'an already-hot moment',
+  warm: 'a warming-up moment',
+  '': 'a still-quiet moment',
+}
 
 // Fork Point -- interactive counterfactual: pick a real archived game,
 // pick a real point in its real drama_arc, pick a SECOND real archived
@@ -97,30 +112,38 @@ export function ForkPoint() {
   // WHICH other real game, at WHAT real moment. drama_arc is a real
   // per-play time series (confirmed in docs/outbox/cc-session-2026-07-27-
   // social-system-deep-search.md), so the splice index is a real play
-  // count, not an arbitrary array position -- expressed here as "play N
-  // of M" plus the % of the game that represents, since that's the only
-  // honest time-context available (no per-play clock/score is exposed).
+  // count, not an arbitrary array position. Play count alone is still an
+  // opaque coordinate to anyone who didn't watch the game, so it's paired
+  // with the real drama score AT that play (originalArc[splicePoint],
+  // already-computed real data, no new fetch) run through this repo's
+  // existing dramaTier classification -- "how tense did it already feel"
+  // is the honest substitute for "what actually happened on that play,"
+  // which the relay doesn't expose.
   const spliceContext = createMemo(() => {
     const r = result()
     if (!r) return null
     const pct = r.maxIndex > 0 ? Math.round((r.splicePoint / r.maxIndex) * 100) : 0
+    const seamValue = Math.round(r.originalArc[r.splicePoint])
+    const tierDescription = TIER_DESCRIPTION[dramaTier(seamValue)]
     return {
       pct,
+      seamValue,
+      tierDescription,
       sourceLabel: `${r.sourceGame.away} @ ${r.sourceGame.home}`,
       forkLabel: `${r.forkGame.away} @ ${r.forkGame.home}`,
     }
   })
 
   // The real, plain-language payoff -- names both real games and the
-  // real moment ("play N of M, ~X% through the game"), not just "here,"
-  // before stating what a real archived game's own recorded peak
-  // (finalPeak, already validated data) becomes after a real exact
-  // splice.
+  // real moment (play count + % through the game + how tense it already
+  // was), not just "here," before stating what a real archived game's
+  // own recorded peak (finalPeak, already validated data) becomes after
+  // a real exact splice.
   const verdict = createMemo(() => {
     const r = result()
     const ctx = spliceContext()
     if (!r || !ctx) return null
-    const where = `${ctx.sourceLabel}, forked onto ${ctx.forkLabel}'s path after play ${r.splicePoint} of ${r.maxIndex} (~${ctx.pct}% through the game)`
+    const where = `${ctx.sourceLabel}, forked onto ${ctx.forkLabel}'s path at play ${r.splicePoint} of ${r.maxIndex} (~${ctx.pct}% through the game -- ${ctx.tierDescription}, drama score ${ctx.seamValue})`
     const delta = r.splicedPeak - r.originalPeak
     if (delta === 0) return { delta, text: `${where}: the peak doesn't change -- still ${r.originalPeak}.` }
     if (delta > 0) return { delta, text: `${where}: the peak would have gone from ${r.originalPeak} to ${r.splicedPeak} -- ${delta} points more dramatic.` }
@@ -173,7 +196,7 @@ export function ForkPoint() {
                   </p>
 
                   <label class={styles.sliderLabel}>
-                    Fork after play {r().splicePoint} of {r().maxIndex} (~{spliceContext()?.pct ?? 0}% through the game)
+                    Fork at play {r().splicePoint} of {r().maxIndex} -- {spliceContext()?.tierDescription} (drama score {spliceContext()?.seamValue})
                     <input
                       class={styles.slider}
                       type="range"
@@ -190,9 +213,10 @@ export function ForkPoint() {
                     <text x={PAD_L - 6} y={CHART_H - PAD_B} text-anchor="end" class={styles.axisLabel}>{Math.round(chartMinMax()[0])}</text>
                     <line x1={PAD_L} x2={CHART_W - PAD_R} y1={CHART_H - PAD_B} y2={CHART_H - PAD_B} class={styles.axisLine} />
 
-                    {/* Real X-axis: real index range, shared by both lines. */}
-                    <text x={PAD_L} y={CHART_H - 4} text-anchor="start" class={styles.axisLabel}>0</text>
-                    <text x={CHART_W - PAD_R} y={CHART_H - 4} text-anchor="end" class={styles.axisLabel}>{sharedLength() - 1}</text>
+                    {/* Real X-axis: real play range, shared by both lines -- labeled "play" so the
+                        numbers read as a real unit, not an unexplained index. */}
+                    <text x={PAD_L} y={CHART_H - 4} text-anchor="start" class={styles.axisLabel}>play 0</text>
+                    <text x={CHART_W - PAD_R} y={CHART_H - 4} text-anchor="end" class={styles.axisLabel}>play {sharedLength() - 1}</text>
 
                     {/* Where the two lines actually diverge -- ties the slider position to the chart directly. */}
                     <line
