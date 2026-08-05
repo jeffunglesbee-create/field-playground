@@ -1,0 +1,51 @@
+name: Fork Point Savant Historical Coverage Probe
+
+# Fork Point currently splices `drama_arc` (a derived excitement score),
+# not real win probability -- because no client-side WP model exists to
+# rerun. This repo already has a validated alternative (round 3's
+# gamePk-resolution + real Savant WP method), but only ever tested on
+# recent real games (the last ~2 weeks). Fork Point's real candidate
+# pool (/archive/drama/leaderboard?sport=MLB&limit=50) can span much
+# older real games. This probe checks whether real gamePk resolution +
+# real Savant WP coverage holds for the OLDEST real games in that pool,
+# not just recent ones -- before any real-WP Fork Point build starts.
+#
+# field-relay-nba.jeffunglesbee.workers.dev, statsapi.mlb.com, and
+# baseballsavant.mlb.com are all sandbox-blocked from chat -- CI-as-
+# proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check real Savant WP coverage across Fork Point's full real candidate pool
+        timeout-minutes: 4
+        continue-on-error: true
+        run: node scripts/probe-fork-point-savant-historical-coverage.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "fork-point-savant-historical-coverage-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: fork point savant historical coverage probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
