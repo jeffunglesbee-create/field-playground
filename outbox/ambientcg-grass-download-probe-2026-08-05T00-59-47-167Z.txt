@@ -1,0 +1,13 @@
+probe_at: 2026-08-05T00:59:47.168Z
+asset: Grass001
+API HTTP status: 200
+top-level response keys: ["searchQuery","numberOfResults","currentPageHttp","foundAssets"]
+assets returned: 1
+first asset keys: ["assetId","releaseDate","earlyReleaseDate","dataType","creationMethod","category","downloadCount","downloadCountMonth","downloadCountWeek","popularityScore","tags","dataTypeName","dataTypeDescription","creationMethodName","creationMethodDescription","displayName","customDisplayName","description","displayCategory","shortLink","dimensionX","dimensionY","dimensionZ","createdUsing","basedOnThis","variations","nextVariationAssetId","previousVariationAssetId","nextAssetId","previousAssetId","downloadFolders","previewLinks","previewType","maps","hasUsd","previewImage"]
+real asset name: "Grass 001"
+real tags: ["001","1","cover","dark","dense","fresh","garden","grass","grass001","green","ground","lawn","natural","park","short","soft"]
+download folders: ["default"]
+chosen folder object keys: ["title","downloadFiletypeCategories"]
+chosen folder: default, zip download entries: 8
+real rawLink: undefined
+FAILED: no rawLink present
