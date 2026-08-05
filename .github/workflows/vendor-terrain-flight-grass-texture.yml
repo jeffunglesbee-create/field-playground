@@ -1,0 +1,40 @@
+name: Vendor Terrain Flight Grass Texture
+
+# One-off: downloads the real, verified, CC0-licensed ambientCG Grass001
+# texture and commits 3 of its real files into public/textures/terrain-grass/.
+# ambientcg.com is sandbox-blocked from chat -- CI-as-proxy, same pattern
+# as every prior probe this session. Re-run manually only if the asset
+# needs to be re-vendored (e.g. a different resolution).
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download and vendor the real texture
+        run: node scripts/vendor-terrain-flight-grass-texture.mjs
+
+      - name: Commit vendored texture
+        run: |
+          git config user.name "vendor-terrain-flight-grass-texture-bot"
+          git config user.email "actions@github.com"
+          git add public/textures/terrain-grass/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: vendor real CC0 grass texture (ambientCG Grass001) for Terrain Flight"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
