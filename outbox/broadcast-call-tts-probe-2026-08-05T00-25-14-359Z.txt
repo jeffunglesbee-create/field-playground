@@ -1,0 +1,30 @@
+probe_at: 2026-08-05T00:25:14.359Z
+--- direct /audio/tts check ---
+HTTP status: 200
+Content-Type: audio/mpeg
+audio bytes: 27216
+content-type is audio: true, byte size looks real: true
+
+--- real 800-char validation cap check (zero-cost failure trigger) ---
+HTTP status: 400, body: {"ok":false,"error":"text too long (max 800 chars)"}
+
+--- real browser run against the built app ---
+app loaded: http://127.0.0.1:4173
+clicked Lab tab
+"Call the game" button present: true
+clicked "Call the game"
+voice outcome: cloud
+
+page errors: []
+console errors: []
+
+--- fallback-path check (real client code, simulated network failure) ---
+fallback badge line ("Browser voice"): undefined
+error line ("Speech synthesis failed"): "Speech synthesis failed: synthesis-failed"
+real speechSynthesis.speak() invoked: true (1 call(s))
+fallback-check page errors: []
+
+=== VERDICT ===
+validation cap (real, zero-cost failure trigger): CONFIRMED
+cloud path: CONFIRMED — real /audio/tts endpoint returns real audio (27216 bytes), real BroadcastCall component used the real Cloudflare voice end-to-end, zero page errors.
+fallback path: CONFIRMED — on a real /audio/tts failure, the real client code correctly attempted the browser fallback (speechSynthesis.speak() genuinely invoked) and honestly reported the real outcome (browser voice also failed (honestly reported)), zero page errors.
