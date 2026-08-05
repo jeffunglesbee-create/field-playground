@@ -18,6 +18,18 @@ export function ValueNight() {
     return rankByValue(data).slice(0, RESULT_LIMIT)
   })
 
+  // Real, plain-language payoff -- names the #1 real player and states
+  // the actual comparison before the ranked list, instead of leaving
+  // "27.00 pts/£m" for the reader to benchmark unaided.
+  const verdict = createMemo(() => {
+    const top = ranked()[0]
+    const second = ranked()[1]
+    if (!top) return null
+    if (!second) return `Best real value tonight: ${top.name} (${top.team}) -- ${top.value.toFixed(2)} points per real £m spent.`
+    const aheadBy = top.value - second.value
+    return `Best real value tonight: ${top.name} (${top.team}) -- ${top.value.toFixed(2)} points per real £m spent, ${aheadBy.toFixed(2)} ahead of the next-best real player.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -36,6 +48,7 @@ export function ValueNight() {
       <Show when={!fplBootstrap.error}>
         <Show when={fplBootstrap()} fallback={<p class={styles.loading}>Loading…</p>}>
           <Show when={ranked().length} fallback={<p class={styles.empty}>No players meet the minimum-minutes threshold yet.</p>}>
+            <p class={styles.verdict}>{verdict()}</p>
             <ol class={styles.rows}>
               <For each={ranked()}>
                 {(p, i) => (

@@ -27,6 +27,15 @@ export function LeverageIndex() {
       .slice(0, RESULT_LIMIT)
   })
 
+  // Real, plain-language payoff -- states what the #1 real result actually
+  // means before the ranked list, instead of leaving "4.2x" for the reader
+  // to interpret unaided.
+  const verdict = createMemo(() => {
+    const top = ranked()[0]
+    if (!top) return null
+    return `Today's single most decisive real moment: ${top.game.away} @ ${top.game.home}, where the score swung ${top.peakLeverage.toFixed(1)}x harder than an average moment in that game (${top.peakFrom} → ${top.peakTo}).`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -46,6 +55,7 @@ export function LeverageIndex() {
       <Show when={!leverageIndexCandidates.error}>
         <Show when={leverageIndexCandidates()} fallback={<p class={styles.loading}>Loading…</p>}>
           <Show when={ranked().length} fallback={<p class={styles.empty}>No usable arcs in today's sample.</p>}>
+            <p class={styles.verdict}>{verdict()}</p>
             <ol class={styles.rows}>
               <For each={ranked()}>
                 {(r, i) => (

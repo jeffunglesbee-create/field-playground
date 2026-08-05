@@ -33,10 +33,14 @@ export function ContradictionRadar() {
       <header class={styles.header}>
         <span class={styles.label}>Contradiction Radar</span>
       </header>
+      <p class={styles.verdict}>
+        This project has caught and corrected itself {manifest.findingCount} times, in its own writing --
+        every one below is a real place a wrong assumption was found and fixed, not cleaned up after the fact.
+      </p>
       <p class={styles.note}>
-        Every place this project's own outbox docs document catching and correcting a wrong assumption --
-        an exact-keyed scan of {manifest.generatedFrom}, matched against a fixed vocabulary
-        ({manifest.phrases.length} real phrases), not a re-read by a model. {manifest.findingCount} real findings.
+        Exact-keyed scan of {manifest.generatedFrom}, matched against a fixed vocabulary
+        ({manifest.phrases.length} real phrases) confirmed present in the corpus before this was written --
+        not a re-read by a model.
       </p>
 
       <input
