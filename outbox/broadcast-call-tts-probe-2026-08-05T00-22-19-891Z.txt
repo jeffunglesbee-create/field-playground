@@ -1,0 +1,29 @@
+probe_at: 2026-08-05T00:22:19.891Z
+--- direct /audio/tts check ---
+HTTP status: 200
+Content-Type: audio/mpeg
+audio bytes: 28368
+content-type is audio: true, byte size looks real: true
+
+--- real 800-char validation cap check (zero-cost failure trigger) ---
+HTTP status: 400, body: {"ok":false,"error":"text too long (max 800 chars)"}
+
+--- real browser run against the built app ---
+app loaded: http://127.0.0.1:4173
+clicked Lab tab
+"Call the game" button present: true
+clicked "Call the game"
+voice outcome: cloud
+
+page errors: []
+console errors: []
+
+--- fallback-path check (real client code, simulated network failure) ---
+fallback badge line: undefined
+real speechSynthesis.speak() invoked: true (1 call(s))
+fallback-check page errors: []
+
+=== VERDICT ===
+validation cap (real, zero-cost failure trigger): CONFIRMED
+cloud path: CONFIRMED — real /audio/tts endpoint returns real audio (28368 bytes), real BroadcastCall component used the real Cloudflare voice end-to-end, zero page errors.
+fallback path: FAILED — {"labeledCorrectly":false,"speakInvoked":true,"noErrors":true}. Report exactly what was observed.
