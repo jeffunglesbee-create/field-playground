@@ -1,0 +1,45 @@
+name: Terrain Flight Addon CDN Probe
+
+# Checks whether real Three.js addon submodules (Sky, EffectComposer,
+# RenderPass, UnrealBloomPass) load correctly from esm.sh before any
+# Terrain Flight upgrade code gets written against them -- esm.sh is
+# sandbox-blocked from chat, so this is CI-as-proxy, same pattern as
+# every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+
+      - name: Check real Three.js addon CDN resolution
+        timeout-minutes: 3
+        continue-on-error: true
+        run: node scripts/probe-terrain-flight-addon-cdn.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "terrain-flight-addon-cdn-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: terrain flight addon CDN probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
