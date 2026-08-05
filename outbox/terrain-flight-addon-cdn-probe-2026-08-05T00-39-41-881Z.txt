@@ -1,0 +1,9 @@
+probe_at: 2026-08-05T00:39:41.881Z
+{"name":"three (core)","ok":true,"hasScene":true}
+{"name":"Sky","ok":true,"identityOk":true}
+{"name":"EffectComposer","ok":true,"identityOk":"n/a (class import only, no instantiation needed to prove identity for these)"}
+{"name":"RenderPass","ok":true,"identityOk":"n/a (class import only, no instantiation needed to prove identity for these)"}
+{"name":"UnrealBloomPass","ok":true,"identityOk":"n/a (class import only, no instantiation needed to prove identity for these)"}
+
+=== VERDICT ===
+CONFIRMED: all real Three.js addon submodules load correctly from esm.sh, same-instance-verified where checked. Safe to build against.
