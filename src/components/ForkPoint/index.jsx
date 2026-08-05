@@ -38,6 +38,15 @@ function xForIndex(i, sharedLength) {
   return (i / (sharedLength - 1)) * (CHART_W - PAD_L - PAD_R) + PAD_L
 }
 
+// The marker label ("fork NN%") is wide enough to clip past the chart's
+// left/right edges when the splice point sits near either end -- switch
+// anchor instead of always centering so the real text stays fully visible.
+function markerAnchor(x) {
+  if (x < PAD_L + 30) return 'start'
+  if (x > CHART_W - PAD_R - 30) return 'end'
+  return 'middle'
+}
+
 export function ForkPoint() {
   const games = createMemo(() => {
     const data = forkPointCandidates.error ? undefined : forkPointCandidates()
@@ -84,18 +93,38 @@ export function ForkPoint() {
     return Math.max(r.originalArc.length, r.splicedArc.length)
   })
 
-  // The real, plain-language payoff -- what a real archived game's own
-  // recorded peak (finalPeak, already validated data) becomes after a
-  // real exact splice. Leads with the answer to "why should I care"
-  // before the chart, not just two numbers left for the reader to diff
-  // themselves.
-  const verdict = createMemo(() => {
+  // "Here" means nothing on its own -- WHICH real game, forked onto
+  // WHICH other real game, at WHAT real moment. drama_arc is a real
+  // per-play time series (confirmed in docs/outbox/cc-session-2026-07-27-
+  // social-system-deep-search.md), so the splice index is a real play
+  // count, not an arbitrary array position -- expressed here as "play N
+  // of M" plus the % of the game that represents, since that's the only
+  // honest time-context available (no per-play clock/score is exposed).
+  const spliceContext = createMemo(() => {
     const r = result()
     if (!r) return null
+    const pct = r.maxIndex > 0 ? Math.round((r.splicePoint / r.maxIndex) * 100) : 0
+    return {
+      pct,
+      sourceLabel: `${r.sourceGame.away} @ ${r.sourceGame.home}`,
+      forkLabel: `${r.forkGame.away} @ ${r.forkGame.home}`,
+    }
+  })
+
+  // The real, plain-language payoff -- names both real games and the
+  // real moment ("play N of M, ~X% through the game"), not just "here,"
+  // before stating what a real archived game's own recorded peak
+  // (finalPeak, already validated data) becomes after a real exact
+  // splice.
+  const verdict = createMemo(() => {
+    const r = result()
+    const ctx = spliceContext()
+    if (!r || !ctx) return null
+    const where = `${ctx.sourceLabel}, forked onto ${ctx.forkLabel}'s path after play ${r.splicePoint} of ${r.maxIndex} (~${ctx.pct}% through the game)`
     const delta = r.splicedPeak - r.originalPeak
-    if (delta === 0) return { delta, text: `Forking here doesn't change the peak -- still ${r.originalPeak}.` }
-    if (delta > 0) return { delta, text: `Forking here would have pushed the peak from ${r.originalPeak} to ${r.splicedPeak} -- ${delta} points more dramatic.` }
-    return { delta, text: `Forking here would have dropped the peak from ${r.originalPeak} to ${r.splicedPeak} -- ${-delta} points less dramatic.` }
+    if (delta === 0) return { delta, text: `${where}: the peak doesn't change -- still ${r.originalPeak}.` }
+    if (delta > 0) return { delta, text: `${where}: the peak would have gone from ${r.originalPeak} to ${r.splicedPeak} -- ${delta} points more dramatic.` }
+    return { delta, text: `${where}: the peak would have dropped from ${r.originalPeak} to ${r.splicedPeak} -- ${-delta} points less dramatic.` }
   })
 
   return (
@@ -144,7 +173,7 @@ export function ForkPoint() {
                   </p>
 
                   <label class={styles.sliderLabel}>
-                    Fork at index {r().splicePoint} / {r().maxIndex}
+                    Fork after play {r().splicePoint} of {r().maxIndex} (~{spliceContext()?.pct ?? 0}% through the game)
                     <input
                       class={styles.slider}
                       type="range"
@@ -171,7 +200,7 @@ export function ForkPoint() {
                       y1={PAD_T} y2={CHART_H - PAD_B}
                       class={styles.forkMarkerLine}
                     />
-                    <text x={xForIndex(r().splicePoint, sharedLength())} y={PAD_T - 2} text-anchor="middle" class={styles.forkMarkerLabel}>fork</text>
+                    <text x={xForIndex(r().splicePoint, sharedLength())} y={PAD_T - 2} text-anchor={markerAnchor(xForIndex(r().splicePoint, sharedLength()))} class={styles.forkMarkerLabel}>fork {spliceContext()?.pct ?? 0}%</text>
 
                     <polyline
                       points={toPoints(r().originalArc, chartMinMax()[0], chartMinMax()[1], sharedLength())}
@@ -184,8 +213,8 @@ export function ForkPoint() {
                   </svg>
 
                   <div class={styles.legend}>
-                    <span class={styles.legendItem}><span class={styles.swatchOriginal} /> what actually happened (peak {r().originalPeak})</span>
-                    <span class={styles.legendItem}><span class={styles.swatchSpliced} /> forked path (peak {r().splicedPeak})</span>
+                    <span class={styles.legendItem}><span class={styles.swatchOriginal} /> what actually happened -- {spliceContext()?.sourceLabel} (peak {r().originalPeak})</span>
+                    <span class={styles.legendItem}><span class={styles.swatchSpliced} /> forked onto {spliceContext()?.forkLabel} (peak {r().splicedPeak})</span>
                   </div>
                 </>
               )}
