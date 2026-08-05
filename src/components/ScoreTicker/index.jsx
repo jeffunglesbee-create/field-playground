@@ -96,7 +96,18 @@ export function ScoreTicker() {
               nothing about a score change should reach this node. */}
           <div
             class={`${styles.track} ${paused() ? styles.trackPaused : ''}`}
-            onAnimationStart={() => setRestarts(n => n + 1)}
+            onAnimationStart={e => {
+              // animationstart bubbles -- the live-status dot's own
+              // `blink` keyframe animation (see TickerItem) fires this
+              // same event and bubbles up through this exact listener.
+              // Without the target check, every live game's blinking
+              // dot gets miscounted as the marquee itself restarting,
+              // which is precisely the false positive this counter
+              // exists to catch, not produce. Only count an animation
+              // that started on the track element itself.
+              if (e.target !== e.currentTarget) return
+              setRestarts(n => n + 1)
+            }}
           >
             {/* Rendered twice for a seamless loop. Both copies read the
                 same reactive source, so both patch in place together. */}

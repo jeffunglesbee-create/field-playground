@@ -24,6 +24,20 @@
 .info { border-left: 3px solid #4a90d9; }
 .live { border-left: 3px solid #4c8; }
 
+.progressTrack {
+  margin-top: 6px;
+  height: 3px;
+  background: #2a2a2a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #556;
+  transition: width 0.1s linear;
+}
+
 @keyframes slideIn {
   from { transform: translateX(20px); opacity: 0; }
   to   { transform: translateX(0); opacity: 1; }

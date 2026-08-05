@@ -28,9 +28,17 @@ const SAMPLES = [
 ]
 
 function StatChip(allProps) {
-  // Step 1: merge defaults — note defaultVariant is a GETTER, not a static value
+  // Step 1: merge defaults — note defaultVariant is a GETTER, not a static value.
+  // Critically, `variant` below has to be a getter TOO: a plain property
+  // (`variant: allProps.defaultVariant ?? 'muted'`) evaluates the
+  // right-hand side exactly once, when StatChip's setup code runs --
+  // capturing whatever defaultVariant was at mount and never again. A
+  // `get variant()` accessor defers that read to whenever something
+  // downstream actually consumes `local.variant` (inside the JSX class
+  // expression below), which is what makes it re-run reactively instead
+  // of freezing the value the demo claims stays live.
   const withDefaults = mergeProps(
-    { variant: allProps.defaultVariant ?? 'muted', size: 'md' },
+    { get variant() { return allProps.defaultVariant ?? 'muted' }, size: 'md' },
     allProps
   )
   // Step 2: split own props from the rest to forward to the element

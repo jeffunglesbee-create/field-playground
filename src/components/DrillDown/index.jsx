@@ -66,7 +66,15 @@ export function DrillDown() {
   const [gameContext] = createResource(topPickId, fetchGameContext)
 
   const odds = createMemo(() => {
-    const raw = gameContext()?.opening_odds
+    // Same eager-memo footgun useTopPickId already guards against: calling
+    // a resource's accessor while it's in the error state re-throws that
+    // error synchronously, inside this memo's own computation, with no
+    // local ErrorBoundary to catch it -- it would blow past the careful
+    // <Show when={gameContext.error}> a few lines down in the JSX and take
+    // out the whole SafeSection instead of degrading gracefully. Confirmed
+    // live: without this guard, a rejected context fetch replaces this
+    // entire component with SafeSection's generic fallback.
+    const raw = gameContext.error ? undefined : gameContext()?.opening_odds
     if (!raw) return null
     try {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw

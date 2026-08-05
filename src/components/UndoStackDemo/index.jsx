@@ -94,7 +94,7 @@ export function UndoStackDemo() {
             class={styles.stepBtn}
             aria-label="decrement counter"
             onFocus={() => setActive('count')}
-            onClick={() => { setActive('count'); setCount(c => c - 1); pushLog(`counter → ${count() - 1}`) }}
+            onClick={() => { setActive('count'); setCount(c => c - 1); pushLog(`counter → ${count()}`) }}
           >
             −
           </button>
@@ -103,7 +103,7 @@ export function UndoStackDemo() {
             class={styles.stepBtn}
             aria-label="increment counter"
             onFocus={() => setActive('count')}
-            onClick={() => { setActive('count'); setCount(c => c + 1); pushLog(`counter → ${count() + 1}`) }}
+            onClick={() => { setActive('count'); setCount(c => c + 1); pushLog(`counter → ${count()}`) }}
           >
             +
           </button>

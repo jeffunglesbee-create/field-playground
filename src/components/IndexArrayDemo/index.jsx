@@ -18,11 +18,26 @@ import styles from './IndexArrayDemo.module.css'
 //   index is a plain number (stable per position).
 //
 // Rolling window: a fixed-size buffer where positions are stable but values
-// rotate. Every push creates a new object at every position — mapArray sees
-// N removals + N additions each time. indexArray sees N value updates to
-// existing stable slots. Mount counts prove it:
-//   indexArray slots: mount count stays at 1 regardless of how many pushes
-//   mapArray slots: mount count increments on every push
+// rotate. Each push (`prev.slice(1)` + one new event) reuses the same object
+// references for the 4 surviving items and adds exactly ONE new object at
+// the tail. indexArray sees 5 value updates to existing stable slots every
+// push, never a remount. mapArray unmounts+remounts exactly the ONE slot
+// that receives the new identity (the tail) on every push; the other 4
+// slots keep their existing component instance and just shift their
+// reactive index down.
+//
+// Per-slot mount counts prove only that each individual live instance
+// mounted once -- true but static, and can't show growth: a local
+// createSignal(0) is reset to a fresh 0->1 on every remount, and a bucket
+// keyed by "position at mount time" doesn't work either here, since every
+// new mount happens at the SAME tail position, so multiple still-alive
+// survivor slots would end up sharing (and appearing to jointly grow
+// alongside) that one bucket even though they personally never remounted
+// -- a different, more confusing wrongness. What actually proves the claim
+// is a running TOTAL per column, incremented once per mount event from
+// the parent (which outlives every slot): indexArray's total stops at 5
+// (the initial mount) and never moves again; mapArray's total keeps
+// climbing by 1 every push, forever.
 
 const WINDOW_SIZE = 5
 
@@ -42,6 +57,13 @@ const INITIAL = Array.from({ length: WINDOW_SIZE }, makeEvent)
 
 export function IndexArrayDemo() {
   const [events, setEvents] = createSignal(INITIAL)
+
+  // Running totals live here, in the parent -- outliving every slot, so
+  // they can actually accumulate across remounts instead of resetting.
+  const [indexMountTotal, setIndexMountTotal] = createSignal(0)
+  const [mapMountTotal, setMapMountTotal] = createSignal(0)
+  const bumpIndexMount = () => setIndexMountTotal(c => c + 1)
+  const bumpMapMount = () => setMapMountTotal(c => c + 1)
 
   function push() {
     setEvents(prev => [...prev.slice(1), makeEvent()])
@@ -70,22 +92,22 @@ export function IndexArrayDemo() {
       <p class={styles.note}>
         Rolling window of {WINDOW_SIZE} events. Each push shifts values left, discards oldest.
         indexArray slot stays alive; mapArray slot unmounts/remounts on identity change.
-        Mount count proves it — indexArray stays at 1; mapArray grows.
+        Column mount totals prove it — indexArray total stops at {WINDOW_SIZE}; mapArray total keeps climbing.
       </p>
 
       <button class={styles.pushBtn} onClick={push}>push new event</button>
 
       <div class={styles.columns}>
         <div class={styles.column}>
-          <div class={styles.colLabel}>indexArray (position-keyed)</div>
+          <div class={styles.colLabel}>indexArray (position-keyed) — total mounts: {indexMountTotal()}</div>
           <For each={indexMapped()}>
-            {(mapped) => <IndexSlot mapped={mapped} />}
+            {(mapped) => <IndexSlot mapped={mapped} onSlotMount={bumpIndexMount} />}
           </For>
         </div>
         <div class={styles.column}>
-          <div class={styles.colLabel}>mapArray (identity-keyed)</div>
+          <div class={styles.colLabel}>mapArray (identity-keyed) — total mounts: {mapMountTotal()}</div>
           <For each={forMapped()}>
-            {(mapped) => <MapSlot mapped={mapped} />}
+            {(mapped) => <MapSlot mapped={mapped} onSlotMount={bumpMapMount} />}
           </For>
         </div>
       </div>
@@ -94,32 +116,37 @@ export function IndexArrayDemo() {
 }
 
 // indexArray slot: item is a Signal — reads item() to get current value.
-// This component instance is REUSED across pushes for its position.
+// This component instance is REUSED across pushes for its position, so it
+// mounts exactly once, ever, and reports that one mount to the parent's
+// running total.
 function IndexSlot(props) {
   const [mountCount, setMountCount] = createSignal(0)
-  onMount(() => setMountCount(c => c + 1))
+  onMount(() => { setMountCount(c => c + 1); props.onSlotMount() })
 
   return (
     <div class={styles.slot}>
       <span class={styles.slotPos}>pos {props.mapped.index}</span>
       <span class={styles.slotText}>{props.mapped.item().text}</span>
-      <span class={styles.slotMount} title="mount count">×{mountCount()}</span>
+      <span class={styles.slotMount} title="this instance's own mount count">×{mountCount()}</span>
     </div>
   )
 }
 
 // mapArray slot: item is a stable value (not a signal). This component
-// unmounts when its identity leaves the list.
+// unmounts when its identity leaves the list and a fresh instance mounts
+// in its place — each fresh instance also reports its mount to the
+// parent's running total, which is what actually accumulates across the
+// unmount/remount cycles this per-instance signal cannot see past.
 function MapSlot(props) {
   const [mountCount, setMountCount] = createSignal(0)
-  onMount(() => setMountCount(c => c + 1))
+  onMount(() => { setMountCount(c => c + 1); props.onSlotMount() })
 
   // index() gives the current position — a Signal in mapArray
   return (
     <div class={styles.slot}>
       <span class={styles.slotPos}>pos {props.mapped.index()}</span>
       <span class={styles.slotText}>{props.mapped.item.text}</span>
-      <span class={styles.slotMount} title="mount count">×{mountCount()}</span>
+      <span class={styles.slotMount} title="this instance's own mount count">×{mountCount()}</span>
     </div>
   )
 }
