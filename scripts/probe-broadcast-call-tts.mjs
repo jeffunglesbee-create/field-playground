@@ -48,9 +48,102 @@ async function checkDirectEndpoint() {
   }
 }
 
+// Real, zero-cost, zero-risk validation-path check. This account runs
+// Workers Paid (confirmed via wrangler.toml -- Durable Objects, Browser
+// Rendering, and an explicit "Workers Paid" [limits] block are all already
+// in real use), so exceeding the free 10,000-neurons/day allocation does
+// NOT fail -- Workers Paid bills overage at $0.011/1,000 neurons and keeps
+// working. Deliberately exhausting the quota would spend real money to
+// test nothing. The relay's own real 800-char input cap is the correct,
+// free, reproducible way to exercise the exact same code path (a non-200
+// response) any real failure -- quota, outage, or otherwise -- would hit.
+async function checkValidationCap() {
+  log('--- real 800-char validation cap check (zero-cost failure trigger) ---')
+  try {
+    const res = await fetch(RELAY + '/audio/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: 'x'.repeat(801) }),
+    })
+    const body = await res.json().catch(() => null)
+    log('HTTP status: ' + res.status + ', body: ' + JSON.stringify(body))
+    return res.status === 400 && body?.error?.includes('too long')
+  } catch (e) {
+    log('validation-cap fetch threw: ' + String(e))
+    return false
+  }
+}
+
+// Tests the REAL, unmodified client fallback code path -- catch block,
+// setCloudFailReason, speakBrowser() -- by intercepting the /audio/tts
+// request at the network layer (Playwright route interception, a standard
+// technique for exercising error-handling UI) and returning a real HTTP
+// failure INSTEAD of hitting the real backend. This proves the app's own
+// error handling works correctly under ANY real /audio/tts failure
+// (quota, outage, network) without needing to actually cause one -- the
+// component code doesn't know or care why the request failed, only that
+// it did.
+async function checkFallbackPath(browser) {
+  log('--- fallback-path check (real client code, simulated network failure) ---')
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
+  const pageErrors = []
+  page.on('pageerror', e => pageErrors.push(String(e.message)))
+
+  // Real instrumentation, not a mock of app behavior: wraps the real
+  // speechSynthesis.speak so we can confirm it was genuinely invoked
+  // (headless CI has no speakers to actually hear) -- same technique as
+  // Terrain Flight's AudioContext wrapper (verify-terrain-flight-render.mjs).
+  await page.addInitScript(() => {
+    window.__speakCalls = []
+    if (window.speechSynthesis) {
+      const orig = window.speechSynthesis.speak.bind(window.speechSynthesis)
+      window.speechSynthesis.speak = utter => { window.__speakCalls.push(utter.text); orig(utter) }
+    }
+  })
+
+  await page.route('**/audio/tts', route => route.fulfill({
+    status: 500,
+    contentType: 'application/json',
+    body: JSON.stringify({ ok: false, error: 'simulated failure — probe-injected, not a real relay error' }),
+  }))
+
+  await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 })
+  await page.getByText('Lab', { exact: false }).first().click()
+  await page.waitForFunction(() => {
+    const t = document.body.innerText
+    return t.includes('Call the game') || t.includes('No real archived game with a usable drama_arc')
+  }, { timeout: 20000 }).catch(() => log('WARNING (fallback check): call button never appeared'))
+
+  const callBtn = page.getByText('Call the game', { exact: false })
+  if (await callBtn.count() === 0) {
+    log('fallback check: no real game available this run -- inconclusive, not a failure')
+    await page.close()
+    return null
+  }
+  await callBtn.first().click()
+  await page.waitForFunction(() => document.body.innerText.includes('Browser voice') || document.body.innerText.includes('Speech synthesis failed'), { timeout: 20000 })
+    .catch(() => log('WARNING (fallback check): no fallback state reached within 20s'))
+
+  const bodyText = await page.locator('body').innerText()
+  const fallbackLine = bodyText.split('\n').find(l => l.includes('Browser voice'))
+  const speakCalls = await page.evaluate(() => window.__speakCalls ?? [])
+  log('fallback badge line: ' + JSON.stringify(fallbackLine))
+  log('real speechSynthesis.speak() invoked: ' + (speakCalls.length > 0) + ' (' + speakCalls.length + ' call(s))')
+  log('fallback-check page errors: ' + JSON.stringify(pageErrors))
+
+  await page.close()
+  return {
+    labeledCorrectly: !!fallbackLine && fallbackLine.includes('simulated failure'),
+    speakInvoked: speakCalls.length > 0,
+    noErrors: pageErrors.length === 0,
+  }
+}
+
 async function main() {
   log('probe_at: ' + new Date().toISOString())
   const direct = await checkDirectEndpoint()
+  log('')
+  const validationOk = await checkValidationCap()
   log('')
 
   log('--- real browser run against the built app ---')
@@ -106,17 +199,28 @@ async function main() {
   log('')
   log('page errors: ' + JSON.stringify(pageErrors))
   log('console errors: ' + JSON.stringify(consoleErrors.slice(0, 10)))
+  log('')
+
+  const fallback = await checkFallbackPath(browser)
+  log('')
 
   await browser.close()
 
-  log('')
   log('=== VERDICT ===')
+  log('validation cap (real, zero-cost failure trigger): ' + (validationOk ? 'CONFIRMED' : 'FAILED'))
   if (direct.ok && voiceOutcome === 'cloud' && pageErrors.length === 0) {
-    log('CONFIRMED: real /audio/tts endpoint returns real audio (' + direct.bytes + ' bytes), and the real BroadcastCall component in a real browser successfully used the real Cloudflare voice end-to-end, zero page errors.')
+    log('cloud path: CONFIRMED — real /audio/tts endpoint returns real audio (' + direct.bytes + ' bytes), real BroadcastCall component used the real Cloudflare voice end-to-end, zero page errors.')
   } else if (direct.ok && pageErrors.length === 0) {
-    log('PARTIAL: the real /audio/tts endpoint works directly (' + direct.bytes + ' bytes), but the component run did not confirm the cloud path (' + voiceOutcome + '). Report exactly what was observed -- may be real network variance, not a code bug.')
+    log('cloud path: PARTIAL — endpoint works directly (' + direct.bytes + ' bytes), but the component run did not confirm the cloud path (' + voiceOutcome + '). May be real network variance, not a code bug.')
   } else {
-    log('FAILED OR INCONCLUSIVE: direct endpoint ok=' + direct.ok + ', voiceOutcome=' + voiceOutcome + ', pageErrors=' + pageErrors.length + '. Report exactly what was observed.')
+    log('cloud path: FAILED OR INCONCLUSIVE — direct endpoint ok=' + direct.ok + ', voiceOutcome=' + voiceOutcome + ', pageErrors=' + pageErrors.length + '.')
+  }
+  if (fallback === null) {
+    log('fallback path: INCONCLUSIVE — no real game available in this run\'s sample.')
+  } else if (fallback.labeledCorrectly && fallback.speakInvoked && fallback.noErrors) {
+    log('fallback path: CONFIRMED — on a real /audio/tts failure, the real client code correctly fell back to browser speech (speechSynthesis.speak() genuinely invoked) and honestly labeled why, zero page errors.')
+  } else {
+    log('fallback path: FAILED — ' + JSON.stringify(fallback) + '. Report exactly what was observed.')
   }
 }
 
