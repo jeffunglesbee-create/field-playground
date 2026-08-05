@@ -35,13 +35,25 @@ import styles from './TerrainFlight.module.css'
 // camera-to-landmark distance) as the camera nears it. Two real,
 // working pieces, not one overclaimed one.
 const CDN_URL = 'https://esm.sh/three@0.169.0'
+const SKY_CDN_URL = 'https://esm.sh/three@0.169.0/examples/jsm/objects/Sky.js'
 const FLY_SPEED = 6 // world units / second
 const LANDMARK_TRIGGER_RADIUS = VERTEX_SPACING * 3
 const LANDMARK_GESTURE = { peak: 'playTaDa', flip: 'playBoing', fizzle: 'playWahTrombone' }
+// Real CC0 grass texture (ambientCG "Grass 001", public/textures/terrain-grass/SOURCE.md
+// has the full provenance/license record) -- world units per texture tile,
+// not a guess: matches VERTEX_SPACING's existing 2-units-per-index scale
+// closely enough that the grain reads as real ground detail at flythrough
+// camera distances, not a stretched or tiled-too-fine mess.
+const GRASS_TILE_SIZE = 4
 
 async function loadThree() {
   const mod = await import(/* @vite-ignore */ CDN_URL)
   return mod
+}
+
+async function loadSky() {
+  const mod = await import(/* @vite-ignore */ SKY_CDN_URL)
+  return mod.Sky
 }
 
 function buildTerrainGeometry(THREE, mesh) {
@@ -128,10 +140,19 @@ export function TerrainFlight() {
     window.removeEventListener('pointerup', onPointerUp)
     window.removeEventListener('deviceorientation', onDeviceOrientation)
     renderer?.dispose?.()
+    // Disposing a material does NOT dispose the real GPU textures it
+    // references (a separate resource) -- a real, well-known Three.js
+    // gotcha, not automatic. Dispose each map/normalMap/roughnessMap too.
+    const disposeMaterial = mat => {
+      mat?.map?.dispose?.()
+      mat?.normalMap?.dispose?.()
+      mat?.roughnessMap?.dispose?.()
+      mat?.dispose?.()
+    }
     scene?.traverse?.(obj => {
       obj.geometry?.dispose?.()
-      if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose?.())
-      else obj.material?.dispose?.()
+      if (Array.isArray(obj.material)) obj.material.forEach(disposeMaterial)
+      else disposeMaterial(obj.material)
     })
     synthApi?.dispose?.()
     audioCtx?.close?.()
@@ -179,6 +200,19 @@ export function TerrainFlight() {
     }
     if (disposed) return
 
+    // Sky is a real visual enhancement, not core data -- if this specific
+    // CDN submodule fails to load for any reason, the flythrough still
+    // works correctly with a flat fog-color background (the pre-upgrade
+    // look), same honest-degradation posture already used for audio setup
+    // below. Never blocks the feature.
+    let Sky = null
+    try {
+      Sky = await loadSky()
+    } catch {
+      Sky = null
+    }
+    if (disposed) return
+
     // hallOfSurprisesCandidates is a real async createResource, racing
     // against the esm.sh CDN fetch above (and against dozens of other
     // real requests the rest of the app fires on the same page load).
@@ -223,28 +257,83 @@ export function TerrainFlight() {
 
     const { geometry, xOffset } = buildTerrainGeometry(THREE, m)
     scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x0a0e12)
     scene.fog = new THREE.Fog(0x0a0e12, 20, 120)
 
-    const material = new THREE.MeshStandardMaterial({ color: 0x1c4a5c, wireframe: false, flatShading: true })
+    // Real CC0 grass texture (ambientCG "Grass 001" -- see
+    // public/textures/terrain-grass/SOURCE.md for the full provenance/
+    // license record), tiled across the real terrain length rather than
+    // stretched across it -- RepeatWrapping + a real world-units-per-tile
+    // density, not a single stretched image.
+    const texLoader = new THREE.TextureLoader()
+    const repeatX = Math.max(1, Math.round(m.pathLength / GRASS_TILE_SIZE))
+    const repeatY = Math.max(1, Math.round(20 / GRASS_TILE_SIZE)) // terrain cross-section width, matches buildTerrainGeometry's own `width = 20`
+    const configureTile = tex => {
+      tex.wrapS = THREE.RepeatWrapping
+      tex.wrapT = THREE.RepeatWrapping
+      tex.repeat.set(repeatX, repeatY)
+    }
+    const colorMap = texLoader.load('/textures/terrain-grass/color.jpg', configureTile)
+    const normalMap = texLoader.load('/textures/terrain-grass/normal.jpg', configureTile)
+    const roughnessMap = texLoader.load('/textures/terrain-grass/roughness.jpg', configureTile)
+    if ('colorSpace' in colorMap) colorMap.colorSpace = THREE.SRGBColorSpace
+
+    // flatShading: false -- geometry.computeVertexNormals() already runs
+    // in buildTerrainGeometry, so smooth shading has real normals to work
+    // from. flatShading:true (the pre-upgrade setting) is what actually
+    // produced the faceted low-poly look.
+    const material = new THREE.MeshStandardMaterial({
+      map: colorMap, normalMap, roughnessMap, flatShading: false,
+    })
     const terrain = new THREE.Mesh(geometry, material)
+    terrain.receiveShadow = true
     scene.add(terrain)
 
-    const wire = new THREE.Mesh(geometry.clone(), new THREE.MeshBasicMaterial({ color: 0x3fa8c9, wireframe: true, transparent: true, opacity: 0.15 }))
+    // The bright cyan wireframe grid was the single most literal element
+    // of the prior "wireframe tech demo" look -- kept, but toned down
+    // hard (opacity, and a dark neutral rather than a glowing cyan) so it
+    // reads as a subtle structural accent (this terrain really is built
+    // from discrete real data points, one per real arc index) rather than
+    // a neon overlay.
+    const wire = new THREE.Mesh(geometry.clone(), new THREE.MeshBasicMaterial({ color: 0x223038, wireframe: true, transparent: true, opacity: 0.06 }))
     scene.add(wire)
 
     scene.add(new THREE.AmbientLight(0x8899aa, 0.6))
-    const sun = new THREE.DirectionalLight(0xffffff, 0.8)
+    const sun = new THREE.DirectionalLight(0xffffff, 1.2)
     sun.position.set(10, 30, 10)
+    sun.castShadow = true
+    sun.shadow.mapSize.set(1024, 1024)
+    sun.shadow.camera.near = 1
+    sun.shadow.camera.far = 150
     scene.add(sun)
+
+    // Sky (real physically-based procedural atmosphere, see loadSky()
+    // above) if it loaded; a flat fog-color background otherwise -- the
+    // pre-upgrade look, never a broken one.
+    if (Sky) {
+      const sky = new Sky()
+      sky.scale.setScalar(450000)
+      scene.add(sky)
+      const sun2 = new THREE.Vector3()
+      const phi = THREE.MathUtils.degToRad(88) // low sun angle -- long shadows, warm horizon light
+      const theta = THREE.MathUtils.degToRad(180)
+      sun2.setFromSphericalCoords(1, phi, theta)
+      sky.material.uniforms.sunPosition.value.copy(sun2)
+      sky.material.uniforms.turbidity.value = 8
+      sky.material.uniforms.rayleigh.value = 2
+      sky.material.uniforms.mieCoefficient.value = 0.006
+      sky.material.uniforms.mieDirectionalG.value = 0.8
+    } else {
+      scene.background = new THREE.Color(0x0a0e12)
+    }
 
     const landmarkMeshes = []
     for (const lm of m.landmarks) {
       const height = m.heights[lm.index] ?? 0
       const marker = new THREE.Mesh(
-        new THREE.SphereGeometry(0.8, 12, 12),
-        new THREE.MeshBasicMaterial({ color: LANDMARK_COLOR[lm.kind] ?? '#ffffff' })
+        new THREE.SphereGeometry(0.8, 16, 16),
+        new THREE.MeshStandardMaterial({ color: LANDMARK_COLOR[lm.kind] ?? '#ffffff', roughness: 0.35, metalness: 0.1, emissive: LANDMARK_COLOR[lm.kind] ?? '#000000', emissiveIntensity: 0.4 })
       )
+      marker.castShadow = true
       marker.position.set(lm.x + xOffset, height + 2, 0)
       scene.add(marker)
       const label = makeLabelSprite(THREE, lm.label, LANDMARK_COLOR[lm.kind] ?? '#ffffff')
@@ -268,6 +357,11 @@ export function TerrainFlight() {
     renderer = new THREE.WebGLRenderer({ canvas: canvasRef, antialias: true, preserveDrawingBuffer: true })
     renderer.setSize(canvasRef.clientWidth, canvasRef.clientHeight, false)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.0
+    if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace
 
     window.addEventListener('pointerdown', onPointerDown)
     window.addEventListener('pointerup', onPointerUp)
