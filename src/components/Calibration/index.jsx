@@ -121,6 +121,20 @@ export function Calibration() {
   const pending = useMarkedWithoutConfidence()
   const cal = useCalibration()
 
+  // Real, plain-language payoff -- the legend already states the
+  // methodology ("0.25 = coin flip"); this states the reader's own real
+  // number against it, instead of leaving them to do that comparison
+  // themselves.
+  const verdict = createMemo(() => {
+    const c = cal()
+    if (c.n === 0) return null
+    const diff = 0.25 - c.brier
+    const n = c.n
+    if (diff === 0) return `Your real Brier score is exactly 0.25 -- no better than a coin flip, over ${n} rated pick${n === 1 ? '' : 's'}.`
+    const verb = diff > 0 ? 'better' : 'worse'
+    return `Your real Brier score is ${c.brier.toFixed(3)} -- ${Math.abs(diff).toFixed(3)} ${verb} than a coin flip (0.25), over ${n} rated pick${n === 1 ? '' : 's'}.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -129,6 +143,7 @@ export function Calibration() {
       </header>
 
       <Show when={cal().n > 0} fallback={<p class={styles.empty}>Rate confidence on at least one marked pick below.</p>}>
+        <p class={styles.verdict}>{verdict()}</p>
         <div class={styles.brierRow}>
           <span class={styles.brierLabel}>Brier score</span>
           <span class={styles.brierValue}>{cal().brier.toFixed(3)}</span>

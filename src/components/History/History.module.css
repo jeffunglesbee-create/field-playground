@@ -52,6 +52,17 @@
   color: var(--field-text-muted);
 }
 
+.verdict {
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--field-text-primary);
+  margin: 0 0 14px 0;
+  line-height: 1.4;
+}
+
 /* Tier calibration */
 .tierList {
   display: flex;

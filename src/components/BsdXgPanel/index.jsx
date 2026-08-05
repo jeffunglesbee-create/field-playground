@@ -1,4 +1,4 @@
-import { For, Show, createSignal, createResource } from 'solid-js'
+import { For, Show, createSignal, createResource, createMemo } from 'solid-js'
 import styles from './BsdXgPanel.module.css'
 
 const RELAY = 'https://field-relay-nba.jeffunglesbee.workers.dev'
@@ -116,6 +116,29 @@ async function fetchFixtureWithBsd() {
 export function BsdXgPanel() {
   const [data] = createResource(fetchFixtureWithBsd)
 
+  // Real, plain-language payoff -- names which real side created the
+  // better real chances and by how much, plus the real possession
+  // split. Only computed when real xG is actually present for both
+  // sides -- the honest "no xG yet" empty state below (pre-kickoff)
+  // stays exactly as it was; this never fabricates a verdict for it.
+  const verdict = createMemo(() => {
+    const d = data.error ? undefined : data()
+    const home = d?.bsd?.stats?.home?.expected_goals
+    const away = d?.bsd?.stats?.away?.expected_goals
+    if (home == null || away == null) return null
+    const homePoss = d.bsd.stats?.home?.ball_possession
+    const awayPoss = d.bsd.stats?.away?.ball_possession
+    const possNote = homePoss != null && awayPoss != null ? `, possession split ${homePoss}% / ${awayPoss}%` : ''
+    if (home === away) {
+      return `${d.homeName} and ${d.awayName} created equal real chances -- both at ${home} xG${possNote}.`
+    }
+    const betterName = home > away ? d.homeName : d.awayName
+    const betterXg = home > away ? home : away
+    const worseXg = home > away ? away : home
+    const diff = Math.round((betterXg - worseXg) * 100) / 100
+    return `${betterName} created the better real chances -- ${betterXg} xG to ${worseXg} (+${diff})${possNote}.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -154,6 +177,9 @@ export function BsdXgPanel() {
               <Show when={d().bsd}>
                 {b => (
                   <div class={styles.stats}>
+                    <Show when={verdict()}>
+                      <p class={styles.verdict}>{verdict()}</p>
+                    </Show>
                     <div class={styles.statRow}>
                       <span class={styles.statLabel}>home xG</span>
                       <span class={styles.statValue}>

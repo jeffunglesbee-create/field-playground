@@ -81,9 +81,31 @@ export function Agreement() {
         editorialVerdict,
         pickEmVerdict,
         correlates,
+        // finalized_at is a real ISO timestamp when set (confirmed via
+        // ControlGroup/ScaleTest.jsx's fixture: '2026-07-27T00:00:00Z'),
+        // not just a truthiness flag -- safe to sort on for recency.
+        finalizedAt: game.finalized_at,
       })
     }
     return rows
+  })
+
+  // Real, plain-language payoff -- counts how often the two real signals
+  // pointed the same way vs diverged. Deliberately NOT an accuracy or
+  // predictive claim (see header note + the CORRECTED comment above):
+  // editorial W/L/P and your own pick answer different questions, so
+  // this only counts co-occurrence.
+  const verdict = createMemo(() => {
+    const rows = joined()
+    if (!rows.length) return null
+    const same = rows.filter(r => r.correlates === true).length
+    const diff = rows.filter(r => r.correlates === false).length
+    const pushes = rows.length - same - diff
+    const mostRecent = [...rows].sort((a, b) => (b.finalizedAt ?? '').localeCompare(a.finalizedAt ?? ''))[0]
+    const recentBit = mostRecent && mostRecent.correlates !== null
+      ? `, most recently ${mostRecent.matchup} where they ${mostRecent.correlates ? 'pointed the same way' : 'diverged'}`
+      : ''
+    return `Across ${rows.length} finalized real game${rows.length === 1 ? '' : 's'} with both signals present, editorial and your pick pointed the same way ${same} time${same === 1 ? '' : 's'} and diverged ${diff} time${diff === 1 ? '' : 's'}${pushes ? ` (${pushes} push${pushes === 1 ? '' : 'es'})` : ''}${recentBit} -- these track different questions, so this counts co-occurrence, not accuracy.`
   })
 
   return (
@@ -93,6 +115,7 @@ export function Agreement() {
         <span class={styles.note}>correlation, not an assertion these should match — see CrossCheck for raw signals</span>
       </header>
       <Show when={joined().length} fallback={<p class={styles.empty}>No overlapping, finalized picks yet.</p>}>
+        <p class={styles.verdict}>{verdict()}</p>
         <For each={joined()}>
           {row => (
             <div class={styles.row}>

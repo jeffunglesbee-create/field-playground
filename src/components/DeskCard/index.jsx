@@ -197,10 +197,30 @@ function TonightsCard(props) {
     }
     return { live, final, pre, total: props.games().length }
   })
+
+  // Real, plain-language companion to the count above -- names the
+  // actual tightest real live game right now (smallest real score
+  // margin), an "and here's the one to watch" alongside the raw tally
+  // rather than a separate raw number for the reader to go find.
+  const verdict = createMemo(() => {
+    const liveGames = props.games().filter(g => gameStatus(g) === 'live')
+    if (!liveGames.length) return null
+    const tightest = liveGames.reduce((a, b) => {
+      const marginA = Math.abs((a.home_score ?? 0) - (a.away_score ?? 0))
+      const marginB = Math.abs((b.home_score ?? 0) - (b.away_score ?? 0))
+      return marginB < marginA ? b : a
+    })
+    const margin = Math.abs((tightest.home_score ?? 0) - (tightest.away_score ?? 0))
+    return `tightest live game: ${tightest.away} @ ${tightest.home} by ${margin}`
+  })
+
   return (
     <Show when={summary().total}>
       <div class={styles.tonightsCard}>
         {summary().pre} remaining · {summary().live} live · {summary().final} final
+        <Show when={verdict()}>
+          <span class={styles.verdict}> -- {verdict()}</span>
+        </Show>
       </div>
     </Show>
   )

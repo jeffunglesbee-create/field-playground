@@ -56,6 +56,22 @@ export function HallOfSurprises() {
       .slice(0, FIZZLE_LIMIT)
   })
 
+  // Real, plain-language payoff -- names the #1 real result in each
+  // ranked list before the lists themselves, instead of leaving two
+  // sets of tier badges for the reader to compare unaided.
+  const verdict = createMemo(() => {
+    const topSurprise = ranked()[0]
+    const topFizzle = fizzled()[0]
+    const parts = []
+    if (topSurprise) {
+      parts.push(`Biggest early-to-late surprise: ${topSurprise.game.away} @ ${topSurprise.game.home} went from ${topSurprise.earlyTier} (${topSurprise.earlyPeak}) early to ${topSurprise.finalTier} (${topSurprise.finalPeak}) final -- a real +${topSurprise.gap}-point swing.`)
+    }
+    if (topFizzle) {
+      parts.push(`Biggest fizzle: ${topFizzle.game.away} @ ${topFizzle.game.home} peaked ${topFizzle.finalTier} at ${topFizzle.finalPeak} then cooled to ${topFizzle.lateTier} (${topFizzle.lateMax}) late -- down ${topFizzle.fizzleGap} real points.`)
+    }
+    return parts.length ? parts.join(' ') : null
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -73,6 +89,9 @@ export function HallOfSurprises() {
 
       <Show when={!hallOfSurprisesCandidates.error}>
         <Show when={hallOfSurprisesCandidates()} fallback={<p class={styles.loading}>Loading…</p>}>
+          <Show when={verdict()}>
+            <p class={styles.verdict}>{verdict()}</p>
+          </Show>
           <Show when={fizzled().length}>
             <div class={styles.sectionLabel}>Peaked early, cooled off</div>
             <ol class={styles.rows}>

@@ -96,13 +96,26 @@ export function PickEm() {
   ].filter(g => !NON_MATCHUP_SPORTS.has(g.sport?.toLowerCase())))
 
   const record = createMemo(() => {
-    let correct = 0, incorrect = 0
+    let correct = 0, incorrect = 0, pending = 0
     for (const g of allGames()) {
       const s = pickStatus(g, picks[g.id])
       if (s === 'correct') correct++
       if (s === 'incorrect') incorrect++
+      if (s === 'pending') pending++
     }
-    return { correct, incorrect }
+    return { correct, incorrect, pending }
+  })
+
+  // Real, plain-language payoff -- states the reader's real record on
+  // finished games plus how many real picks are still pending/live,
+  // instead of leaving a bare "3–1" chip for the reader to parse.
+  const verdict = createMemo(() => {
+    const { correct, incorrect, pending } = record()
+    const decided = correct + incorrect
+    if (!decided && !pending) return null
+    if (!decided) return `No picks decided yet -- ${pending} of your real pick${pending === 1 ? '' : 's'} still pending or live.`
+    const pct = Math.round((correct / decided) * 100)
+    return `You're ${correct}-${incorrect} (${pct}%) on decided real picks${pending ? `, with ${pending} more still pending or live` : ''}.`
   })
 
   const grouped = createMemo(() => {
@@ -143,6 +156,9 @@ export function PickEm() {
         </Show>
       </header>
       <Show when={allGames().length} fallback={<p class={styles.empty}>No games today.</p>}>
+        <Show when={verdict()}>
+          <p class={styles.verdict}>{verdict()}</p>
+        </Show>
         <Tabs tabs={tabs} active={activeOrFirst} setActive={setActiveSport} />
         <div class={styles.pickList}>
           <For each={visibleGames()}>{game => <PickRow game={game} />}</For>

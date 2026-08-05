@@ -146,6 +146,29 @@ export function HealthPanel() {
     return 'pass'
   })
 
+  // Real, plain-language payoff -- states whether the real self-checks
+  // are actually passing, the real request/failure tally, and how fresh
+  // (in real seconds) the last successful real poll is, instead of
+  // leaving three separate rows for the reader to add up themselves.
+  const verdict = createMemo(() => {
+    const checks = [rootStatus(), errBoundary.status(), workerStatus()]
+    const passCount = checks.filter(s => s === 'pass').length
+    const failCount = checks.filter(s => s === 'fail').length
+    const checkingCount = checks.filter(s => s === 'checking').length
+    let statusText
+    if (checkingCount > 0) statusText = `${passCount}/${checks.length} real self-checks passing so far (${checkingCount} still running)`
+    else if (failCount === 0) statusText = `All ${checks.length} real self-checks are passing`
+    else statusText = `${failCount}/${checks.length} real self-checks are failing`
+
+    const fh = fetchHealth()
+    const fetchText = fh ? `${fh.count} real requests, ${fh.errors} failed` : 'no real requests yet'
+
+    const stale = staleness()
+    const staleText = stale !== null ? `last successful real poll ${stale}s ago` : 'no successful real poll yet'
+
+    return `${statusText} -- ${fetchText} -- ${staleText}.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -156,6 +179,8 @@ export function HealthPanel() {
         Same primitives as the mechanism demos above, run unattended on mount instead of
         waiting for a button press. A demo needs a human to trigger it; a health check runs itself.
       </p>
+
+      <p class={styles.verdict}>{verdict()}</p>
 
       <div class={styles.checkList}>
         <StatusRow status={rootStatus} label="reactive root disposal" />

@@ -68,6 +68,16 @@ export function BriefArchive() {
     return Math.round(results.reduce((sum, r) => sum + r.quality_score, 0) / results.length)
   })
 
+  // Real, plain-language payoff -- names the actual best-scoring real
+  // brief for this date, instead of leaving a bare count + average for
+  // the reader to weigh unaided.
+  const verdict = createMemo(() => {
+    const results = sortedResults()
+    if (!results.length) return null
+    const best = results.reduce((a, b) => (b.quality_score > a.quality_score ? b : a))
+    return `${results.length} real brief${results.length === 1 ? ' was' : 's were'} written on ${archiveDate()} -- average quality ${avgScore()}, best was the ${formatBriefType(best.brief_type)} brief${best.sport ? ` (${best.sport})` : ''} at ${best.quality_score}.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -85,6 +95,7 @@ export function BriefArchive() {
       <Show when={!archiveQuery.error}>
         <Show when={data() && !archiveQuery.loading} fallback={<p class={styles.loading}>Loading…</p>}>
           <Show when={sortedResults().length} fallback={<p class={styles.empty}>No briefs archived for this date.</p>}>
+            <p class={styles.verdict}>{verdict()}</p>
             <p class={styles.summaryLine}>{sortedResults().length} briefs · avg quality {avgScore()}</p>
             <ul class={styles.rows}>
               <For each={sortedResults()}>{(b) => <BriefRow brief={b} />}</For>

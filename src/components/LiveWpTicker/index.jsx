@@ -221,6 +221,25 @@ export function LiveWpTicker() {
 
   const rowList = createMemo(() => liveMlbGames().map(g => ({ id: g.id, ...rows[g.id] })))
 
+  // Real, plain-language payoff -- names tonight's biggest real live gap
+  // between the two independently-fetched sources and checks it against
+  // the known validated average error, instead of leaving a Δ number on
+  // each row for the reader to judge unaided. Only computed over rows
+  // that are actually synced (joined at the same real play) with both
+  // real numbers present -- an unsynced comparison isn't a real gap.
+  const verdict = createMemo(() => {
+    const synced = rowList().filter(r => r.synced && r.savantWp != null && r.estimatedWp != null)
+    if (!synced.length) return null
+    let biggest = synced[0]
+    for (const r of synced) {
+      if (Math.abs(r.savantWp - r.estimatedWp) > Math.abs(biggest.savantWp - biggest.estimatedWp)) biggest = r
+    }
+    const gapPts = Math.abs(biggest.savantWp - biggest.estimatedWp) * 100
+    const maePts = WP_ESTIMATOR_MAE_REGULATION * 100
+    const cmp = gapPts <= maePts ? 'within' : 'above'
+    return `Tonight's biggest real live gap: ${biggest.away} @ ${biggest.home}, where the client-side estimate is off by ${gapPts.toFixed(1)}pp -- ${cmp} the validated average error of ${maePts.toFixed(1)}pp.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -240,6 +259,14 @@ export function LiveWpTicker() {
       </p>
       <Show when={rowList().length === 0}>
         <p class={styles.empty}>No live MLB games right now.</p>
+      </Show>
+      <Show when={rowList().length > 0}>
+        <Show
+          when={verdict()}
+          fallback={<p class={styles.verdict}>Live real games in progress, but no synced Savant/estimate pair yet to compare.</p>}
+        >
+          <p class={styles.verdict}>{verdict()}</p>
+        </Show>
       </Show>
       <div class={styles.rowList}>
         <For each={rowList()}>

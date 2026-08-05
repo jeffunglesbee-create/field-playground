@@ -74,6 +74,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Companion to .tonightsCard's count -- inline, not the boxed .verdict
+   treatment used elsewhere in this repo, since here it's a continuation
+   of that same one-line summary rather than a standalone paragraph. */
+.verdict {
+  color: var(--field-text-primary);
+}
+
 .liveFilterBtn {
   font-size: 9px;
   font-family: inherit;

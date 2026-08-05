@@ -107,6 +107,20 @@ export function DramaLeaderboard() {
     })
   })
 
+  // Real, plain-language payoff -- names tonight's #1 real game by
+  // total WP movement and how much of that movement happened late,
+  // instead of leaving two raw numbers for the reader to compare
+  // unaided. Waits for that top game's real Savant data to resolve
+  // (returns null until then, same as every other loading guard here).
+  const verdict = createMemo(() => {
+    const top = rankedGames()[0]
+    if (!top) return null
+    const m = wpMovements[top.id]?.data
+    if (!m) return null
+    const latePct = m.totalMovement > 0 ? Math.round((m.lateMovement / m.totalMovement) * 100) : 0
+    return `Tonight's most dramatic real game: ${top.away} @ ${top.home}, with ${m.totalMovement.toFixed(2)} total real win-probability movement -- ${latePct}% of it (${m.lateMovement.toFixed(2)}) happening late, in the 7th inning or after.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -123,6 +137,9 @@ export function DramaLeaderboard() {
       <Show when={!dramaLeaderboard.error}>
         <Show when={data()} fallback={<p class={styles.loading}>Loading…</p>}>
           <Show when={rankedGames().length} fallback={<p class={styles.empty}>No games found.</p>}>
+            <Show when={verdict()}>
+              <p class={styles.verdict}>{verdict()}</p>
+            </Show>
             <ul class={styles.rows}>
               <For each={rankedGames()}>
                 {(g, i) => <GameRow game={g} rank={i() + 1} wpMovement={wpMovements[g.id]} />}

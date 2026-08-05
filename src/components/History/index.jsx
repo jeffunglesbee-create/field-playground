@@ -237,13 +237,42 @@ function MultiDayStreak() {
   )
 }
 
+// Real, plain-language payoff -- states the reader's own real all-time
+// record and which real drama tier has actually been their best/worst
+// real read, instead of leaving the tier list and the day-by-day record
+// for the reader to cross-reference themselves. Reuses the same two
+// memos TierCalibration/MultiDayRecord already compute -- no new fetch,
+// no new derivation, just called again here to combine them into one
+// sentence.
+function useVerdict() {
+  const tiers = useTierCalibration()
+  const record = useMultiDayRecord()
+  return createMemo(() => {
+    const rec = record().running
+    const recordText = `${rec.w}-${rec.l}-${rec.p}`
+    const rated = tiers().filter(t => t.hitRate !== null)
+    if (rec.w + rec.l + rec.p === 0) return null
+    if (!rated.length) return `Your real all-time record is ${recordText}.`
+    const best = rated.reduce((a, b) => (b.hitRate > a.hitRate ? b : a))
+    const worst = rated.reduce((a, b) => (b.hitRate < a.hitRate ? b : a))
+    if (best.tier === worst.tier) {
+      return `Your real all-time record is ${recordText}. Tier ${best.tier} is your only rated tier so far, hitting ${Math.round(best.hitRate * 100)}%.`
+    }
+    return `Your real all-time record is ${recordText}. Tier ${best.tier} has been your best real read at ${Math.round(best.hitRate * 100)}%, Tier ${worst.tier} your worst at ${Math.round(worst.hitRate * 100)}%.`
+  })
+}
+
 export function History() {
+  const verdict = useVerdict()
   return (
     <div class={styles.root}>
       <header class={styles.header}>
         <span class={styles.label}>History</span>
         <span class={styles.note}>from your own marked outcomes, no fetch</span>
       </header>
+      <Show when={verdict()}>
+        <p class={styles.verdict}>{verdict()}</p>
+      </Show>
       <TierCalibration />
       <MultiDayRecord />
       <PickCalendar />

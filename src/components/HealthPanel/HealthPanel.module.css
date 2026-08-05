@@ -41,6 +41,17 @@
   line-height: 1.4;
 }
 
+.verdict {
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--field-text-primary);
+  line-height: 1.4;
+  margin: 0 0 12px 0;
+}
+
 .checkList {
   display: flex;
   flex-direction: column;

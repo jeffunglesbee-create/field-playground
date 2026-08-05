@@ -119,6 +119,42 @@ function MlbSection() {
   // same posture AmbientPanel/DeskCard already take with `.error`.
   const records = createMemo(() => mlbStandings.error ? [] : (mlbStandings()?.records ?? []))
 
+  // Real, plain-language payoff -- names the tightest real division race
+  // (smallest real gamesBack gap between the division leader and the
+  // second-place team) and, if one of those two teams is riding a real
+  // winning streak, names that too, instead of leaving 6 divisions of
+  // gamesBack numbers for the reader to scan and compare unaided.
+  const verdict = createMemo(() => {
+    let tightest = null
+    for (const r of records()) {
+      const teams = r.teamRecords ?? []
+      const leader = teams.find(t => parseInt(t.divisionRank, 10) === 1)
+      const second = teams.find(t => parseInt(t.divisionRank, 10) === 2)
+      if (!leader || !second) continue
+      const gap = second.gamesBack === '-' ? 0 : parseFloat(second.gamesBack)
+      if (isNaN(gap)) continue
+      if (!tightest || gap < tightest.gap) {
+        tightest = {
+          divisionName: MLB_DIVISION_NAMES[r.division.id] || `Div ${r.division.id}`,
+          gap, leader, second,
+        }
+      }
+    }
+    if (!tightest) return null
+    const gapText = tightest.gap === 0 ? 'tied at the top' : `just ${tightest.gap.toFixed(1)} games back`
+    let text = `Tightest real division race: ${tightest.divisionName} -- ${tightest.second.team.name} trails ${tightest.leader.team.name} by ${gapText}.`
+    let hottest = null
+    for (const t of [tightest.leader, tightest.second]) {
+      const m = t.streak?.streakCode?.match(/^W(\d+)$/)
+      if (m) {
+        const n = parseInt(m[1], 10)
+        if (!hottest || n > hottest.n) hottest = { name: t.team.name, n, code: t.streak.streakCode }
+      }
+    }
+    if (hottest) text += ` ${hottest.name} is riding a real ${hottest.code} streak into it.`
+    return text
+  })
+
   const tabs = createMemo(() =>
     records()
       .map(r => ({ key: r.division.id, label: MLB_DIVISION_NAMES[r.division.id] || `Div ${r.division.id}` }))
@@ -161,6 +197,9 @@ function MlbSection() {
         <span class={styles.liveTag}>LIVE, DERIVED</span>
       </div>
       <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : 'Loading…'}</p>}>
+        <Show when={verdict()}>
+          <p class={styles.verdict}>{verdict()}</p>
+        </Show>
         <Tabs id="standing-room-mlb" tabs={tabs()} active={active} setActive={setActive} />
         <div class={styles.cardGrid}>
           <For each={active() === 'wc' ? wildCardTeams() : divisionTeams()}>

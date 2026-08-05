@@ -95,6 +95,20 @@ export function BriefReconcile() {
     }
   })
 
+  // Real, plain-language payoff -- puts the real finding from this
+  // file's own source comment ("the real difference is COVERAGE, not
+  // correctness") on screen instead of leaving it only in code, using
+  // the same stats() this component already computes.
+  const headline = createMemo(() => {
+    const s = stats()
+    if (s.both === 0) {
+      if (!s.histOnly && !s.archOnly) return null
+      return `None of today's real briefs are covered by both sources yet -- ${s.histOnly} brief${s.histOnly === 1 ? '' : 's'} history has that archive doesn't, ${s.archOnly} archive has that history doesn't. That's a real coverage gap, not a disagreement -- there's nothing to compare yet.`
+    }
+    const pct = Math.round((s.agree / s.both) * 100)
+    return `Where both real sources cover the same brief, they agree ${pct}% of the time (${s.agree}/${s.both}) -- the real difference between them is coverage (history has ${s.histOnly} brief${s.histOnly === 1 ? '' : 's'} archive doesn't, archive has ${s.archOnly} history doesn't), not correctness.`
+  })
+
   // /quality/report buckets briefs on below_240 / above_240. Every score
   // observed is 108-141. A gate nothing can pass is worth surfacing --
   // it is either miscalibrated or measuring a different scale than what
@@ -121,6 +135,9 @@ export function BriefReconcile() {
 
       <Show when={!history.error && !archive.error}>
         <Show when={rows().length} fallback={<p class={styles.empty}>Loading…</p>}>
+          <Show when={headline()}>
+            <p class={styles.headline}>{headline()}</p>
+          </Show>
           <div class={styles.summary}>
             <span class={styles.stat}>{stats().both} shared</span>
             <span class={`${styles.stat} ${stats().disagree === 0 ? styles.good : styles.bad}`}>

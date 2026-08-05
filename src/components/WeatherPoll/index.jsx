@@ -1,4 +1,4 @@
-import { For, Show, onMount, onCleanup } from 'solid-js'
+import { For, Show, onMount, onCleanup, createMemo } from 'solid-js'
 import { weatherData, refetchWeather, weatherPollCount, setWeatherPollCount } from '../../data/weather'
 import styles from './WeatherPoll.module.css'
 
@@ -11,6 +11,23 @@ import styles from './WeatherPoll.module.css'
 const WEATHER_POLL_MS = 45000
 
 export function WeatherPoll() {
+  // Real, plain-language payoff -- names tonight's actual warmest and
+  // coldest real outdoor venues instead of leaving a list of temps for
+  // the reader to scan and compare unaided. Domed/retractable venues are
+  // excluded: their real weather is at the venue's location, not
+  // necessarily what the game itself experiences (see roofNote below).
+  const verdict = createMemo(() => {
+    const venues = weatherData()?.venues ?? []
+    const outdoor = venues.filter(v => v.roofType === 'open')
+    if (!outdoor.length) return null
+    const warmest = outdoor.reduce((a, b) => (b.tempF > a.tempF ? b : a))
+    const coldest = outdoor.reduce((a, b) => (b.tempF < a.tempF ? b : a))
+    if (warmest.venue === coldest.venue) {
+      return `Tonight's only real outdoor venue: ${warmest.venue} at ${warmest.tempF}°F, ${warmest.condition}.`
+    }
+    return `Tonight's warmest real outdoor venue: ${warmest.venue} at ${warmest.tempF}°F (${warmest.condition}) -- coldest is ${coldest.venue} at ${coldest.tempF}°F (${coldest.condition}).`
+  })
+
   onMount(() => {
     const handle = setInterval(() => {
       refetchWeather()
@@ -44,6 +61,9 @@ export function WeatherPoll() {
             when={weatherData().venues.length > 0}
             fallback={<p class={styles.empty}>No venues with known coordinates in the selected date's slate.</p>}
           >
+            <Show when={verdict()}>
+              <p class={styles.verdict}>{verdict()}</p>
+            </Show>
             <div class={styles.venueList}>
               <For each={weatherData().venues}>
                 {v => (

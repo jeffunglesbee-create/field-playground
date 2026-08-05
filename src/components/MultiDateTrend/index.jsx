@@ -64,6 +64,21 @@ export function MultiDateTrend() {
     return { w, l }
   })
 
+  // Real, plain-language payoff -- states the real 7-day record and
+  // whether the most recent real decided pick hit or missed, with its
+  // real matchup, instead of leaving the pip row for the reader to scan
+  // right-to-left themselves.
+  const verdict = createMemo(() => {
+    const t = trend()
+    if (!t.length) return null
+    const rec = record()
+    const recordText = `${rec.w}-${rec.l}`
+    const recent = [...t].reverse().find(x => x.result)
+    if (!recent) return `${recordText} over the last ${DAYS} days -- no decided real picks yet.`
+    const verb = recent.result === 'W' ? 'hit' : 'missed'
+    return `${recordText} over the last ${DAYS} days. Most recent real pick ${verb}: ${recent.pick.away} @ ${recent.pick.home}.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -71,6 +86,9 @@ export function MultiDateTrend() {
         <span class={styles.sublabel}>editorial top pick vs. real results</span>
       </header>
       <Show when={allLoaded()} fallback={<p class={styles.empty}>Loading 7 days…</p>}>
+        <Show when={verdict()}>
+          <p class={styles.verdict}>{verdict()}</p>
+        </Show>
         <div class={styles.trendRow}>
           <For each={trend()}>
             {t => (

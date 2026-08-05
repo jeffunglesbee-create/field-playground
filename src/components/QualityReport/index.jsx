@@ -43,6 +43,24 @@ export function QualityReport() {
     return [...d.summary].sort((a, b) => a.avg_score - b.avg_score)
   })
 
+  // Real, plain-language payoff -- names the worst-scoring real
+  // brief_type/sport in the current report and states how its real
+  // avg_score compares to its own real calibrated threshold (from
+  // alerts[], not guessed), instead of leaving the reader to scan the
+  // sorted list and cross-reference the alerts themselves.
+  const verdict = createMemo(() => {
+    const d = data()
+    const worst = sortedSummary()[0]
+    if (!d || !worst) return null
+    const alert = (d.alerts ?? []).find(a => alertKey(a.brief_type, a.sport) === alertKey(worst.brief_type, worst.sport))
+    const label = `${formatBriefType(worst.brief_type)} (${worst.sport ?? 'all sports'})`
+    if (alert) {
+      const diff = (alert.threshold - worst.avg_score).toFixed(1)
+      return `Worst real score in this report: ${label} at ${worst.avg_score} -- ${diff} below its own calibrated threshold of ${alert.threshold} (${alert.threshold_source}).`
+    }
+    return `Worst real score in this report: ${label} at ${worst.avg_score} -- not currently below its own calibrated threshold.`
+  })
+
   onMount(() => {
     const handle = setInterval(refetchQualityReport, POLL_MS)
     onCleanup(() => clearInterval(handle))
@@ -67,6 +85,9 @@ export function QualityReport() {
             fallback={<p class={styles.allClear}>✓ no quality alerts</p>}
           >
             <p class={styles.alertSummary}>{data().alert_count} quality alert{data().alert_count === 1 ? '' : 's'}</p>
+          </Show>
+          <Show when={verdict()}>
+            <p class={styles.verdict}>{verdict()}</p>
           </Show>
           <ul class={styles.rows}>
             <For each={sortedSummary()}>

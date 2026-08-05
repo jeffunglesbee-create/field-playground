@@ -86,6 +86,17 @@ export function WcBracketTree() {
     return projections()?.bracketSlots?.Champion
   })
 
+  // Real, plain-language payoff -- names the real favorite and real
+  // probability, explicitly framed as a projection: the knockout rounds
+  // haven't been played (see header note above), so this must not read
+  // as a decided result.
+  const verdict = createMemo(() => {
+    const c = champion()
+    if (!c) return null
+    const pct = Math.round((c.prob ?? 0) * 1000) / 10
+    return `${c.team} is the most likely real champion right now, at ${pct}% -- a projection from current odds, not a decided result. The knockout rounds haven't been played yet.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -107,6 +118,10 @@ export function WcBracketTree() {
                 {Math.round((champion().prob ?? 0) * 1000) / 10}%
               </span>
             </div>
+          </Show>
+
+          <Show when={verdict()}>
+            <p class={styles.verdict}>{verdict()}</p>
           </Show>
 
           <div class={styles.tree}>

@@ -27,6 +27,20 @@ function parseHealth(text) {
 export function RelaySystemStatus() {
   const parsed = createMemo(() => (relayHealth.error ? undefined : parseHealth(relayHealth())))
 
+  // Real, plain-language payoff -- states whether the real relay backend
+  // is up with all its real subsystems reporting, and names the real
+  // quality-source currently serving data, instead of leaving the
+  // status dot and chip list for the reader to piece together.
+  const verdict = createMemo(() => {
+    const p = parsed()
+    if (!p) return null
+    const subsystemsText = p.subsystems.length
+      ? `all ${p.subsystems.length} real subsystems reporting (${p.subsystems.join(', ')})`
+      : 'no subsystems reported'
+    const qsText = p.qualitySource ? `quality-source is ${p.qualitySource}` : 'no quality-source reported'
+    return `Real relay backend is ${p.ok ? 'up' : 'degraded'} -- ${subsystemsText} -- ${qsText}.`
+  })
+
   onMount(() => {
     const handle = setInterval(refetchRelayHealth, POLL_MS)
     onCleanup(() => clearInterval(handle))
@@ -47,6 +61,9 @@ export function RelaySystemStatus() {
       </Show>
       <Show when={!relayHealth.error}>
         <Show when={parsed()} fallback={<p class={styles.loading}>Loading…</p>}>
+          <Show when={verdict()}>
+            <p class={styles.verdict}>{verdict()}</p>
+          </Show>
           <Show when={parsed().qualitySource}>
             <p class={styles.qualitySource}>quality-source: {parsed().qualitySource}</p>
           </Show>

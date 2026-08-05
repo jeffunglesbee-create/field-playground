@@ -74,6 +74,24 @@ export function CrossCheck() {
   // fetch failure. Same posture as StandingRoom/DayComparison.
   const editorialPicks = createMemo(() => (ambientData.error ? undefined : ambientData())?.pick?.ranked ?? [])
 
+  // Real, plain-language payoff -- states how many real editorial picks
+  // have a landed verdict yet, their real W/L/P record, and how many of
+  // those the reader also made a call on. Deliberately parallel counts,
+  // not a comparison score: this component's own header comment (above)
+  // explains editorial W/L/P and a PickEm pick are different axes, so
+  // nothing here claims one predicts or validates the other.
+  const verdict = createMemo(() => {
+    const eps = editorialPicks()
+    if (!eps.length) return null
+    const landed = eps.filter(ep => outcomes()[ep.game_id])
+    if (!landed.length) return `${eps.length} real editorial pick${eps.length === 1 ? '' : 's'} today -- none have a landed verdict yet.`
+    const w = landed.filter(ep => outcomes()[ep.game_id] === 'W').length
+    const l = landed.filter(ep => outcomes()[ep.game_id] === 'L').length
+    const p = landed.filter(ep => outcomes()[ep.game_id] === 'P').length
+    const alsoPicked = landed.filter(ep => picks[ep.game_id]).length
+    return `${landed.length} of ${eps.length} real editorial picks have landed a verdict so far -- ${w}-${l}-${p} (W-L-P). You also made your own call on ${alsoPicked} of those ${landed.length} -- shown side by side below, not scored against each other.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -81,6 +99,7 @@ export function CrossCheck() {
         <span class={styles.note}>editorial + your pick + live, joined live</span>
       </header>
       <Show when={editorialPicks().length} fallback={<p class={styles.empty}>No editorial picks today.</p>}>
+        <p class={styles.verdict}>{verdict()}</p>
         <For each={editorialPicks()}>{p => <CrossRow editorialPick={p} />}</For>
       </Show>
     </div>

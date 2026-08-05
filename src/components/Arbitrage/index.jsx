@@ -268,6 +268,22 @@ export function Arbitrage() {
   // specifically the "we genuinely don't know" case.
   const unpricedCount = createMemo(() => services().filter(s => s.price == null && !s.free).length)
 
+  // Real, plain-language payoff -- states what the reader's current
+  // real spend already covers tonight, and what the cheapest real
+  // next step would unlock, instead of leaving coverage counts and a
+  // cost-per-game table for the reader to connect unaided.
+  const verdict = createMemo(() => {
+    const c = coverage()
+    if (!c.total) return null
+    const spendPhrase = monthlySpend() > 0 ? `pay $${monthlySpend().toFixed(2)}/mo` : 'pay for nothing'
+    const top = marginal()[0]
+    if (!top) {
+      return `You currently ${spendPhrase} and already cover all ${c.total} of tonight's real games -- nothing left to unlock.`
+    }
+    const priceText = top.free ? 'free' : top.costPerGame != null ? `$${top.costPerGame.toFixed(2)}/game` : 'unknown price'
+    return `You currently ${spendPhrase}, covering ${c.covered}/${c.total} of tonight's real games. Cheapest real next step: ${top.label}, unlocking ${top.unlocks} more for ${priceText}.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -294,6 +310,10 @@ export function Arbitrage() {
 
         <Show when={servicesOpen()}>
           <MyServicesModal services={services()} onClose={() => setServicesOpen(false)} />
+        </Show>
+
+        <Show when={verdict()}>
+          <p class={styles.verdict}>{verdict()}</p>
         </Show>
 
         <h4 class={styles.subhead}>

@@ -65,6 +65,25 @@ export function WcBracketOdds() {
     return [...d.bracketTraps].sort((a, b) => b.delta - a.delta)
   })
 
+  // Real, plain-language payoff -- names the real favorite and its
+  // real title probability, plus the single biggest real bracket
+  // trap, instead of leaving both ranked lists for the reader to
+  // scan and connect unaided. The trap is the genuinely surprising
+  // finding this component exists to surface.
+  const verdict = createMemo(() => {
+    const top = topTeams()[0]
+    const trap = traps()[0]
+    const parts = []
+    if (top) {
+      parts.push(`Real favorite: ${top.name}, with a ${pct(top.pChamp)} real chance to win it all.`)
+    }
+    if (trap) {
+      const better2nd = trap.delta > 0
+      parts.push(`Biggest real bracket trap: ${trap.team} -- finishing ${better2nd ? '2nd' : '1st'} in group is worth ${pct(Math.abs(trap.delta))} more real title equity than finishing ${better2nd ? '1st' : '2nd'}.`)
+    }
+    return parts.length ? parts.join(' ') : null
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -79,6 +98,9 @@ export function WcBracketOdds() {
       </Show>
       <Show when={!wcProjections.error}>
         <Show when={data()} fallback={<p class={styles.loading}>Loading…</p>}>
+          <Show when={verdict()}>
+            <p class={styles.verdict}>{verdict()}</p>
+          </Show>
           <p class={styles.sectionLabel}>Championship odds</p>
           <ul class={styles.rows}>
             <For each={topTeams()}>

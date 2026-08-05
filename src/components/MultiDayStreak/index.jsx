@@ -48,19 +48,35 @@ export function MultiDayStreak(props) {
 
   const allLoaded = createMemo(() => contexts.every(c => !c.data.loading))
 
+  // Real, plain-language payoff -- states the actual win count over the
+  // real games shown and whether the most recent real result was a win
+  // or loss, instead of leaving the pips as the only summary.
+  const verdict = createMemo(() => {
+    const played = results().filter(r => r.result)
+    if (!played.length) return null
+    const wins = played.filter(r => r.result === 'W').length
+    const mostRecent = played[played.length - 1]
+    return `${teamName()}: ${wins}-${played.length - wins} over the last ${played.length} real game${played.length === 1 ? '' : 's'} shown, most recently a ${mostRecent.result === 'W' ? 'win' : 'loss'}.`
+  })
+
   return (
     <div class={styles.root}>
-      <span class={styles.teamLabel}>{teamName()}</span>
-      <Show when={allLoaded()} fallback={<span class={styles.loading}>loading {DAYS_BACK} days…</span>}>
-        <div class={styles.sequence}>
-          <For each={results()}>
-            {r => (
-              <span class={`${styles.pip} ${r.result ? styles['pip_' + r.result] : styles.pip_none}`} title={r.date}>
-                {r.result ?? '·'}
-              </span>
-            )}
-          </For>
-        </div>
+      <div class={styles.streakRow}>
+        <span class={styles.teamLabel}>{teamName()}</span>
+        <Show when={allLoaded()} fallback={<span class={styles.loading}>loading {DAYS_BACK} days…</span>}>
+          <div class={styles.sequence}>
+            <For each={results()}>
+              {r => (
+                <span class={`${styles.pip} ${r.result ? styles['pip_' + r.result] : styles.pip_none}`} title={r.date}>
+                  {r.result ?? '·'}
+                </span>
+              )}
+            </For>
+          </div>
+        </Show>
+      </div>
+      <Show when={allLoaded() && verdict()}>
+        <p class={styles.verdict}>{verdict()}</p>
       </Show>
     </div>
   )

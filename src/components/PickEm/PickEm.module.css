@@ -26,6 +26,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+.verdict {
+  font-size: 13px;
+  color: var(--field-text-primary);
+  line-height: 1.4;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 0 0 10px 0;
+}
+
 .sportGroup {
   margin-bottom: 14px;
 }

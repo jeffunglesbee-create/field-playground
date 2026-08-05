@@ -85,6 +85,17 @@ export function LatencyHistogram() {
     }
   })
 
+  // Real, plain-language payoff -- states the actual overall request
+  // count and average latency this session, and names the real busiest
+  // endpoint by call count with its real p95, instead of leaving the
+  // histogram and per-endpoint rows for the reader to scan unaided.
+  const verdict = createMemo(() => {
+    const o = overall()
+    const busiest = byEndpoint()[0]
+    if (!o || !busiest) return null
+    return `This session: ${o.count} requests averaging ${o.avg}ms -- busiest endpoint is ${busiest.endpoint} (${busiest.count} calls, p95 ${busiest.p95}ms).`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -95,6 +106,9 @@ export function LatencyHistogram() {
         <p class={styles.note}>
           {overall().count} requests · avg {overall().avg}ms · max {overall().max}ms
         </p>
+        <Show when={verdict()}>
+          <p class={styles.verdict}>{verdict()}</p>
+        </Show>
         <div class={styles.histogram}>
           <For each={histogram()}>{h => <HistogramBar bucket={h.bucket} count={h.count} pct={h.pct} />}</For>
         </div>

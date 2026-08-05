@@ -103,6 +103,26 @@ export function TonightsPick() {
       .slice(0, 5)
   })
 
+  // Real, plain-language payoff -- names the single best real use of
+  // the reader's night before the ranked cards, instead of leaving
+  // four separate badges for the reader to weigh unaided.
+  const verdict = createMemo(() => {
+    const top = ranked()[0]
+    if (!top) return null
+    const statusText = top.status === 'live' ? 'live right now' : top.status === 'pre' ? 'coming up' : top.status
+    const dramaText = top.tier ? `${top.label} ${top.tier}` : 'undramatic so far'
+    const streamText = !top.stream
+      ? 'no stream data'
+      : top.stream.free
+        ? `free on ${top.stream.label}`
+        : top.stream.owned
+          ? `already covered by ${top.stream.label}`
+          : top.stream.price != null
+            ? `$${top.stream.price.toFixed(2)}/mo on ${top.stream.label}`
+            : `on ${top.stream.label}, price unknown`
+    return `Tonight's best real use of your time: ${top.game.away} @ ${top.game.home} -- ${statusText}, ${dramaText}, ${streamText}.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -111,6 +131,7 @@ export function TonightsPick() {
       </header>
 
       <Show when={ranked().length} fallback={<p class={styles.empty}>Nothing left to watch today.</p>}>
+        <p class={styles.verdict}>{verdict()}</p>
         <div class={styles.list}>
           <For each={ranked()}>
             {(entry, i) => (

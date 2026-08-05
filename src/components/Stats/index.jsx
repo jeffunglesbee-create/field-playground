@@ -111,6 +111,23 @@ function MlbLeaders() {
   const winStreaks = streaksOfKind('win')
   const lossStreaks = streaksOfKind('loss')
 
+  // Real, plain-language payoff -- names the real #1 hottest streak
+  // leader and how far it's ahead of the next-best real streak,
+  // instead of leaving a column of "W7"/"W5" badges for the reader
+  // to compare unaided.
+  const streakVerdict = createMemo(() => {
+    const list = allTeams()
+      .map(t => ({ name: t.team.name, s: parseStreak(t.streak?.streakCode) }))
+      .filter(x => x.s.kind === 'win')
+      .sort((a, b) => b.s.length - a.s.length)
+    const top = list[0]
+    if (!top) return null
+    const second = list[1]
+    if (!second) return `Hottest team right now: ${top.name}, on a real W${top.s.length} win streak.`
+    const aheadBy = top.s.length - second.s.length
+    return `Hottest team right now: ${top.name}, on a real W${top.s.length} win streak -- ${aheadBy} game${aheadBy === 1 ? '' : 's'} ahead of the next-best active real streak (${second.name}, W${second.s.length}).`
+  })
+
   const parkFactorLeaders = () =>
     [...PARK_FACTORS]
       .sort((a, b) => b.runsPct - a.runsPct)
@@ -138,6 +155,9 @@ function MlbLeaders() {
   return (
     <>
       <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : 'Loading…'}</p>}>
+        <Show when={streakVerdict()}>
+          <p class={styles.verdict}>{streakVerdict()}</p>
+        </Show>
         <LeaderboardSection title="Longest active win streaks" rows={winStreaks} emptyText="No active win streaks." />
         <LeaderboardSection title="Longest active losing streaks" rows={lossStreaks} emptyText="No active losing streaks." />
       </Show>
@@ -171,8 +191,25 @@ function MlsLeaders() {
       }))
   )
 
+  // Real, plain-language payoff -- names the real #1 goal-difference
+  // leader and how far ahead it is, instead of leaving a column of
+  // signed numbers for the reader to compare unaided.
+  const verdict = createMemo(() => {
+    const list = [...entries()].sort((a, b) => b.goals_difference - a.goals_difference)
+    const top = list[0]
+    if (!top) return null
+    const fmt = n => `${n > 0 ? '+' : ''}${n}`
+    const second = list[1]
+    if (!second) return `Best real goal difference: ${top.team} at ${fmt(top.goals_difference)}.`
+    const aheadBy = top.goals_difference - second.goals_difference
+    return `Best real goal difference: ${top.team} at ${fmt(top.goals_difference)} -- ${aheadBy} ahead of the next-best real team (${second.team}, ${fmt(second.goals_difference)}).`
+  })
+
   return (
     <Show when={entries().length} fallback={<p class={styles.empty}>{mlsStandings.error ? 'Unable to load MLS standings.' : 'Loading…'}</p>}>
+      <Show when={verdict()}>
+        <p class={styles.verdict}>{verdict()}</p>
+      </Show>
       <LeaderboardSection
         title="Goal difference leaders (Eastern + Western combined)"
         rows={goalDiffLeaders}
@@ -199,8 +236,25 @@ function WcLeaders() {
       }))
   )
 
+  // Real, plain-language payoff -- names the real #1 goal-difference
+  // leader and how far ahead it is, instead of leaving a column of
+  // signed numbers for the reader to compare unaided.
+  const verdict = createMemo(() => {
+    const list = [...allTeams()].sort((a, b) => b.gd - a.gd)
+    const top = list[0]
+    if (!top) return null
+    const fmt = n => `${n > 0 ? '+' : ''}${n}`
+    const second = list[1]
+    if (!second) return `Best real goal difference: ${top.team} at ${fmt(top.gd)}.`
+    const aheadBy = top.gd - second.gd
+    return `Best real goal difference: ${top.team} at ${fmt(top.gd)} -- ${aheadBy} ahead of the next-best real team (${second.team}, ${fmt(second.gd)}).`
+  })
+
   return (
     <Show when={allTeams().length} fallback={<p class={styles.empty}>{wcStandings.error ? 'Unable to load World Cup standings.' : 'Loading…'}</p>}>
+      <Show when={verdict()}>
+        <p class={styles.verdict}>{verdict()}</p>
+      </Show>
       <LeaderboardSection title="Goal difference leaders (all groups combined)" rows={goalDiffLeaders} emptyText="No data." />
     </Show>
   )

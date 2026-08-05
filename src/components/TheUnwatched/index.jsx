@@ -48,6 +48,15 @@ export function TheUnwatched() {
     [...analyzed()].filter(a => a.isUnwatched).sort((a, b) => b.gap - a.gap)
   )
 
+  // Real, plain-language payoff -- names the single biggest real miss
+  // before the ledger, instead of leaving tier badges for the reader
+  // to compare unaided.
+  const verdict = createMemo(() => {
+    const top = unwatched()[0]
+    if (!top) return null
+    return `Tonight's worst miss: ${top.game.away} @ ${top.game.home} sat at ${top.earlyTier} (${top.earlyPeak}) early -- looked skippable -- but finished ${top.finalTier} at ${top.finalPeak}, a real ${top.gap}-point swing the early read never saw coming.`
+  })
+
   return (
     <div class={styles.root}>
       <header class={styles.header}>
@@ -68,6 +77,7 @@ export function TheUnwatched() {
       <Show when={!unwatchedCandidates.error}>
         <Show when={unwatchedCandidates()} fallback={<p class={styles.loading}>Loading…</p>}>
           <Show when={unwatched().length} fallback={<p class={styles.empty}>No unwatched games in today's sample — every early read matched where the game ended up.</p>}>
+            <p class={styles.verdict}>{verdict()}</p>
             <ul class={styles.rows}>
               <For each={unwatched()}>
                 {u => (

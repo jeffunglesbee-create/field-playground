@@ -71,6 +71,17 @@
   color: var(--field-text-muted);
 }
 
+.verdict {
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--field-text-primary);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
 /* Local .tabBar/.tab/.tab:hover/.tabActive removed 2026-07-26 -- every
    Tabs instance in this file now uses the shared ../Tabs primitive
    (Tabs.module.css owns this styling), closing the exact drift risk
