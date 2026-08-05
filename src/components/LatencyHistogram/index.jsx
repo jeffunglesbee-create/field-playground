@@ -93,7 +93,9 @@ export function LatencyHistogram() {
     const o = overall()
     const busiest = byEndpoint()[0]
     if (!o || !busiest) return null
-    return `This session: ${o.count} requests averaging ${o.avg}ms -- busiest endpoint is ${busiest.endpoint} (${busiest.count} calls, p95 ${busiest.p95}ms).`
+    const reqWord = o.count === 1 ? 'request' : 'requests'
+    const callWord = busiest.count === 1 ? 'call' : 'calls'
+    return `This session: ${o.count} ${reqWord} averaging ${o.avg}ms -- busiest endpoint is ${busiest.endpoint} (${busiest.count} ${callWord}, p95 ${busiest.p95}ms).`
   })
 
   return (

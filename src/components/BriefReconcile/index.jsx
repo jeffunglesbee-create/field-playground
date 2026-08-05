@@ -103,10 +103,10 @@ export function BriefReconcile() {
     const s = stats()
     if (s.both === 0) {
       if (!s.histOnly && !s.archOnly) return null
-      return `None of today's real briefs are covered by both sources yet -- ${s.histOnly} brief${s.histOnly === 1 ? '' : 's'} history has that archive doesn't, ${s.archOnly} archive has that history doesn't. That's a real coverage gap, not a disagreement -- there's nothing to compare yet.`
+      return `None of today's real briefs are covered by both sources yet -- ${s.histOnly} brief${s.histOnly === 1 ? '' : 's'} history has that archive doesn't, ${s.archOnly} brief${s.archOnly === 1 ? '' : 's'} archive has that history doesn't. That's a real coverage gap, not a disagreement -- there's nothing to compare yet.`
     }
     const pct = Math.round((s.agree / s.both) * 100)
-    return `Where both real sources cover the same brief, they agree ${pct}% of the time (${s.agree}/${s.both}) -- the real difference between them is coverage (history has ${s.histOnly} brief${s.histOnly === 1 ? '' : 's'} archive doesn't, archive has ${s.archOnly} history doesn't), not correctness.`
+    return `Where both real sources cover the same brief, they agree ${pct}% of the time (${s.agree}/${s.both}) -- the real difference between them is coverage (history has ${s.histOnly} brief${s.histOnly === 1 ? '' : 's'} archive doesn't, archive has ${s.archOnly} brief${s.archOnly === 1 ? '' : 's'} history doesn't), not correctness.`
   })
 
   // /quality/report buckets briefs on below_240 / above_240. Every score

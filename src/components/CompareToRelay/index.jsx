@@ -68,16 +68,25 @@ export function CompareToRelay() {
   // names the sharpest real divergence (both picks are literally the
   // same axis here, predicted winner vs predicted winner, so "agree" is
   // a plain fact, not a causal or predictive claim about either pick).
+  //
+  // FIXED: the denominator only counts games with a CLEAR editorial pick
+  // (status 'agree' or 'disagree'), not every game you happened to pick.
+  // A tied implied score (impliedSide returns null -- see marginFromScore's
+  // neighbor) has no editorial side to agree or disagree with; counting it
+  // in "X of Y" silently turned it into an implied disagreement ("0 of 1"),
+  // which is exactly the kind of unearned claim this component exists to
+  // avoid. Excluded from the count entirely, same as it already was
+  // excluded from `agree`/`diff` -- now the denominator matches.
   const verdict = createMemo(() => {
-    const withPick = comparison().filter(c => c.user)
-    if (!withPick.length) return null
+    const comparable = comparison().filter(c => c.user && c.editorial)
+    if (!comparable.length) return null
     const agree = agreeing().length
     const diff = divergent().length
     const sharpest = [...divergent()].sort((a, b) => marginFromScore(b.score) - marginFromScore(a.score))[0]
     const sharpNote = sharpest
       ? ` Sharpest split: ${sharpest.away} @ ${sharpest.home} -- editorial leans ${sharpest[sharpest.editorial]}, you picked ${sharpest[sharpest.user]}.`
       : ''
-    return `You agreed with the relay's editorial pick on ${agree} of ${withPick.length} real games you picked${diff ? `, diverging on ${diff}` : ''}.${sharpNote}`
+    return `You agreed with the relay's editorial pick on ${agree} of ${comparable.length} real games you picked${diff ? `, diverging on ${diff}` : ''}.${sharpNote}`
   })
 
   return (

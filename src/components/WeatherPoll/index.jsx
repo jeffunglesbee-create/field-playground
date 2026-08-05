@@ -22,8 +22,16 @@ export function WeatherPoll() {
     if (!outdoor.length) return null
     const warmest = outdoor.reduce((a, b) => (b.tempF > a.tempF ? b : a))
     const coldest = outdoor.reduce((a, b) => (b.tempF < a.tempF ? b : a))
-    if (warmest.venue === coldest.venue) {
+    // A single real outdoor venue and a real tie between two-or-more
+    // distinct venues both land warmest.venue === coldest.venue (reduce
+    // keeps the first element on a tie), so that equality alone can't
+    // distinguish "only one venue" from "several venues, same temp" --
+    // outdoor.length is the actual signal for which case this is.
+    if (outdoor.length === 1) {
       return `Tonight's only real outdoor venue: ${warmest.venue} at ${warmest.tempF}°F, ${warmest.condition}.`
+    }
+    if (warmest.tempF === coldest.tempF) {
+      return `Tonight's ${outdoor.length} real outdoor venues are all tied at ${warmest.tempF}°F (${warmest.condition}).`
     }
     return `Tonight's warmest real outdoor venue: ${warmest.venue} at ${warmest.tempF}°F (${warmest.condition}) -- coldest is ${coldest.venue} at ${coldest.tempF}°F (${coldest.condition}).`
   })

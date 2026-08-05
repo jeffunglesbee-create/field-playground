@@ -141,8 +141,13 @@ function MlbSection() {
       }
     }
     if (!tightest) return null
-    const gapText = tightest.gap === 0 ? 'tied at the top' : `just ${tightest.gap.toFixed(1)} games back`
-    let text = `Tightest real division race: ${tightest.divisionName} -- ${tightest.second.team.name} trails ${tightest.leader.team.name} by ${gapText}.`
+    // Tied case needs its own clause, not just a swapped-in fragment --
+    // "trails X by tied at the top" doesn't parse. Found by testing the
+    // real gap=0 branch, which the current sample data never hits.
+    const raceText = tightest.gap === 0
+      ? `${tightest.second.team.name} is tied with ${tightest.leader.team.name} at the top`
+      : `${tightest.second.team.name} trails ${tightest.leader.team.name} by just ${tightest.gap.toFixed(1)} games back`
+    let text = `Tightest real division race: ${tightest.divisionName} -- ${raceText}.`
     let hottest = null
     for (const t of [tightest.leader, tightest.second]) {
       const m = t.streak?.streakCode?.match(/^W(\d+)$/)

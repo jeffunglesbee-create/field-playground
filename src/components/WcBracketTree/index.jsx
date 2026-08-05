@@ -94,7 +94,10 @@ export function WcBracketTree() {
     const c = champion()
     if (!c) return null
     const pct = Math.round((c.prob ?? 0) * 1000) / 10
-    return `${c.team} is the most likely real champion right now, at ${pct}% -- a projection from current odds, not a decided result. The knockout rounds haven't been played yet.`
+    // Same null-safe fallback SlotCard already uses for an unresolved
+    // slot's team name -- a Champion entry without a team is exactly the
+    // TBD case, not a reason to let `undefined` leak into the sentence.
+    return `${c.team ?? 'TBD'} is the most likely real champion right now, at ${pct}% -- a projection from current odds, not a decided result. The knockout rounds haven't been played yet.`
   })
 
   return (

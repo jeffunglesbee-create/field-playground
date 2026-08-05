@@ -35,7 +35,7 @@ export function RelaySystemStatus() {
     const p = parsed()
     if (!p) return null
     const subsystemsText = p.subsystems.length
-      ? `all ${p.subsystems.length} real subsystems reporting (${p.subsystems.join(', ')})`
+      ? `all ${p.subsystems.length} real subsystem${p.subsystems.length === 1 ? '' : 's'} reporting (${p.subsystems.join(', ')})`
       : 'no subsystems reported'
     const qsText = p.qualitySource ? `quality-source is ${p.qualitySource}` : 'no quality-source reported'
     return `Real relay backend is ${p.ok ? 'up' : 'degraded'} -- ${subsystemsText} -- ${qsText}.`

@@ -125,6 +125,7 @@ function MlbLeaders() {
     const second = list[1]
     if (!second) return `Hottest team right now: ${top.name}, on a real W${top.s.length} win streak.`
     const aheadBy = top.s.length - second.s.length
+    if (aheadBy === 0) return `Hottest team right now: ${top.name}, tied with ${second.name} atop the longest active real win streak -- both at W${top.s.length}.`
     return `Hottest team right now: ${top.name}, on a real W${top.s.length} win streak -- ${aheadBy} game${aheadBy === 1 ? '' : 's'} ahead of the next-best active real streak (${second.name}, W${second.s.length}).`
   })
 
@@ -154,7 +155,7 @@ function MlbLeaders() {
 
   return (
     <>
-      <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : 'Loading…'}</p>}>
+      <Show when={records().length} fallback={<p class={styles.empty}>{mlbStandings.error ? 'Unable to load MLB standings.' : mlbStandings.loading ? 'Loading…' : 'No MLB standings available.'}</p>}>
         <Show when={streakVerdict()}>
           <p class={styles.verdict}>{streakVerdict()}</p>
         </Show>
@@ -202,11 +203,12 @@ function MlsLeaders() {
     const second = list[1]
     if (!second) return `Best real goal difference: ${top.team} at ${fmt(top.goals_difference)}.`
     const aheadBy = top.goals_difference - second.goals_difference
+    if (aheadBy === 0) return `Best real goal difference: ${top.team}, tied with ${second.team} at ${fmt(top.goals_difference)}.`
     return `Best real goal difference: ${top.team} at ${fmt(top.goals_difference)} -- ${aheadBy} ahead of the next-best real team (${second.team}, ${fmt(second.goals_difference)}).`
   })
 
   return (
-    <Show when={entries().length} fallback={<p class={styles.empty}>{mlsStandings.error ? 'Unable to load MLS standings.' : 'Loading…'}</p>}>
+    <Show when={entries().length} fallback={<p class={styles.empty}>{mlsStandings.error ? 'Unable to load MLS standings.' : mlsStandings.loading ? 'Loading…' : 'No MLS standings available.'}</p>}>
       <Show when={verdict()}>
         <p class={styles.verdict}>{verdict()}</p>
       </Show>
@@ -247,11 +249,12 @@ function WcLeaders() {
     const second = list[1]
     if (!second) return `Best real goal difference: ${top.team} at ${fmt(top.gd)}.`
     const aheadBy = top.gd - second.gd
+    if (aheadBy === 0) return `Best real goal difference: ${top.team}, tied with ${second.team} at ${fmt(top.gd)}.`
     return `Best real goal difference: ${top.team} at ${fmt(top.gd)} -- ${aheadBy} ahead of the next-best real team (${second.team}, ${fmt(second.gd)}).`
   })
 
   return (
-    <Show when={allTeams().length} fallback={<p class={styles.empty}>{wcStandings.error ? 'Unable to load World Cup standings.' : 'Loading…'}</p>}>
+    <Show when={allTeams().length} fallback={<p class={styles.empty}>{wcStandings.error ? 'Unable to load World Cup standings.' : wcStandings.loading ? 'Loading…' : 'No World Cup standings available.'}</p>}>
       <Show when={verdict()}>
         <p class={styles.verdict}>{verdict()}</p>
       </Show>
