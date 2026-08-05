@@ -66,9 +66,17 @@ async function main() {
     process.exit(1)
   }
 
-  const rawLink = files[0]?.rawLink
+  log('first download entry, full object: ' + JSON.stringify(files[0]))
+  // The 8 entries in the single "default" folder are per resolution/format
+  // (1K/2K/4K x JPG/PNG etc), not separate folders as first assumed --
+  // real shape, corrected after seeing the actual API response rather than
+  // guessing a second time. Prefer a real 1K JPG entry by inspecting each
+  // entry's own attribute/name field for those substrings.
+  const chosen = files.find(f => /1k/i.test(JSON.stringify(f)) && /jpg/i.test(JSON.stringify(f))) ?? files[0]
+  log('chosen download entry: ' + JSON.stringify(chosen))
+  const rawLink = chosen?.rawLink ?? chosen?.downloadLink ?? chosen?.link ?? chosen?.url
   log('real rawLink: ' + rawLink)
-  if (!rawLink) { log('FAILED: no rawLink present'); process.exit(1) }
+  if (!rawLink) { log('FAILED: no usable link field present on the real download entry'); process.exit(1) }
 
   const zipPath = '/tmp/' + ASSET_ID + '.zip'
   const dl = await fetch(rawLink)
