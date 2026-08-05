@@ -1,0 +1,39 @@
+probe_at: 2026-08-05T01:00:53.726Z
+asset: Grass001
+API HTTP status: 200
+top-level response keys: ["searchQuery","numberOfResults","currentPageHttp","foundAssets"]
+assets returned: 1
+first asset keys: ["assetId","releaseDate","earlyReleaseDate","dataType","creationMethod","category","downloadCount","downloadCountMonth","downloadCountWeek","popularityScore","tags","dataTypeName","dataTypeDescription","creationMethodName","creationMethodDescription","displayName","customDisplayName","description","displayCategory","shortLink","dimensionX","dimensionY","dimensionZ","createdUsing","basedOnThis","variations","nextVariationAssetId","previousVariationAssetId","nextAssetId","previousAssetId","downloadFolders","previewLinks","previewType","maps","hasUsd","previewImage"]
+real asset name: "Grass 001"
+real tags: ["001","1","cover","dark","dense","fresh","garden","grass","grass001","green","ground","lawn","natural","park","short","soft"]
+download folders: ["default"]
+chosen folder object keys: ["title","downloadFiletypeCategories"]
+chosen folder: default, zip download entries: 8
+first download entry, full object: {"fullDownloadPath":"https://ambientcg.com/get?file=Grass001_1K-JPG.zip","downloadLink":"https://ambientcg.com/get?file=Grass001_1K-JPG.zip","fileName":"Grass001_1K-JPG.zip","size":10710313,"filetype":"zip","attribute":"1K-JPG","zipContent":[]}
+chosen download entry: {"fullDownloadPath":"https://ambientcg.com/get?file=Grass001_1K-JPG.zip","downloadLink":"https://ambientcg.com/get?file=Grass001_1K-JPG.zip","fileName":"Grass001_1K-JPG.zip","size":10710313,"filetype":"zip","attribute":"1K-JPG","zipContent":[]}
+real rawLink: https://ambientcg.com/get?file=Grass001_1K-JPG.zip
+download HTTP status: 200
+downloaded real zip bytes: 10710313
+real ZIP file signature present: true
+zip contents:
+Archive:  /tmp/Grass001.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+     2966  2025-10-13 12:45   Grass001_1K-JPG.usdc
+   902486  2025-10-13 12:23   Grass001_1K-JPG_AmbientOcclusion.jpg
+  1764300  2025-10-13 12:17   Grass001_1K-JPG_Color.jpg
+   913308  2025-10-13 12:25   Grass001_1K-JPG_Displacement.jpg
+  2337443  2025-10-13 12:25   Grass001_1K-JPG_NormalDX.jpg
+  2338245  2025-10-13 12:23   Grass001_1K-JPG_NormalGL.jpg
+   823623  2025-10-13 12:18   Grass001_1K-JPG_Roughness.jpg
+  1109012  2025-10-13 12:47   Grass001_1K-JPG.blend
+     2257  2025-10-13 12:45   Grass001_1K-JPG.mtlx
+     1015  2025-10-13 12:45   Grass001_1K-JPG.tres
+   513474  2025-10-13 12:31   Grass001.png
+---------                     -------
+ 10708129                     11 files
+
+has Color map: true, Normal map: true, Roughness map: true
+
+=== VERDICT ===
+CONFIRMED: real, downloadable CC0 grass texture asset (Grass001, 10710313 bytes) fetched successfully via ambientCG's real public API. Safe to commit into the repo and use.
