@@ -31,7 +31,12 @@ async function main() {
   const pageErrors = []
   page.on('pageerror', e => pageErrors.push(String(e)))
 
-  await page.goto(PREVIEW_URL, { waitUntil: 'networkidle', timeout: 30000 })
+  // This app polls continuously in the background (health checks, live
+  // tickers), so 'networkidle' never resolves against the real built
+  // app -- 'domcontentloaded' + explicit waitForFunction below is the
+  // pattern this repo's own other CI probes already use for exactly
+  // this reason (e.g. scripts/probe-broadcast-call-tts.mjs).
+  await page.goto(PREVIEW_URL, { waitUntil: 'domcontentloaded', timeout: 30000 })
 
   const tabButtons = await page.$$('button, [role=tab]')
   for (const b of tabButtons) {
