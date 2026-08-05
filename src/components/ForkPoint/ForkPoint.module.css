@@ -79,6 +79,27 @@
   color: var(--field-text-primary);
 }
 
+.verdict {
+  font-size: 13px;
+  color: var(--field-text-primary);
+  line-height: 1.4;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 0 0 10px 0;
+}
+
+.verdictUp {
+  border-color: #2a3a1a;
+  color: #8fce6e;
+}
+
+.verdictDown {
+  border-color: #3a1a1a;
+  color: #e7826a;
+}
+
 .sliderLabel {
   display: block;
   font-size: 11px;
@@ -99,6 +120,31 @@
   background: #0a0a0a;
   border: 1px solid #1a1a1a;
   border-radius: 6px;
+}
+
+.axisLabel {
+  font-size: 8px;
+  fill: var(--field-text-muted);
+  font-family: monospace;
+}
+
+.axisLine {
+  stroke: #1e1e1e;
+  stroke-width: 1;
+}
+
+.forkMarkerLine {
+  stroke: #555;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.forkMarkerLabel {
+  font-size: 8px;
+  fill: #777;
+  font-family: monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .originalLine {
