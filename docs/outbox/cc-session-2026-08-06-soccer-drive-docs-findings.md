@@ -159,6 +159,24 @@ all of them:
 4. **The retrospective framing is in the amnesty zone.** "Last completed slate" is post-game factual
    data — CLEAN. Only the "tonight live" framing carries real constraint, and it carries only #2 and #3.
 
+### Where these constraints actually bind — scoped 2026-08-06
+
+One more correction of altitude, separate from the push/pull one. `docs/OPERATING-MODE.md` states:
+
+> "ADR-002 / RUWT patent-defense constraints don't apply — nothing here ships to FIELD's production
+> surface." … "This repo itself never becomes a second production surface."
+
+So the four rules above do **not** gate building the anomaly feature *here*. field-playground is part of
+FIELD and permanently separate from production; nothing in it is a production surface. **The constraints
+bind at graduation** — when the work is reimplemented in `jubilant-bassoon` / `field-relay-nba` through
+the normal CC-CMD process.
+
+That is a scoping correction, not a licence to ignore them. Building the playground version in a shape
+that already satisfies all four is strictly cheaper than discovering at graduation that the user-facing
+product has to change — and three of the four are satisfied by construction or by good product sense
+anyway. What it does mean: no RUWT question blocks the build, and the pull-only requirement is not
+something the playground can violate even deliberately, since it has no push surface at all.
+
 **And the specific framing I proposed is the favored one, not the disfavored one.** "This game's drama
 and WP movement disagree" is a named condition over win-probability data — PERMITTED #4 material,
 rendered as a category. The `drama_peak` immutability guard is still real and still governs any

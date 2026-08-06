@@ -8,10 +8,16 @@ directory is where the fix lives until someone deploys it. It is a staging area 
 a stash of foreign material: the diagnosis, the measurement, the probe that found it and the standing
 regression detector are all here too.
 
-What holds a patch here rather than in the relay is deployment, not ownership — a push to
+**This directory is the boundary, and it is deliberate.** field-playground is permanently separate from
+production — it never becomes a second production surface, and nothing in it ships. So a relay fix
+staged here is *finished work that has not crossed into production*, and crossing that line is a
+separate, human act in the relay's own repo under its own discipline. A patch sitting here is the
+system working as designed, not a loose end.
+
+What holds a patch here rather than in the relay is therefore not ownership. It is that a push to
 `field-relay-nba/src/**` auto-deploys to production, so applying one is a decision with a timing
-component. Session repo scope can also mean a given session cannot push there; that is a property of
-the session, not of where the work belongs.
+component. Session repo scope can additionally mean a given session cannot push there; that is a
+property of the session, not of where the work belongs.
 
 Each entry is a real patch against a real commit, not a sketch.
 

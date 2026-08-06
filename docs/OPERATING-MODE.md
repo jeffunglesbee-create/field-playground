@@ -1,9 +1,12 @@
 # field-playground — operating mode
 
-Sandbox for FIELD-adjacent ideas that aren't production yet. Used by both
-Claude and ChatGPT for faster, exploratory iteration — deliberately
-outside the CC-CMD / Codex / confidence-gate discipline that governs
-`jubilant-bassoon` and `field-relay-nba`.
+FIELD's sandbox — part of FIELD, and permanently separate from production.
+Not "FIELD-adjacent": the work here is FIELD's work. What it is not, ever,
+is a production surface (see "What doesn't change" below).
+
+Used by both Claude and ChatGPT for faster, exploratory iteration —
+deliberately outside the CC-CMD / Codex / confidence-gate discipline that
+governs `jubilant-bassoon` and `field-relay-nba`.
 
 ## What's different here (on purpose)
 

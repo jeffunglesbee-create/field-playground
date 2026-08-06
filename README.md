@@ -1,10 +1,18 @@
 # field-playground
 
-FIELD's sandbox — part of FIELD, not adjacent to it. Ideas get built and
-measured here before they're production; the work, the probes and the
-findings are FIELD's. FIELD spans three repos: the client
-(`jubilant-bassoon`), the relay (`field-relay-nba`), and this one. See
-`docs/OPERATING-MODE.md` for the full operating rules.
+FIELD's sandbox — **part of FIELD, and permanently separate from
+production.** Both things are true at once, and neither weakens the other.
+
+Part of FIELD: the work, the probes and the findings here are FIELD's, and
+a defect found here in the client (`jubilant-bassoon`) or the relay
+(`field-relay-nba`) is a FIELD defect, not someone else's problem.
+
+Separate from production: this repo never becomes a second production
+surface. Nothing here ships. Anything worth keeping **graduates** into
+`jubilant-bassoon` / `field-relay-nba` through the normal CC-CMD process —
+it is reimplemented there under that discipline, not promoted from here.
+
+See `docs/OPERATING-MODE.md` for the full operating rules.
 
 **Read before starting new work here** — reduces the odds of writing
 something that already exists (this happened once already: two
