@@ -1,0 +1,59 @@
+name: Anomaly Baseline Viability Probe
+
+# Pre-build probe for surfacing real statistical anomalies (rather than the
+# extrema this app currently surfaces -- sorted[0] of tonight's list).
+# Answers four real questions before any baseline code is written:
+#   A. how far back /context/date/{date} returns real games (DEPTH)
+#   B. what fraction carry a real numeric drama_peak (COVERAGE)
+#   C. how many DISTINCT drama_peak values a real uncensored corpus has (SHAPE)
+#   D. whether per-date counts look like a real full slate (UNBIASED)
+#
+# C is make-or-break: drama_peak is already documented as coarse
+# (src/data/dramaWpMovement.js -- 1/8 distinct on a real 8-game sample, all
+# tying at 74). If that holds on a real multi-day corpus, percentile scoring
+# on drama_peak is not honest and the probe says so rather than shipping ties
+# dressed up as precision.
+#
+# Reads /context/date/{date} (the FULL real slate per date) and deliberately
+# NOT /archive/drama/leaderboard, which is ranked-and-truncated -- a censored
+# sample that would make "normal" look extreme. This repo has been burned by
+# that exact shape before.
+#
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from chat --
+# CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check real historical depth + real drama_peak distribution shape
+        timeout-minutes: 6
+        continue-on-error: true
+        run: node scripts/probe-anomaly-baseline-viability.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "anomaly-baseline-viability-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: anomaly baseline viability probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
