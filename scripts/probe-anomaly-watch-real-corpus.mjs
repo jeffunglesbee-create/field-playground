@@ -129,7 +129,7 @@ async function main() {
   const judged = slate.all.filter(r => r.status === 'ok').length
   log(`  games judged (status ok): ${judged} of ${slate.all.length}`)
   log(`  games with >=1 finding:   ${slate.flagged.length}` + (judged ? `  (${((slate.flagged.length / judged) * 100).toFixed(1)}%)` : ''))
-  for (const id of ['rare-high', 'rare-low', 'above-typical', 'late-surge', 'fizzle', 'flat-tension', 'volatile']) {
+  for (const id of ['rare-high', 'rare-low', 'tier-top', 'late-surge', 'fizzle', 'flat-tension', 'volatile']) {
     const n = counts.get(id) ?? 0
     const pct = judged ? ((n / judged) * 100).toFixed(1) : '0.0'
     log(`    ${id.padEnd(14)} ${String(n).padStart(4)}  (${pct}% of judged games)` + (n === 0 ? '   <- never fires on real data' : ''))
@@ -160,7 +160,7 @@ async function main() {
     log('Percentile resolution is REAL for at least one sport -- the distribution path is live,')
     log('not theoretical, and the tier fallback is doing its job for the sports that need it.')
   }
-  const dead = ['rare-high', 'rare-low', 'above-typical', 'late-surge', 'fizzle', 'flat-tension', 'volatile']
+  const dead = ['rare-high', 'rare-low', 'tier-top', 'late-surge', 'fizzle', 'flat-tension', 'volatile']
     .filter(id => (counts.get(id) ?? 0) === 0)
   if (dead.length) {
     log('')

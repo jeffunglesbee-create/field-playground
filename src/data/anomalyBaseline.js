@@ -231,6 +231,7 @@ export function buildBaselines(games) {
       p10: quantile(peaks, 0.10),
       median: quantile(peaks, 0.50),
       p90: quantile(peaks, 0.90),
+      maxPeak: peaks.length ? peaks[peaks.length - 1] : null,
       medianRange: quantile(ranges, 0.50),
       medianTurns: quantile(turns, 0.50),
       arcSampleN: ranges.length,
@@ -248,6 +249,7 @@ const FINDING_DEFS = [
   {
     id: 'rare-high',
     label: 'Rare high',
+    kind: 'distribution',
     needs: 'distribution',
     test: (ctx) => ctx.baseline.p90 != null && ctx.peak >= ctx.baseline.p90,
     why: (ctx) => `peaked at or above the level only the top tenth of real ${ctx.sportLabel} games in this window reached`,
@@ -255,21 +257,33 @@ const FINDING_DEFS = [
   {
     id: 'rare-low',
     label: 'Rare low',
+    kind: 'distribution',
     needs: 'distribution',
     test: (ctx) => ctx.baseline.p10 != null && ctx.peak <= ctx.baseline.p10,
     why: (ctx) => `stayed at or below the level nine in ten real ${ctx.sportLabel} games cleared`,
   },
   {
-    id: 'above-typical',
-    label: 'Above typical',
-    // The coarse-resolution stand-in for rare-high: a real comparison the
-    // sport's own distribution can actually support.
+    id: 'tier-top',
+    label: 'Top tier',
+    kind: 'distribution',
+    // REPLACES 'above-typical' (peak > median), removed 2026-08-06 after the
+    // null-model probe measured 74.1% of judged games flagged. The cause was
+    // definitional, not incidental: "above the median" describes HALF of any
+    // population, so on the three tier-resolution sports (132 real games) it
+    // fired on ~60 games automatically and dominated the whole output. A
+    // finding that half the population satisfies is not a finding.
+    //
+    // At tier resolution the honest rare claim is sitting at the sport's
+    // highest OBSERVED drama value -- with ~7 distinct values that is a real
+    // and uncommon statement, and it is expressible at the resolution the data
+    // actually has, which is the whole reason the tier path exists.
     needs: 'tier',
-    test: (ctx) => ctx.baseline.median != null && ctx.peak > ctx.baseline.median,
-    why: (ctx) => `above the median real ${ctx.sportLabel} game in this window (coarse: only ${ctx.baseline.distinct} distinct values exist for this sport, so this is a tier, not a percentile)`,
+    test: (ctx) => ctx.baseline.maxPeak != null && ctx.peak >= ctx.baseline.maxPeak,
+    why: (ctx) => `reached the highest drama level any real ${ctx.sportLabel} game hit in this window (${ctx.baseline.distinct} distinct levels exist for this sport, so this is a tier, not a percentile)`,
   },
   {
     id: 'late-surge',
+    kind: 'shape',
     label: 'Late surge',
     needs: 'arc',
     test: (ctx) => ctx.analysis?.isUnwatched === true,
@@ -277,6 +291,7 @@ const FINDING_DEFS = [
   },
   {
     id: 'fizzle',
+    kind: 'shape',
     label: 'Fizzled out',
     needs: 'arc',
     test: (ctx) => ctx.analysis?.isFizzle === true,
@@ -284,6 +299,7 @@ const FINDING_DEFS = [
   },
   {
     id: 'flat-tension',
+    kind: 'shape',
     label: 'Flat tension',
     // High-ish but with less travel than its own sport's typical game: tense
     // throughout rather than one spike. Compared against the sport's own median
@@ -295,6 +311,7 @@ const FINDING_DEFS = [
   },
   {
     id: 'volatile',
+    kind: 'shape',
     label: 'Volatile',
     needs: 'arc',
     test: (ctx) => ctx.baseline.medianTurns != null && ctx.shape != null &&
@@ -348,6 +365,15 @@ export function describeAnomaly(game, baselines, { requireFinal = false } = {}) 
         p10: looQuantile(baseline.peaks, 0.10, peak),
         median: looQuantile(baseline.peaks, 0.50, peak),
         p90: looQuantile(baseline.peaks, 0.90, peak),
+        // maxPeak needs LOO too, and here it genuinely bites: without it, the
+        // single highest game is compared against a maximum it set itself, so
+        // `peak >= maxPeak` is trivially true for exactly one game per sport.
+        maxPeak: (() => {
+          const ps = baseline.peaks
+          if (ps.length <= 1) return null
+          const last = ps[ps.length - 1]
+          return peak >= last ? ps[ps.length - 2] : last
+        })(),
         n: baseline.n - 1,
       }
     : baseline
@@ -364,7 +390,7 @@ export function describeAnomaly(game, baselines, { requireFinal = false } = {}) 
     if (def.needs === 'arc' && (!arcUsable || !isFinal)) continue
     let hit = false
     try { hit = def.test(ctx) === true } catch { hit = false }
-    if (hit) findings.push({ id: def.id, label: def.label, why: def.why(ctx) })
+    if (hit) findings.push({ id: def.id, label: def.label, kind: def.kind ?? 'shape', why: def.why(ctx) })
   }
 
   return {

@@ -281,6 +281,41 @@ console.log('\nD. threshold coherence')
     : fail('D3 coarse sport emits no percentile findings', 'rare-high/rare-low fired on a tier-resolution sport')
 }
 
+// ---- E. NO FINDING MAY DESCRIBE MOST OF THE POPULATION ---------------------
+// The null-model probe measured 74.1% of real judged games flagged. Root cause
+// was definitional: 'above-typical' tested peak > median, which HALF of any
+// population satisfies. It has been replaced by 'tier-top'. This check exists
+// so the same class of mistake cannot ship again unnoticed -- a condition that
+// most games satisfy is a description, not a finding.
+console.log('\nE. no finding describes most of the population')
+{
+  const MAX_RATE = 0.25
+  for (const [name, corpus] of [
+    ['tier sport (7 distinct)', makeCorpus({ n: 200, distinct: 7, sport: 'wnba', seed: 41 })],
+    ['distribution sport (28 distinct)', makeCorpus({ n: 320, distinct: 28, sport: 'mlb', seed: 42 })],
+  ]) {
+    const bl = M.buildBaselines(corpus)
+    const slate = M.describeSlate(corpus, bl)
+    const judged = slate.all.filter(r => r.status === 'ok').length
+    const per = new Map()
+    for (const r of slate.flagged) for (const f of r.findings) per.set(f.id, (per.get(f.id) ?? 0) + 1)
+    for (const [id, n] of [...per.entries()].sort((a, b) => b[1] - a[1])) {
+      const rate = n / judged
+      rate <= MAX_RATE
+        ? pass(`E ${name}: ${id}`, `${n}/${judged} = ${(rate * 100).toFixed(1)}%`)
+        : fail(`E ${name}: ${id} fires on most games`,
+            `${n}/${judged} = ${(rate * 100).toFixed(1)}% exceeds ${MAX_RATE * 100}% -- this is a description of the population, not a finding`)
+    }
+    // The union matters too: individually-rare conditions can still flag
+    // everything if there are enough of them.
+    const anyRate = slate.flagged.length / judged
+    anyRate <= 0.5
+      ? pass(`E ${name}: union of all findings`, `${slate.flagged.length}/${judged} = ${(anyRate * 100).toFixed(1)}%`)
+      : fail(`E ${name}: union of all findings flags most games`,
+          `${slate.flagged.length}/${judged} = ${(anyRate * 100).toFixed(1)}% -- individually-rare conditions still add up to "almost everything"`)
+  }
+}
+
 console.log('')
 if (failures) { console.error(`${failures} invariant(s) FAILED`); process.exit(1) }
 console.log('All anomaly invariants hold.')
