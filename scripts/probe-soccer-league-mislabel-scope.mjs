@@ -195,11 +195,29 @@ async function main() {
       const storedAs = new Map()
       for (const r of rows) storedAs.set(r.g.sport, (storedAs.get(r.g.sport) ?? 0) + 1)
       for (const [s, n] of storedAs) log(`      stored as "${s}": ${n}`)
-      for (const r of rows.slice(0, 6)) {
-        log(`      ${r.g._date}  ${r.g.away ?? '?'} @ ${r.g.home ?? '?'}  event=${r.g.espn_event_id}`)
-        log(`          game_id=${r.g.game_id ?? r.g.id ?? '?'}`)
+      // EVERY row is listed, not a sample. These ids go straight into a
+      // generated migration, so each one has to be auditable -- and an id that
+      // does not look like its neighbours (a different ESPN id scheme, say) is
+      // exactly the thing a truncated sample would hide.
+      for (const r of rows) {
+        log(`      ${r.g._date}  event=${String(r.g.espn_event_id).padEnd(10)} ESPN says "${r.espnLeague}"  ${r.g.away ?? '?'} @ ${r.g.home ?? '?'}`)
       }
-      if (rows.length > 6) log(`      ...and ${rows.length - 6} more`)
+      // Flag ids whose shape differs from the group's majority. Not an error --
+      // ESPN does use more than one id scheme -- but it must be looked at
+      // rather than absorbed into a 52-id IN clause unexamined.
+      const lens = rows.map(r => String(r.g.espn_event_id).length)
+      const modeLen = [...new Set(lens)].sort((a, b) =>
+        lens.filter(l => l === b).length - lens.filter(l => l === a).length)[0]
+      const odd = rows.filter(r => String(r.g.espn_event_id).length !== modeLen)
+      if (odd.length) {
+        log(`      NOTE: ${odd.length} id(s) do not match this group's dominant id length (${modeLen}):`)
+        for (const r of odd) {
+          log(`        event=${r.g.espn_event_id}  ESPN says "${r.espnLeague}"  ${r.g._date}  ${r.g.away ?? '?'} @ ${r.g.home ?? '?'}`)
+          log(`          game_id=${r.g.game_id ?? r.g.id ?? '?'}`)
+        }
+        log('        ESPN resolved these the same way as the rest, so they are included --')
+        log('        but confirm them by eye before running the migration.')
+      }
     }
   }
   log('')
