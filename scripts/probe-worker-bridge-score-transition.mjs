@@ -100,8 +100,9 @@ async function main() {
   } else if (sawScoreChange) {
     log('CONFIRMED: WorkerBridgeDemo\'s real "score" change-type branch (<Show when={c.type ===')
     log('\'score\'}>) rendered correctly in an isolated session, with a real from -> to value pair.')
-    log('The earlier "no changes observed" result was confirmed as shared-counter contamination')
-    log('from concurrent parallel testing, not a component bug.')
+    log('The earlier "no changes observed" result was a real double-fire bug in relay.js\'s')
+    log('fetchDeskReconciled (unbatched setDeskStore + setDeskLastFetchedAt writes), not shared-')
+    log('counter contamination -- fixed by wrapping both in batch(). See src/data/relay.js.')
   } else {
     log('NOT CONFIRMED: no score-change row appeared within the observation window even in')
     log('isolation -- this would need real further investigation, not dismissal as contamination.')

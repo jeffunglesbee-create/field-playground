@@ -130,13 +130,48 @@ not a guess dressed up as a fix.
 
 ---
 
-## Confidence gate (updated)
+## Resolution (2026-08-06): WorkerBridgeDemo root-caused and fixed
 
-**95/100.** The LiveWpTicker/WpSourceBadge gap is now confirmed network-healthy via a real CI run against
-the real hosts, even though the specific SAVANT-badge branch still awaits a real live game to observe --
-a real-world timing constraint, disclosed rather than hidden. The WorkerBridgeDemo gap is NOT closed: the
-follow-up CI run surfaced a real, more specific puzzle (still unobserved even in isolation) rather than
-confirming the original theory, and is reported as genuinely open rather than claimed fixed.
+"Dig deeper on WorkerBridgeDemo's real request count." Added a temporary dev-only diagnostic field
+(`_mockRequestCount`) to `vite.config.js`'s mock response and instrumented a fresh, isolated local dev
+server directly (`page.on('response', ...)`), correlating the REAL shared request counter against
+WorkerBridgeDemo's own rendered `pollCount` over time.
+
+**Real root cause found:** `src/data/relay.js`'s `fetchDeskReconciled` called `setDeskStore(reconcile(json))`
+and `setDeskLastFetchedAt(Date.now())` as two separate, unbatched signal writes. WorkerBridgeDemo's
+`createEffect` reads both. Whenever `reconcile()` actually mutated the store (i.e. real data changed),
+the effect fired TWICE for that one real poll -- once from the store mutation, once from the timestamp
+write -- exactly matching the diagnostic data: `pollCount` jumped by 2 during every real transition
+(requests 5-8) and by 1 during steady state (9-10), a signature that had been hiding in plain sight. The
+second, spurious firing diffed the just-updated store against itself (a real no-op) and its async worker
+response arrived after the first's, silently overwriting the correct "score" diff before it was ever
+rendered. The underlying mock data carried the expected real score deltas the entire time -- this was
+never a data-availability gap, only a client-side reactivity bug masking real, present data.
+
+**Fix:** wrapped both writes in Solid's `batch()` so dependent effects re-run exactly once per real poll.
+Re-verified live, twice, against a fresh isolated dev server: `pollCount` now increments by exactly 1 per
+real poll, and real `SCORE`/`FINALIZED` change rows render correctly (e.g. "Houston Astros @ Texas
+Rangers —-— → 0-1", then "0-1 → 0-6", two simultaneous real changes together, then settling into "No
+changes this cycle" once the scripted window ends). Also found and fixed the CI probe script's own
+unrelated bug while re-verifying it (case-sensitive `/score/` regex missed the CSS-uppercased "SCORE"
+label). Broader regression check: zero page errors across all 7 tabs plus two real 15s poll cycles under
+the new batched timing. The temporary diagnostic field was removed from `vite.config.js` once the root
+cause was confirmed.
+
+**Independently re-confirmed twice in CI** against the fix (`worker-bridge-score-transition-probe.yml`
+run #2 and a Build Check re-run, both green): the real "score" branch rendered on the very first real
+poll in a fresh GitHub Actions environment, and all 4 automated regression guards passed.
+
+---
+
+## Confidence gate (final)
+
+**98/100.** Both disclosed gaps are now resolved, not just investigated. LiveWpTicker/WpSourceBadge:
+confirmed network-healthy against the real hosts, with the SAVANT-badge branch itself still dependent on
+real-world live-game timing (disclosed, not fixable by code). WorkerBridgeDemo: root-caused to a real,
+independently-verified reactivity bug (unbatched dependent signal writes) and fixed, with the fix
+confirmed live locally twice and independently in a fresh CI environment. The 2-point remainder is the
+same real-world timing dependency on the LiveWpTicker side -- not a code gap, a live-game-schedule one.
 
 ---
 
@@ -150,7 +185,8 @@ confirming the original theory, and is reported as genuinely open rather than cl
 | `src/components/ScoreTicker/index.jsx` | modified -- animationstart event bubbling |
 | `src/components/Toast/Toast.module.css` | modified -- missing progress bar CSS |
 | `src/components/UndoStackDemo/index.jsx` | modified -- off-by-one log message |
-| `scripts/probe-worker-bridge-score-transition.mjs`, `.github/workflows/worker-bridge-score-transition-probe.yml` | new -- follow-up probe, result: still open |
+| `src/data/relay.js` | modified -- batch() fix for the real double-fire reactivity bug |
+| `scripts/probe-worker-bridge-score-transition.mjs`, `.github/workflows/worker-bridge-score-transition-probe.yml` | new -- follow-up probe, now green against the real fix |
 | `scripts/probe-live-wp-ticker-real-savant-path.mjs`, `.github/workflows/live-wp-ticker-real-savant-path-probe.yml` | new -- follow-up probe, result: network-healthy, badge branch awaits a real live game |
-| `outbox/worker-bridge-score-transition-probe-2026-08-06T00-01-49-199Z.txt`, `outbox/live-wp-ticker-real-savant-path-probe-2026-08-06T00-02-06-718Z.txt` | new -- real CI results |
+| `outbox/worker-bridge-score-transition-probe-2026-08-06T00-01-49-199Z.txt`, `outbox/worker-bridge-score-transition-probe-2026-08-06T00-26-13-889Z.txt`, `outbox/live-wp-ticker-real-savant-path-probe-2026-08-06T00-02-06-718Z.txt` | new -- real CI results, before and after the fix |
 | `docs/outbox/cc-session-2026-08-05-demo-infra-sweep.md` | this doc -- updated with real results |
