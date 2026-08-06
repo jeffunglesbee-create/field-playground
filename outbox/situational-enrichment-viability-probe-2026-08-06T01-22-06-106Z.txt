@@ -1,0 +1,55 @@
+probe_at: 2026-08-06T01:22:06.107Z
+purpose: do real ESPN play objects for WNBA/soccer carry anything that could support a
+real situational-bonus term, the way MLB's bases/outs/count already do? Fields + fill rates only.
+
+measured context (2026-08-06 hygiene probe, real 30-day corpus):
+  MLB 312 games / 28 distinct drama_peak | WNBA 73 / 7 | FIFA WC 59 / 7 | golf 26 / 1 (all 0)
+cause (field-relay-nba/scripts/drama-backfill.mjs): only the MLB branch of dramaScoreLive()
+has a real sitBonus; WNBA/AFL have none, soccer has a single +8 for stoppage time.
+
+real games located: wnba=4  soccer=4
+
+=== WNBA — real ESPN play objects (fetcher keeps only 4 of these fields) ===
+  2026-08-04 Tempo @ Valkyries (event 401857114) -> 382 real plays
+  2026-08-03 Aces @ Dream (event 401857111) -> 385 real plays
+  2026-08-03 Storm @ Liberty (event 401857112) -> 382 real plays
+  2026-08-03 Mercury @ Sky (event 401857113) -> 424 real plays
+
+  real play-object fields across 1573 real plays:
+  field                     present   non-null   true   sample values
+  id                         1573    1573 (100%)     -   4018571144 | 4018571147 | 4018571149 | 40185711410 | 40185711411
+  sequenceNumber             1573    1573 (100%)     -   4 | 7 | 9 | 10 | 11
+  type                       1573    1573 (100%)     -   
+  text                       1573    1573 (100%)     -   Nyara Sabally vs. Kiah Stokes (Veronica  | Cecilia Zandalasini makes 2
+  awayScore                  1573    1573 (100%)     -   0 | 2 | 5 | 8 | 9
+  homeScore                  1573    1573 (100%)     -   0 | 3 | 6 | 9 | 12
+  period                     1573    1573 (100%)     -   
+  clock                      1573    1573 (100%)     -   
+  scoringPlay                1573    1573 (100%)   404   false | true
+  scoreValue                 1573    1573 (100%)     -   0 | 3 | 2 | 1
+  wallclock                  1573    1573 (100%)     -   2026-08-05T02:03:33Z | 2026-08-05T02:03:52Z | 2026-08-05T02:04:15Z | 2
+  shootingPlay               1573    1573 (100%)   723   false | true
+  coordinate                 1573    1573 (100%)     -   
+  pointsAttempted            1573    1573 (100%)     -   0 | 3 | 2 | 1
+  shortDescription           1573    1573 (100%)     -   Jump Ball | +3 Points | Missed 3PT | Rebound | Turnover
+  team                       1541    1541 ( 98%)     -   
+  participants               1439    1439 ( 91%)     -   
+
+  currently KEPT by the relay fetcher: homeScore, awayScore, period, clock
+  real fields currently DISCARDED: id, sequenceNumber, type, text, scoringPlay, scoreValue, wallclock, shootingPlay, coordinate, pointsAttempted, shortDescription, team, participants
+
+=== SOCCER — real ESPN play objects (red cards / penalties currently ignored entirely) ===
+  2026-08-01 New England @ CF Montréal (event 761697) -> 0 real plays
+  2026-08-01 Nashville @ D.C. United (event 761699) -> 0 real plays
+  2026-08-01 San Jose @ Cincinnati (event 761700) -> 0 real plays
+  2026-08-01 Columbus @ Miami (event 761701) -> 0 real plays
+  no real plays returned -- nothing to profile.
+
+=== VERDICT ===
+Read the DISCARDED-field lists above. A situational term is viable for a sport only if
+that sport has real fields with a real fill rate high enough to matter -- a field present
+but null on nearly every play cannot carry a bonus. This probe deliberately stops here:
+it reports what real fields exist, and does NOT propose a scoring formula. Designing
+bonuses against unverified fields is the exact mistake the rest of these probes exist to
+prevent, and any real change to dramaScoreLive() would also need a backfill plan, since
+it would alter every historical drama_peak the app already displays.
