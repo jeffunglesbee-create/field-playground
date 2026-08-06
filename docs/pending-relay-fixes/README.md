@@ -1,8 +1,17 @@
 # Pending relay fixes
 
-Changes for `field-relay-nba` that are **diagnosed, written, and verified here** but deliberately not
-applied, because `field-relay-nba` is outside this repo's session scope and a push to `src/**` there
-auto-deploys to production.
+Changes to the relay that are **diagnosed, written, and verified here** but not yet applied.
+
+FIELD is one system across three repos — the client (`jubilant-bassoon`), the relay
+(`field-relay-nba`), and this one. A relay defect found while working here is a FIELD defect, and this
+directory is where the fix lives until someone deploys it. It is a staging area within the project, not
+a stash of foreign material: the diagnosis, the measurement, the probe that found it and the standing
+regression detector are all here too.
+
+What holds a patch here rather than in the relay is deployment, not ownership — a push to
+`field-relay-nba/src/**` auto-deploys to production, so applying one is a decision with a timing
+component. Session repo scope can also mean a given session cannot push there; that is a property of
+the session, not of where the work belongs.
 
 Each entry is a real patch against a real commit, not a sketch.
 

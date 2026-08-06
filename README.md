@@ -1,6 +1,9 @@
 # field-playground
 
-Sandbox for FIELD-adjacent ideas that aren't production yet. See
+FIELD's sandbox — part of FIELD, not adjacent to it. Ideas get built and
+measured here before they're production; the work, the probes and the
+findings are FIELD's. FIELD spans three repos: the client
+(`jubilant-bassoon`), the relay (`field-relay-nba`), and this one. See
 `docs/OPERATING-MODE.md` for the full operating rules.
 
 **Read before starting new work here** — reduces the odds of writing
