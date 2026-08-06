@@ -245,16 +245,35 @@ async function main() {
   if (leaked.size === 0) {
     log(`NO LEAK. All ${golf.length} real golf rows are rejected before any user-facing list.`)
     log('')
-    log('BUT note WHY, because it changes what this result is worth: they are rejected by')
-    log('incidental ARC-LENGTH and flat-arc checks (analyzeGameArc requires >= 5 points;')
-    log('computeLeverageIndex rejects a zero average delta as undefined rather than')
-    log('fabricating 0), NOT by any deliberate sport exclusion. Nothing in the codebase')
-    log('states "golf is unscored, exclude it." The protection is a side effect.')
+    // WHY they are rejected changes what the all-clear is worth, so it is
+    // DERIVED from the measured arc shapes above rather than asserted. An
+    // earlier draft of this probe asserted "arc-length check" and was wrong:
+    // the real gate turned out to be the Array.isArray() guard, because golf
+    // rows carry an object-shaped drama_arc, never a backfill array.
+    const kindCounts = new Map()
+    for (const g of golf) {
+      const d = describeArc(g)
+      kindCounts.set(d.kind, (kindCounts.get(d.kind) ?? 0) + 1)
+    }
+    const dominant = [...kindCounts.entries()].sort((a, b) => b[1] - a[1])[0]
+    log(`WHY, measured: the dominant arc shape is "${dominant[0]}" (${dominant[1]}/${golf.length} rows).`)
+    if (dominant[0].startsWith('object') || dominant[0].startsWith('null') || dominant[0].startsWith('unparseable')) {
+      log('So the gate that stops them is analyzeGameArc\'s Array.isArray(arc) guard -- these')
+      log('rows never present a numeric array at all. The arc-length threshold below it is')
+      log('never even reached.')
+    } else {
+      log('So the gate that stops them is the arc-length threshold (analyzeGameArc requires')
+      log(`>= ${5} points) and/or computeLeverageIndex rejecting a zero average delta as`)
+      log('undefined rather than fabricating 0.')
+    }
+    log('')
+    log('Either way it is a SIDE EFFECT, not a deliberate sport exclusion. Nothing in the')
+    log('codebase states "golf is unscored, exclude it."')
     log('')
     log('So this is a real all-clear for today and a weak guarantee for tomorrow. A new')
-    log('component reading drama_peak directly, or a relay change that writes any >=5-point')
-    log('arc for golf, opens the leak with nothing to catch it. That is why this probe is')
-    log('scheduled rather than run once.')
+    log('component reading drama_peak directly, or a relay change that starts writing an')
+    log('ARRAY-shaped arc for golf, opens the leak with nothing to catch it. That is why')
+    log('this probe is scheduled rather than run once.')
   } else {
     log(`LEAK CONFIRMED: ${leaked.size} of ${golf.length} real golf rows reach a user-facing list.`)
     log('')

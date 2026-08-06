@@ -178,18 +178,51 @@ async function main() {
   }
   log('')
 
+  // Fill rate across ALL incidents is the WRONG denominator and would produce a
+  // false negative: a substitution or an injuryTime marker has no reason to
+  // carry a scoreline, so counting them dilutes the rate toward zero. The fix
+  // reconstructs the score at each GOAL, so the only question that matters is
+  // whether GOAL incidents carry it. Cross-tabulate before judging.
+  log('=== SCORE FIELDS BY INCIDENT TYPE (the denominator that actually matters) ===')
+  const byType = new Map()
+  for (const inc of allIncidents) {
+    const t = String(inc?.type ?? '(missing)')
+    const row = byType.get(t) ?? { n: 0, home: 0, away: 0 }
+    row.n++
+    for (const [f, k] of [['home_score', 'home'], ['away_score', 'away']]) {
+      const v = inc?.[f]
+      if (v !== null && v !== undefined && v !== '') row[k]++
+    }
+    byType.set(t, row)
+  }
+  log('  type                 n     home_score     away_score')
+  for (const [t, r] of [...byType.entries()].sort((a, b) => b[1].n - a[1].n)) {
+    const pct = c => `${String(c).padStart(3)}/${String(r.n).padEnd(3)} (${String(Math.round((c / r.n) * 100)).padStart(3)}%)`
+    log(`  ${t.padEnd(18)} ${String(r.n).padStart(4)}   ${pct(r.home)}   ${pct(r.away)}`)
+  }
+  log('')
+
   log('=== VERDICT ===')
-  const loadBearingOk = LOAD_BEARING.every(f => {
-    const nn = nonNull.get(f) ?? 0
-    return present.has(f) && nn / allIncidents.length >= 0.9
-  })
+  const goalRow = byType.get('goal')
   for (const f of LOAD_BEARING) {
     const nn = nonNull.get(f) ?? 0
-    log(`  ${f}: ${present.has(f) ? 'present' : 'ABSENT'}, non-null on ${nn}/${allIncidents.length} (${((nn / allIncidents.length) * 100).toFixed(0)}%)`)
+    log(`  ${f}: ${present.has(f) ? 'present' : 'ABSENT'}, non-null on ${nn}/${allIncidents.length} incidents overall (${((nn / allIncidents.length) * 100).toFixed(0)}%)`)
   }
+  if (!goalRow) {
+    log('')
+    log('NO GOAL INCIDENTS in this sample -- the load-bearing question cannot be answered.')
+    log('This is a no-signal run, not a refutation. Overall fill rate is deliberately NOT')
+    log('used as a substitute: it counts substitutions and period markers, which have no')
+    log('reason to carry a scoreline, and would read as "too sparse" for the wrong reason.')
+    return
+  }
+  const goalHomePct = goalRow.home / goalRow.n
+  const goalAwayPct = goalRow.away / goalRow.n
+  log(`  on GOAL incidents specifically: home_score ${goalRow.home}/${goalRow.n} (${(goalHomePct * 100).toFixed(0)}%), away_score ${goalRow.away}/${goalRow.n} (${(goalAwayPct * 100).toFixed(0)}%)`)
+  const loadBearingOk = goalHomePct >= 0.9 && goalAwayPct >= 0.9
   if (loadBearingOk) {
     log('')
-    log('CONFIRMED. home_score/away_score are present at a real fill rate. The preferred fix')
+    log('CONFIRMED. home_score/away_score are present on real goal incidents. The preferred fix')
     log('(source soccer states from BSD incidents) is viable on measured data, not on a doc.')
     log('The running score is given per incident, so no accumulation and no goal-type filter')
     log('is needed -- which is what makes the dropped-goal bug class structurally impossible')
