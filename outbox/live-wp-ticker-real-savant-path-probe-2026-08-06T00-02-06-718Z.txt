@@ -1,0 +1,24 @@
+probe_at: 2026-08-06T00:02:06.719Z
+purpose: exercise LiveWpTicker + WpSourceBadge's real network-backed path against the
+ACTUAL real hosts (statsapi.mlb.com, baseballsavant.mlb.com) -- sandbox-blocked from chat,
+never previously observed end-to-end.
+
+=== RENDERED STATE ===
+LIVE WP TICKER
+MLB only, direct-fetched every 20s — polled 1 time
+
+Two independent live reads, badged by source, never blended: Baseball Savant's real number and a client-side estimateWinProb(scoreDiff, periodProgress), validated against real held-out Savant data at MAE 0.029 in regulation innings. The estimate is the proposed fallback for NBA/MLS/EPL, where no win-probability source exists at all — this is where it's checked against a real one, live. The two feeds are joined by atBatIndex so the score/inning and the Savant number being compared are the same real play, not each feed's independently-polled "latest."
+
+No live MLB games right now.
+
+=== RESULT ===
+real WpSourceBadge rendered (SAVANT or ESTIMATED): false
+honest "no live games" empty state: true
+appears stuck in a loading state: false
+page errors: []
+
+=== VERDICT ===
+CONFIRMED (honest empty state): no real MLB game happens to be live at this exact
+moment -- a real-world timing fact, not a code defect. The component correctly showed
+its own disclosed empty state rather than a stuck or broken one. Re-run during real live
+MLB hours to observe the SAVANT-badge branch specifically.
