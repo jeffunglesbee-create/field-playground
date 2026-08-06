@@ -1,0 +1,43 @@
+probe_at: 2026-08-06T02:08:35.852Z
+purpose: does an UNPOPULATED metric (golf drama_peak=0, never computed) reach the
+user through the sport-agnostic drama components as if it were a real low score?
+method: import and run the REAL component predicates, not copies of them.
+window: 30 real days back from 2026-08-06
+
+  2026-08-06 FAILED HTTP 403
+  2026-08-05 FAILED HTTP 403
+  2026-08-04 FAILED HTTP 403
+  2026-08-03 FAILED HTTP 403
+  2026-08-02 FAILED HTTP 403
+  2026-08-01 FAILED HTTP 403
+  2026-07-31 FAILED HTTP 403
+  2026-07-30 FAILED HTTP 403
+  2026-07-29 FAILED HTTP 403
+  2026-07-28 FAILED HTTP 403
+  2026-07-27 FAILED HTTP 403
+  2026-07-26 FAILED HTTP 403
+  2026-07-25 FAILED HTTP 403
+  2026-07-24 FAILED HTTP 403
+  2026-07-23 FAILED HTTP 403
+  2026-07-22 FAILED HTTP 403
+  2026-07-21 FAILED HTTP 403
+  2026-07-20 FAILED HTTP 403
+  2026-07-19 FAILED HTTP 403
+  2026-07-18 FAILED HTTP 403
+  2026-07-17 FAILED HTTP 403
+  2026-07-16 FAILED HTTP 403
+  2026-07-15 FAILED HTTP 403
+  2026-07-14 FAILED HTTP 403
+  2026-07-13 FAILED HTTP 403
+  2026-07-12 FAILED HTTP 403
+  2026-07-11 FAILED HTTP 403
+  2026-07-10 FAILED HTTP 403
+  2026-07-09 FAILED HTTP 403
+  2026-07-08 FAILED HTTP 403
+=== POPULATION ===
+real games in window: 0
+real golf-family games: 0
+
+=== VERDICT ===
+NO GOLF ROWS in this window. This run cannot answer the question -- it is a
+no-signal run, not a clean one. Do not read it as "no leak."

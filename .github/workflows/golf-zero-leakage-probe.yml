@@ -1,0 +1,75 @@
+name: Golf Zero Leakage Probe
+
+# Standing guard on an open risk flagged but never verified in
+# docs/outbox/cc-session-2026-08-06-anomaly-baseline-hygiene.md:
+#
+#   "those 26 all-zero golf games flow into sport-agnostic components. Whether
+#    they surface as 'maximally boring' rather than 'not computed' has not been
+#    checked; existing arc-length filters may already drop them, but that is
+#    unverified."
+#
+# golf's drama_peak is 0 because classifySport() returns 'other', which has no
+# historical-states fetcher -- so drama is NEVER COMPUTED. That is a missing
+# measurement, not a measurement of "nothing happened." Any component that
+# ranks or narrates on drama_peak/drama_arc and admits these rows presents an
+# unpopulated field to the user as a real low score.
+#
+# The probe imports the REAL predicates (analyzeGameArc, computeLeverageIndex)
+# via an esbuild bundle rather than re-implementing them -- testing a
+# re-implementation would only prove the copy agrees with itself.
+#
+# Recurring because whatever excludes golf today does so INCIDENTALLY: an
+# arc-length check and a flat-arc guard, not a deliberate sport exclusion. A new
+# component reading drama_peak directly, or a relay change that starts writing
+# any >=5-point arc for golf, opens the leak with nothing to notice it. Weekly
+# is enough for a guard against code change rather than data change.
+
+on:
+  schedule:
+    - cron: '57 11 * * 1'   # Mondays 11:57 UTC
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Days of history to sweep'
+        required: false
+        default: '30'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # esbuild comes from the repo's own devDependencies -- the probe bundles
+      # src/data through it so the shipped predicates are what execute.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run real component predicates against real golf rows
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          PROBE_DAYS: ${{ github.event.inputs.days || '30' }}
+        run: node scripts/probe-golf-zero-leakage.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "golf-zero-leakage-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: golf zero leakage probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1

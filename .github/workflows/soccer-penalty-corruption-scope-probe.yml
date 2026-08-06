@@ -1,0 +1,71 @@
+name: Soccer Penalty Corruption Scope Probe
+
+# Standing scope + regression detector for the CONFIRMED soccer penalty-dropping
+# bug (docs/outbox/cc-session-2026-08-06-soccer-penalty-scoring-bug.md).
+#
+# field-relay-nba's fetchSoccerHistoricalStates() rebuilds a soccer scoreline by
+# filtering ESPN keyEvents with `txt.includes('goal') || abbr === 'g'`. ESPN
+# labels a scored penalty "Penalty - Scored" -- no 'goal' substring -- and
+# type.abbreviation was measured empty on all 115 real keyEvents, so the rescue
+# clause is dead. Every drama_arc value after a dropped goal is computed from a
+# wrong scoreline.
+#
+# That was proven on 4 matches on one date. This runs weekly to answer what a
+# single sample could not: WHICH archived rows are corrupted (a reviewable
+# reset->refill target list, per the 537-row MLB precedent in
+# field-relay-nba/docs/CC-CMD-2026-08-03), and -- once a fix ships -- whether
+# dropped-goal count stays at zero.
+#
+# Weekly, not daily: soccer slates are sparse, and a scored penalty is not an
+# every-day event. A daily cadence would mostly produce no-signal runs, which
+# the probe would then have to explain away. Weekly gives each run a real chance
+# of containing the event type under test.
+#
+# Read-only. It does not apply the fix -- that lives in field-relay-nba where a
+# push to scripts/** auto-deploys, and rewriting history collides with the
+# drama_peak immutability guard. Human go/no-go.
+
+on:
+  schedule:
+    - cron: '17 11 * * 1'   # Mondays 11:17 UTC -- after Sunday MLS slates settle
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Days of history to sweep'
+        required: false
+        default: '30'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Scope corrupted soccer rows / detect regression
+        timeout-minutes: 15
+        continue-on-error: true
+        env:
+          PROBE_DAYS: ${{ github.event.inputs.days || '30' }}
+        run: node scripts/probe-soccer-penalty-corruption-scope.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "soccer-penalty-corruption-scope-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: soccer penalty corruption scope probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1

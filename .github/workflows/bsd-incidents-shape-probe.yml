@@ -1,0 +1,56 @@
+name: BSD Incidents Shape Probe
+
+# Verifies the LIVE per-incident field shape of BSD /incidents/ -- the PREFERRED
+# fix for the soccer penalty bug -- instead of trusting a June 26 migration doc.
+#
+# The preferred fix rests entirely on home_score/away_score being carried on
+# every incident: that removes the accumulate-filtered-goals step, which is what
+# makes a dropped goal structurally impossible rather than merely patched.
+#
+# The reason this is a workflow and not a one-off: in the SAME session, the same
+# doc's ESPN field list was measured STALE (it claims summary.keyEvents carries
+# redCard/yellowCard; the real Aug 6 response carries neither). Trusting the BSD
+# field list on faith one paragraph after catching that would be the identical
+# mistake. And a shape that holds today can stop holding -- a fix built on it
+# would then fail silently.
+#
+# Weekly, aligned with the corruption-scope probe so both halves of the soccer
+# remediation question refresh together.
+
+on:
+  schedule:
+    - cron: '37 11 * * 1'   # Mondays 11:37 UTC, 20 min after the scope probe
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Measure real BSD /incidents/ field shape and fill rates
+        timeout-minutes: 8
+        continue-on-error: true
+        run: node scripts/probe-bsd-incidents-shape.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "bsd-incidents-shape-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: BSD incidents shape probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
