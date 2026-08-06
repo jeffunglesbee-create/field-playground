@@ -148,6 +148,36 @@ immutability guard.
 
 ---
 
+## The generated migration, and the outlier it caught
+
+Per the go/no-go — **prepare only, `sport` column only** — the probe now emits its migration alongside
+its report, built from the rows it actually resolved rather than hand-written. Newest artifact:
+`outbox/soccer-league-mislabel-scope-2026-08-06T13-34-28-265Z.sql`, **52 distinct real
+`espn_event_id`s**, with before-state `SELECT`s, per-league `UPDATE`s, and an after-state check.
+
+**A first draft of that migration had a real hole.** The report capped each group at 6 sample rows while
+the `.sql` carried all 52 ids — so 46 ids would have gone into an `IN` clause with nothing having looked
+at them. One of them deserved looking at:
+
+```
+event=401864004   among 51 ids of the form 761xxx
+```
+
+Every row is now listed, and ids whose length differs from the group's dominant shape are flagged
+explicitly. The outlier resolved to:
+
+```
+2026-07-29  event=401864004  ESPN says "MLS"  Liga MX All-Stars @ MLS All-Stars
+game_id=FIFA World Cup 2026_2026-07-29_mlsallstars_ligamxallstars
+```
+
+**It is legitimate** — the MLS All-Star Game, which ESPN carries under its core id scheme rather than the
+MLS competition scheme. `MLS` is the correct label and certainly better than `FIFA World Cup`, so it
+stays in. Worth knowing separately that it is an **exhibition**, which may matter if anyone later
+excludes non-competitive fixtures from drama statistics — a different question from this one.
+
+---
+
 ## Why neither is applied
 
 Two reasons, both structural rather than caution for its own sake:
