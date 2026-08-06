@@ -79,7 +79,7 @@ async function main() {
       seen.add(pollCount)
       log(`poll ${pollCount}: ${snapshot.replace(/\s+/g, ' ').slice(0, 200)}`)
     }
-    if (/score/.test(snapshot) && /→/.test(snapshot)) {
+    if (/score/i.test(snapshot) && /→/.test(snapshot)) {
       sawScoreChange = snapshot
       break
     }

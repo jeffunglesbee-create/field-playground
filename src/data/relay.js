@@ -1,4 +1,4 @@
-import { createSignal, createResource, createEffect } from 'solid-js'
+import { createSignal, createResource, createEffect, batch } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
 import './fetchTiming' // side effect: installs the fetch-timing wrapper before any fetcher below runs
 
@@ -144,8 +144,21 @@ async function fetchDeskReconciled(date) {
   if (!res.ok) throw new Error(`context fetch failed: ${res.status}`)
   const json = await res.json()
   setPollRecordings(r => [...r, { at: Date.now(), date, json }].slice(-MAX_RECORDINGS))
-  setDeskStore(reconcile(json))
-  setDeskLastFetchedAt(Date.now())
+  // batch() is load-bearing, not tidiness: setDeskStore's reconcile() and
+  // setDeskLastFetchedAt are two separate signal writes, and any effect
+  // that reads both (WorkerBridgeDemo does, for its snapshot + its "has a
+  // poll happened" gate) re-runs once per write when they're unbatched --
+  // twice per real poll whenever reconcile() actually mutates something.
+  // The second run always diffs the just-updated store against itself (a
+  // real no-op), and its async worker response arrives after the first's,
+  // silently overwriting the real diff in the signal before it's ever
+  // rendered. Confirmed live (2026-08-06): real score deltas (e.g. hou-tex
+  // 1->6->9) were present in every real poll response the whole time --
+  // WorkerBridgeDemo's own double-fire was masking them, not a data gap.
+  batch(() => {
+    setDeskStore(reconcile(json))
+    setDeskLastFetchedAt(Date.now())
+  })
   return true
 }
 
