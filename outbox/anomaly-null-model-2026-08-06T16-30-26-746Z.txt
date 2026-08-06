@@ -1,0 +1,35 @@
+probe_at: 2026-08-06T16:30:26.779Z
+purpose: permutation test -- does the per-sport framing find anything a shuffled-label
+control does not? This is the one check that can conclude the feature is unearned.
+window: 30 days; permutation trials: 200
+
+days OK: 30/30;  real games: 614
+
+=== OBSERVED (real per-sport baselines) ===
+  judged: 436;  flagged: 323  (74.1%)
+    mlb                n= 312 distinct= 28 distribution
+    wnba               n=  73 distinct=  7 tier
+    mls                n=  51 distinct=  7 tier
+    fifa world cup     n=   8 distinct=  5 tier
+
+=== NULL MODEL: 200 label permutations (marginal counts preserved) ===
+  shuffled flagged count: mean 366.9, p5 353, median 368, p95 374
+  observed flagged count: 323
+  permutation p-value (count >= observed): 1.0000
+  mean Jaccard overlap between real and shuffled flag sets: 0.770
+
+=== CONTROL: pooled baseline (the simpler design that was rejected) ===
+  pooled baseline: n=470 distinct=34 resolution=distribution
+  pooled flagged: 387;  per-sport flagged: 323
+  Jaccard(per-sport, pooled): 0.816
+  found ONLY by per-sport: 4;  found ONLY by pooled: 68
+
+=== VERDICT ===
+THE PER-SPORT FRAMING IS NOT EARNING ITS COMPLEXITY on this corpus. Shuffled labels
+flag a similar number of games and largely the SAME games. The feature would be
+describing the marginal drama distribution, not sport-specific anomalies. Reconsider
+before investing further.
+
+Separately: the pooled control flags nearly the same set (Jaccard 0.816). The
+simpler rejected design would produce almost this output, so the per-sport machinery
+is buying little on the CURRENT corpus even if it is theoretically sounder.
