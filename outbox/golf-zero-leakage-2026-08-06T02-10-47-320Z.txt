@@ -1,0 +1,41 @@
+probe_at: 2026-08-06T02:10:47.321Z
+purpose: does an UNPOPULATED metric (golf drama_peak=0, never computed) reach the
+user through the sport-agnostic drama components as if it were a real low score?
+method: import and run the REAL component predicates, not copies of them.
+window: 30 real days back from 2026-08-06
+
+  days fetched OK: 30 / 30   (failed: 0)
+
+=== POPULATION ===
+real games in window: 613
+real golf-family games: 26
+  label "golf": 20
+  label "PGA Tour": 6
+
+=== PREMISE CHECK: are golf drama_peaks still uniformly 0? ===
+  golf rows with a non-zero drama_peak: 0 / 26
+
+=== ARC SHAPE of real golf rows ===
+  object (client-authored)  x26
+
+=== LEAK TEST: real component predicates, run on real golf rows ===
+  analyzeGameArc()      admits 0 / 26 golf rows
+    (gates TheUnwatched and HallOfSurprises -- both map through it and .filter(Boolean))
+      -> TheUnwatched    (isUnwatched): 0
+      -> HallOfSurprises (gap > 0):     0
+      -> HallOfSurprises (isFizzle):    0
+  computeLeverageIndex() admits 0 / 26 golf rows
+
+=== VERDICT ===
+NO LEAK. All 26 real golf rows are rejected before any user-facing list.
+
+BUT note WHY, because it changes what this result is worth: they are rejected by
+incidental ARC-LENGTH and flat-arc checks (analyzeGameArc requires >= 5 points;
+computeLeverageIndex rejects a zero average delta as undefined rather than
+fabricating 0), NOT by any deliberate sport exclusion. Nothing in the codebase
+states "golf is unscored, exclude it." The protection is a side effect.
+
+So this is a real all-clear for today and a weak guarantee for tomorrow. A new
+component reading drama_peak directly, or a relay change that writes any >=5-point
+arc for golf, opens the leak with nothing to catch it. That is why this probe is
+scheduled rather than run once.
