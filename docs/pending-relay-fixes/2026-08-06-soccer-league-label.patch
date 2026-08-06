@@ -1,0 +1,106 @@
+diff --git a/src/index.js b/src/index.js
+index 3461031..cb8f686 100644
+--- a/src/index.js
++++ b/src/index.js
+@@ -7072,16 +7072,23 @@ async function handleJournalismCycle(env, opts = {}) {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+-            // CC-CMD-2026-07-15-wc-label-fragmentation: deliberately NOT switched to
+-            // SOCCER_LEAGUE_LABELS.wc26 here -- this literal feeds /archive/game's
+-            // `id` construction (id = `${sport}_${date}_...`), and a live, in-progress
+-            // WC26 game (England vs Argentina, 2026-07-15) is seeded right now under
+-            // the id this exact literal produces. Changing it would change the id on
+-            // this game's next write, missing ON CONFLICT and orphaning the row.
+-            // /archive/game's own canonicalizeWC26Sport() call (applied AFTER id is
+-            // built) already normalizes the persisted `sport` COLUMN for this and every
+-            // other caller regardless of the literal sent here -- no change needed.
+-            sport: gm.sport === 'soccer' ? 'FIFA World Cup 2026' : gm.league,
++            // Was: `gm.sport === 'soccer' ? 'FIFA World Cup 2026' : gm.league`.
++            // gm.sport is ESPN's TOP-LEVEL sport ('soccer'), not the competition, so
++            // that ternary relabelled EVERY soccer league as the World Cup -- measured
++            // 2026-08-06 at 52 of 60 checkable archived rows (86.7%), all really MLS,
++            // stored as "FIFA World Cup" with ids prefixed "FIFA World Cup 2026_".
++            // gm.league already holds the correct label from the LEAGUES table above
++            // (EPL / MLS / La Liga / Serie A / Bundesliga / Ligue 1 / FIFA World Cup),
++            // so the ternary was overriding a correct value with a wrong one.
++            //
++            // The 2026-07-15 note this replaces was right about the mechanism -- this
++            // literal feeds /archive/game's id construction (id = `${sport}_${date}_...`)
++            // -- but it was reasoning about WC26 only, before MLS shared the branch.
++            // Already-archived rows are safe: all three write sites dedup on
++            // espn_event_id, not on id. canonicalizeWC26Sport() still normalizes the
++            // persisted `sport` COLUMN for WC26, so WC rows keep the same column value
++            // and change only their id prefix ("FIFA World Cup 2026_" -> "FIFA World Cup_").
++            sport: gm.league,
+             league: gm.league,
+             date: dateKey,
+             home: gm.home,
+@@ -7158,16 +7165,23 @@ async function handleJournalismCycle(env, opts = {}) {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+-            // CC-CMD-2026-07-15-wc-label-fragmentation: deliberately NOT switched to
+-            // SOCCER_LEAGUE_LABELS.wc26 here -- this literal feeds /archive/game's
+-            // `id` construction (id = `${sport}_${date}_...`), and a live, in-progress
+-            // WC26 game (England vs Argentina, 2026-07-15) is seeded right now under
+-            // the id this exact literal produces. Changing it would change the id on
+-            // this game's next write, missing ON CONFLICT and orphaning the row.
+-            // /archive/game's own canonicalizeWC26Sport() call (applied AFTER id is
+-            // built) already normalizes the persisted `sport` COLUMN for this and every
+-            // other caller regardless of the literal sent here -- no change needed.
+-            sport: gm.sport === 'soccer' ? 'FIFA World Cup 2026' : gm.league,
++            // Was: `gm.sport === 'soccer' ? 'FIFA World Cup 2026' : gm.league`.
++            // gm.sport is ESPN's TOP-LEVEL sport ('soccer'), not the competition, so
++            // that ternary relabelled EVERY soccer league as the World Cup -- measured
++            // 2026-08-06 at 52 of 60 checkable archived rows (86.7%), all really MLS,
++            // stored as "FIFA World Cup" with ids prefixed "FIFA World Cup 2026_".
++            // gm.league already holds the correct label from the LEAGUES table above
++            // (EPL / MLS / La Liga / Serie A / Bundesliga / Ligue 1 / FIFA World Cup),
++            // so the ternary was overriding a correct value with a wrong one.
++            //
++            // The 2026-07-15 note this replaces was right about the mechanism -- this
++            // literal feeds /archive/game's id construction (id = `${sport}_${date}_...`)
++            // -- but it was reasoning about WC26 only, before MLS shared the branch.
++            // Already-archived rows are safe: all three write sites dedup on
++            // espn_event_id, not on id. canonicalizeWC26Sport() still normalizes the
++            // persisted `sport` COLUMN for WC26, so WC rows keep the same column value
++            // and change only their id prefix ("FIFA World Cup 2026_" -> "FIFA World Cup_").
++            sport: gm.league,
+             league: gm.league,
+             date: dateKey,
+             home: gm.home,
+@@ -7242,16 +7256,23 @@ async function handleJournalismCycle(env, opts = {}) {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+-            // CC-CMD-2026-07-15-wc-label-fragmentation: deliberately NOT switched to
+-            // SOCCER_LEAGUE_LABELS.wc26 here -- this literal feeds /archive/game's
+-            // `id` construction (id = `${sport}_${date}_...`), and a live, in-progress
+-            // WC26 game (England vs Argentina, 2026-07-15) is seeded right now under
+-            // the id this exact literal produces. Changing it would change the id on
+-            // this game's next write, missing ON CONFLICT and orphaning the row.
+-            // /archive/game's own canonicalizeWC26Sport() call (applied AFTER id is
+-            // built) already normalizes the persisted `sport` COLUMN for this and every
+-            // other caller regardless of the literal sent here -- no change needed.
+-            sport: gm.sport === 'soccer' ? 'FIFA World Cup 2026' : gm.league,
++            // Was: `gm.sport === 'soccer' ? 'FIFA World Cup 2026' : gm.league`.
++            // gm.sport is ESPN's TOP-LEVEL sport ('soccer'), not the competition, so
++            // that ternary relabelled EVERY soccer league as the World Cup -- measured
++            // 2026-08-06 at 52 of 60 checkable archived rows (86.7%), all really MLS,
++            // stored as "FIFA World Cup" with ids prefixed "FIFA World Cup 2026_".
++            // gm.league already holds the correct label from the LEAGUES table above
++            // (EPL / MLS / La Liga / Serie A / Bundesliga / Ligue 1 / FIFA World Cup),
++            // so the ternary was overriding a correct value with a wrong one.
++            //
++            // The 2026-07-15 note this replaces was right about the mechanism -- this
++            // literal feeds /archive/game's id construction (id = `${sport}_${date}_...`)
++            // -- but it was reasoning about WC26 only, before MLS shared the branch.
++            // Already-archived rows are safe: all three write sites dedup on
++            // espn_event_id, not on id. canonicalizeWC26Sport() still normalizes the
++            // persisted `sport` COLUMN for WC26, so WC rows keep the same column value
++            // and change only their id prefix ("FIFA World Cup 2026_" -> "FIFA World Cup_").
++            sport: gm.league,
+             league: gm.league,
+             date: yesterdayKey,
+             home: gm.home,
