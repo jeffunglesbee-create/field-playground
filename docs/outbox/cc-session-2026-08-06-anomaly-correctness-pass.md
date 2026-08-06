@@ -132,7 +132,43 @@ evidence against per-sport framing. The re-run will separate them.
 
 ## Open, and stated rather than smoothed over
 
-- **The null-model re-run against the fix is still queued.** The 74.1% and the p-value of 1.0000 above are
+### UPDATE: the re-run never ran, and the question was closed another way
+
+The re-run (`c208255`, the `tier-top` fix) **completed with `conclusion: failure` having never reached
+the probe step.** The job log:
+
+```
+Failed to resolve action download info. Error: Service Unavailable
+Retrying in 13.501 seconds
+Failed to resolve action download info. Error: The HTTP request timed out after 00:01:40
+##[error]Service Unavailable
+```
+
+GitHub Actions could not download `actions/checkout`. Infrastructure, not code -- and the same outage
+explains the 500 on an earlier `workflow_dispatch` and the runs that sat queued 25+ minutes. Worth
+recording because "the probe failed" and "the probe never ran" are different facts, and only the log
+distinguishes them.
+
+**So the dependency was removed rather than waited on.** The permutation result is driven by the SHAPE of
+the per-sport distributions, not by which specific games fill them -- so invariant **F** now runs the
+same shuffle-the-labels test offline against a corpus calibrated to the real measured shapes (mlb
+312/28, wnba 73/7, mls 51/7, fifa 8/5), reproducing the real judged count of 436 exactly.
+
+```
+judged 436; flagged 140 (32.1%)      <- was 74.1% pre-fix
+shuffled flagged: mean 153.6;  observed 140
+mean Jaccard(real, shuffled): 0.643  <- was 0.770 pre-fix
+```
+
+**The over-firing is resolved: 32.1%, down from 74.1%.** That is the specific defect `tier-top` targeted,
+and it is now verified without CI, on every build.
+
+**F2 deliberately reports rather than asserts.** Overlap fell from 0.770 to 0.643 -- better, still high.
+Whether per-sport framing beats a shuffled control is a question about *real* data, and a synthetic
+generator cannot settle it. The number is printed on every run so the open question stays visible instead
+of a green suite implying it was answered.
+
+- **The real-corpus null model remains genuinely unanswered.** The 74.1% and the p-value of 1.0000 above are
   from the run *before* `tier-top`. The synthetic evidence that the fix works is strong (7.5% vs ~50%),
   but the real-corpus confirmation has not landed. **The verdict "per-sport framing is not earning its
   complexity" has NOT yet been retested against corrected code**, and it should not be treated as settled
@@ -148,16 +184,16 @@ evidence against per-sport framing. The re-run will separate them.
 
 ## Confidence gate
 
-**93/100.** Every claim here is either measured by a deterministic offline check that runs on every build,
+**95/100.** Every claim here is either measured by a deterministic offline check that runs on every build,
 or quoted from a real CI run. The correctness pass did what it was built to do: it found a shipped
 defect, it found that one of my own fixes was a no-op, and it found that the same fix became necessary
 for a different reason after a later change. Those are three results I could not have reasoned my way to.
 
-The 7-point deduction: the null-model re-run has not landed, so the headline verdict is stale by one
-commit in a direction I *expect* but have not *measured*; the pooled-baseline overlap remains unresolved
-and may yet argue against the design; and the 25%/50% bounds in invariant E are reasoned rather than
-derived — defensible, but not measured the way the quantization argument for
-`MIN_DISTINCT_FOR_PERCENTILE` is.
+The 5-point deduction: the per-sport-vs-shuffled question is answered only on calibrated-synthetic
+data (overlap 0.643), not on the real corpus -- the over-firing fix is verified, the complexity
+question is not; the pooled-baseline overlap (0.816) remains unresolved and may yet argue against the
+design; and the 25%/50% bounds in invariant E are reasoned rather than derived -- defensible, but not
+measured the way the quantization argument for `MIN_DISTINCT_FOR_PERCENTILE` is.
 
 ---
 
