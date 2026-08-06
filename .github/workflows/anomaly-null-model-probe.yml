@@ -1,0 +1,66 @@
+name: Anomaly Null Model Probe
+
+# Permutation test on AnomalyWatch's central claim: that per-sport baselines
+# find something a pooled or shuffled control does not.
+#
+# This is the only check in the anomaly set that can conclude the feature is
+# unearned. Sport labels are shuffled across real games with marginal counts
+# preserved, baselines rebuilt, and the same SHIPPED analysis re-run. If the
+# shuffled control flags a similar number of the same games, the per-sport
+# machinery is describing the marginal drama distribution rather than
+# sport-specific anomalies.
+#
+# A pooled baseline -- the simpler design that was rejected during the build --
+# runs as a second control, so the rejection is tested rather than assumed.
+#
+# Deterministic (seeded PRNG) so a surprising result reproduces exactly.
+
+on:
+  schedule:
+    - cron: '47 12 * * 1'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Days of history to sweep'
+        required: false
+        default: '30'
+      trials:
+        description: 'Permutation trials'
+        required: false
+        default: '200'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Permutation test against shuffled and pooled controls
+        timeout-minutes: 18
+        continue-on-error: true
+        env:
+          PROBE_DAYS: ${{ github.event.inputs.days || '30' }}
+          PROBE_TRIALS: ${{ github.event.inputs.trials || '200' }}
+        run: node scripts/probe-anomaly-null-model.mjs
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "anomaly-null-model-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: anomaly null model probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1

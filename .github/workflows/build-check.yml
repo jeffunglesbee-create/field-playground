@@ -81,6 +81,16 @@ jobs:
         run: node scripts/check-localstorage-guards.mjs
       - name: Check for undisposed WebGLRenderer instances
         run: node scripts/check-webgl-disposal.mjs
+      # Offline correctness guard for the anomaly analysis -- no relay, no
+      # network, deterministic (seeded PRNG). Tests properties that must hold
+      # for ANY input: the definitional firing rate of rare-high/rare-low
+      # against a brute-force recomputation, order-independence, monotonicity,
+      # duplication invariance, and leave-one-out exactness. The real-corpus
+      # probe is confirmatory -- it runs the shipped code and reports what that
+      # code says -- so it cannot catch arithmetic that is internally
+      # consistent and wrong. This can, and it runs on every build.
+      - name: Check anomaly analysis invariants
+        run: node scripts/check-anomaly-invariants.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

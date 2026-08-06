@@ -77,10 +77,62 @@ function percentileRank(sorted, value) {
   return n / sorted.length
 }
 
-function quantile(sorted, p) {
+export function quantile(sorted, p) {
   if (!sorted.length) return null
   const i = Math.min(sorted.length - 1, Math.max(0, Math.round(p * (sorted.length - 1))))
   return sorted[i]
+}
+
+// First index holding `value` in a sorted array, or -1. Used to remove exactly
+// one occurrence for the leave-one-out adjustment below.
+function lowerBound(sorted, value) {
+  let lo = 0, hi = sorted.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (sorted[mid] < value) lo = mid + 1
+    else hi = mid
+  }
+  return lo < sorted.length && sorted[lo] === value ? lo : -1
+}
+
+// LEAVE-ONE-OUT. A game judged against a baseline that INCLUDES ITSELF is
+// graded on a curve it helped set: an extreme game inflates its own p90 and so
+// becomes less likely to be flagged.
+//
+// HONEST STATUS, measured not assumed: this is currently INERT.
+// scripts/check-anomaly-invariants.mjs C3 was written to assert LOO changes
+// real outcomes, and it FAILED -- LOO never flips a rare-high finding at n =
+// 30/60/120/300. The reason is structural: percentile findings only run at
+// 'distribution' resolution, which needs >= MIN_DISTINCT_FOR_PERCENTILE
+// distinct values, and any population that rich is large enough that dropping
+// one game cannot move the quantile past that game's own value. The resolution
+// gate already excludes the bias this was added to correct.
+//
+// It stays because it is exact, costs nothing, and becomes load-bearing the
+// moment MIN_DISTINCT_FOR_PERCENTILE is lowered. C3 reports the flip count on
+// every run so nobody inherits a claim that stopped being true.
+//
+// Exact, not approximate: the reduced array is `sorted` minus one occurrence of
+// `value`, so the quantile index into a length n-1 array maps back by shifting
+// past the removed slot. No re-sorting, no re-scanning.
+export function looQuantile(sorted, p, removeValue) {
+  const n = sorted.length
+  if (n <= 1) return null
+  const cut = lowerBound(sorted, removeValue)
+  if (cut < 0) return quantile(sorted, p) // value not present -- nothing to remove
+  const m = n - 1
+  const idx = Math.min(m - 1, Math.max(0, Math.round(p * (m - 1))))
+  return idx < cut ? sorted[idx] : sorted[idx + 1]
+}
+
+// Percentile rank of a value against the population EXCLUDING one instance of
+// itself: (others at or below) / (others).
+export function looPercentileRank(sorted, value) {
+  const n = sorted.length
+  if (n <= 1) return null
+  let le = 0
+  for (const v of sorted) { if (v <= value) le++; else break }
+  return (le - 1) / (n - 1)
 }
 
 function parseArc(g) {
@@ -123,7 +175,7 @@ function arcShape(arc) {
 // the same game pulled from two dates gets two different fetch dates, so it
 // would never dedupe. `g.date` is the game's own date and is safe to fall back
 // on; real rows carry game_id or id and never reach the fallback.
-function gameKey(g) {
+export function gameKey(g) {
   return g.game_id ?? g.id ?? g.espn_event_id ??
     `${g.date ?? ''}|${g.home ?? ''}|${g.away ?? ''}`
 }
@@ -143,9 +195,13 @@ export function buildBaselines(games) {
     const peak = g.drama_peak
     if (typeof peak !== 'number' || !Number.isFinite(peak)) continue
 
-    if (!bySport.has(sport)) bySport.set(sport, { peaks: [], ranges: [], turns: [] })
+    if (!bySport.has(sport)) bySport.set(sport, { peaks: [], ranges: [], turns: [], keys: new Set() })
     const b = bySport.get(sport)
     b.peaks.push(peak)
+    // Membership is tracked so leave-one-out is applied only to games that
+    // genuinely contributed to this baseline. Removing a value for a game that
+    // never entered would delete a DIFFERENT game's contribution.
+    b.keys.add(key)
 
     const arc = parseArc(g)
     if (arc && arc.length >= 3) {
@@ -178,6 +234,7 @@ export function buildBaselines(games) {
       medianRange: quantile(ranges, 0.50),
       medianTurns: quantile(turns, 0.50),
       arcSampleN: ranges.length,
+      keys: b.keys,
       duplicatesDropped,
     })
   }
@@ -281,8 +338,22 @@ export function describeAnomaly(game, baselines, { requireFinal = false } = {}) 
   const shape = arc && arc.length >= 3 ? arcShape(arc) : null
   const arcUsable = Boolean(arc) && (isFinal || !requireFinal)
 
+  // Leave-one-out, applied ONLY when this game genuinely contributed to the
+  // baseline (membership tracked in buildBaselines). Judging a game against a
+  // curve it helped set biases against flagging it, worst at the small-n sports.
+  const inBaseline = baseline.keys?.has(gameKey(game)) === true
+  const effBaseline = inBaseline
+    ? {
+        ...baseline,
+        p10: looQuantile(baseline.peaks, 0.10, peak),
+        median: looQuantile(baseline.peaks, 0.50, peak),
+        p90: looQuantile(baseline.peaks, 0.90, peak),
+        n: baseline.n - 1,
+      }
+    : baseline
+
   const ctx = {
-    game, peak, baseline, analysis, shape,
+    game, peak, baseline: effBaseline, analysis, shape,
     sportLabel: sport,
   }
 
@@ -297,10 +368,13 @@ export function describeAnomaly(game, baselines, { requireFinal = false } = {}) 
   }
 
   return {
-    game, sport, baseline, status: 'ok', isFinal, findings,
+    game, sport, baseline: effBaseline, status: 'ok', isFinal, findings,
     arcPartial: Boolean(arc) && !isFinal,
+    leaveOneOut: inBaseline,
     // Ordering only. Never rendered -- see the module header.
-    _percentile: percentileRank(baseline.peaks, peak),
+    _percentile: inBaseline
+      ? looPercentileRank(baseline.peaks, peak)
+      : percentileRank(baseline.peaks, peak),
   }
 }
 

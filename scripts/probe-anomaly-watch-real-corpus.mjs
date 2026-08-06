@@ -168,6 +168,29 @@ async function main() {
     log('A condition that never fires is decoration, not a finding. Either its test is wrong,')
     log('or the corpus genuinely lacks that shape -- distinguish before shipping it as a feature.')
   }
+  // DEFINITIONAL CHECK on real data. rare-high is DEFINED as peak >= LOO p90,
+  // so its rate is predictable from the real distribution itself -- computed
+  // here by brute force, a deliberately different implementation from the one
+  // under test. A mismatch is a proof of a quantile bug, not a suspicion.
+  log('')
+  log('=== DEFINITIONAL SELF-CONSISTENCY on real data ===')
+  for (const b of [...baselines.values()].filter(x => x.resolution === 'distribution')) {
+    const peaks = b.peaks
+    let predictedHigh = 0, predictedLow = 0
+    for (let i = 0; i < peaks.length; i++) {
+      const others = peaks.filter((_, j) => j !== i)
+      const qi = p => others[Math.min(others.length - 1, Math.max(0, Math.round(p * (others.length - 1))))]
+      if (peaks[i] >= qi(0.90)) predictedHigh++
+      if (peaks[i] <= qi(0.10)) predictedLow++
+    }
+    const rows = slate.all.filter(r => r.status === 'ok' && r.sport === b.sport)
+    const actualHigh = rows.filter(r => r.findings.some(f => f.id === 'rare-high')).length
+    const actualLow = rows.filter(r => r.findings.some(f => f.id === 'rare-low')).length
+    const okH = actualHigh === predictedHigh, okL = actualLow === predictedLow
+    log(`  ${b.sport}: rare-high actual ${actualHigh} vs brute-force ${predictedHigh} ${okH ? 'MATCH' : '*** MISMATCH -- quantile bug ***'}`)
+    log(`  ${b.sport}: rare-low  actual ${actualLow} vs brute-force ${predictedLow} ${okL ? 'MATCH' : '*** MISMATCH -- quantile bug ***'}`)
+  }
+
   const overFiring = [...counts.entries()].filter(([, n]) => judged && n / judged > 0.5)
   if (overFiring.length) {
     log('')
