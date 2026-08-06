@@ -462,3 +462,62 @@ export function impliedSide(scoreStr) {
   if (homeNum === awayNum) return null
   return homeNum > awayNum ? 'home' : 'away'
 }
+
+// --- Anomaly baseline corpus: the UNCENSORED slate, swept over N days ---
+//
+// Deliberately NOT /archive/drama/leaderboard, which every other drama
+// component here uses. That endpoint is ranked AND truncated, so every row in
+// it is near the maximum by construction. Building a baseline from it would
+// reproduce this repo's own long-held false belief that "drama_peak is too
+// coarse to rank with" -- a censored-sample artifact, disproved 2026-08-06
+// when the uncensored slate turned out to carry 34 distinct values across 470
+// real scored games.
+//
+// /context/date/{date} is the full real slate for one day, so a window of them
+// is the real population. One fetch per day, issued together; a day that fails
+// is dropped and COUNTED, never silently treated as an empty slate -- the
+// difference between "no games" and "the fetch failed" is exactly the
+// distinction the anomaly probes had to be corrected to make.
+export const [anomalyWindowDays, setAnomalyWindowDays] = createSignal(14)
+
+// shiftDateStr already exists above (line ~97) for ambientWeek -- reused
+// rather than redefined. Two identical date helpers in one file is exactly
+// the silent-drift shape impliedSide() was pulled out to prevent.
+
+async function fetchAnomalyCorpus(days) {
+  const today = todayStr()
+  const dates = Array.from({ length: days }, (_, i) => shiftDateStr(today, -i))
+
+  const settled = await Promise.allSettled(dates.map(async d => {
+    const res = await fetch(`${RELAY_BASE}/context/date/${d}`)
+    if (!res.ok) throw new Error(`context/date ${d} failed: ${res.status}`)
+    const json = await res.json()
+    return {
+      date: d,
+      games: [
+        ...(json?.games?.regular ?? []),
+        ...(json?.games?.postseason ?? []),
+      ].map(g => ({ ...g, _date: d })),
+    }
+  }))
+
+  const games = []
+  const failedDates = []
+  for (let i = 0; i < settled.length; i++) {
+    const s = settled[i]
+    if (s.status === 'fulfilled') games.push(...s.value.games)
+    else failedDates.push(dates[i])
+  }
+
+  // A corpus assembled entirely from failures is not an empty corpus. Throwing
+  // makes the resource error honestly rather than handing callers a baseline
+  // built from nothing.
+  if (failedDates.length === dates.length) {
+    throw new Error(`all ${dates.length} slate fetches failed -- no corpus`)
+  }
+
+  return { games, daysRequested: dates.length, daysOk: dates.length - failedDates.length, failedDates }
+}
+
+export const [anomalyCorpus, { refetch: refetchAnomalyCorpus }] =
+  createResource(anomalyWindowDays, fetchAnomalyCorpus)

@@ -65,6 +65,7 @@ import { BundesligaBroadcasters } from './components/BundesligaBroadcasters'
 import { FieldIdentity } from './components/FieldIdentity'
 import { TerrainFlight } from './components/TerrainFlight'
 import { LeverageIndex } from './components/LeverageIndex'
+import { AnomalyWatch } from './components/AnomalyWatch'
 import { ContradictionRadar } from './components/ContradictionRadar'
 import { BroadcastCall } from './components/BroadcastCall'
 import { ValueNight } from './components/ValueNight'
@@ -406,6 +407,9 @@ export default function App() {
             </SafeSection>
             <SafeSection class={styles.terrainFlight}>
               <TerrainFlight />
+            </SafeSection>
+            <SafeSection class={styles.anomalyWatch}>
+              <AnomalyWatch />
             </SafeSection>
             <SafeSection class={styles.leverageIndex}>
               <LeverageIndex />

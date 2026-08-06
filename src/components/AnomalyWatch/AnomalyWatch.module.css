@@ -1,0 +1,306 @@
+.root {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--field-text-secondary);
+}
+
+.refreshBtn {
+  margin-left: auto;
+  font-size: 12px;
+  background: none;
+  border: none;
+  color: var(--field-text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.refreshBtn:hover { color: var(--field-text-secondary); }
+
+.note {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  margin: 0 0 10px 0;
+  line-height: 1.45;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.modeGroup { display: flex; gap: 4px; }
+
+.modeOn, .modeOff {
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid #222;
+  background: #0a0a0a;
+  color: var(--field-text-muted);
+}
+
+.modeOn {
+  border-color: #3a4a63;
+  background: #16202e;
+  color: var(--field-text-primary);
+}
+
+.modeOff:hover { color: var(--field-text-secondary); }
+
+.windowLabel {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+}
+
+.windowSelect {
+  font-size: 11px;
+  background: #0a0a0a;
+  color: var(--field-text-secondary);
+  border: 1px solid #222;
+  border-radius: 5px;
+  padding: 3px 6px;
+}
+
+.verdict {
+  font-size: 13px;
+  color: var(--field-text-primary);
+  line-height: 1.4;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 0 0 10px 0;
+}
+
+.loading, .empty, .error {
+  font-size: 12px;
+  color: var(--field-text-muted);
+  margin-top: 10px;
+  line-height: 1.45;
+}
+
+/* A partial corpus is usable but the claim it supports is weaker -- styled to
+   be noticed rather than folded into the body text. */
+.warn {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #d9b168;
+  background: #1b1508;
+  border: 1px solid #3a2f13;
+  border-radius: 6px;
+  padding: 7px 9px;
+  margin: 0 0 10px 0;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  background: #0c0c0c;
+  border: 1px solid #1c1c1c;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.rowMain {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.matchup {
+  font-size: 13px;
+  color: var(--field-text-primary);
+}
+
+.score {
+  font-size: 12px;
+  color: var(--field-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sport {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+}
+
+.liveTag {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6fae7a;
+  border: 1px solid #24402a;
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.findings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.finding {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 7px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* Named condition, never a number. Colour separates the DIRECTION of a
+   finding (unusually high / unusually low / shape) so the row scans, without
+   encoding a magnitude. */
+.findingLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  padding: 2px 6px;
+  border: 1px solid #2a2a2a;
+  color: var(--field-text-secondary);
+  white-space: nowrap;
+}
+
+.findingLabel[data-finding='rare-high'],
+.findingLabel[data-finding='above-typical'] {
+  color: #e0a05a;
+  border-color: #4a3418;
+  background: #1d1408;
+}
+
+.findingLabel[data-finding='rare-low'] {
+  color: #7f93b5;
+  border-color: #23303f;
+  background: #0d131c;
+}
+
+.findingLabel[data-finding='late-surge'] {
+  color: #6fae7a;
+  border-color: #24402a;
+  background: #0c1710;
+}
+
+.findingLabel[data-finding='fizzle'] {
+  color: #b57f7f;
+  border-color: #3f2323;
+  background: #1c0d0d;
+}
+
+.findingWhy {
+  color: var(--field-text-muted);
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.partialNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* What the slate contained that produced no finding -- counted, not dropped. */
+.excluded {
+  font-size: 11px;
+  color: var(--field-text-muted);
+  line-height: 1.45;
+  margin: 10px 0 0 0;
+}
+
+.details {
+  margin-top: 12px;
+  border-top: 1px solid #1c1c1c;
+  padding-top: 8px;
+}
+
+.summary {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  cursor: pointer;
+}
+
+.summary:hover { color: var(--field-text-secondary); }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--field-text-muted);
+  border-bottom: 1px solid #1c1c1c;
+  padding: 3px 6px 4px 0;
+}
+
+.table td {
+  color: var(--field-text-secondary);
+  padding: 3px 6px 3px 0;
+  border-bottom: 1px solid #141414;
+}
+
+.num { font-variant-numeric: tabular-nums; }
+
+.tableNote {
+  font-size: 10px;
+  color: var(--field-text-muted);
+  line-height: 1.45;
+  margin: 8px 0 0 0;
+}
+
+.tableNote code {
+  font-size: 10px;
+  color: var(--field-text-secondary);
+}
