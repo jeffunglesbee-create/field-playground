@@ -1,0 +1,80 @@
+probe_at: 2026-08-06T02:17:53.795Z
+purpose: measure the LIVE per-incident field shape of BSD /incidents/, because the
+preferred soccer fix rests on home_score/away_score being present -- and the same
+source doc's ESPN field list was already measured stale in the same session.
+
+=== DISCOVERY: real MLS event IDs ===
+  by-date 2026-08-02 -> event 5183  (returned date: ?)
+  by-date 2026-08-02 -> event 5182  (returned date: ?)
+  by-date 2026-08-02 -> event 5174  (returned date: ?)
+  by-date 2026-08-02 -> event 5181  (returned date: ?)
+  by-date 2026-08-02 -> event 5180  (returned date: ?)
+  by-date 2026-08-02 -> event 5179  (returned date: ?)
+  event IDs to profile: 5183, 5182, 5174, 5181, 5180, 5179, 209914
+
+=== PER-EVENT: real /incidents/ responses ===
+  event 5183: top-level keys [event_id, incidents] -> 20 real incidents
+  event 5182: top-level keys [event_id, incidents] -> 17 real incidents
+  event 5174: top-level keys [event_id, incidents] -> 23 real incidents
+  event 5181: top-level keys [event_id, incidents] -> 18 real incidents
+  event 5180: top-level keys [event_id, incidents] -> 21 real incidents
+  event 5179: top-level keys [event_id, incidents] -> 18 real incidents
+  event 209914: top-level keys [event_id, incidents] -> 0 real incidents
+
+=== REAL FIELD SHAPE across 117 real incidents ===
+  field                 present   non-null        sample values
+  type                    117     117 (100%)   period | substitution | injuryTime | goal | card
+  minute                  117     117 (100%)   90 | 88 | 84 | 82 | 73
+  is_home                  95      95 ( 81%)   true | false
+  added_time               95      13 ( 11%)   4 | 5 | 3 | 2 | 1
+  player_in                55      55 ( 47%)   O. Fernandez | I. Smith | J. Caicedo | A. Lopez | A. Roldán
+  player_out               55      55 ( 47%)   K. Velde | K. Kelsy | C. Bassett | K. Kossa-Rienzi | K. Kee-
+  player_in_id             55      55 ( 47%)   9344 | 9274 | 10067 | 9643 | 9239
+  player_out_id            55      55 ( 47%)   9244 | 9240 | 9403 | 9265 | 9672
+  player                   40      40 ( 34%)   B. Bye | S. Gomez | K. Kelsy | K. Miller | K. Kossa-Rienzi
+  player_id                40      40 ( 34%)   9532 | 9644 | 9240 | 9225 | 9265
+  away_score               26      26 ( 22%)   1 | 0 | 2
+  home_score               26      26 ( 22%)   2 | 1 | 0 | 4 | 3
+  card_type                26      26 ( 22%)   yellow | yellowRed
+  reason                   25      25 ( 21%)   Foul | Simulation | Argument | Persistent fouling
+  sequence                 14      14 ( 12%)   
+  goal_type                14      14 ( 12%)   regular | penalty
+  text                     12      12 ( 10%)   FT | HT
+  is_live                  12      12 ( 10%)   false
+  length                   10      10 (  9%)   5 | 8 | 4 | 1 | 7
+  assist                   10      10 (  9%)   D. Da Costa | K. Velde | T. Barlow | O. Nwobodo | Evander
+
+=== DOC-VS-REALITY: the June 26 claimed field list ===
+  claimed AND present: type, minute, is_home, player_in, player_out, player_id, card_type, goal_type, assist, home_score, away_score
+  claimed but ABSENT:  (none)
+  present but UNDOCUMENTED: text, is_live, added_time, player_in_id, player_out_id, length, player, sequence, reason
+
+=== INCIDENT TYPES actually seen ===
+  substitution         x55
+  card                 x26
+  goal                 x14
+  period               x12
+  injuryTime           x10
+
+=== SCORE FIELDS BY INCIDENT TYPE (the denominator that actually matters) ===
+  type                 n     home_score     away_score
+  substitution         55     0/55  (  0%)     0/55  (  0%)
+  card                 26     0/26  (  0%)     0/26  (  0%)
+  goal                 14    14/14  (100%)    14/14  (100%)
+  period               12    12/12  (100%)    12/12  (100%)
+  injuryTime           10     0/10  (  0%)     0/10  (  0%)
+
+=== VERDICT ===
+  home_score: present, non-null on 26/117 incidents overall (22%)
+  away_score: present, non-null on 26/117 incidents overall (22%)
+  on GOAL incidents specifically: home_score 14/14 (100%), away_score 14/14 (100%)
+
+CONFIRMED. home_score/away_score are present on real goal incidents. The preferred fix
+(source soccer states from BSD incidents) is viable on measured data, not on a doc.
+The running score is given per incident, so no accumulation and no goal-type filter
+is needed -- which is what makes the dropped-goal bug class structurally impossible
+rather than merely fixed.
+
+This probe deliberately stops at measurement. It does not propose an implementation --
+designing against unverified fields is the mistake this repo's probe discipline exists
+to prevent, and it is the mistake that produced the stale doc being checked here.
