@@ -178,6 +178,35 @@ async function main() {
   for (const g of zeros.slice(0, 12)) {
     log(`  ${g._date}  ${String(g.sport).padEnd(16)} ${String(g.away ?? '?')} @ ${String(g.home ?? '?')}  scores=${g.away_score ?? 'null'}-${g.home_score ?? 'null'}  finalized=${g.finalized_at ? 'yes' : 'no'}`)
   }
+  // CORRECTED 2026-08-06 -- the original verdict here judged the zeros purely
+  // on played-state and concluded "KEEP THEM, 0 is a real low score." The raw
+  // sample it printed immediately disproved that: 10 of 12 sampled zeros were
+  // golf/PGA Tour, which are `finalized_at`-set (so they LOOK played to a
+  // naive check) but whose drama is never computed at all -- classifySport()
+  // in the relay's drama-backfill.mjs returns 'other' for golf, and 'other'
+  // has no historical-states fetcher, so drama_peak stays 0 by default. A
+  // sport whose ENTIRE scored population is exactly 0 has an unpopulated
+  // metric, not a uniformly boring one. Judge by sport first, then state.
+  const bySportZero = new Map()
+  for (const g of scored) {
+    const k = String(g.sport ?? '(missing)').toLowerCase().trim()
+    if (!bySportZero.has(k)) bySportZero.set(k, { total: 0, zero: 0 })
+    const e = bySportZero.get(k)
+    e.total++
+    if (g.drama_peak === 0) e.zero++
+  }
+  const unpopulatedSports = [...bySportZero.entries()]
+    .filter(([, e]) => e.total >= 3 && e.zero === e.total)
+    .map(([k]) => k)
+  const zerosFromUnpopulated = zeros.filter(g => unpopulatedSports.includes(String(g.sport ?? '').toLowerCase().trim())).length
+  const residualZeros = zeros.length - zerosFromUnpopulated
+
+  log('')
+  log('sports whose ENTIRE scored population is 0 (metric unpopulated, not undramatic):')
+  log('  ' + (unpopulatedSports.length ? unpopulatedSports.join(', ') : '(none)'))
+  log('zeros attributable to those sports: ' + zerosFromUnpopulated + ' of ' + zeros.length)
+  log('residual zeros in sports that DO get scored: ' + residualZeros)
+
   const zeroUnplayed = (zeroStates.get('unplayed(no scores)') ?? 0)
   const zeroUnplayedShare = zeros.length ? zeroUnplayed / zeros.length : 0
 
@@ -201,11 +230,12 @@ async function main() {
   log('Q1 (cross-sport): ' + (medianSpread >= 10
     ? 'PER-SPORT BASELINES REQUIRED -- real medians differ by ' + medianSpread + ' points across sports with n>=20. A pooled baseline would misrank whole sports by scale mismatch.'
     : 'pooled baseline defensible -- real medians differ by only ' + medianSpread + ' points across sports with n>=20, though per-sport remains the safer default.'))
-  log('Q2 (zeros): ' + (zeroUnplayedShare >= 0.5
-    ? 'EXCLUDE THEM -- ' + (zeroUnplayedShare * 100).toFixed(1) + '% of zero-peak games have no real scores at all, i.e. they are unplayed, not undramatic. They are not real data points.'
-    : (zeroUnplayedShare > 0
-      ? 'MIXED -- ' + (zeroUnplayedShare * 100).toFixed(1) + '% of zeros are unplayed; the rest look genuinely played. Exclude on played-state, not on the value 0 itself.'
-      : 'KEEP THEM -- zero-peak games do appear genuinely played; 0 is a real low score, not a missing-data marker.')))
+  log('Q2 (zeros): ' + (zerosFromUnpopulated / (zeros.length || 1) >= 0.5
+    ? 'EXCLUDE BY SPORT -- ' + zerosFromUnpopulated + ' of ' + zeros.length + ' zeros come from sports whose ENTIRE scored population is 0 (' +
+      unpopulatedSports.join(', ') + '), i.e. the metric is never computed for them. Those are not real data points. ' +
+      'The ' + residualZeros + ' residual zero(s) in scored sports need a separate judgement -- do NOT filter on the value 0 itself, filter on sport.'
+    : 'zeros are NOT concentrated in unpopulated sports (' + zerosFromUnpopulated + '/' + zeros.length + '); ' +
+      (zeroUnplayedShare > 0 ? (zeroUnplayedShare * 100).toFixed(1) + '% are unplayed -- exclude on played-state.' : 'they appear genuinely played, so 0 is a real low score.')))
 }
 
 main().catch(e => log('FAILED: ' + String(e)))

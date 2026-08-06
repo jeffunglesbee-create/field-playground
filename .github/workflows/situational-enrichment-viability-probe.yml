@@ -1,0 +1,58 @@
+name: Situational Enrichment Viability Probe
+
+# Follows the 2026-08-06 hygiene probe, which measured a stark real
+# cross-sport gap in drama_peak resolution (MLB 28 distinct values over 312
+# real games; WNBA 7 over 73; FIFA World Cup 7 over 59; golf 1 over 26, all
+# exactly 0) -- and the relay code that explains it: only the MLB branch of
+# dramaScoreLive() in drama-backfill.mjs has a real situational-bonus term.
+#
+# That is a scoring-model gap in code this project controls, not an external
+# data limitation. This probe asks the one question that has to be answered
+# before anyone changes that scoring: fetchWNBAHistoricalStates() keeps only
+# 4 fields per play (homeScore/awayScore/period/clock) and discards the rest
+# -- is there anything real left in those ESPN play objects, at a real fill
+# rate, that could support a situational term? Same for soccer, where red
+# cards and penalties are currently ignored entirely.
+#
+# Reports real fields and real fill rates ONLY. It deliberately does not
+# propose a scoring formula -- designing bonuses against unverified fields is
+# the exact mistake this repo's probe discipline exists to prevent.
+#
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from chat --
+# CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Profile real ESPN play-object fields for WNBA and soccer
+        timeout-minutes: 8
+        continue-on-error: true
+        run: node scripts/probe-situational-enrichment-viability.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "situational-enrichment-viability-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: situational enrichment viability probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
