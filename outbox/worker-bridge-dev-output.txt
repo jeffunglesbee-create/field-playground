@@ -1,5 +1,5 @@
 
-  [32m[1mVITE[22m v6.4.3[39m  [2mready in [0m[1m481[22m[2m[0m ms[22m
+  [32m[1mVITE[22m v6.4.3[39m  [2mready in [0m[1m359[22m[2m[0m ms[22m
 
   [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5199[22m/[39m
 server_ready=1

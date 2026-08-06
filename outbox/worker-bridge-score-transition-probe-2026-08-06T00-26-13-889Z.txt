@@ -1,0 +1,19 @@
+probe_at: 2026-08-06T00:26:13.890Z
+purpose: observe WorkerBridgeDemo's real "score" change branch in an ISOLATED session
+(nothing else polling /context/date), long enough to cross the dev mock's scripted
+transition window (requests 5-8, ~15s apart after the initial mount burst).
+
+poll 0: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 1: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+
+=== RESULT ===
+distinct poll counts observed: 0, 1
+page errors: []
+real "score" change row observed: YES
+snapshot at that moment: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — polls seen: 1. 8 → 8 games computed in 0.1ms (off-thread) SCORE Houston Astros @ Texas Rangers —-— → 0-
+
+=== VERDICT ===
+CONFIRMED: WorkerBridgeDemo's real "score" change-type branch (<Show when={c.type ===
+'score'}>) rendered correctly in an isolated session, with a real from -> to value pair.
+The earlier "no changes observed" result was confirmed as shared-counter contamination
+from concurrent parallel testing, not a component bug.
