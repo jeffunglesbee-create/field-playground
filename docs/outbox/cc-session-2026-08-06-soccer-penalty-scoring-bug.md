@@ -90,10 +90,66 @@ caught all 18 real scoring events in the sample where the text match caught 16. 
 being sensitive to ESPN's display wording, which is exactly what broke here.
 
 **This has not been applied.** The fix lives in `field-relay-nba`, whose own CLAUDE.md mandates that
-every commit goes straight to `main`, and a push touching `scripts/**` triggers a real auto-deploy. It
-also **changes historical data**: re-running the backfill would alter `drama_peak`/`drama_arc` for past
-soccer matches the app already displays, so it needs a deliberate backfill decision, not a drive-by
-commit. Flagged for a go/no-go rather than actioned unilaterally.
+every commit goes straight to `main`, and a push touching `scripts/**` triggers a real auto-deploy.
+Flagged for a go/no-go rather than actioned unilaterally.
+
+---
+
+## What the docs changed about the remediation plan
+
+Two relay docs, found after the bug was confirmed, materially change what "fix it" means.
+
+**1. `drama_peak` is deliberately immutable at the write layer.**
+`docs/CC-CMD-2026-07-06-drama-peak-immutability-guard.md` added `AND drama_peak IS NULL` to all three
+UPDATE statements, so an attempted overwrite returns `changes: 0` and an honest "already scored,
+skipped" response. **The stated rationale is not incidental — it is RUWT patent analysis:** `'326`
+claim 1's trigger is *"the rating...has changed,"* which requires two distinct values over time for the
+same event. So a naive "just fix and re-run the backfill" would silently no-op on every affected row,
+and deliberately relaxing the guard carries an IP consideration that is a human decision, not mine.
+
+**2. But there is a sanctioned, already-executed correction path.**
+`docs/CC-CMD-2026-08-03-fix-drama-backfill-situational-fields.md` Task 3 solved this exact problem for
+MLB three days ago, and its Drive result doc records the real execution:
+
+- Identify buggy-script-written rows by a **structural authorship signal, not a heuristic**. The one
+  used was elegant: the Node backfill writes `drama_arc` as a bare JSON **array**, while every client
+  write path writes it as an **object** (`{peak, peakPeriod, ...}`) -- so `drama_arc LIKE '[%'` is a
+  100%-reliable authorship test.
+- Capture full before-state, then reset **only** those rows to `NULL` via one explicit reviewable
+  `UPDATE`, reporting real row counts.
+- Re-run the fixed backfill so rows refill naturally through the existing
+  `/archive/drama-missing` → `/archive/drama-by-id` flow -- no new mechanism.
+- Verify with named before/after values.
+
+Real MLB result: **537 rows reset, refilled, verified** (e.g. Orioles/Rays 2026-05-25: `74` → `99`).
+That is a proven template this soccer fix can follow rather than invent.
+
+**A better scoping signal exists for soccer.** Rather than a shape heuristic, affected rows are
+identifiable by their actual cause: re-fetch each soccer game's `keyEvents` and check for a
+`scoringPlay === true` event the current filter would drop. That identifies exactly the corrupted
+matches and nothing else.
+
+---
+
+## The Aug 3 audit did check soccer -- and cleared it correctly
+
+Worth stating plainly, because it looks at first glance like a miss and is not one. That CC-CMD
+explicitly instructed: *"Check `fetchWNBAHistoricalStates`, `buildAFLStates`, and
+`fetchSoccerHistoricalStates` for the same class of bug... State the real finding for each, don't just
+fix MLB and assume the rest are fine."* Its result doc answered:
+
+> `buildAFLStates` / `fetchSoccerHistoricalStates` — confirmed via code read: neither references a
+> `situation`-style sub-object or any base-runner/count-analog field. **No bug of this class.**
+
+**That conclusion is correct.** The soccer fetcher genuinely has no situational-field dependency. The
+penalty-filter bug is a *different* defect in the same function, outside the class that audit was scoped
+to. The audit answered its question accurately; the question was narrower than the risk. This is
+precisely why an independently-motivated probe (which came at the function from "what data is being
+discarded," not "does this bug class recur") surfaced something a correct, careful audit did not.
+
+It does mean the Aug 3 conclusion *"Non-MLB sports' already-written drama data — untouched; Task 1 found
+no equivalent bug"* is now only true of that specific bug class, and soccer data is in fact affected by
+another.
 
 ---
 
