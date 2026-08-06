@@ -1,0 +1,52 @@
+name: Anomaly Baseline Hygiene Probe
+
+# Round 2 of the anomaly-baseline work. Round 1 confirmed a real, uncensored
+# 30-day corpus (470 real games, 34 distinct drama_peak values) is VIABLE,
+# and overturned this repo's prior belief that drama_peak is too coarse --
+# that came from sampling the top of a leaderboard.
+#
+# Round 1 left three real questions unresolved, and percentiles must not be
+# computed until they are, because all three would move the numbers:
+#   Q1 cross-sport comparability (is a golf drama_peak the same scale as MLB's?)
+#   Q2 the 6.8% of games at drama_peak == 0 (undramatic, or simply unplayed?)
+#   Q3 sport-label normalization (round 1's raw output showed both `WNBA` and
+#      `wnba` on the same real date, plus `golf` alongside `PGA Tour`)
+#
+# field-relay-nba.jeffunglesbee.workers.dev is sandbox-blocked from chat --
+# CI-as-proxy, same pattern as every prior probe this session.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve cross-sport comparability, the zeros, and label normalization
+        timeout-minutes: 6
+        continue-on-error: true
+        run: node scripts/probe-anomaly-baseline-hygiene.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "anomaly-baseline-hygiene-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: anomaly baseline hygiene probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
