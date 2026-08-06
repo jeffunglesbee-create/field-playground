@@ -1,0 +1,62 @@
+name: Live WP Ticker Real Savant Path Probe
+
+# Follow-up on the second real, disclosed gap in the demo/infra sweep
+# (docs/outbox/cc-session-2026-08-05-demo-infra-sweep.md): WpSourceBadge's
+# real network-backed data path (via its real host, LiveWpTicker) was
+# sandbox-network-gated in chat -- statsapi.mlb.com and baseballsavant.mlb.com
+# are unreachable from there. This exercises the real end-to-end path
+# against the actual real hosts, honestly reporting whichever real outcome
+# occurs (a live game resolving to a real SAVANT badge, or the disclosed
+# "no live MLB games right now" empty state).
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+
+      - name: Serve the real built app and exercise the real Savant path
+        timeout-minutes: 4
+        continue-on-error: true
+        env:
+          PREVIEW_URL: http://127.0.0.1:4174
+        run: |
+          mkdir -p outbox
+          nohup npx vite preview --port 4174 --strictPort --host 127.0.0.1 > outbox/live-wp-ticker-preview-output.txt 2>&1 &
+          disown
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:4174 > /dev/null; then ok=1; break; fi
+            sleep 1
+          done
+          echo "server_ready=$ok" >> outbox/live-wp-ticker-preview-output.txt
+          cat outbox/live-wp-ticker-preview-output.txt
+          node scripts/probe-live-wp-ticker-real-savant-path.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "live-wp-ticker-real-savant-path-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: live wp ticker real savant path probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1

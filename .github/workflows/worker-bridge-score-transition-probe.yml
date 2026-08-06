@@ -1,0 +1,62 @@
+name: Worker Bridge Score Transition Probe
+
+# Follow-up on a real, disclosed gap in the demo/infra sweep
+# (docs/outbox/cc-session-2026-08-05-demo-infra-sweep.md): WorkerBridgeDemo's
+# real "score" change branch was never observed rendering during the sweep,
+# because the dev mock's scripted transition ladder is keyed to a SHARED
+# request counter that 4 concurrent test batches had already advanced past.
+# This runs Vite in DEV mode (the scripted ladder is dev-mock-only, not
+# network-dependent) in an ISOLATED CI job -- nothing else hits the mock
+# concurrently, so the shared counter reaches the real transition window
+# (requests 5-8) on schedule.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+
+      - name: Serve the real dev server (isolated) and observe the real score-change branch
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          DEV_URL: http://127.0.0.1:5199
+        run: |
+          mkdir -p outbox
+          nohup npx vite --port 5199 --strictPort --host 127.0.0.1 > outbox/worker-bridge-dev-output.txt 2>&1 &
+          disown
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:5199 > /dev/null; then ok=1; break; fi
+            sleep 1
+          done
+          echo "server_ready=$ok" >> outbox/worker-bridge-dev-output.txt
+          cat outbox/worker-bridge-dev-output.txt
+          node scripts/probe-worker-bridge-score-transition.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "worker-bridge-score-transition-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: worker bridge score transition probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
