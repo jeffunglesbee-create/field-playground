@@ -151,6 +151,47 @@ async function profileSoccerKeyEvents(games) {
     const isGoal = /goal/i.test(t)
     log(`    ${t.padEnd(28)} ${String(n).padStart(4)}  ${isGoal ? '<- KEPT today' : '<- DISCARDED today'}`)
   }
+  // DECISIVE CHECK added after run #2. The type distribution showed 18 real
+  // events with scoringPlay===true, but the relay's goal-TEXT filter only
+  // matches 16 of them -- the 2 "Penalty - Scored" events don't contain the
+  // substring "goal". The relay's filter has a second clause though
+  // (abbreviation === 'g'), so whether penalties actually survive depends
+  // entirely on an abbreviation this probe has not yet read. That is the
+  // difference between "a missed enrichment opportunity" and "scored
+  // penalties are silently dropped from soccer's score reconstruction,
+  // corrupting every drama_arc after that penalty." Simulate the relay's
+  // REAL predicate against the REAL events rather than guessing.
+  log('')
+  log('  DECISIVE: relay filter predicate simulated against every real scoringPlay event')
+  log('  (relay keeps an event iff type.text includes "goal" OR type.abbreviation === "g")')
+  log('  text                          abbrev   scoringPlay   relay keeps?')
+  let scoringTotal = 0, scoringKept = 0
+  for (const g of games) {
+    const res = await fetch(`${RELAY}/espn-summary/sports/soccer/${soccerLeagueSlug(g.sport)}/summary?event=${g.eid}`, { headers: { 'User-Agent': UA } })
+    if (!res.ok) { await new Promise(s => setTimeout(s, 300)); continue }
+    const data = await res.json()
+    for (const e of (data.keyEvents || [])) {
+      if (e?.scoringPlay !== true) continue
+      scoringTotal++
+      const txt = (e.type?.text || '').toLowerCase()
+      const abbr = (e.type?.abbreviation || '').toLowerCase()
+      const keeps = txt.includes('goal') || abbr === 'g'
+      if (keeps) scoringKept++
+      log(`  ${String(e.type?.text ?? '?').padEnd(28)} ${String(e.type?.abbreviation ?? '-').padEnd(7)} ${String(e.scoringPlay).padEnd(12)} ${keeps ? 'YES' : '*** NO -- DROPPED ***'}`)
+    }
+    await new Promise(s => setTimeout(s, 400))
+  }
+  log('')
+  log(`  real scoring events: ${scoringTotal} | kept by the relay's real filter: ${scoringKept} | DROPPED: ${scoringTotal - scoringKept}`)
+  if (scoringTotal - scoringKept > 0) {
+    log('  *** REAL CORRECTNESS BUG: scoring events that change the real scoreline are being')
+    log('  *** dropped from soccer score reconstruction. Every drama_arc value computed after')
+    log('  *** such an event is derived from a wrong scoreline. Filtering on scoringPlay===true')
+    log('  *** would be strictly more robust than substring-matching "goal" in a display string.')
+  } else {
+    log('  No scoring events dropped -- the abbreviation clause catches what the text clause misses.')
+  }
+
   log('')
   log(`  real keyEvent fields across ${totalEvents} real events:`)
   log('  field                     present   non-null   true   sample values')
