@@ -316,6 +316,81 @@ console.log('\nE. no finding describes most of the population')
   }
 }
 
+// ---- F. PERMUTATION TEST, OFFLINE ------------------------------------------
+// The null-model probe needs the real corpus and therefore CI. GitHub Actions
+// was degraded ("Failed to resolve action download info: Service Unavailable")
+// for hours, so the fix for the 74.1% over-firing sat unverified against the
+// question that found it.
+//
+// This closes that dependency the same way the rest of this file does: the
+// result is driven by the SHAPE of the per-sport distributions, not by which
+// specific games are in them. So the corpus here is calibrated to the real
+// measured shapes -- mlb n=312/distinct=28, wnba n=73/distinct=7,
+// mls n=51/distinct=7, fifa n=8/distinct=5 (2026-08-06 null-model run) -- and
+// the same shuffle-the-labels test runs against it with no network at all.
+//
+// This is NOT a substitute for the real-corpus run and does not claim to be:
+// real drama_peaks are not drawn from this generator. It answers the narrower
+// question the fix raised -- does per-sport framing still collapse to the
+// shuffled control once a definitionally-50% condition is removed? -- which is
+// a question about structure, and structure is what is reproduced here.
+console.log('\nF. permutation test (offline, calibrated to real per-sport shapes)')
+{
+  const REAL_SHAPES = [
+    { sport: 'mlb', n: 312, distinct: 28 },
+    { sport: 'wnba', n: 73, distinct: 7 },
+    { sport: 'mls', n: 51, distinct: 7 },
+    { sport: 'fifa world cup', n: 8, distinct: 5 },
+  ]
+  const corpus = REAL_SHAPES.flatMap((sh, i) => makeCorpus({ ...sh, seed: 900 + i }))
+
+  const bl = M.buildBaselines(corpus)
+  const slate = M.describeSlate(corpus, bl)
+  const judged = slate.all.filter(r => r.status === 'ok').length
+  const observed = slate.flagged.length
+  const key = g => M.gameKey(g)
+  const realSet = new Set(slate.flagged.map(r => key(r.game)))
+
+  console.log(`  judged ${judged}; flagged ${observed} (${((observed / judged) * 100).toFixed(1)}%)`)
+
+  const TRIALS = 50
+  const labels = corpus.map(g => g.sport)
+  const counts = [], overlaps = []
+  for (let t = 0; t < TRIALS; t++) {
+    const r = rng(7000 + t)
+    const perm = labels.slice()
+    for (let i = perm.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [perm[i], perm[j]] = [perm[j], perm[i]] }
+    const sh = corpus.map((g, i) => ({ ...g, sport: perm[i] }))
+    const f = M.describeSlate(sh, M.buildBaselines(sh)).flagged
+    counts.push(f.length)
+    const fs = new Set(f.map(r2 => key(r2.game)))
+    let inter = 0
+    for (const x of realSet) if (fs.has(x)) inter++
+    overlaps.push(realSet.size + fs.size - inter === 0 ? 1 : inter / (realSet.size + fs.size - inter))
+  }
+  const mean = a => a.reduce((x, y) => x + y, 0) / a.length
+  const meanOverlap = mean(overlaps)
+  console.log(`  shuffled flagged: mean ${mean(counts).toFixed(1)};  observed ${observed}`)
+  console.log(`  mean Jaccard(real, shuffled): ${meanOverlap.toFixed(3)}`)
+
+  // The pre-fix run measured 74.1% flagged and 0.770 overlap. The bar here is
+  // the over-firing, which is what the fix targeted and what is checkable
+  // without the real corpus.
+  const rate = observed / judged
+  rate <= 0.5
+    ? pass('F1 over-firing resolved', `${(rate * 100).toFixed(1)}% flagged, was 74.1% pre-fix`)
+    : fail('F1 over-firing resolved', `${(rate * 100).toFixed(1)}% flagged -- still describes most of the population`)
+
+  // Overlap is REPORTED, not asserted. Whether per-sport framing beats the
+  // shuffled control is a question about real data, and a synthetic generator
+  // cannot settle it. Recording the number keeps the question visible instead
+  // of letting a green suite imply it was answered.
+  console.log(`  info  F2 per-sport vs shuffled overlap = ${meanOverlap.toFixed(3)}` +
+    (meanOverlap > 0.6
+      ? '\n        still high on calibrated-synthetic data -- the real-corpus null model remains UNANSWERED and worth running.'
+      : '\n        materially lower than the 0.770 measured pre-fix; the real-corpus run should confirm.'))
+}
+
 console.log('')
 if (failures) { console.error(`${failures} invariant(s) FAILED`); process.exit(1) }
 console.log('All anomaly invariants hold.')
