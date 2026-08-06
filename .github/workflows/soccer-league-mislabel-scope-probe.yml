@@ -1,0 +1,64 @@
+name: Soccer League Mislabel Scope Probe
+
+# Scopes the soccer sport-label defect surfaced while scoping the penalty bug:
+# archived rows for plainly-MLS fixtures carry sport = "FIFA World Cup" and a
+# game_id prefixed "FIFA World Cup 2026_".
+#
+# Root cause, read in field-relay-nba/src/index.js at three archive write sites:
+#   sport: gm.sport === 'soccer' ? 'FIFA World Cup 2026' : gm.league,
+# gm.sport is ESPN's TOP-LEVEL sport ('soccer'), not the competition -- so the
+# ternary relabels every soccer league as the World Cup, overriding gm.league,
+# which already holds the correct label from the LEAGUES table.
+#
+# The defect is therefore not MLS-specific: all six non-WC soccer leagues are
+# exposed. This measures which ones actually have archived rows and how many,
+# resolving each row's TRUE competition from ESPN by event id rather than
+# inferring it from club names -- inference is what produced the bug.
+#
+# Also serves as the regression detector: once the ternary is dropped, new rows
+# should stop mismatching.
+
+on:
+  schedule:
+    - cron: '07 12 * * 1'   # Mondays 12:07 UTC, after the other soccer probes
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Days of history to sweep'
+        required: false
+        default: '30'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Compare stored sport labels against ESPN's real competition
+        timeout-minutes: 15
+        continue-on-error: true
+        env:
+          PROBE_DAYS: ${{ github.event.inputs.days || '30' }}
+        run: node scripts/probe-soccer-league-mislabel-scope.mjs
+
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "soccer-league-mislabel-scope-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: soccer league mislabel scope probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
