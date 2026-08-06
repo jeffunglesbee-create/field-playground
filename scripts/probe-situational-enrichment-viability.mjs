@@ -106,6 +106,60 @@ function profilePlays(plays) {
   return keyStats
 }
 
+// CORRECTED 2026-08-06 after run #1. Run #1 profiled `data.plays` for BOTH
+// sports and reported "0 real plays" for all 4 real MLS games -- which was a
+// bug in THIS PROBE, not a finding about the data. The relay's own
+// fetchSoccerHistoricalStates() does not read `data.plays` at all; it reads
+// `data.keyEvents`, filtered down to goal-type events only. So soccer had to
+// be profiled against keyEvents to mean anything. This also sharpens the real
+// question for soccer: the fetcher deliberately keeps ONLY goals and discards
+// every other key event -- cards, penalties, substitutions -- so the type
+// distribution below is the actual inventory of what is being thrown away.
+async function profileSoccerKeyEvents(games) {
+  log('')
+  log('=== SOCCER — real ESPN keyEvents (relay keeps ONLY goal-type events) ===')
+  if (!games.length) { log('no real soccer games with an espn_event_id found -- cannot profile.'); return }
+  let totalEvents = 0
+  const merged = new Map()
+  const typeCounts = new Map()
+  for (const g of games) {
+    const res = await fetch(`${RELAY}/espn-summary/sports/soccer/${soccerLeagueSlug(g.sport)}/summary?event=${g.eid}`, { headers: { 'User-Agent': UA } })
+    if (!res.ok) { log(`  ${g.date} ${g.away} @ ${g.home} (event ${g.eid}) -> HTTP ${res.status}`); await new Promise(s => setTimeout(s, 300)); continue }
+    const data = await res.json()
+    const keyEvents = data.keyEvents || []
+    const plays = data.plays || []
+    log(`  ${g.date} ${g.away} @ ${g.home} (event ${g.eid}) -> ${keyEvents.length} real keyEvents  (plays: ${plays.length}, confirming the relay's choice of keyEvents)`)
+    totalEvents += keyEvents.length
+    for (const e of keyEvents) {
+      const t = e?.type?.text ?? e?.type?.abbreviation ?? '(no type)'
+      typeCounts.set(t, (typeCounts.get(t) ?? 0) + 1)
+    }
+    const stats = profilePlays(keyEvents)
+    for (const [k, e] of stats.entries()) {
+      if (!merged.has(k)) merged.set(k, { present: 0, nonNull: 0, truthy: 0, samples: new Set() })
+      const m = merged.get(k)
+      m.present += e.present; m.nonNull += e.nonNull; m.truthy += e.truthy
+      for (const s of e.samples) if (m.samples.size < 5) m.samples.add(s)
+    }
+    await new Promise(s => setTimeout(s, 400))
+  }
+  if (!totalEvents) { log('  no real keyEvents returned -- nothing to profile.'); return }
+  log('')
+  log(`  real keyEvent TYPE distribution across ${totalEvents} real events -- this is the`)
+  log('  inventory of what the goal-only filter currently discards:')
+  for (const [t, n] of [...typeCounts.entries()].sort((a, b) => b[1] - a[1])) {
+    const isGoal = /goal/i.test(t)
+    log(`    ${t.padEnd(28)} ${String(n).padStart(4)}  ${isGoal ? '<- KEPT today' : '<- DISCARDED today'}`)
+  }
+  log('')
+  log(`  real keyEvent fields across ${totalEvents} real events:`)
+  log('  field                     present   non-null   true   sample values')
+  for (const [k, e] of [...merged.entries()].sort((a, b) => b[1].nonNull - a[1].nonNull)) {
+    const fill = ((e.nonNull / totalEvents) * 100).toFixed(0) + '%'
+    log(`  ${k.padEnd(24)} ${String(e.present).padStart(6)}  ${String(e.nonNull).padStart(6)} (${fill.padStart(4)}) ${String(e.truthy || '-').padStart(5)}   ${[...e.samples].join(' | ').slice(0, 70)}`)
+  }
+}
+
 async function profileSport(label, url, games) {
   log('')
   log('=== ' + label + ' ===')
@@ -166,11 +220,7 @@ async function main() {
     g => `${RELAY}/espn-summary/sports/basketball/wnba/summary?event=${g.eid}`,
     found.wnba
   )
-  await profileSport(
-    'SOCCER — real ESPN play objects (red cards / penalties currently ignored entirely)',
-    g => `${RELAY}/espn-summary/sports/soccer/${soccerLeagueSlug(g.sport)}/summary?event=${g.eid}`,
-    found.soccer
-  )
+  await profileSoccerKeyEvents(found.soccer)
 
   log('')
   log('=== VERDICT ===')
