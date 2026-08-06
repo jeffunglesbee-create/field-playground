@@ -1,0 +1,83 @@
+probe_at: 2026-08-06T01:00:03.282Z
+purpose: can a REAL, uncensored baseline distribution be built from /context/date/{date},
+and does drama_peak actually have enough real variance to support percentile scoring?
+base date (today): 2026-08-06
+
+=== A/B/D: CONTIGUOUS 30-DAY WINDOW (what a real baseline would use) ===
+2026-08-06  games= 10  with_drama_peak=  0  sports=MLS
+2026-08-05  games= 12  with_drama_peak=  0  sports=MLS
+2026-08-04  games= 20  with_drama_peak=  0  sports=MLB/WNBA/MLS
+2026-08-03  games= 12  with_drama_peak= 12  sports=MLB/WNBA/golf
+2026-08-02  games= 31  with_drama_peak= 23  sports=MLS/MLB/WNBA/golf/wnba
+2026-08-01  games= 39  with_drama_peak= 32  sports=MLS/MLB/WNBA/FIFA World Cup/golf
+2026-07-31  games= 35  with_drama_peak= 20  sports=MLS/MLB/WNBA/FIFA World Cup/golf
+2026-07-30  games= 15  with_drama_peak= 15  sports=MLB/WNBA/PGA Tour/golf
+2026-07-29  games= 18  with_drama_peak= 18  sports=MLB/WNBA/FIFA World Cup
+2026-07-28  games= 20  with_drama_peak= 19  sports=MLB/WNBA
+2026-07-27  games= 13  with_drama_peak= 12  sports=MLB/golf
+2026-07-26  games= 24  with_drama_peak= 16  sports=MLS/MLB/golf
+2026-07-25  games= 46  with_drama_peak= 31  sports=MLS/MLB/WNBA/FIFA World Cup
+2026-07-24  games= 16  with_drama_peak= 16  sports=MLB/golf
+2026-07-23  games= 17  with_drama_peak=  7  sports=MLS/MLB/PGA Tour/golf
+2026-07-22  games= 51  with_drama_peak= 36  sports=MLS/MLB/WNBA/FIFA World Cup
+2026-07-21  games= 15  with_drama_peak= 13  sports=MLB
+2026-07-20  games= 20  with_drama_peak= 20  sports=MLB/WNBA/golf
+2026-07-19  games= 22  with_drama_peak= 22  sports=MLB/WNBA/FIFA World Cup/golf/wnba
+2026-07-18  games= 20  with_drama_peak= 19  sports=MLB/WNBA/FIFA World Cup/golf
+2026-07-17  games= 21  with_drama_peak= 20  sports=MLB/WNBA/FIFA World Cup/golf
+2026-07-16  games= 10  with_drama_peak=  8  sports=MLB/WNBA/FIFA World Cup/PGA Tour/golf
+2026-07-15  games=  6  with_drama_peak=  6  sports=WNBA/FIFA World Cup/wnba
+2026-07-14  games=  6  with_drama_peak=  4  sports=MLB/WNBA/FIFA World Cup/MLS
+2026-07-13  games=  3  with_drama_peak=  3  sports=WNBA/golf
+2026-07-12  games= 24  with_drama_peak= 20  sports=MLB/WNBA/golf/MLS
+2026-07-11  games= 21  with_drama_peak= 21  sports=MLB/WNBA/FIFA World Cup/golf
+2026-07-10  games= 20  with_drama_peak= 19  sports=MLB/WNBA/FIFA World Cup/golf
+2026-07-09  games= 24  with_drama_peak= 20  sports=MLB/WNBA/FIFA World Cup/PGA Tour/golf/MLS
+2026-07-08  games= 22  with_drama_peak= 18  sports=MLB/WNBA/MLS
+
+=== A: DEPTH SPOT-CHECKS (how far back does real data go?) ===
+-45d  2026-06-22  games=  6  with_drama_peak=  6  sports=WNBA/golf/FIFA World Cup
+-60d  2026-06-07  games=  5  with_drama_peak=  4  sports=MLB/WNBA/AFL/NHL
+-90d  2026-05-08  games=  4  with_drama_peak=  2  sports=AFL/MLS
+-120d  2026-04-08  games=  4  with_drama_peak=  0  sports=MLS
+-180d  2026-02-07  games=  0  with_drama_peak=  0  sports=-
+-365d  2025-08-06  games=  0  with_drama_peak=  0  sports=-
+
+=== C: DISTRIBUTION SHAPE OF drama_peak (the make-or-break question) ===
+total real games with a numeric drama_peak: 470
+DISTINCT drama_peak values: 34
+min=0  p25=57  median=62  p75=70  p90=78  max=100
+
+real histogram (value: count, most common first):
+     52:   73  (15.5%)  ###############################
+     70:   52  (11.1%)  ######################
+     58:   48  (10.2%)  ####################
+     60:   46  (9.8%)  ####################
+     66:   37  (7.9%)  ################
+      0:   32  (6.8%)  ##############
+     62:   30  (6.4%)  #############
+     61:   21  (4.5%)  #########
+     75:   20  (4.3%)  #########
+     65:   13  (2.8%)  ######
+     83:   12  (2.6%)  #####
+     64:   12  (2.6%)  #####
+     68:    8  (1.7%)  ###
+     57:    7  (1.5%)  ###
+     76:    7  (1.5%)  ###
+     78:    6  (1.3%)  ###
+     89:    6  (1.3%)  ###
+     91:    5  (1.1%)  ##
+     55:    4  (0.9%)  ##
+     85:    4  (0.9%)  ##
+  ... and 14 more distinct real values
+
+most common single value accounts for: 15.5% of all real games
+
+=== VERDICT ===
+depth: 30/30 contiguous real dates returned games.
+corpus: 470 real games carrying a real drama_peak.
+shape: 34 distinct real values; most common covers 15.5%.
+
+VIABLE: drama_peak has real, usable variance across an uncensored multi-day corpus.
+Percentile/MAD-based anomaly scoring against this real baseline is safe to build,
+including an honest "nothing above the Nth percentile tonight" null state.
