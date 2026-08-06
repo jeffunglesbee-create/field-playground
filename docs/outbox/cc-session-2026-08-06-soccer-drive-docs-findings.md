@@ -74,39 +74,114 @@ substitutions discarded per 4 games) is a small subset of this much larger, alre
 
 ---
 
-## 3. Long Throw Live Cue (June 4) — an IP constraint on the anomaly feature
+## 3. Long Throw Live Cue (June 4) — an IP constraint, but a much narrower one than first written
 
-Mostly a patent-novelty analysis, but it contains a binding architectural rule that **directly constrains
-the statistical-anomaly work scoped earlier this session.**
+> **CORRECTED 2026-08-06, after being directed to the push/pull addendum.** The section below originally
+> concluded that the anomaly design "conflicts with RUWT" and "needs redesign to boolean/categorical."
+> **That conclusion was wrong**, and it was wrong for a specific, checkable reason: I cited a June 4
+> artifact as binding without checking whether anything superseded it. Something did — a full corrective
+> pass on July 7-8 (commit `01b18e6`). The original text is retained below the line for the record; the
+> corrected reading follows.
 
-FIELD's RUWT patent-defense architecture ("Case C / Combo 4") requires:
+The June 4 doc's design rules ("Case C / Combo 4") are real and quoted accurately:
 
 > - Boolean-gated, **not continuous interest score**
 > - All trigger conditions must fire simultaneously (binary gate, not weighted continuous combination)
 > - Output is a **CATEGORICAL** cue, **not an interest-level number**
 > - Notification is event-triggered, **not threshold-on-continuous-interest-level**
 
-The RUWT family (US 9,421,446 / 9,744,427 / 10,328,326) is *"Rating system for identifying exciting
-sporting events and notifying users"* -- a game-level interest score plus threshold notification.
+**But those rules govern a live push cue, and I generalized them to a pull-rendered panel.** Long Throw
+Live Cue is a notification. Every clause above is about *what fires an alert*. The anomaly work is a
+surface the user opens and reads.
 
-**This is a problem for the anomaly design as I scoped it.** I proposed percentile/MAD-based scoring
-against a real baseline, surfacing games above an Nth-percentile threshold. That is close to the exact
-shape the RUWT claims describe: a continuous per-game score plus a threshold trigger. It is a closer fit
-to the claims than the existing Drama Dial architecture, which was deliberately built boolean-gated to
-avoid them.
+### What the July 7-8 corrective pass actually established
 
-This also explains, consistently, the `drama_peak` immutability guard from the previous doc -- rooted in
-`'326` claim 1 triggering on *"the rating...has changed."* There is one coherent IP posture across this
-project, and my proposed design cuts against it.
+From *FIELD Session — 2026-07-07 to 2026-07-08*, Arc 1:
 
-**Redesign implied, not merely a caveat.** An RUWT-safe anomaly feature should surface *categorical,
-boolean-gated* findings ("this game's drama and WP movement disagree" -- a named condition, either true or
-false) rather than a continuous "anomaly score: 87th percentile" with a notification threshold. The
-percentile machinery can still exist internally as the *derivation*; what must not ship is a continuous
-per-game interest number with a threshold alert as the user-facing product.
+> "Core finding: **push vs. pull is the actual patent claim boundary, not client/server location.** A
+> relay computing and serving a composite score on pull supplies no more of the claimed invention than
+> an ordinary scoreboard API."
+>
+> "Full corrective pass (commit `01b18e6`) found FIVE real contradictions across Rules A/B/C/E, Defense 2,
+> PERMITTED #1, PROHIBITED #1-2, and Audit Step 1 — not the three originally assumed."
+>
+> "**The separate raw-number-display prohibition (PROHIBITED #3-4, Rule D) was independently confirmed
+> untouched and still fully enforced throughout** — this is a genuinely separate, still-valid concern
+> from the push/pull question."
 
-I am flagging this rather than deciding it. It is a legal/IP judgement, and the existing precedent is
-clear enough that building the continuous version first and asking later would be the wrong order.
+So a continuous composite, computed and served on pull, is **explicitly permitted**. What survives is a
+narrower and entirely different constraint: what may be *rendered*.
+
+### What Rule D / PROHIBITED #3-4 actually prohibit
+
+Read directly from `docs/ADR-002-CONTEXT.md` via the audit that applies it
+(`ADR-002 Compliance Audit v2`, and the live citations in `field-relay-nba/src/index.js:963,4503` and
+`docs/CC-CMD-2026-07-07-fields-pick-tiered-ranking.md:24-27`):
+
+**PROHIBITED #3** — *"The number itself IS the 'interest level' the patent claims. Even if computed
+client-side, displaying `'75'` or `'85% 🔥'` to the user creates evidence of a system that determines and
+presents interest levels."*
+
+**PROHIBITED #4** — *"System-determined recommendation without user personalization."*
+
+**Rule D** governs push only: a *"minimal standalone boolean over raw game state... No score, no sum, no
+aggregated-value threshold."*
+
+And the framework grades on a five-tier scale, not a binary:
+
+| Tier | Definition |
+|---|---|
+| CRITICAL | Raw composite number rendered to user |
+| HIGH | Composite + **hardcoded** threshold + action, no Drama Dial |
+| MODERATE | Composite + **user-controlled** threshold (Defense 1 — mitigated) |
+| LOW | Composite used for internal logic, no user-visible output |
+| CLEAN | Named binary, factual data, **post-game (amnesty zone)** |
+
+Two further entries in that document's own verified-clean list bear directly here:
+
+- **PERMITTED #4 — win probability display is explicitly permitted**, *"statistical, not interest."*
+- **Defense 4 — post-game briefs are in the amnesty zone.**
+
+### The corrected constraint set for the anomaly build
+
+Nothing needs redesigning. Four rules apply, and the design already satisfies or can trivially satisfy
+all of them:
+
+1. **Pull-only.** No autonomous alert. field-playground has **no push surface at all** — grepped: zero
+   hits for `pushManager` / `showNotification` / `serviceWorker` in `src/` or `public/`. Satisfied by
+   construction, not by discipline.
+2. **Never render the raw number.** Percentiles, MAD, z-scores may all exist internally; the UI emits a
+   named tier. This is the exact shape `computeNightStars` already ships (`starScore` internal-only,
+   `stars` 1-5 external) — the July 14 CC-CMD names it as the pattern to preserve.
+3. **No hardcoded threshold driving a watch verdict.** A fixed `>= p90 → "must watch"` is the HIGH
+   pattern (PROHIBITED #4). Either expose the threshold as a user control (Defense 1 drops it to
+   MODERATE/mitigated) or emit a named condition. The latter is better product anyway.
+4. **The retrospective framing is in the amnesty zone.** "Last completed slate" is post-game factual
+   data — CLEAN. Only the "tonight live" framing carries real constraint, and it carries only #2 and #3.
+
+**And the specific framing I proposed is the favored one, not the disfavored one.** "This game's drama
+and WP movement disagree" is a named condition over win-probability data — PERMITTED #4 material,
+rendered as a category. The `drama_peak` immutability guard is still real and still governs any
+historical rewrite; that part of the original section stands.
+
+<details>
+<summary>Original (superseded) text of this section, retained for the record</summary>
+
+> **This is a problem for the anomaly design as I scoped it.** I proposed percentile/MAD-based scoring
+> against a real baseline, surfacing games above an Nth-percentile threshold. That is close to the exact
+> shape the RUWT claims describe: a continuous per-game score plus a threshold trigger. It is a closer
+> fit to the claims than the existing Drama Dial architecture, which was deliberately built
+> boolean-gated to avoid them.
+>
+> **Redesign implied, not merely a caveat.** An RUWT-safe anomaly feature should surface *categorical,
+> boolean-gated* findings rather than a continuous "anomaly score: 87th percentile" with a notification
+> threshold.
+
+The error: treating a single-feature push-cue design doc as a project-wide architectural rule, and not
+checking for a superseding artifact before calling something binding. The corrective pass was three
+weeks newer and directly on point.
+
+</details>
 
 ---
 
@@ -119,20 +194,33 @@ clear enough that building the continuous version first and asking later would b
 | Fix via BSD `/incidents/` (`home_score`/`away_score` per incident) | **Preferred** -- eliminates the bug class |
 | Historical correction | Blocked by immutability guard; sanctioned reset→refill precedent exists (537 MLB rows) |
 | Soccer drama coarseness (7 distinct / 59 games) | Root cause documented June 19: event-aware, not state-aware |
-| Anomaly feature as scoped (continuous percentile + threshold) | **Conflicts with RUWT patent-defense architecture** -- needs redesign to boolean/categorical |
+| Anomaly feature as scoped (continuous percentile + threshold) | **CORRECTED** -- no redesign needed. Pull-only composite is explicitly permitted (July 7-8 pass). Constraints are: render a named tier not the number (PROHIBITED #3), no hardcoded threshold→verdict (PROHIBITED #4). Retrospective framing is post-game amnesty (CLEAN). |
 | ESPN `keyEvents` `redCard`/`yellowCard` fields | Documented but **absent from the live response** -- doc partly stale |
 
 ---
 
 ## Confidence gate
 
-**96/100.** All three docs read in full, and every claim above is either quoted from them or measured
-directly by this session's probes against real data. The doc-vs-reality discrepancy on
-`redCard`/`yellowCard` was caught precisely because the probe measured the live shape instead of trusting
-the doc. The 4-point deduction: BSD `/incidents/` field shape is taken from the June 26 doc and has **not**
-been re-probed live this session (the same staleness that bit the ESPN field list could apply to it), and
-the RUWT/IP reading is my interpretation of the project's own stated architecture, not legal advice --
-a human should confirm the constraint before any redesign is committed to.
+**Originally 96/100 — the IP section deserved far less, and the confidence gate did not catch it.**
+
+The §3 conclusion was **wrong**, and this doc shipped it at high confidence. The failure was not a
+misreading of the June 4 doc (it was quoted correctly); it was declaring a single-feature push-cue design
+spec to be a project-wide architectural rule, then not checking whether anything superseded it. A
+three-week-newer corrective pass inverted the conclusion. The 4-point deduction I did take named the
+right *category* of doubt ("my interpretation of the project's own stated architecture, not legal
+advice") but priced it far too cheaply, and it did not name the actual risk: **staleness**. That is
+doubly avoidable given this same doc flagged the ESPN `redCard` field list as stale two sections earlier
+— I applied a freshness check to a data shape and not to a governing rule.
+
+**Revised: 93/100 on the doc as a whole; §3 now 96/100 on its own.** The corrected constraint set is
+quoted from four independent artifacts that agree with each other (the July 7-8 session summary, the
+ADR-002 audit v2 applying `ADR-002-CONTEXT.md`, two live source citations in
+`field-relay-nba/src/index.js`, and two CC-CMDs), and the pull-only claim for field-playground is
+measured, not assumed (zero push-surface grep hits). Remaining deduction: `ADR-002-CONTEXT.md` itself is
+not present in either repo visible here — every quotation of PROHIBITED #3-4 and the severity tiers is
+second-hand through documents that cite it, consistently but indirectly. Reading the primary source would
+close that. Separately, BSD `/incidents/` field shape is still taken from the June 26 doc and has not
+been re-probed live, and none of this is legal advice.
 
 ---
 
