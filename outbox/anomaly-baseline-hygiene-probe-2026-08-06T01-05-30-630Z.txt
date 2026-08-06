@@ -1,0 +1,71 @@
+probe_at: 2026-08-06T01:05:30.631Z
+purpose: resolve the 3 real hygiene questions blocking percentile computation --
+cross-sport comparability, the drama_peak==0 population, and sport-label normalization.
+base date: 2026-08-06, window: 30 real days
+
+real games fetched: 613 | carrying a real numeric drama_peak: 470
+
+=== Q3: SPORT-LABEL NORMALIZATION ===
+every RAW sport label seen, with real game counts:
+  "MLB"                   334
+  "MLS"                   118
+  "WNBA"                   69
+  "FIFA World Cup"         60
+  "golf"                   20
+  "wnba"                    6
+  "PGA Tour"                6
+
+case-insensitive collisions (same real sport under >1 label): 1
+  "wnba" <- "WNBA" + "wnba"
+
+NOTE: `golf` vs `PGA Tour` would NOT be caught by case-folding -- reported separately
+below so a human decides whether they are the same real sport, rather than this script
+guessing and silently merging two real, possibly-distinct populations.
+  golf-family label: "golf" -> 20 real games
+  golf-family label: "PGA Tour" -> 6 real games
+
+=== Q1: CROSS-SPORT COMPARABILITY (case-folded buckets) ===
+sport                    n  distinct  min  p25  med  p75  p90  max
+mlb                   312        28    0   58   65   70   83  100
+wnba                   73         7   52   52   61   62   70   74
+fifa world cup         59         7   52   52   57   63   70   78
+golf                   20         1    0    0    0    0    0    0
+pga tour                6         1    0    0    0    0    0    0
+
+sports with n>=20 (large enough to compare): mlb, wnba, fifa world cup, golf
+spread between their real medians: 65 points
+
+=== Q2: THE drama_peak == 0 POPULATION ===
+real games with drama_peak exactly 0: 32 (6.8% of scored)
+
+played-state breakdown of the ZERO population:
+  final                        27  (84.4%)
+  in-progress/unfinalized       5  (15.6%)
+
+played-state breakdown of the NON-ZERO population (control group):
+  final                       434  (99.1%)
+  in-progress/unfinalized       4  (0.9%)
+
+sample of up to 12 real zero-peak games (raw, for inspection):
+  2026-08-03  golf             R4 @ Rocket Classic  scores=null--18  finalized=yes
+  2026-08-02  golf             R3 @ Rocket Classic  scores=null--15  finalized=yes
+  2026-08-02  golf             R4 @ Rocket Classic  scores=null--18  finalized=yes
+  2026-08-01  golf             R3 @ Rocket Classic  scores=null--15  finalized=yes
+  2026-07-31  golf             R2 @ Rocket Classic  scores=null--10  finalized=yes
+  2026-07-30  PGA Tour         ? @ ?  scores=-7--9  finalized=yes
+  2026-07-30  golf             R1 @ Rocket Classic  scores=null--9  finalized=yes
+  2026-07-29  MLB              Braves @ Mets  scores=1-0  finalized=yes
+  2026-07-28  MLB              Guardians @ Reds  scores=0-2  finalized=yes
+  2026-07-27  golf             R4 @ 3M Open  scores=null--25  finalized=yes
+  2026-07-26  golf             R4 @ 3M Open  scores=null--25  finalized=yes
+  2026-07-24  golf             R2 @ 3M Open  scores=null--11  finalized=yes
+
+=== IMPACT ON REAL PERCENTILES ===
+WITH zeros    : {"n":470,"distinct":34,"min":0,"p25":57,"median":62,"p75":70,"p90":78,"max":100}
+WITHOUT zeros : {"n":438,"distinct":33,"min":52,"p25":58,"median":62,"p75":70,"p90":78,"max":100}
+median shift: 62 -> 62   p90 shift: 78 -> 78
+
+=== VERDICT ===
+Q3 (labels): REAL PROBLEM -- 1 case-collision(s) found; per-sport buckets MUST case-fold or they fragment.
+Q1 (cross-sport): PER-SPORT BASELINES REQUIRED -- real medians differ by 65 points across sports with n>=20. A pooled baseline would misrank whole sports by scale mismatch.
+Q2 (zeros): KEEP THEM -- zero-peak games do appear genuinely played; 0 is a real low score, not a missing-data marker.
