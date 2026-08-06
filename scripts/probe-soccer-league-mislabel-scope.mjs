@@ -240,6 +240,58 @@ async function main() {
   log('    WC26 config key, so non-WC rows inherit WC26 configuration.')
   log('  - Users see the wrong competition name on real fixtures.')
   log('')
+  // ---- Emit a ready-to-review migration, with the real ids ----
+  // The correction is scoped by espn_event_id, which every mislabeled row
+  // carries, so it targets exactly the measured rows -- no LIKE on the label,
+  // no pattern matching, nothing that could sweep in a real World Cup game.
+  //
+  // `sport` ONLY. game_id is deliberately left alone: briefs.game_id joins
+  // games.id in four places in analytics-engine.js (lines 999, 1005, 1411,
+  // 1417), so rewriting the id prefix would silently drop those joins for any
+  // brief already referencing these rows. The prefix is legacy cosmetics; the
+  // column is what drives bucketing, soccerLeagueSlug(), the analytics config
+  // key, and display.
+  const sqlPath = outPath.replace(/\.txt$/, '.sql')
+  const byLeague = new Map()
+  for (const r of mismatched) {
+    if (!byLeague.has(r.expected)) byLeague.set(r.expected, [])
+    byLeague.get(r.expected).push(r)
+  }
+  const sql = []
+  sql.push('-- Soccer sport-label correction, generated from a real measured run.')
+  sql.push('-- Source: ' + outPath)
+  sql.push('-- Generated: ' + new Date().toISOString())
+  sql.push('-- Truth: ESPN header.league.name, resolved per espn_event_id. Not inferred.')
+  sql.push('--')
+  sql.push('-- Corrects the `sport` COLUMN ONLY. Does NOT touch game_id: briefs.game_id')
+  sql.push('-- joins games.id in analytics-engine.js:999/1005/1411/1417, so rewriting the')
+  sql.push('-- id prefix would silently break those joins.')
+  sql.push('-- Not a drama_peak write -- the immutability guard is not involved.')
+  sql.push('')
+  sql.push('-- BEFORE-STATE (run first, keep the output):')
+  const allIds = mismatched.map(r => `'${String(r.g.espn_event_id).replace(/'/g, "''")}'`)
+  for (const table of ['regular_season_games', 'postseason_games']) {
+    sql.push(`SELECT '${table}' AS tbl, espn_event_id, sport, id, home, away, date`)
+    sql.push(`  FROM ${table} WHERE espn_event_id IN (${allIds.join(', ')});`)
+  }
+  sql.push('')
+  for (const [expected, rows] of byLeague) {
+    const ids = rows.map(r => `'${String(r.g.espn_event_id).replace(/'/g, "''")}'`)
+    sql.push(`-- ${rows.length} rows whose real competition is ${expected}`)
+    for (const table of ['regular_season_games', 'postseason_games']) {
+      sql.push(`UPDATE ${table} SET sport = '${expected.replace(/'/g, "''")}'`)
+      sql.push(`  WHERE espn_event_id IN (${ids.join(', ')});`)
+    }
+    sql.push('')
+  }
+  sql.push('-- AFTER-STATE (re-run the before-state SELECTs and diff them).')
+  sql.push('-- Then re-run this probe: mismatched should drop to 0 for the corrected rows.')
+  try {
+    writeFileSync(sqlPath, sql.join('\n') + '\n')
+    log(`Migration written: ${sqlPath}  (${mismatched.length} rows, sport column only)`)
+    log('')
+  } catch (e) { log('could not write migration: ' + String(e?.message || e)) }
+
   log('The code fix is one expression at three sites: `gm.league` already holds the correct')
   log('label from the LEAGUES table, so the ternary that overrides it should simply be')
   log('dropped. NOT applied by this probe -- it lives in field-relay-nba, where a push to')
