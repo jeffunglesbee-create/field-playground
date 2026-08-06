@@ -98,6 +98,48 @@ independently reviewed and verified sound directly from the diff rather than tak
 
 ---
 
+## Follow-up (2026-08-06): CI-as-proxy on the two disclosed unreached branches
+
+"Use GitHub Actions runner to follow up on those branches." Two real CI probes, one per gap:
+
+**`scripts/probe-live-wp-ticker-real-savant-path.mjs`** -- real production build, real `vite preview`,
+real network to `statsapi.mlb.com`/`baseballsavant.mlb.com` (sandbox-blocked from chat, reachable from
+CI). **Result: honest empty state, not the SAVANT badge.** "No live MLB games right now" -- confirmed
+network-healthy (zero fetch errors, zero page errors, no stuck loading state), but no real MLB game
+happened to be live at the moment this ran, so the SAVANT-badge branch itself still wasn't directly
+observed. This is a real-world timing fact this probe cannot control, not a code defect -- the honest
+outcome either way was the point, and the network path is now confirmed reachable, which the original
+sweep could not check at all. Re-running during real live MLB hours is the only way to see the badge
+itself render.
+
+**`scripts/probe-worker-bridge-score-transition.mjs`** -- fresh, isolated `vite` dev server (nothing
+else polling `/context/date`), watched for up to 150s (10x the mock's 15s poll interval) as
+WorkerBridgeDemo's own poll counter climbed to 13. **Result: still no "score" change row observed, even
+in isolation.** This does NOT confirm the sweep's original hypothesis (shared-counter contamination from
+4 concurrent test batches) -- it rules out a large part of it, since a single isolated session had the
+same real problem. Read `src/workers/reconcileWorker.js` directly: its score-diff logic is correct on
+inspection (compares `home_score`/`away_score` by matching real game `id`). The likely real explanation,
+not yet confirmed: `vite.config.js`'s scripted transition ladder is keyed to a single shared
+`contextRequestCount` closure variable incremented by ANY `/context/date` request, and the real dev
+startup burst (3 near-simultaneous requests at page mount, per that file's own comment) plus however many
+real polls elapse before WorkerBridgeDemo's own `seeded` flag consumes its first baseline poll could
+plausibly land past the real request-5-to-8 transition window before WorkerBridgeDemo's own diffing ever
+starts comparing two real snapshots that straddle it. **Not fixed -- flagged honestly as still open,**
+since confirming that exact mechanism needs added diagnostics (e.g., surfacing the raw request count),
+not a guess dressed up as a fix.
+
+---
+
+## Confidence gate (updated)
+
+**95/100.** The LiveWpTicker/WpSourceBadge gap is now confirmed network-healthy via a real CI run against
+the real hosts, even though the specific SAVANT-badge branch still awaits a real live game to observe --
+a real-world timing constraint, disclosed rather than hidden. The WorkerBridgeDemo gap is NOT closed: the
+follow-up CI run surfaced a real, more specific puzzle (still unobserved even in isolation) rather than
+confirming the original theory, and is reported as genuinely open rather than claimed fixed.
+
+---
+
 ## Files changed
 
 | Path | Status |
@@ -108,4 +150,7 @@ independently reviewed and verified sound directly from the diff rather than tak
 | `src/components/ScoreTicker/index.jsx` | modified -- animationstart event bubbling |
 | `src/components/Toast/Toast.module.css` | modified -- missing progress bar CSS |
 | `src/components/UndoStackDemo/index.jsx` | modified -- off-by-one log message |
+| `scripts/probe-worker-bridge-score-transition.mjs`, `.github/workflows/worker-bridge-score-transition-probe.yml` | new -- follow-up probe, result: still open |
+| `scripts/probe-live-wp-ticker-real-savant-path.mjs`, `.github/workflows/live-wp-ticker-real-savant-path-probe.yml` | new -- follow-up probe, result: network-healthy, badge branch awaits a real live game |
+| `outbox/worker-bridge-score-transition-probe-2026-08-06T00-01-49-199Z.txt`, `outbox/live-wp-ticker-real-savant-path-probe-2026-08-06T00-02-06-718Z.txt` | new -- real CI results |
 | `docs/outbox/cc-session-2026-08-05-demo-infra-sweep.md` | this doc -- updated with real results |
