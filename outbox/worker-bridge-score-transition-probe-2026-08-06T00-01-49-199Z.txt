@@ -1,0 +1,24 @@
+probe_at: 2026-08-06T00:01:49.199Z
+purpose: observe WorkerBridgeDemo's real "score" change branch in an ISOLATED session
+(nothing else polling /context/date), long enough to cross the dev mock's scripted
+transition window (requests 5-8, ~15s apart after the initial mount burst).
+
+poll 0: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 2: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 4: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 6: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 8: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 9: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 10: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 11: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 12: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+poll 13: WORKER BRIDGE reconcile diff computed off-thread Each poll cycle sends the previous and current game snapshots to a real Web Worker. The diff comes back via postMessage into a plain createSignal — pol
+
+=== RESULT ===
+distinct poll counts observed: 0, 2, 4, 6, 8, 9, 10, 11, 12, 13
+page errors: []
+real "score" change row observed: no
+
+=== VERDICT ===
+NOT CONFIRMED: no score-change row appeared within the observation window even in
+isolation -- this would need real further investigation, not dismissal as contamination.
