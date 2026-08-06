@@ -1,0 +1,63 @@
+probe_at: 2026-08-06T13:29:29.534Z
+purpose: scope the soccer sport-label defect -- how many archived rows, across which
+REAL competitions, are stored under the wrong label by the relay's three archive
+write sites. Truth comes from ESPN per event id, never inferred from team names.
+window: 30 real days back from 2026-08-06
+
+days fetched OK: 30 / 30
+
+=== POPULATION ===
+real games in window:            614
+real soccer-ish archived rows:   179
+  ...with an espn_event_id:      60   (only these can be checked against ESPN)
+  ...without one:                119   <- unverifiable, reported not hidden
+
+archived `sport` labels as stored:
+  "MLS": 119
+  "FIFA World Cup": 60
+
+=== PER-ROW: stored label vs ESPN's real competition ===
+  resolved: 60   unresolved: 0
+  ESPN payload path used to resolve league: header.league.name x60
+
+=== MISLABELED ROWS, grouped by the competition they REALLY are ===
+  REAL competition: MLS  --  52 rows stored under the wrong label
+      stored as "FIFA World Cup": 52
+      2026-08-01  New England @ CF Montréal  event=761697
+          game_id=FIFA World Cup 2026_2026-08-01_cfmontral_newengland
+      2026-08-01  Nashville @ D.C. United  event=761699
+          game_id=FIFA World Cup 2026_2026-08-01_dcunited_nashville
+      2026-08-01  San Jose @ Cincinnati  event=761700
+          game_id=FIFA World Cup 2026_2026-08-01_cincinnati_sanjose
+      2026-08-01  Columbus @ Miami  event=761701
+          game_id=FIFA World Cup 2026_2026-08-01_miami_columbus
+      2026-08-01  Atlanta @ Philadelphia  event=761702
+          game_id=FIFA World Cup 2026_2026-08-01_philadelphia_atlanta
+      2026-08-01  Orlando @ Red Bull NY  event=761696
+          game_id=FIFA World Cup 2026_2026-08-01_redbullny_orlando
+      ...and 46 more
+
+=== VERDICT ===
+MISLABEL CONFIRMED AND SCOPED: 52 of 60 resolved rows (86.7%) are stored
+under a competition label that is not the competition they belong to.
+
+Consequences that are NOT cosmetic:
+  - Per-sport bucketing (anomaly baselines, the 2026-08-06 hygiene distributions) pools
+    these rows into the wrong sport. The "FIFA World Cup" per-sport stats reported
+    earlier this session are computed over a bucket that is partly other leagues.
+  - soccerLeagueSlug() in drama-backfill.mjs derives an ESPN league slug FROM this
+    stored label, so a wrong label sends historical fetches at the wrong competition.
+  - analytics-engine.js maps both "FIFA World Cup" and "FIFA World Cup 2026" onto the
+    WC26 config key, so non-WC rows inherit WC26 configuration.
+  - Users see the wrong competition name on real fixtures.
+
+Migration written: outbox/soccer-league-mislabel-scope-2026-08-06T13-29-29-533Z.sql  (52 rows, sport column only)
+
+The code fix is one expression at three sites: `gm.league` already holds the correct
+label from the LEAGUES table, so the ternary that overrides it should simply be
+dropped. NOT applied by this probe -- it lives in field-relay-nba, where a push to
+src/** auto-deploys, and changing the label changes /archive/game's id construction
+(id = `${sport}_${date}_...`). Rows already archived dedup on espn_event_id and are
+safe, but a game SEEDED pre-game under the old id and finalized after the deploy
+would write a second row rather than update the first. Human go/no-go, with a
+deploy window chosen between slates rather than during one.
