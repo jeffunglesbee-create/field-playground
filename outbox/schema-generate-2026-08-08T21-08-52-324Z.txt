@@ -1,0 +1,39 @@
+mode: GENERATE — build schemas from measured live data
+required = >=98% NON-NULL WITHIN ITS OWN VARIANT, never "common overall"
+
+=== context-date-games  (/context/date/{date}) ===
+  real records collected: 270
+  variants: 6
+    mlb                    n= 108  required=11  optional=8  rare=4
+    mls                    n=  96  required=7  optional=15  rare=7
+    efl cup                n=  32  required=15  optional=0  rare=8
+    wnba                   n=  25  required=9  optional=10  rare=4
+    golf                   n=   7  required=12  optional=2  rare=9
+    pga tour               n=   2  required=8  optional=5  rare=10
+  FIELDS A MARGINAL READING WOULD HAVE MISCLASSIFIED:
+    streams — required in "pga tour", but only 48% overall
+    note — required in "golf", but only 3% overall
+    A schema built on marginal rates would call these optional. They are not.
+  written: src/data/schemas/context-date-games.json
+
+=== bsd-incidents  (/bsd/events/{id}/incidents) ===
+  real records collected: 117
+  variants: 5
+    substitution           n=  55  required=7  optional=1  rare=0
+    card                   n=  26  required=6  optional=2  rare=0
+    goal                   n=  14  required=9  optional=2  rare=0
+    period                 n=  12  required=6  optional=0  rare=0
+    injuryTime             n=  10  required=3  optional=0  rare=0
+  FIELDS A MARGINAL READING WOULD HAVE MISCLASSIFIED:
+    away_score — required in "period", but only 22% overall
+    home_score — required in "period", but only 22% overall
+    is_live — required in "period", but only 10% overall
+    text — required in "period", but only 10% overall
+    player_in — required in "substitution", but only 47% overall
+    player_in_id — required in "substitution", but only 47% overall
+    player_out — required in "substitution", but only 47% overall
+    player_out_id — required in "substitution", but only 47% overall
+    length — required in "injuryTime", but only 9% overall
+    away_score — required in "goal", but only 22% overall
+    A schema built on marginal rates would call these optional. They are not.
+  written: src/data/schemas/bsd-incidents.json

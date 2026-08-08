@@ -1,0 +1,212 @@
+{
+  "name": "bsd-incidents",
+  "route": "/bsd/events/{id}/incidents",
+  "generated_at": "2026-08-08T21:08:59.794Z",
+  "method": "measured from live responses; required = conditional fill within variant",
+  "required_at": 0.98,
+  "total_records": 117,
+  "variants": {
+    "period": {
+      "n": 12,
+      "required": [
+        "away_score",
+        "home_score",
+        "is_live",
+        "minute",
+        "text",
+        "type"
+      ],
+      "optional": {},
+      "rare": {},
+      "requiredTypes": {
+        "away_score": [
+          "number"
+        ],
+        "home_score": [
+          "number"
+        ],
+        "is_live": [
+          "boolean"
+        ],
+        "minute": [
+          "number"
+        ],
+        "text": [
+          "string"
+        ],
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "substitution": {
+      "n": 55,
+      "required": [
+        "is_home",
+        "minute",
+        "player_in",
+        "player_in_id",
+        "player_out",
+        "player_out_id",
+        "type"
+      ],
+      "optional": {
+        "added_time": {
+          "fill": 0.145,
+          "types": [
+            "number"
+          ]
+        }
+      },
+      "rare": {},
+      "requiredTypes": {
+        "is_home": [
+          "boolean"
+        ],
+        "minute": [
+          "number"
+        ],
+        "player_in": [
+          "string"
+        ],
+        "player_in_id": [
+          "number"
+        ],
+        "player_out": [
+          "string"
+        ],
+        "player_out_id": [
+          "number"
+        ],
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "injuryTime": {
+      "n": 10,
+      "required": [
+        "length",
+        "minute",
+        "type"
+      ],
+      "optional": {},
+      "rare": {},
+      "requiredTypes": {
+        "length": [
+          "number"
+        ],
+        "minute": [
+          "number"
+        ],
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "goal": {
+      "n": 14,
+      "required": [
+        "away_score",
+        "goal_type",
+        "home_score",
+        "is_home",
+        "minute",
+        "player",
+        "player_id",
+        "sequence",
+        "type"
+      ],
+      "optional": {
+        "assist": {
+          "fill": 0.714,
+          "types": [
+            "string"
+          ]
+        },
+        "added_time": {
+          "fill": 0.143,
+          "types": [
+            "number"
+          ]
+        }
+      },
+      "rare": {},
+      "requiredTypes": {
+        "away_score": [
+          "number"
+        ],
+        "goal_type": [
+          "string"
+        ],
+        "home_score": [
+          "number"
+        ],
+        "is_home": [
+          "boolean"
+        ],
+        "minute": [
+          "number"
+        ],
+        "player": [
+          "string"
+        ],
+        "player_id": [
+          "number"
+        ],
+        "sequence": [
+          "array"
+        ],
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "card": {
+      "n": 26,
+      "required": [
+        "card_type",
+        "is_home",
+        "minute",
+        "player",
+        "player_id",
+        "type"
+      ],
+      "optional": {
+        "reason": {
+          "fill": 0.962,
+          "types": [
+            "string"
+          ]
+        },
+        "added_time": {
+          "fill": 0.115,
+          "types": [
+            "number"
+          ]
+        }
+      },
+      "rare": {},
+      "requiredTypes": {
+        "card_type": [
+          "string"
+        ],
+        "is_home": [
+          "boolean"
+        ],
+        "minute": [
+          "number"
+        ],
+        "player": [
+          "string"
+        ],
+        "player_id": [
+          "number"
+        ],
+        "type": [
+          "string"
+        ]
+      }
+    }
+  }
+}

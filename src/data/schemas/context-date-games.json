@@ -1,0 +1,731 @@
+{
+  "name": "context-date-games",
+  "route": "/context/date/{date}",
+  "generated_at": "2026-08-08T21:08:55.655Z",
+  "method": "measured from live responses; required = conditional fill within variant",
+  "required_at": 0.98,
+  "total_records": 270,
+  "variants": {
+    "mls": {
+      "n": 96,
+      "required": [
+        "away",
+        "created_at",
+        "date",
+        "home",
+        "id",
+        "sport",
+        "venue"
+      ],
+      "optional": {
+        "league": {
+          "fill": 0.677,
+          "types": [
+            "string"
+          ]
+        },
+        "home_score": {
+          "fill": 0.396,
+          "types": [
+            "number"
+          ]
+        },
+        "away_score": {
+          "fill": 0.396,
+          "types": [
+            "number"
+          ]
+        },
+        "streams": {
+          "fill": 0.167,
+          "types": [
+            "string"
+          ]
+        },
+        "opening_odds": {
+          "fill": 0.229,
+          "types": [
+            "string"
+          ]
+        },
+        "closing_odds": {
+          "fill": 0.146,
+          "types": [
+            "string"
+          ]
+        },
+        "drama_peak": {
+          "fill": 0.156,
+          "types": [
+            "number"
+          ]
+        },
+        "drama_arc": {
+          "fill": 0.156,
+          "types": [
+            "string"
+          ]
+        },
+        "espn_event_id": {
+          "fill": 0.167,
+          "types": [
+            "string"
+          ]
+        },
+        "went_to_ot": {
+          "fill": 0.156,
+          "types": [
+            "number"
+          ]
+        },
+        "finalized_at": {
+          "fill": 0.396,
+          "types": [
+            "string"
+          ]
+        },
+        "start_time": {
+          "fill": 0.167,
+          "types": [
+            "string"
+          ]
+        },
+        "series_key": {
+          "fill": 0.51,
+          "types": [
+            "string"
+          ]
+        },
+        "round": {
+          "fill": 0.51,
+          "types": [
+            "string"
+          ]
+        },
+        "game_number": {
+          "fill": 0.51,
+          "types": [
+            "number"
+          ]
+        }
+      },
+      "rare": {
+        "note": {
+          "fill": 0,
+          "types": []
+        },
+        "tags": {
+          "fill": 0,
+          "types": []
+        },
+        "crew": {
+          "fill": 0,
+          "types": []
+        },
+        "local_note": {
+          "fill": 0,
+          "types": []
+        },
+        "series_record": {
+          "fill": 0,
+          "types": []
+        },
+        "series_margins": {
+          "fill": 0,
+          "types": []
+        },
+        "importance": {
+          "fill": 0,
+          "types": []
+        }
+      },
+      "requiredTypes": {
+        "away": [
+          "string"
+        ],
+        "created_at": [
+          "string"
+        ],
+        "date": [
+          "string"
+        ],
+        "home": [
+          "string"
+        ],
+        "id": [
+          "string"
+        ],
+        "sport": [
+          "string"
+        ],
+        "venue": [
+          "string"
+        ]
+      }
+    },
+    "mlb": {
+      "n": 108,
+      "required": [
+        "away",
+        "closing_odds",
+        "created_at",
+        "date",
+        "espn_event_id",
+        "home",
+        "id",
+        "league",
+        "sport",
+        "start_time",
+        "venue"
+      ],
+      "optional": {
+        "home_score": {
+          "fill": 0.722,
+          "types": [
+            "number"
+          ]
+        },
+        "away_score": {
+          "fill": 0.722,
+          "types": [
+            "number"
+          ]
+        },
+        "streams": {
+          "fill": 0.861,
+          "types": [
+            "string"
+          ]
+        },
+        "opening_odds": {
+          "fill": 0.861,
+          "types": [
+            "string"
+          ]
+        },
+        "drama_peak": {
+          "fill": 0.722,
+          "types": [
+            "number"
+          ]
+        },
+        "drama_arc": {
+          "fill": 0.722,
+          "types": [
+            "string"
+          ]
+        },
+        "went_to_ot": {
+          "fill": 0.722,
+          "types": [
+            "number"
+          ]
+        },
+        "finalized_at": {
+          "fill": 0.722,
+          "types": [
+            "string"
+          ]
+        }
+      },
+      "rare": {
+        "note": {
+          "fill": 0,
+          "types": []
+        },
+        "tags": {
+          "fill": 0,
+          "types": []
+        },
+        "crew": {
+          "fill": 0,
+          "types": []
+        },
+        "local_note": {
+          "fill": 0,
+          "types": []
+        }
+      },
+      "requiredTypes": {
+        "away": [
+          "string"
+        ],
+        "closing_odds": [
+          "string"
+        ],
+        "created_at": [
+          "string"
+        ],
+        "date": [
+          "string"
+        ],
+        "espn_event_id": [
+          "string"
+        ],
+        "home": [
+          "string"
+        ],
+        "id": [
+          "string"
+        ],
+        "league": [
+          "string"
+        ],
+        "sport": [
+          "string"
+        ],
+        "start_time": [
+          "string"
+        ],
+        "venue": [
+          "string"
+        ]
+      }
+    },
+    "wnba": {
+      "n": 25,
+      "required": [
+        "away",
+        "created_at",
+        "date",
+        "espn_event_id",
+        "home",
+        "id",
+        "league",
+        "sport",
+        "venue"
+      ],
+      "optional": {
+        "home_score": {
+          "fill": 0.88,
+          "types": [
+            "number"
+          ]
+        },
+        "away_score": {
+          "fill": 0.88,
+          "types": [
+            "number"
+          ]
+        },
+        "streams": {
+          "fill": 0.76,
+          "types": [
+            "string"
+          ]
+        },
+        "opening_odds": {
+          "fill": 0.84,
+          "types": [
+            "string"
+          ]
+        },
+        "closing_odds": {
+          "fill": 0.88,
+          "types": [
+            "string"
+          ]
+        },
+        "drama_peak": {
+          "fill": 0.84,
+          "types": [
+            "number"
+          ]
+        },
+        "drama_arc": {
+          "fill": 0.84,
+          "types": [
+            "string"
+          ]
+        },
+        "went_to_ot": {
+          "fill": 0.88,
+          "types": [
+            "number"
+          ]
+        },
+        "finalized_at": {
+          "fill": 0.88,
+          "types": [
+            "string"
+          ]
+        },
+        "start_time": {
+          "fill": 0.88,
+          "types": [
+            "string"
+          ]
+        }
+      },
+      "rare": {
+        "note": {
+          "fill": 0,
+          "types": []
+        },
+        "tags": {
+          "fill": 0,
+          "types": []
+        },
+        "crew": {
+          "fill": 0,
+          "types": []
+        },
+        "local_note": {
+          "fill": 0,
+          "types": []
+        }
+      },
+      "requiredTypes": {
+        "away": [
+          "string"
+        ],
+        "created_at": [
+          "string"
+        ],
+        "date": [
+          "string"
+        ],
+        "espn_event_id": [
+          "string"
+        ],
+        "home": [
+          "string"
+        ],
+        "id": [
+          "string"
+        ],
+        "league": [
+          "string"
+        ],
+        "sport": [
+          "string"
+        ],
+        "venue": [
+          "string"
+        ]
+      }
+    },
+    "pga tour": {
+      "n": 2,
+      "required": [
+        "created_at",
+        "date",
+        "espn_event_id",
+        "id",
+        "league",
+        "sport",
+        "start_time",
+        "streams"
+      ],
+      "optional": {
+        "home_score": {
+          "fill": 0.5,
+          "types": [
+            "number"
+          ]
+        },
+        "away_score": {
+          "fill": 0.5,
+          "types": [
+            "number"
+          ]
+        },
+        "drama_peak": {
+          "fill": 0.5,
+          "types": [
+            "number"
+          ]
+        },
+        "drama_arc": {
+          "fill": 0.5,
+          "types": [
+            "string"
+          ]
+        },
+        "finalized_at": {
+          "fill": 0.5,
+          "types": [
+            "string"
+          ]
+        }
+      },
+      "rare": {
+        "home": {
+          "fill": 0,
+          "types": []
+        },
+        "away": {
+          "fill": 0,
+          "types": []
+        },
+        "venue": {
+          "fill": 0,
+          "types": []
+        },
+        "note": {
+          "fill": 0,
+          "types": []
+        },
+        "tags": {
+          "fill": 0,
+          "types": []
+        },
+        "crew": {
+          "fill": 0,
+          "types": []
+        },
+        "local_note": {
+          "fill": 0,
+          "types": []
+        },
+        "opening_odds": {
+          "fill": 0,
+          "types": []
+        },
+        "closing_odds": {
+          "fill": 0,
+          "types": []
+        },
+        "went_to_ot": {
+          "fill": 0,
+          "types": []
+        }
+      },
+      "requiredTypes": {
+        "created_at": [
+          "string"
+        ],
+        "date": [
+          "string"
+        ],
+        "espn_event_id": [
+          "string"
+        ],
+        "id": [
+          "string"
+        ],
+        "league": [
+          "string"
+        ],
+        "sport": [
+          "string"
+        ],
+        "start_time": [
+          "string"
+        ],
+        "streams": [
+          "string"
+        ]
+      }
+    },
+    "efl cup": {
+      "n": 32,
+      "required": [
+        "away",
+        "away_score",
+        "created_at",
+        "date",
+        "drama_arc",
+        "drama_peak",
+        "espn_event_id",
+        "finalized_at",
+        "home",
+        "home_score",
+        "id",
+        "league",
+        "sport",
+        "start_time",
+        "venue"
+      ],
+      "optional": {},
+      "rare": {
+        "streams": {
+          "fill": 0,
+          "types": []
+        },
+        "note": {
+          "fill": 0,
+          "types": []
+        },
+        "tags": {
+          "fill": 0,
+          "types": []
+        },
+        "crew": {
+          "fill": 0,
+          "types": []
+        },
+        "local_note": {
+          "fill": 0,
+          "types": []
+        },
+        "opening_odds": {
+          "fill": 0,
+          "types": []
+        },
+        "closing_odds": {
+          "fill": 0,
+          "types": []
+        },
+        "went_to_ot": {
+          "fill": 0,
+          "types": []
+        }
+      },
+      "requiredTypes": {
+        "away": [
+          "string"
+        ],
+        "away_score": [
+          "number"
+        ],
+        "created_at": [
+          "string"
+        ],
+        "date": [
+          "string"
+        ],
+        "drama_arc": [
+          "string"
+        ],
+        "drama_peak": [
+          "number"
+        ],
+        "espn_event_id": [
+          "string"
+        ],
+        "finalized_at": [
+          "string"
+        ],
+        "home": [
+          "string"
+        ],
+        "home_score": [
+          "number"
+        ],
+        "id": [
+          "string"
+        ],
+        "league": [
+          "string"
+        ],
+        "sport": [
+          "string"
+        ],
+        "start_time": [
+          "string"
+        ],
+        "venue": [
+          "string"
+        ]
+      }
+    },
+    "golf": {
+      "n": 7,
+      "required": [
+        "away",
+        "created_at",
+        "date",
+        "espn_event_id",
+        "finalized_at",
+        "home",
+        "home_score",
+        "id",
+        "league",
+        "note",
+        "sport",
+        "venue"
+      ],
+      "optional": {
+        "drama_peak": {
+          "fill": 0.857,
+          "types": [
+            "number"
+          ]
+        },
+        "drama_arc": {
+          "fill": 0.857,
+          "types": [
+            "string"
+          ]
+        }
+      },
+      "rare": {
+        "away_score": {
+          "fill": 0,
+          "types": []
+        },
+        "streams": {
+          "fill": 0,
+          "types": []
+        },
+        "tags": {
+          "fill": 0,
+          "types": []
+        },
+        "crew": {
+          "fill": 0,
+          "types": []
+        },
+        "local_note": {
+          "fill": 0,
+          "types": []
+        },
+        "opening_odds": {
+          "fill": 0,
+          "types": []
+        },
+        "closing_odds": {
+          "fill": 0,
+          "types": []
+        },
+        "went_to_ot": {
+          "fill": 0,
+          "types": []
+        },
+        "start_time": {
+          "fill": 0,
+          "types": []
+        }
+      },
+      "requiredTypes": {
+        "away": [
+          "string"
+        ],
+        "created_at": [
+          "string"
+        ],
+        "date": [
+          "string"
+        ],
+        "espn_event_id": [
+          "string"
+        ],
+        "finalized_at": [
+          "string"
+        ],
+        "home": [
+          "string"
+        ],
+        "home_score": [
+          "number"
+        ],
+        "id": [
+          "string"
+        ],
+        "league": [
+          "string"
+        ],
+        "note": [
+          "string"
+        ],
+        "sport": [
+          "string"
+        ],
+        "venue": [
+          "string"
+        ]
+      }
+    }
+  }
+}
