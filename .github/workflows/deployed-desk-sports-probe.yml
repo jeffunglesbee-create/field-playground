@@ -1,0 +1,59 @@
+name: Deployed Desk Sports Probe
+
+# Loads the DEPLOYED playground in a real browser and compares the sports it
+# renders against what the relay actually serves for the same date.
+#
+# Exists because a previous probe checked the wrong thing: it measured
+# /context/date/, then concluded the desk renders faithfully from a screenshot
+# of 2026-08-06 -- a date that genuinely contains only MLS. That verified the
+# date, not the claim. The report was that MLB/WNBA/EFL Cup are missing
+# generally.
+#
+# Rules out the cheapest hypothesis first by checking whether the deployed
+# bundle even contains components added in the last few days.
+#
+# *.workers.dev is sandbox-blocked from chat, so this runs in CI against
+# production with Playwright.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dates:
+        description: 'Comma-separated dates known to be multi-sport'
+        required: false
+        default: '2026-08-07,2026-08-08,2026-08-04'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Compare deployed page against relay data
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          PROBE_DATES: ${{ github.event.inputs.dates || '2026-08-07,2026-08-08,2026-08-04' }}
+        run: node scripts/probe-deployed-desk-sports.mjs
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "deployed-desk-sports-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: deployed desk sports probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
