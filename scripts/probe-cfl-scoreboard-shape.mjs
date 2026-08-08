@@ -65,16 +65,31 @@ function profile(records) {
   return { present, nonNull, types, samples }
 }
 
-function printProfile(records, label) {
+function printProfile(records, label, indent = '  ') {
   const { present, nonNull, types, samples } = profile(records)
-  log(`  ${label} — ${records.length} records`)
-  log('    field                    present  non-null        types            samples')
+  log(`${indent}${label} — ${records.length} records`)
+  log(`${indent}  field                    present  non-null        types            samples`)
   for (const [k, n] of [...present.entries()].sort((a, b) => b[1] - a[1])) {
     const nn = nonNull.get(k) ?? 0
     const pct = ((nn / records.length) * 100).toFixed(0)
     const t = [...types.get(k)].filter(x => x !== 'null').join('|') || 'null'
     const sv = [...(samples.get(k) ?? [])].join(' | ').slice(0, 44)
-    log(`    ${k.padEnd(24)} ${String(n).padStart(5)}  ${String(nn).padStart(5)} (${pct.padStart(3)}%)  ${t.padEnd(16)} ${sv}`)
+    log(`${indent}  ${k.padEnd(24)} ${String(n).padStart(5)}  ${String(nn).padStart(5)} (${pct.padStart(3)}%)  ${t.padEnd(16)} ${sv}`)
+  }
+}
+
+// A field reported as "object" is a field NOT measured. The first run of this
+// probe printed homeSquad/awaySquad as objects and separately reported that a
+// "score" key existed somewhere in the blob -- which is to say it found the
+// envelope and left the payload closed, on exactly the three fields
+// /archive/game needs most (scores, team names, venue). One level down is
+// where the answer was the whole time.
+function printNested(records, keys, indent = '    ') {
+  for (const key of keys) {
+    const inner = records.map(r => r?.[key]).filter(v => v && typeof v === 'object' && !Array.isArray(v))
+    if (!inner.length) { log(`${indent}${key}: no object values to profile`); continue }
+    log('')
+    printProfile(inner, `${key}{}`, indent)
   }
 }
 
@@ -136,6 +151,24 @@ async function main() {
     log('  the spec reports for /cfl/fixtures -- worth knowing before relying on this route.')
   } else {
     printProfile(games, `rounds[].${gameKey}`)
+
+    // Descend into every object-valued key rather than a guessed shortlist --
+    // guessing which nested key holds the score is the same error one level in.
+    const objKeys = [...new Set(games.flatMap(g =>
+      Object.entries(g ?? {}).filter(([, v]) => v && typeof v === 'object' && !Array.isArray(v)).map(([k]) => k)))]
+    if (objKeys.length) {
+      log('')
+      log(`=== ONE LEVEL DOWN === (object-valued keys: ${objKeys.join(', ')})`)
+      printNested(games, objKeys)
+    }
+
+    // Fill rates answer "does this field exist"; they do not answer "does a
+    // real completed game carry a real score". Print one finished record whole.
+    const finished = games.find(g => g?.status === 'complete') ?? games[0]
+    log('')
+    log('=== ONE COMPLETE GAME, VERBATIM ===')
+    log('  (fill rates say a field exists; only a real record says what it holds)')
+    for (const line of JSON.stringify(finished, null, 2).split('\n').slice(0, 90)) log('  ' + line)
   }
   log('')
 
