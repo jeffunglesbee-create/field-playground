@@ -1,0 +1,55 @@
+name: Desk Slate Composition Probe
+
+# Two symptoms reported from the deployed playground on 2026-08-08: the desk
+# shows ONLY MLS, and five MLS fixtures each appear twice (once unscored, once
+# final) so 6 real matches render as 11 rows.
+#
+# The client was ruled out first and locally: DeskCard applies no sport filter
+# and fetchDeskReconciled passes /context/date/ straight through. So this
+# measures the data -- per-date sport composition, duplicate fixtures, and the
+# id-scheme census that would explain why ON CONFLICT cannot dedupe them.
+#
+# Also closes an open flag: schema generation produced an "efl cup" variant
+# (32 games) seen in no earlier corpus, and this repo has already found MLS
+# fixtures stored under "FIFA World Cup".
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Days of history to sweep'
+        required: false
+        default: '14'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Measure per-date sport composition and duplicate fixtures
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          PROBE_DAYS: ${{ github.event.inputs.days || '14' }}
+        run: node scripts/probe-desk-slate-composition.mjs
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "desk-slate-composition-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: desk slate composition probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
