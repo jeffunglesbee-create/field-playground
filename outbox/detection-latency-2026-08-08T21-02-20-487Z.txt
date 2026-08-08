@@ -1,0 +1,119 @@
+probe_at: 2026-08-08T21:02:20.504Z
+purpose: turn "enforce only what is expensive to discover late" from taste into data.
+method: blame the lines each fix commit changed back to when they were written.
+
+total non-merge commits: 822
+fix commits matched:     161  (19.6%)
+
+=== A. INTRODUCE -> FIX LATENCY ===
+blamed file-changes analysed: 158
+  min 0m | p25 12m | median 35m | p75 13.8h | p90 1.8d | max 11.9d
+
+  fixed within 24h:  129 / 158 (81.6%)
+  survived >= 7 days: 9 / 158 (5.7%)
+
+  --- slowest 15 individual defects (the tail the filter is about) ---
+    11.9d  src/data/relay.js
+           introduced a856599d -> fixed 26e91564: fix(relay): batch deskStore + deskLastFetchedAt writes -- real double-fire bug
+    11.2d  src/components/DrillDown/index.jsx
+           introduced 291cb01b -> fixed 4bc21731: fix: demo/infra component sweep -- 6 real bugs found and fixed
+    11.1d  src/components/IndexArrayDemo/index.jsx
+           introduced d7726127 -> fixed 4bc21731: fix: demo/infra component sweep -- 6 real bugs found and fixed
+    11.1d  src/components/PropsDemo/index.jsx
+           introduced d7726127 -> fixed 4bc21731: fix: demo/infra component sweep -- 6 real bugs found and fixed
+    11.0d  src/components/UndoStackDemo/index.jsx
+           introduced 668bf153 -> fixed 4bc21731: fix: demo/infra component sweep -- 6 real bugs found and fixed
+    10.2d  src/components/Stats/index.jsx
+           introduced 6818f2bb -> fixed c30bbea8: fix: close edge-case coverage gap in why-should-I-care verdict sweep
+     8.4d  src/components/DeskCard/index.jsx
+           introduced 7e2c9626 -> fixed 8555ba7d: fix: real DeskCard bug found by an extended automated guard
+     8.4d  src/components/ScoreTicker/index.jsx
+           introduced f4386745 -> fixed 4bc21731: fix: demo/infra component sweep -- 6 real bugs found and fixed
+     8.2d  src/data/outcomes.js
+           introduced 85aa7992 -> fixed 9ec857e9: fix: automated unguarded-localStorage guard (third bug class)
+     6.9d  src/components/JournalismBrief/index.jsx
+           introduced 30e9b8d7 -> fixed 6b364fab: fix: canonical safeResource helper + real API surface reference doc
+     4.3d  src/components/DeskCard/index.jsx
+           introduced 8102f570 -> fixed 5aac9b55: fix: DeskCard — DramaSparkline has been silently empty all session. drama_arc 
+     3.3d  .github/workflows/deploy-playground.yml
+           introduced c9a7e255 -> fixed b4c5e05a: fix: deploy-playground post-deploy verification races Cloudflare edge propagat
+     3.0d  vite.config.js
+           introduced 95d60436 -> fixed 0bcc3820: fix: DramaSoundscape live triggers never fired — bare createMemo used for side
+     2.4d  src/components/SuspenseDemo/index.jsx
+           introduced 8126b595 -> fixed 32f158a4: Fix 8 pre-existing components crashing under total fetch failure (#20)
+     1.9d  src/components/CrossCheck/index.jsx
+           introduced fd62c170 -> fixed 32f158a4: Fix 8 pre-existing components crashing under total fetch failure (#20)
+
+  --- by area (median latency, n) ---
+  src/data         median    4.1h   p90    8.2d   n=7
+  src/components   median    2.9h   p90    4.3d   n=82
+  other            median    2.8h   p90    1.3d   n=13
+  scripts          median     10m   p90    1.2h   n=42
+  .github          median      6m   p90    4.0h   n=14
+
+  --- files fixed 3+ times, by median latency (20 files) ---
+     1.3d median   n=  3   vite.config.js
+     1.3d median   n=  4   src/data/relay.js
+     1.1d median   n=  3   src/components/JournalismBrief/index.jsx
+    19.3h median   n= 10   src/components/DeskCard/index.jsx
+    18.9h median   n=  3   src/components/AmbientPanel/AmbientPanel.module.css
+     7.8h median   n=  7   src/components/DeskCard/DeskCard.module.css
+     5.7h median   n=  3   src/components/AmbientPanel/index.jsx
+     3.3h median   n=  3   src/components/ForkPoint/index.jsx
+     2.8h median   n=  5   src/App.module.css
+     2.2h median   n=  3   .github/workflows/live-reconciliation-check.yml
+     1.2h median   n=  4   scripts/probe-poi-geocode.mjs
+     1.2h median   n=  4   src/components/DramaSoundscape/index.jsx
+
+=== B. KNOW -> GUARD LAG (per existing CI guard) ===
+For each guard: when it landed, and how many fix commits of that class preceded it.
+Keyword attribution -- indicative, not exact. Preceding subjects are printed so
+the attribution can be judged rather than trusted.
+
+  resource re-throw
+    guard landed: 2026-08-03  (e50cd7a1)
+    matching fix commits BEFORE the guard: 7
+      2026-08-02  fix: GameSymphonyArchive — real dead-section crash found by artifact-check
+      2026-08-01  fix: BsdXgPanel — <Show when={data()}> calls the resource accessor uncondi
+      2026-07-29  fix: Newspaper — two real bugs. (1) Same eager-memo trap as WcBracketTree:
+      2026-07-29  fix: WcBracketTree — rounds()/champion() called projections() before any e
+      2026-07-25  docs: outbox — blank-artifact bug report for Claude Code. Three failed fix
+      2026-07-25  fix: App.artifact.jsx — sync the ErrorBoundary fix from App.jsx (Seasons c
+    lag from FIRST matching fix to guard: 8.2d
+    matching fix commits AFTER the guard:  0
+
+  unread createMemo
+    guard landed: 2026-08-03  (d1626033)
+    matching fix commits BEFORE the guard: 4
+      2026-07-31  fix: DramaSoundscape live triggers never fired — bare createMemo used for 
+      2026-07-29  fix: Newspaper — two real bugs. (1) Same eager-memo trap as WcBracketTree:
+      2026-07-29  fix: WcBracketTree — rounds()/champion() called projections() before any e
+      2026-07-26  Fix JournalismBrief's fabricated endpoint + dormant AmbientPanel timeMode 
+    lag from FIRST matching fix to guard: 7.1d
+    matching fix commits AFTER the guard:  0
+
+  unguarded localStorage
+    guard landed: 2026-08-03  (9ec857e9)
+    matching fix commits BEFORE the guard: 0
+    matching fix commits AFTER the guard:  0
+
+  WebGL disposal
+    guard landed: 2026-08-03  (7ee174d4)
+    matching fix commits BEFORE the guard: 1
+      2026-08-03  fix: real WebGL render confirmed -- preserveDrawingBuffer + robust check
+    matching fix commits AFTER the guard:  0
+
+  anomaly analysis invariants
+    guard landed: 2026-08-06  (9ac1bfd3)
+    matching fix commits BEFORE the guard: 0
+    matching fix commits AFTER the guard:  1   <- guard did not end the class; worth reading
+
+=== VERDICT ===
+82% of defects here are fixed within a day, and the median is 35m.
+On this evidence the enforcement problem is largely THEORETICAL in this repo:
+bugs are not surviving long enough to be expensive. The honest read is that most
+of the proposed process infrastructure should be dropped, and effort should go to
+the specific tail cases listed above rather than to blanket automation.
+
+Remember the bias: git blame attributes to LAST TOUCH, so every latency here is a
+LOWER bound. The true numbers are worse, never better.
