@@ -64,14 +64,61 @@ async function main() {
   // never networkidle -- this app polls continuously and it would never resolve
   await page.goto(SITE, { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(4000)
-  const bodyText = await page.locator('body').innerText().catch(() => '')
+  // The first version of this check read the landing tab only and reported all
+  // three markers ABSENT. That was very likely a tab artifact, not a stale
+  // deploy -- every one of those components lives in the Lab tab, which had
+  // never been clicked. Reporting "ABSENT" from a tab that cannot contain them
+  // is the same too-narrow-sample mistake this probe exists to correct.
+  //
+  // The tab labels carry their own counts ("Lab\n18"), which is a sharper
+  // staleness signal than any string match: the Lab count rose to 18 when
+  // Anomaly Watch was added on 2026-08-08, so a deployed count below that is
+  // direct evidence of a stale bundle regardless of what text renders.
+  const tabTexts = await page.locator('button').allInnerTexts().catch(() => [])
+  const tabs = tabTexts.filter(t => /^(Games|Picks|Stats|Journalism|Social|System|Lab)\b/.test(t.trim()))
+  log('  tab labels (count is the staleness signal):')
+  for (const t of tabs) log(`    ${JSON.stringify(t)}`)
+  const labTab = tabs.find(t => /^Lab/.test(t.trim()))
+  const labCount = labTab ? Number((labTab.match(/(\d+)/) || [])[1]) : null
+  log(`  deployed Lab count: ${labCount ?? 'unknown'}   (local HEAD builds 18 sections)`)
+  log('')
+
   const markers = [
     ['Anomaly Watch', 'component added 2026-08-08'],
     ['Fork Point', 'component added 2026-08-05'],
     ['Leverage Index', 'component added 2026-08-04'],
   ]
-  for (const [needle, when] of markers) {
-    log(`  ${bodyText.includes(needle) ? 'present' : 'ABSENT '}  "${needle}"  (${when})`)
+
+  const landingText = await page.locator('body').innerText().catch(() => '')
+  log('  on the LANDING tab (where these are NOT expected to appear):')
+  for (const [needle] of markers) {
+    log(`    ${landingText.includes(needle) ? 'present' : 'absent '}  "${needle}"`)
+  }
+
+  let labText = ''
+  try {
+    await page.locator('button').filter({ hasText: /^Lab/ }).first().click()
+    await page.waitForTimeout(5000)
+    labText = await page.locator('body').innerText()
+    log('  after clicking the LAB tab (where they live):')
+    for (const [needle, when] of markers) {
+      log(`    ${labText.includes(needle) ? 'PRESENT' : 'ABSENT '}  "${needle}"  (${when})`)
+    }
+  } catch (e) {
+    log(`  could not open the Lab tab: ${String(e.message).slice(0, 120)}`)
+    log('  Deploy freshness therefore UNRESOLVED -- not "stale", not "current".')
+  }
+  log('')
+  if (labText) {
+    const present = markers.filter(([n]) => labText.includes(n)).length
+    if (present === markers.length) {
+      log(`  DEPLOY IS CURRENT: all ${markers.length} recent components render in the Lab tab.`)
+    } else if (present === 0) {
+      log('  DEPLOY IS STALE: none of the recent components are in the deployed bundle.')
+    } else {
+      log(`  DEPLOY IS PARTIALLY STALE: ${present}/${markers.length} present -- read the dates above to`)
+      log('  bracket when the deployed build was cut.')
+    }
   }
   log('')
 
