@@ -55,9 +55,14 @@ const REQUIRED_AT = 0.98
 // "seen" rather than "optional" -- an honest third state.
 const RARE_BELOW = 0.05
 
+// Collection failures are COUNTED, not just logged. The first version of this
+// script logged two HTTP 429s, collected 79 of 117 records, and still printed
+// "No drift" -- the precise unchecked-vs-unchanged confusion it was written to
+// prevent, reproduced inside itself. A degraded sample cannot clear a schema.
+let fetchFailures = 0
 async function getJson(url) {
   const res = await fetch(url, { headers: { 'User-Agent': UA } })
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`)
+  if (!res.ok) { fetchFailures++; throw new Error(`HTTP ${res.status} ${url}`) }
   return res.json()
 }
 
@@ -233,12 +238,13 @@ async function generate() {
 async function check() {
   log('mode: CHECK — re-measure live shape, diff against committed schema')
   log('')
-  let drift = 0, unchecked = 0
+  let drift = 0, unchecked = 0, degraded = 0
   for (const t of TARGETS) {
     log(`=== ${t.name} ===`)
     const p = schemaPath(t.name)
     if (!existsSync(p)) { log('  no committed schema — run --generate first'); unchecked++; log(''); continue }
     const prior = JSON.parse(readFileSync(p, 'utf8'))
+    fetchFailures = 0
     let records = []
     try { records = await t.collect() } catch (e) { log(`  collect failed: ${e.message}`) }
     if (!records.length) {
@@ -246,7 +252,21 @@ async function check() {
       unchecked++; log(''); continue
     }
     const now = measureShape(records, t.discriminator)
+    const coverage = records.length / (prior.total_records || records.length)
     log(`  live records: ${records.length}  (schema built from ${prior.total_records})`)
+    if (fetchFailures) log(`  fetch failures this run: ${fetchFailures}`)
+
+    // A materially smaller sample cannot clear a schema. A field required on a
+    // variant with 3 surviving records is not "confirmed still required" -- it
+    // is unconfirmed, and saying otherwise is how a green run hides a real
+    // drift behind a rate limit.
+    if (fetchFailures || coverage < 0.75) {
+      log(`  DEGRADED SAMPLE: ${(coverage * 100).toFixed(0)}% of the records this schema was built from` +
+          (fetchFailures ? `, ${fetchFailures} fetch failure(s)` : ''))
+      log('  Absence of a field in this run is NOT evidence of drift, and presence is NOT')
+      log('  evidence of health. Findings below are advisory for this target.')
+      degraded++
+    }
 
     for (const [variant, was] of Object.entries(prior.variants)) {
       const is = now[variant]
@@ -270,6 +290,11 @@ async function check() {
   }
 
   log('=== VERDICT ===')
+  if (degraded) {
+    log(`${degraded} target(s) ran on a DEGRADED sample (fetch failures or a much smaller`)
+    log('corpus than the schema was built from). Those targets are unchecked, whatever')
+    log('the per-target lines above say.')
+  }
   if (unchecked && !drift) {
     log(`${unchecked} target(s) could not be checked and 0 drifts found in the rest.`)
     log('That is NOT a clean bill of health — an unchecked target is unknown, not unchanged.')
@@ -277,6 +302,9 @@ async function check() {
     log(`${drift} drift(s) detected. A field the code treats as guaranteed has stopped being`)
     log('guaranteed, or changed type. This is the failure that costs days: it does not throw,')
     log('it produces wrong values downstream. Fix the consumer or regenerate deliberately.')
+  } else if (degraded) {
+    log('No drift found in the targets that ran cleanly. That is not a clean bill of health')
+    log('for the degraded ones.')
   } else {
     log('No drift. Live shapes still match what was measured when the schemas were built.')
   }
