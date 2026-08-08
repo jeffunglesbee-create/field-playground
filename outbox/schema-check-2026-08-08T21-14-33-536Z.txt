@@ -1,0 +1,13 @@
+mode: CHECK — re-measure live shape, diff against committed schema
+
+=== context-date-games ===
+  live records: 270  (schema built from 270)
+
+=== bsd-incidents ===
+    event 5175: HTTP 429 https://field-relay-nba.jeffunglesbee.workers.dev/bsd/events/5175/incidents
+    event 5169: HTTP 429 https://field-relay-nba.jeffunglesbee.workers.dev/bsd/events/5169/incidents
+  live records: 79  (schema built from 117)
+  new required field(s) in "card": reason  (schema is stale, not wrong)
+
+=== VERDICT ===
+No drift. Live shapes still match what was measured when the schemas were built.
