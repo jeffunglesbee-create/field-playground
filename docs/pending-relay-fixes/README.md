@@ -97,40 +97,67 @@ weekly on its own as the standing regression detector.
 
 ## `2026-08-08` — CFL is never archived
 
-**Status:** one-line change, **slug unverified**.
+**Status:** cause confirmed, **and the obvious fix is actively harmful — do not apply it.**
 
-**Symptom:** no CFL anywhere in the playground, ever, on any date.
+**Symptom:** no CFL anywhere in the playground, on any date.
 
-**Cause:** CFL is absent from the `LEAGUES` list the archive writer polls in
-`field-relay-nba/src/index.js`:
+**Cause:** CFL is absent from the `LEAGUES` list the archive writer polls, so CFL games never enter
+`/context/date/`, which is the only thing the desk reads.
 
-```
-nba · nhl · mlb · wnba · eng.1 · usa.1 · esp.1 · ita.1 · ger.1 · fra.1 · nfl · fifa.world · pga
-```
+### The one-line fix I first staged here was WRONG
 
-The relay clearly *knows* about CFL elsewhere — `/cfl/odds-probs`, the CFL internal API
-(`echo.pims.cfl.ca`), `cfl: 'americanfootball_cfl'` in the odds-key table, and `cfl: 'CFL'` in
-`context-assembler.js` — but none of that feeds `/context/date/`, which is the only thing the desk reads.
-Nothing downstream can render a sport that is never archived.
-
-**The change:**
+The obvious change is to add a row to `LEAGUES`:
 
 ```js
-{sport:'football',  league:'cfl',  label:'CFL'},
+{sport:'football',  league:'cfl',  label:'CFL'},   // DO NOT
 ```
 
-**Do not apply until the slug is confirmed.** ESPN's scoreboard route is not on the relay's probe
-allow-list, so this session could not reach it. The confirming check, from anywhere that can:
+`LEAGUES` drives an **ESPN** scoreboard fetch. Per *FIELD — CFL Data Source Spec v2* (Drive, 2026-06-26,
+relay commit `c23c4a50d9`):
 
-```
-GET /espn-gambit/apis/site/v2/sports/football/cfl/scoreboard?dates=YYYYMMDD
-```
+> **ESPN CFL RETURNS 2022 STALE DATA.** Live probe returned Season: 2022, Week: 3. Do not use for live
+> scoring.
+> `ESPN football/cfl   Scoreboard   ❌ returns 2022 data`
 
-A non-200, or a 200 with an empty `events[]` during the CFL season, means the slug is wrong and the
-one-line change would silently poll nothing. Adding a league that returns nothing looks identical to
-adding one correctly.
+So that line would return HTTP 200 with a **fully populated** `events[]` of four-year-old games and
+archive them as current. Worse than not working, and worse than my own staged caveat anticipated — I
+wrote that an empty `events[]` would reveal a bad slug. The real failure mode is a *full* one.
 
----
+**The general lesson, third time it has bitten today:** check for an existing spec before proposing a
+fix. The RUWT reading was corrected the same way, and so was the `above-typical` design.
+
+### What the sources actually are
+
+| Source | Data | Status |
+|---|---|---|
+| `api.cfl.ca` | everything | ❌ dead since 2023, DNS failure |
+| ESPN `football/cfl` | scoreboard | ❌ returns 2022 data |
+| `echo.pims.cfl.ca` | teams, rosters, player + team stats, fixture detail | ✅ live, relay `/cfl/*` |
+| `cflscoreboard.cfl.ca` | **live scoreboard** | ✅ live, relay `/cfl/scoreboard/rounds` |
+| The Odds API | pre-game WP | ✅ live, `/cfl/odds-probs` |
+
+The relay already proxies all of these. **Nothing needs building upstream — only the archive write path
+is missing.**
+
+### The actual shape of the work
+
+Not a `LEAGUES` entry. `LEAGUES` is ESPN-shaped
+(`/espn-gambit/apis/site/v2/sports/{sport}/{league}/scoreboard`) and CFL has no usable ESPN feed. CFL
+needs its **own** collection path in the archive writer, reading `/cfl/scoreboard/rounds`
+(`src/index.js:11162`, already cache-guarded at 30s per `CC-CMD-2026-07-05-cfl-scoreboard-cache-guard.md`)
+and mapping rounds → the `/archive/game` payload.
+
+Three things the spec flags that will shape it:
+
+- **Live score polling is untested.** `game_status` is confirmed present in 2025 fixtures, *"verify
+  presence in 2026"*, and has never been exercised during a live 2026 game.
+- **Season IDs are split.** Stats use `season_id=35` for 2026; fixtures use `75`. Using 35 for fixtures
+  returns zero results.
+- **`/cfl/fixtures` is not a schedule.** It returns 15 playoff shells with `home_team_id=null`. Fixture
+  IDs come from the `fixtures[]` sub-array inside `/cfl/stats/teams`.
+
+**First step, before any code:** fetch `/cfl/scoreboard/rounds` and record its real shape. Every other
+decision depends on it, and it is the one source in the table nobody has measured in this session.
 
 ## `2026-08-08` — every seeded fixture is archived twice
 
