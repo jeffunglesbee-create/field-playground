@@ -156,8 +156,67 @@ Three things the spec flags that will shape it:
 - **`/cfl/fixtures` is not a schedule.** It returns 15 playoff shells with `home_team_id=null`. Fixture
   IDs come from the `fixtures[]` sub-array inside `/cfl/stats/teams`.
 
-**First step, before any code:** fetch `/cfl/scoreboard/rounds` and record its real shape. Every other
-decision depends on it, and it is the one source in the table nobody has measured in this session.
+### The route has now been measured — `outbox/cfl-scoreboard-shape-2026-08-08T22-17-32-772Z.txt`
+
+Three CI runs, because the first two each stopped one level short of the answer. **The source is
+usable**, and the staleness test it was built around comes back clean:
+
+> 147 date-shaped strings in the payload. **All 2026. Zero older years.** `cflscoreboard.cfl.ca` does
+> not exhibit the ESPN failure mode.
+
+**Real shape:** the root is a bare array of **27 rounds**; games nest under `rounds[].tournaments`
+(**93** of them, the full PRE/REG/POST season in one 155 KB call). Not a `games` or `fixtures` key —
+found by locating the array structurally rather than guessing its name.
+
+```jsonc
+{ "id": 13419665, "date": "2026-05-18T19:00:00+00:00", "status": "complete",
+  "homeSquad": { "id": 112939, "name": "Calgary Stampeders",       "shortName": "CGY", "score": 20 },
+  "awaySquad": { "id": 106752, "name": "Saskatchewan Roughriders", "shortName": "SSK", "score": 15 },
+  "winner": 112939, "activePeriod": null, "clock": null, "possession": "None",
+  "timeouts": {"away": 2, "home": 2}, "markets": {...}, "cflId": 6582, "isHidden": false }
+```
+
+**Against `/archive/game`:** `date`, `home`, `away`, `home_score`, `away_score` and `start_time` are all
+directly available — team **names** included, so `/cfl/scoreboard/squads` is *not* needed as a
+id→name lookup. `venue` is the one gap, and it is a real one: a search of every key at every depth
+found **no venue-like key anywhere**. It comes from a second source or is written null — a decision to
+make deliberately, not an oversight to discover later.
+
+### The trap this route sets, measured
+
+`homeSquad.score` is non-null on **93/93 (100%)**. That number is a lie of the useful kind:
+
+```
+status        n    0-0   null   points   winner-set
+complete      46      0      0      46          46
+scheduled     47     47      0       0           0
+```
+
+**Unplayed fixtures carry `0`, never `null`.** A writer that gates on "is the score present" archives
+**47 phantom 0–0 finals** — a fully-populated response that is wrong, which is exactly the ESPN failure
+class in a different disguise. Gate on `status === 'complete'` or on `winner != null`; the two agree on
+all 93 records, so either works and neither is a guess.
+
+This is also why the first two probe runs were not enough. Run 1 reported `homeSquad` as `"object"` and
+separately noted a `score` key existed *somewhere* — the envelope measured, the payload closed. Run 2
+opened it and produced the 100% fill rate. Only run 3 cross-tabbed against `status`. **A fill rate
+answers "does this field exist", never "does it mean what its name says."**
+
+### The spec's open questions, now closed (two of three)
+
+- **`game_status` in 2026 — YES.** `status` is present on 100% of both rounds and games. One nuance
+  worth carrying: round-level status has three values (`complete｜playing｜scheduled`) and game-level
+  only two. A round reads `playing` while none of its games are, so it is a *week-window* state, not a
+  live signal.
+- **Live polling — STILL UNTESTED, and now known to be so.** `activePeriod` was null on all 93 records
+  and `clock` on 93/93 across two of three runs (one run caught a single `"00:00"`). No CFL game was
+  live at probe time, so the live path remains unexercised — the spec's caveat stands, and this probe
+  cannot retire it. Re-run during a live game to settle it.
+- **Season-ID split / `/cfl/fixtures` shells — not applicable here.** Those are `echo.pims.cfl.ca`
+  concerns. This route takes no season parameter and returns real games, not shells.
+
+The probe is committed as `scripts/probe-cfl-scoreboard-shape.mjs` with a weekly workflow, so the
+staleness check keeps running rather than being a one-time reassurance.
 
 ## `2026-08-08` — every seeded fixture is archived twice
 
