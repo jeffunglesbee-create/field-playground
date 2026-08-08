@@ -1,0 +1,35 @@
+probe_at: 2026-08-08T21:42:21.807Z
+purpose: does the DEPLOYED playground render the sports the relay returns?
+site:  https://field-playground.jeffunglesbee.workers.dev
+dates: 2026-08-07, 2026-08-08, 2026-08-04
+
+=== IS THE DEPLOYED BUILD CURRENT? ===
+  ABSENT   "Anomaly Watch"  (component added 2026-08-08)
+  ABSENT   "Fork Point"  (component added 2026-08-05)
+  ABSENT   "Leverage Index"  (component added 2026-08-04)
+
+=== RELAY SAYS vs DEPLOYED PAGE SHOWS ===
+  2026-08-07
+    relay serves : MLB:15  MLS:14  WNBA:3  EFL Cup:3   (total 35)
+    page shows   : MLB, MLS, WNBA, EFL Cup
+    page MISSING : (none)
+  2026-08-08
+    relay serves : EFL Cup:29  MLB:15  MLS:10  WNBA:3  wnba:2  PGA Tour:1  golf:1   (total 61)
+    page shows   : EFL Cup, MLB, MLS, WNBA, wnba, PGA Tour, golf
+    page MISSING : (none)
+  2026-08-04
+    relay serves : MLB:15  MLS:4  WNBA:1   (total 20)
+    page shows   : MLB, MLS, WNBA
+    page MISSING : (none)
+
+=== FAILED REQUESTS (a blocked fetch would explain missing content) ===
+  net::ERR_ABORTED https://field-relay-nba.jeffunglesbee.workers.dev/bundesliga-bapi/resolve-dayid?season=2026-2027&dat
+  net::ERR_ABORTED https://statsapi.mlb.com/api/v1.1/game/823684/feed/live
+
+=== VERDICT ===
+Read the MISSING lines. If the relay serves a sport for a date and the deployed
+page never mentions it, that is a client or deploy defect and the earlier
+"the desk faithfully renders the data" conclusion was drawn from too narrow a
+sample -- one date that happened to be single-sport.
+If nothing is missing, then the report is about WHICH DATE was on screen, and
+the archive gap (no MLB at all on 2026-08-05/06) is the whole story.
