@@ -92,3 +92,122 @@ label correction, **not** a `drama_peak` write, so the immutability guard is not
 Re-run the scope probe (`soccer-league-mislabel-scope-probe.yml`, or `workflow_dispatch`). Mismatched
 rows should drop to zero for the corrected set, and stay at zero for newly-archived games. It runs
 weekly on its own as the standing regression detector.
+
+---
+
+## `2026-08-08` — CFL is never archived
+
+**Status:** one-line change, **slug unverified**.
+
+**Symptom:** no CFL anywhere in the playground, ever, on any date.
+
+**Cause:** CFL is absent from the `LEAGUES` list the archive writer polls in
+`field-relay-nba/src/index.js`:
+
+```
+nba · nhl · mlb · wnba · eng.1 · usa.1 · esp.1 · ita.1 · ger.1 · fra.1 · nfl · fifa.world · pga
+```
+
+The relay clearly *knows* about CFL elsewhere — `/cfl/odds-probs`, the CFL internal API
+(`echo.pims.cfl.ca`), `cfl: 'americanfootball_cfl'` in the odds-key table, and `cfl: 'CFL'` in
+`context-assembler.js` — but none of that feeds `/context/date/`, which is the only thing the desk reads.
+Nothing downstream can render a sport that is never archived.
+
+**The change:**
+
+```js
+{sport:'football',  league:'cfl',  label:'CFL'},
+```
+
+**Do not apply until the slug is confirmed.** ESPN's scoreboard route is not on the relay's probe
+allow-list, so this session could not reach it. The confirming check, from anywhere that can:
+
+```
+GET /espn-gambit/apis/site/v2/sports/football/cfl/scoreboard?dates=YYYYMMDD
+```
+
+A non-200, or a 200 with an empty `events[]` during the CFL season, means the slug is wrong and the
+one-line change would silently poll nothing. Adding a league that returns nothing looks identical to
+adding one correctly.
+
+---
+
+## `2026-08-08` — every seeded fixture is archived twice
+
+**Status:** diagnosed, **no patch — and a documented assumption looks wrong**.
+
+**Symptom, measured over 14 real days:** 18 duplicate rows across 5 dates. On 2026-08-06 the desk showed
+**11 rows for 6 real matches**. Each pair is the same fixture under two different ids — one unscored, one
+final:
+
+```
+MLS_2026-08-06_newyorkcityfootballclub_clubsantoslaguna
+   score=—     finalized=no
+MLS_MLS-COM-000006_MLS-MAT-000A3C_phaseone_2026-08-06
+   score=0-2   finalized=yes
+```
+
+**Cause,** at `src/index.js:10629`:
+
+```js
+const id = series_key
+    ? `${sport}_${series_key}_${shortify(round) || 'r'}_${date}`
+    : `${sport}_${date}_${idTail}`;
+```
+
+Two ids for one match means `ON CONFLICT` cannot merge them. They are distinct rows by construction.
+
+**The part worth a second look.** The comment above that line already discloses duplication, but frames it
+as transitional:
+
+> *"any CURRENTLY-PENDING placeholder leg will still duplicate exactly once on its next resolution (old id
+> → new id, unavoidable without that riskier rename), **then self-heals** — every subsequent write to that
+> same series_key+round+date correctly upserts via the new id from then on."*
+
+**The measured data does not look like a one-time migration.** Duplicates appear on 2026-08-05, 06, 07 and
+08 — current dates, not a backlog. The likely reason self-healing never happens: the **pre-game seed**
+writes from `gameMeta` (built from the ESPN scoreboard), which carries **no `series_key`**, so it always
+takes the `SPORT_date_teams` branch. The **resolution** writes with a `series_key`, so it always takes the
+other. Two writers, two different id inputs, permanently. Every fixture that gets both a seed and a
+resolution duplicates once — and always will.
+
+That is a hypothesis consistent with every observed pair (old-scheme row unscored, new-scheme row final),
+not a proven mechanism. **Confirm before acting:** check whether the pre-game seed path can obtain a
+`series_key` at seed time. If it cannot, the disclosure's "self-heals" is wrong and this is structural.
+
+**Why no patch is attached.** The two candidate fixes are not equivalent in risk:
+- *Converge the id schemes* — rewrites historical ids that `briefs.game_id` already joins against in
+  `analytics-engine.js` (999, 1005, 1411, 1417). Same hazard that made the MLS label fix `sport`-column-only.
+- *Dedupe at read time* — `espn_event_id` is **null on every duplicate pair measured**, so the obvious
+  join key is unavailable. It would have to key on `(sport, date, home, away)`.
+
+Both need a decision this session should not make alone.
+
+---
+
+## `2026-08-08` — MLB and WNBA missing from the archive for two whole days
+
+**Status:** open investigation, **not a patch**.
+
+**Symptom:** `/context/date/` returns MLB on essentially every date in a 14-day window — and **zero** on
+2026-08-05 and 2026-08-06.
+
+```
+2026-08-07   35   MLB:15  MLS:14  WNBA:3  EFL Cup:3
+2026-08-06   11   MLS:11                              <- no MLB, no WNBA
+2026-08-05   12   MLS:12                              <- no MLB, no WNBA
+2026-08-04   20   MLB:15  MLS:4  WNBA:1
+```
+
+MLB posts a steady 15 rows/day either side of the gap. The playground was cleared as the cause: the
+deployed site renders every sport the relay serves on every other date, verified in a real browser
+(`probe-deployed-desk-sports.mjs`).
+
+**Not root-caused, and no fix should be written until it is.** Candidates worth separating: the archive
+cron not running on those dates; the ESPN fetch failing for the baseball/basketball slugs specifically;
+or rows written under a sport label that `/context/date/` does not return. The last is not idle — this
+repo has already found MLS fixtures stored as `FIFA World Cup`.
+
+**Cheapest discriminator:** query the archive directly for those two dates without the `/context/date/`
+filter. If rows exist, it's a read/label problem. If they don't, it's a write problem, and the cron logs
+for 2026-08-05/06 say which.
