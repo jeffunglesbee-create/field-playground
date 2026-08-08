@@ -1,0 +1,100 @@
+probe_at: 2026-08-08T21:05:55.296Z
+purpose: convert "N hardcoded colours" into "how many distinct colours, really".
+clustering threshold: DeltaE (CIE76) <= 3
+
+=== INVENTORY ===
+files scanned:             202
+token definitions found:   12
+hardcoded hex occurrences: 1032
+distinct hex values:       168
+
+=== CLUSTERS ===
+168 distinct values collapse into 137 perceptual clusters.
+9 cluster(s) sit within DeltaE 3 of an EXISTING token -- mechanical to fix.
+128 cluster(s) have no near token -- a real palette decision, not a rename.
+
+   215 use(s) across 14 value(s)  spread dE 11.8   -> --field-void (#0a0e12, dE 0.0)
+        #1a1a1a(112)  #1e1e1e(50)  #161616(19)  #232323(7)  #181818(6)  #262626(5)  #1c1c1c(4)  #141414(2)  #151515(2)  #0d0d0d(2)  #131313(2)  #111111(2)  #0c0c0c(1)  #0a0e12(1)
+        NOTE: wide spread -- single-link chaining may have merged a gradient. Read before batching.
+   147 use(s) across  5 value(s)  spread dE  5.1   -> --field-void (#0a0e12, dE 2.5)
+        #111(74)  #0a0a0a(41)  #0e0e0e(27)  #000(4)  #000000(1)
+    79 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --field-hairline dE 6.6)
+        #222(79)
+    62 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --field-text-secondary dE 58.1)
+        #4c8(62)
+    57 use(s) across  2 value(s)  spread dE  1.9   no near token (closest --field-hairline dE 7.3)
+        #2a2a2a(55)  #2e2e2e(2)
+    35 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-fire dE 15.1)
+        #c44(35)
+    32 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-cold dE 9.8)
+        #3a3a3a(32)
+    26 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-warm dE 9.4)
+        #da4(26)
+    19 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --field-hairline dE 21.0)
+        #1a2e1a(19)
+    18 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --field-signal-dim dE 36.8)
+        #4a90d9(18)
+    14 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-warm dE 3.3)
+        #d4a92e(14)
+    13 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --field-hairline dE 9.9)
+        #333(13)
+    12 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-fire dE 29.6)
+        #e77(12)
+    10 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-cold dE 30.3)
+        #2a4a2a(10)
+    10 use(s) across  2 value(s)  spread dE  2.3   no near token (closest --field-void-panel dE 12.6)
+        #2a1a1a(6)  #2e1a1a(4)
+     9 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --field-void dE 19.6)
+        #2a2410(9)
+     9 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-fire dE 20.7)
+        #e66(9)
+     8 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-hot dE 12.0)
+        #e75c3c(8)
+     8 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --tier-cold dE 8.7)
+        #444(8)
+     6 use(s) across  1 value(s)  spread dE  0.0   no near token (closest --field-text-secondary dE 6.9)
+        #888(6)
+  ...and 117 smaller clusters
+
+=== MASS CONCENTRATION (the number that actually matters) ===
+    2 cluster(s) cover 25% of all 1032 uses
+    5 cluster(s) cover 50% of all 1032 uses
+   27 cluster(s) cover 80% of all 1032 uses
+   86 cluster(s) cover 95% of all 1032 uses
+  So the tail is long but cheap -- a short list of clusters is most of the work,
+  and the remainder is one-off colours that are probably deliberate.
+
+=== WHERE THEY LIVE ===
+    62  src/components/AmbientPanel/AmbientPanel.module.css
+    43  src/components/DeskCard/DeskCard.module.css
+    33  src/components/AnomalyWatch/AnomalyWatch.module.css
+    27  src/components/Arbitrage/Arbitrage.module.css
+    27  src/components/StandingRoom/StandingRoom.module.css
+    23  src/components/ForkPoint/ForkPoint.module.css
+    20  src/components/DateBrowserTransition/DateBrowserTransition.module.css
+    20  src/components/LazyBoundaryDemo/LazyBoundaryDemo.module.css
+    19  src/components/PickEm/PickEm.module.css
+    18  src/components/Calibration/Calibration.module.css
+    18  src/components/PropsDemo/PropsDemo.module.css
+    18  src/components/ScoreTicker/ScoreTicker.module.css
+
+=== VERDICT ===
+1032 hardcoded occurrences -> 168 distinct values -> 137 clusters.
+Of those, 9 already have a token within DeltaE 3.
+
+PREDICTION MISS, recorded rather than quietly dropped: this probe was specified
+on the expectation that ~168 distinct values would collapse to roughly 15
+clusters. They collapse to 137. The clustering did not do what was
+claimed for it. What DID collapse is the mass -- see the concentration table
+above -- so the useful framing is "a few clusters carry most uses", not "the
+palette is secretly small".
+
+This is a REPORT, not a gate, and that is a measured decision rather than a
+preference: the detection-latency probe found CSS defects here are caught in
+hours against a 35-minute overall median, so this class does not clear the
+"expensive to discover late" bar. Fix the token-adjacent clusters if and when
+the files are open anyway; leave the rest alone.
+
+What WOULD earn a gate is the consequence, not the literal: a colour that fails
+contrast in one theme. That needs rendered output in both themes and is a
+different probe -- named here so its absence is deliberate rather than implied.

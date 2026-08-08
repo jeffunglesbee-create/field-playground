@@ -1,0 +1,62 @@
+name: Schema Drift Probe
+
+# Generates API schemas FROM MEASUREMENT and detects when reality drifts away.
+#
+# This is the one piece of the proposed process infrastructure the evidence
+# actually endorses. probe-detection-latency.mjs measured this repo's real
+# defect profile: median introduce->fix is 35 minutes and 82% die within a day,
+# so blanket enforcement solves a problem that mostly doesn't exist here. But
+# the p90 tail is entirely src/data (8.2d) and src/components (4.3d), and the
+# slowest defect measured (relay.js double-fire, 11.9 days) was SILENT.
+# Data-shape bugs are that class.
+#
+# Conditional by construction: `required` means 100% within a variant, never
+# "common overall". On 2026-08-06 a probe read home_score at 22% marginal and
+# called it too sparse; it is 14/14 on goal incidents. A schema built on
+# marginal rates would have frozen that mistake into a rule.
+#
+# Weekly for drift; generate is manual, because regenerating a schema should be
+# a deliberate act rather than something a cron quietly does to your contract.
+
+on:
+  schedule:
+    - cron: '13 13 * * 1'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'generate (rebuild schemas) or check (detect drift)'
+        required: false
+        default: 'check'
+        type: choice
+        options: [check, generate]
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run schema ${{ github.event.inputs.mode || 'check' }}
+        timeout-minutes: 15
+        continue-on-error: true
+        run: node scripts/schema-from-measurement.mjs --${{ github.event.inputs.mode || 'check' }}
+      - name: Commit schemas and result
+        if: always()
+        run: |
+          git config user.name "schema-drift-bot"
+          git config user.email "actions@github.com"
+          git add outbox/ src/data/schemas/ 2>/dev/null || true
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: schema ${{ github.event.inputs.mode || 'check' }} result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
