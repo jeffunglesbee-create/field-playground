@@ -1,0 +1,150 @@
+probe_at: 2026-08-08T21:31:13.213Z
+purpose: per-date sport composition of /context/date/, and duplicate-fixture detection.
+window: 14 days back from 2026-08-08
+
+dates fetched: 14 / 14
+
+=== PER-DATE SPORT COMPOSITION ===
+  date          total   sports present
+  2026-08-08     60   EFL Cup:29  MLB:15  MLS:10  WNBA:3  PGA Tour:1  wnba:1  golf:1
+  2026-08-07     35   MLB:15  MLS:14  WNBA:3  EFL Cup:3
+  2026-08-06     11   MLS:11
+  2026-08-05     12   MLS:12
+  2026-08-04     20   MLB:15  MLS:4  WNBA:1
+  2026-08-03     12   MLB:8  WNBA:3  golf:1
+  2026-08-02     31   MLB:15  MLS:8  WNBA:4  golf:2  wnba:2
+  2026-08-01     39   MLS:21  MLB:15  WNBA:2  golf:1
+  2026-07-31     35   MLS:16  MLB:15  WNBA:3  golf:1
+  2026-07-30     15   MLB:10  WNBA:3  PGA Tour:1  golf:1
+  2026-07-29     18   MLB:15  WNBA:2  MLS:1
+  2026-07-28     20   MLB:15  WNBA:5
+  2026-07-27     13   MLB:12  golf:1
+  2026-07-26     24   MLB:15  MLS:8  golf:1
+
+dates carrying MORE THAN ONE sport: 12 / 14
+
+=== DUPLICATE FIXTURES (same date, same teams, >1 row) ===
+  2026-08-08: 4 fixture(s) duplicated (60 rows for 56 real matches)
+    Orlando City vs Club León
+      id=MLS_2026-08-08_orlandocity_clublen
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3O_phaseone_2026-08-08
+         score=---  finalized=no  espn_event_id=null
+    Vancouver Whitecaps FC vs FC Juárez
+      id=MLS_2026-08-08_vancouverwhitecapsfc_fcjurez
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3N_phaseone_2026-08-08
+         score=3-1  finalized=yes  espn_event_id=null
+    Club Tigres vs Minnesota United FC
+      id=MLS_2026-08-08_clubtigres_minnesotaunitedfc
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3L_phaseone_2026-08-08
+         score=0-0  finalized=yes  espn_event_id=null
+    FC Cincinnati vs Pumas
+      id=MLS_2026-08-08_fccincinnati_pumas
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3K_phaseone_2026-08-08
+         score=0-2  finalized=yes  espn_event_id=null
+  2026-08-07: 7 fixture(s) duplicated (35 rows for 28 real matches)
+    Columbus Crew vs Club de Fútbol Pachuca
+      id=MLS_2026-08-07_columbuscrew_clubdeftbolpachuca
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3J_phaseone_2026-08-07
+         score=1-2  finalized=yes  espn_event_id=null
+    Charlotte FC vs Atlas FC
+      id=MLS_2026-08-07_charlottefc_atlasfc
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3I_phaseone_2026-08-07
+         score=0-2  finalized=yes  espn_event_id=null
+    Portland Timbers vs Club Puebla
+      id=MLS_2026-08-07_portlandtimbers_clubpuebla
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3H_phaseone_2026-08-07
+         score=2-5  finalized=yes  espn_event_id=null
+    Club América vs San Diego FC
+      id=MLS_2026-08-07_clubamrica_sandiegofc
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3G_phaseone_2026-08-07
+         score=1-3  finalized=yes  espn_event_id=null
+    ...and 3 more on this date
+  2026-08-06: 5 fixture(s) duplicated (11 rows for 6 real matches)
+    New York City Football Club vs Club Santos Laguna
+      id=MLS_2026-08-06_newyorkcityfootballclub_clubsantoslaguna
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3C_phaseone_2026-08-06
+         score=0-2  finalized=yes  espn_event_id=null
+    Los Angeles Football Club vs Chivas de Guadalajara
+      id=MLS_2026-08-06_losangelesfootballclub_chivasdeguadalajara
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3B_phaseone_2026-08-06
+         score=1-1  finalized=yes  espn_event_id=null
+    Toluca FC vs Seattle Sounders FC
+      id=MLS_2026-08-06_tolucafc_seattlesoundersfc
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A3A_phaseone_2026-08-06
+         score=0-3  finalized=yes  espn_event_id=null
+    FC Dallas vs Club Querétaro
+      id=MLS_2026-08-06_fcdallas_clubquertaro
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A39_phaseone_2026-08-06
+         score=0-2  finalized=yes  espn_event_id=null
+    ...and 1 more on this date
+  2026-08-05: 6 fixture(s) duplicated (12 rows for 6 real matches)
+    Club de Fútbol Monterrey Rayados, A.C. vs Orlando City
+      id=MLS_2026-08-05_clubdeftbolmonterreyrayadosac_orlandocity
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A38_phaseone_2026-08-05
+         score=---  finalized=no  espn_event_id=null
+    Inter Miami CF vs Atlético de San Luis
+      id=MLS_2026-08-05_intermiamicf_atlticodesanluis
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A36_phaseone_2026-08-05
+         score=2-4  finalized=yes  espn_event_id=null
+    Vancouver Whitecaps FC vs Atlante FC
+      id=MLS_2026-08-05_vancouverwhitecapsfc_atlantefc
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A35_phaseone_2026-08-05
+         score=1-0  finalized=yes  espn_event_id=null
+    Club Tigres vs Real Salt Lake
+      id=MLS_2026-08-05_clubtigres_realsaltlake
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A34_phaseone_2026-08-05
+         score=1-1  finalized=yes  espn_event_id=null
+    ...and 2 more on this date
+  2026-08-04: 2 fixture(s) duplicated (20 rows for 18 real matches)
+    FC Cincinnati vs Club de Fútbol Pachuca
+      id=MLS_2026-08-04_fccincinnati_clubdeftbolpachuca
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A32_phaseone_2026-08-04
+         score=1-3  finalized=yes  espn_event_id=null
+    Columbus Crew vs Atlas FC
+      id=MLS_2026-08-04_columbuscrew_atlasfc
+         score=---  finalized=no  espn_event_id=null
+      id=MLS_MLS-COM-000006_MLS-MAT-000A30_phaseone_2026-08-04
+         score=1-3  finalized=yes  espn_event_id=null
+
+=== ID SCHEME CENSUS ===
+  SPORT_date_teams             265
+  other                        55
+  SPORT_seriesKey_round_date   25
+
+=== SPORT LABELS SEEN (whole window) ===
+  "MLB"  165
+  "MLS"  105
+  "EFL Cup"  32
+  "WNBA"  29
+  "golf"  9
+  "wnba"  3
+  "PGA Tour"  2
+
+=== VERDICT ===
+Duplicate fixtures found on 5 of 14 dates (18 extra row(s)).
+The desk is not miscounting. It is faithfully rendering rows the archive really
+contains twice. Two id schemes for one match means ON CONFLICT cannot dedupe --
+they are distinct rows by construction, so the seed row and the finalized row
+both survive. That is an archive-write defect, not a client one.
+
+This probe deliberately does not propose a fix. Both candidate fixes (converge the
+id schemes; or dedupe on espn_event_id at read time) live in field-relay-nba, where
+a push to src/** auto-deploys, and one of them rewrites historical ids that
+briefs.game_id already joins against.
