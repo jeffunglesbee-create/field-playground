@@ -89,10 +89,22 @@ async function main() {
     ['Leverage Index', 'component added 2026-08-04'],
   ]
 
+  // CASE-INSENSITIVE, and this is not defensive padding -- it is a bug this
+  // probe already shipped. innerText returns text as RENDERED, and these
+  // component headers set `text-transform: uppercase`, so the DOM says
+  // "Anomaly Watch" and innerText says "ANOMALY WATCH". A case-sensitive
+  // includes() reported all three ABSENT and concluded the deploy was stale,
+  // while the tab label in the very same output read "Lab 18" -- exactly the
+  // count that only exists if the newest component IS deployed. Two signals
+  // from one run disagreed, and the case-sensitive one was wrong.
+  // Third instance of this same class today; the earlier one was a /score/
+  // regex against a CSS-uppercased "SCORE".
+  const hasMarker = (text, needle) => text.toLowerCase().includes(needle.toLowerCase())
+
   const landingText = await page.locator('body').innerText().catch(() => '')
   log('  on the LANDING tab (where these are NOT expected to appear):')
   for (const [needle] of markers) {
-    log(`    ${landingText.includes(needle) ? 'present' : 'absent '}  "${needle}"`)
+    log(`    ${hasMarker(landingText, needle) ? 'present' : 'absent '}  "${needle}"`)
   }
 
   let labText = ''
@@ -102,7 +114,7 @@ async function main() {
     labText = await page.locator('body').innerText()
     log('  after clicking the LAB tab (where they live):')
     for (const [needle, when] of markers) {
-      log(`    ${labText.includes(needle) ? 'PRESENT' : 'ABSENT '}  "${needle}"  (${when})`)
+      log(`    ${hasMarker(labText, needle) ? 'PRESENT' : 'ABSENT '}  "${needle}"  (${when})`)
     }
   } catch (e) {
     log(`  could not open the Lab tab: ${String(e.message).slice(0, 120)}`)
@@ -110,7 +122,7 @@ async function main() {
   }
   log('')
   if (labText) {
-    const present = markers.filter(([n]) => labText.includes(n)).length
+    const present = markers.filter(([n]) => hasMarker(labText, n)).length
     if (present === markers.length) {
       log(`  DEPLOY IS CURRENT: all ${markers.length} recent components render in the Lab tab.`)
     } else if (present === 0) {
@@ -118,6 +130,17 @@ async function main() {
     } else {
       log(`  DEPLOY IS PARTIALLY STALE: ${present}/${markers.length} present -- read the dates above to`)
       log('  bracket when the deployed build was cut.')
+    }
+    // Two independent signals. If they disagree, say so instead of picking one:
+    // the disagreement is itself the finding, and last time the louder signal
+    // was the wrong one.
+    if (labCount === 18 && present === 0) {
+      log('  CONTRADICTION: the Lab tab reports 18 sections -- the count that only exists')
+      log('  once the newest component is deployed -- while no marker text was found.')
+      log('  Trust neither. Something is wrong with the text match, not the deploy.')
+    } else if (labCount != null && labCount < 18 && present === markers.length) {
+      log(`  CONTRADICTION: markers all present but Lab count is ${labCount}, below the 18 that`)
+      log('  local HEAD builds. Worth reading before concluding anything.')
     }
   }
   log('')
