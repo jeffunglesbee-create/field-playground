@@ -1,0 +1,74 @@
+probe_at: 2026-08-08T22:14:45.280Z
+purpose: measure the real shape of /cfl/scoreboard/rounds before any archive-write
+work is designed against it. Staleness is checked FIRST -- that is what disqualified ESPN.
+
+=== TOP LEVEL === (154903 bytes)
+  root type: array
+  root is an array of 27
+
+  rounds: 27
+
+=== ROUND-LEVEL SHAPE ===
+  rounds[] — 27 records
+    field                    present  non-null        types            samples
+    id                          27     27 (100%)  number           1420009 | 1420010 | 1420011 | 1420012
+    status                      27     27 (100%)  string           complete | playing | scheduled
+    name                        27     27 (100%)  string           Preseason Week 1 | Preseason Week 2 | Presea
+    type                        27     27 (100%)  string           PRE | REG | POST
+    number                      27     27 (100%)  number           0 | 1 | 2 | 3
+    startDate                   27     27 (100%)  string           2026-05-18T00:00:00+00:00 | 2026-05-22T00:00
+    endDate                     27     27 (100%)  string           2026-05-18T23:59:00+00:00 | 2026-05-23T23:59
+    tournaments                 27     27 (100%)  array            
+
+=== GAME-LEVEL SHAPE ===  (nested under rounds[].tournaments)
+  rounds[].tournaments — 93 records
+    field                    present  non-null        types            samples
+    id                          93     93 (100%)  number           13419665 | 13419666 | 13419667 | 13419668
+    date                        93     93 (100%)  string           2026-05-18T19:00:00+00:00 | 2026-05-22T23:00
+    status                      93     93 (100%)  string           complete | scheduled
+    homeSquad                   93     93 (100%)  object           
+    awaySquad                   93     93 (100%)  object           
+    activePeriod                93      0 (  0%)  null             
+    timeouts                    93     93 (100%)  object           
+    possession                  93     93 (100%)  string           None | Away | Home
+    cflId                       93     90 ( 97%)  number           6582 | 6583 | 6584 | 6586
+    clock                       93      1 (  1%)  string           00:00
+    winner                      93     46 ( 49%)  number           112939 | 88019 | 122345 | 114347
+    isHidden                    93     93 (100%)  boolean          false
+    markets                     93     93 (100%)  object           
+    marketsBCLC                 93     93 (100%)  array|object     
+    marketsScorebet             93     93 (100%)  array|object     
+
+=== STALENESS: WHAT YEAR IS THIS DATA? ===
+  years found in date-shaped strings:
+    2026: 147 occurrence(s)
+
+  current year (2026) occurrences: 147
+  Contains current-year dates -- does not exhibit the ESPN staleness failure.
+
+=== SPEC OPEN QUESTIONS ===
+  game_status / status field present anywhere: YES
+    (Spec: confirmed in 2025 fixtures, "verify presence in 2026")
+  score-like keys seen: score, marketsScorebet
+
+=== ARCHIVE-WRITE FEASIBILITY ===
+/archive/game needs: sport, league, date, home, away, home_score, away_score,
+venue, start_time. Which of those are directly available above, and which need a
+second lookup (team ids -> names via /cfl/scoreboard/squads), is the question the
+field lists answer. Read them rather than trusting this line.
+  /cfl/scoreboard/squads: 2969 bytes, 10 squad record(s)
+  squads[] — 10 records
+    field                    present  non-null        types            samples
+    id                          10     10 (100%)  number           0 | 83579 | 86680 | 88019
+    name                        10     10 (100%)  string           TBD | Hamilton Tiger-Cats | Montreal Alouett
+    abbreviation                10     10 (100%)  string           TBD | HAM | MTL | OTT
+    wins                        10     10 (100%)  number           0 | 3 | 8 | 2
+    draw                        10     10 (100%)  number           0
+    loss                        10     10 (100%)  number           0 | 5 | 1 | 8
+    ticketUrls                  10     10 (100%)  array|object     
+
+=== VERDICT ===
+This probe measures and stops. It proposes no field mapping and writes no code:
+the staged CFL fix it replaces was produced by designing against an unmeasured
+source, and repeating that here would be the same mistake with a different URL.
+The next step is a human reading the field lists above against /archive/game.
