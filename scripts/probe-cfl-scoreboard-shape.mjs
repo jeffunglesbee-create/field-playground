@@ -37,6 +37,16 @@ const RELAY = 'https://field-relay-nba.jeffunglesbee.workers.dev'
 
 const typeOf = v => v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v
 
+// Every key name at every depth. "Field X is missing" is only worth saying
+// after looking everywhere, not just where X was expected to be.
+function blobKeys(v, acc = new Set()) {
+  if (Array.isArray(v)) { for (const x of v) blobKeys(x, acc) }
+  else if (v && typeof v === 'object') {
+    for (const [k, x] of Object.entries(v)) { acc.add(k); blobKeys(x, acc) }
+  }
+  return acc
+}
+
 async function getJson(path) {
   const res = await fetch(`${RELAY}${path}`, { headers: { 'User-Agent': UA } })
   const text = await res.text()
@@ -169,6 +179,55 @@ async function main() {
     log('=== ONE COMPLETE GAME, VERBATIM ===')
     log('  (fill rates say a field exists; only a real record says what it holds)')
     for (const line of JSON.stringify(finished, null, 2).split('\n').slice(0, 90)) log('  ' + line)
+  }
+  log('')
+
+  // ---- IS A 100%-FILLED SCORE ACTUALLY A SCORE? ----
+  // Run 2 measured homeSquad.score at 93/93 non-null while only 46 games had a
+  // winner. A fill rate cannot tell those apart: 0 is non-null. If unplayed
+  // games carry 0 rather than null, then "score is always present" is a trap,
+  // not a convenience -- an archive writer trusting it posts 0-0 finals for
+  // fixtures that have not kicked off. That is ESPN's failure mode wearing a
+  // different disguise: a fully-populated response that is wrong.
+  if (games.length) {
+    log('=== SCORE x STATUS: does a filled score mean a played game? ===')
+    const byStatus = new Map()
+    for (const g of games) {
+      const s = String(g?.status)
+      const b = byStatus.get(s) ?? { n: 0, zeroZero: 0, nullScore: 0, anyPoints: 0, winner: 0 }
+      b.n++
+      const h = g?.homeSquad?.score, a = g?.awaySquad?.score
+      if (h == null || a == null) b.nullScore++
+      else if (h === 0 && a === 0) b.zeroZero++
+      else b.anyPoints++
+      if (g?.winner != null) b.winner++
+      byStatus.set(s, b)
+    }
+    log('    status        n    0-0   null   points   winner-set')
+    for (const [s, b] of byStatus) {
+      log(`    ${s.padEnd(12)} ${String(b.n).padStart(3)}  ${String(b.zeroZero).padStart(5)}  ${String(b.nullScore).padStart(5)}  ${String(b.anyPoints).padStart(6)}  ${String(b.winner).padStart(10)}`)
+    }
+    const unplayed = [...byStatus.entries()].filter(([s]) => s !== 'complete')
+    const unplayedZero = unplayed.reduce((n, [, b]) => n + b.zeroZero, 0)
+    const unplayedNull = unplayed.reduce((n, [, b]) => n + b.nullScore, 0)
+    if (unplayedZero && !unplayedNull) {
+      log('  *** UNPLAYED GAMES CARRY 0, NOT NULL. The 100% fill rate on score is')
+      log('  *** therefore meaningless as a played/unplayed signal. Any archive write must')
+      log('  *** gate on status (or winner), never on score being present.')
+    } else if (unplayedNull) {
+      log(`  Unplayed games carry null score in ${unplayedNull} case(s) -- score presence is`)
+      log('  a usable signal, though status remains the explicit one.')
+    }
+    log('')
+  }
+
+  // ---- VENUE: absent, or just not where it was looked for? ----
+  log('=== VENUE ===')
+  const venueKeys = [...new Set([...blobKeys(root)].filter(k => /venue|stadium|location|city|site/i.test(k)))]
+  log(`  venue-like keys anywhere in the payload: ${venueKeys.join(', ') || '(none)'}`)
+  if (!venueKeys.length) {
+    log('  /archive/game takes a venue. This route does not carry one at any depth, so it')
+    log('  must come from a second source or be written null -- a decision, not an oversight.')
   }
   log('')
 
