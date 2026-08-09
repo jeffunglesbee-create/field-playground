@@ -1,0 +1,30 @@
+probe_at: 2026-08-09T00:47:44.013Z
+purpose: does production and playground share one real root cause -- unvalidated
+assumptions about external data shape -- measured, not asserted.
+
+=== fetching real, current source from all three repos ===
+  client + relay fetched fresh
+  playground: measuring this real checkout directly
+
+=== real, distinct external hosts integrated with, per repo ===
+  jubilant-bassoon (client): 77 -- 7plus.com.au, a.espncdn.com, abc.com, air-quality-api.open-meteo.com, api.balldontlie.io, api.football-data.org, api.github.com, api.open-meteo.com, api.openf1.org, app.atptour.com, baseballsavant.mlb.com, en.wikipedia.org, fubo.tv, iontelevision.com, ipapi.co, kayosports.com.au, live-golf-data.p.rapidapi.com, play.max.com, plus.espn.com, restcountries.com, site.api.espn.com, sny.tv, spacecityhomenetwork.com, statsapi.mlb.com, stream.directv.com, tubitv.com, tv.apple.com, tv.youtube.com, victoryplus.com, video.masnsports.com, watch.sling.com, watch.wnba.com, www.amazon.com, www.beinsports.com, www.cbssports.com, www.cfl.ca, www.dazn.com, www.directv.com, www.disneyplus.com, www.espn.com, www.fandango.com, www.fandueltelevision.com, www.foxsports.com, www.foxtel.com.au, www.fubo.tv, www.golfchannel.com, www.hbomax.com, www.hotstar.com, www.hulu.com, www.jiohotstar.com, www.masnsports.com, www.mlb.com, www.nba.com, www.nbc.com, www.nbcsports.com, www.netflix.com, www.nfl.com, www.nflnetwork.com, www.nhl.com, www.paramountplus.com, www.peacocktv.com, www.pgatour.com, www.skysports.com, www.sling.com, www.sportsnet.ca, www.sportsnetpittsburgh.com, www.tbs.com, www.telemundo.com, www.tennischannel.com, www.tntdrama.com, www.tntsports.co.uk, www.trutv.com, www.usanetwork.com, www.watchafl.com.au, www.willow.tv, www.xfinity.com, www.yesnetwork.com
+  field-relay-nba  (relay):  44 -- aah.wd5.myworkdayjobs.com, api-web.nhle.com, api.anthropic.com, api.balldontlie.io, api.datamuse.com, api.football-data.org, api.github.com, api.parse.bot, api.prod.whoop.com, api.sportradar.com, api.squiggle.com.au, api.the-odds-api.com, apim.laliga.com, app.atptour.com, baseballsavant.mlb.com, cdn.nba.com, cflscoreboard.cfl.ca, content.dropboxapi.com, do.internal, echo.pims.cfl.ca, espn-primary-forced-failure.invalid, fantasy.premierleague.com, fbref.com, footballapi.pulselive.com, gambit-api-partner.fantasy.espn.com, kaliaflstats.com, site.api.espn.com, site.web.api.espn.com, sports.bzzoiro.com, sports.core.api.espn.com, stats-api.mlssoccer.com, stats.nba.com, statsapi.mlb.com, wapp.bapi.bundesliga.com, wikimedia.org, www.atptour.com, www.bundesliga.com, www.cfl.ca, www.espn.com, www.laliga.com, www.nba.com, www.nhl.com, www.premierleague.com, www.realtimesportsapi.com
+  field-playground:          7 -- api.open-meteo.com, baseballsavant.mlb.com, esm.sh, geocoding-api.open-meteo.com, open-meteo.com, site.api.espn.com, statsapi.mlb.com
+  union across all three:    113 distinct real external hosts
+
+=== real, already-confirmed incidents this week, cross-checked against the measured host list ===
+  CONFIRMED present: site.api.espn.com
+    -> wrong assumed shape -> 403/stale-data incidents (P0, CFL "obvious fix" harmful)
+  CONFIRMED present: cflscoreboard.cfl.ca
+    -> unplayed fixtures return score=0 not null -- naive gate would archive phantom finals
+  CONFIRMED present: statsapi.mlb.com
+    -> wrongly assumed to lack broadcast data -- would have shipped an unneeded carve-out
+  CONFIRMED present: sports.core.api.espn.com
+    -> p.situation.outs assumed nested, real shape is top-level -- silent flat drama_arc data
+
+=== verdict ===
+Real incidents this week: 4, all against hosts genuinely present in
+this measured integration surface. All four share the identical mechanism: a wrong assumption
+about external shape, silently trusted until a live probe or production failure caught it.
+None were a missing type annotation -- every one involved data that "type-checked fine" against
+whatever shape was assumed, because the assumption itself was never checked against reality.
