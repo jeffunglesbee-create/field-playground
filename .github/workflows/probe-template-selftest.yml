@@ -3,6 +3,9 @@ name: Reusable Probe Template Self-Test
 on:
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   test:
     uses: ./.github/workflows/_reusable-probe.yml
