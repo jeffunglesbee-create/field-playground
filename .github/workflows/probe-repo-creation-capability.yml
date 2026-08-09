@@ -15,15 +15,31 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "=== real, empirical test: can the automatic GITHUB_TOKEN create a new repo? ==="
+          mkdir -p outbox
+          OUT="outbox/repo-creation-probe-$(date -u +%Y%m%dT%H%M%SZ).txt"
+          echo "=== real, empirical test: can the automatic GITHUB_TOKEN create a new repo? ===" | tee -a "$OUT"
           HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
             -X POST "https://api.github.com/user/repos" \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -d '{"name":"field-laboratory-probe-delete-me","private":true}')
-          echo "HTTP: $HTTP_CODE"
-          cat /tmp/resp.json
-          echo ""
-          echo "=== documented GitHub behavior: the default GITHUB_TOKEN is scoped only to"
-          echo "the repo the workflow runs in, and cannot create a new, separate repo. This"
-          echo "call is expected to fail -- proving that empirically, not asserting it. ==="
+          echo "HTTP: $HTTP_CODE" | tee -a "$OUT"
+          cat /tmp/resp.json | tee -a "$OUT"
+          echo "" | tee -a "$OUT"
+          echo "=== documented GitHub behavior: the default GITHUB_TOKEN is scoped only to" | tee -a "$OUT"
+          echo "the repo the workflow runs in, and cannot create a new, separate repo. This" | tee -a "$OUT"
+          echo "call is expected to fail -- proving that empirically, not asserting it. ===" | tee -a "$OUT"
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.name "repo-creation-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: repo creation probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
