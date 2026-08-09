@@ -20,10 +20,8 @@ const log = s => { out.push(s); console.log(s); try { writeFileSync(outPath, out
 
 const RELAY = 'https://field-relay-nba.jeffunglesbee.workers.dev'
 
-async function fetchArchive(repo, dir) {
-  const sigRes = await fetch(RELAY + '/repo/archive?repo=' + repo)
-  const sig = await sigRes.json()
-  execSync(`mkdir -p ${dir} && curl -sL "${sig.url}" | tar -xz -C ${dir} --strip-components=1`)
+async function fetchArchive(signedUrl, dir) {
+  execSync(`mkdir -p ${dir} && curl -sL "${signedUrl}" | tar -xz -C ${dir} --strip-components=1`)
 }
 
 // Real, distinct external (non-relay, non-Cloudflare-internal) hosts
@@ -48,8 +46,16 @@ async function main() {
   log('')
 
   log('=== fetching real, current source from all three repos ===')
-  await fetchArchive('jubilant-bassoon', 'client')
-  await fetchArchive('field-relay-nba', 'relay')
+  const clientUrl = process.env.CLIENT_ARCHIVE_URL
+  const relayUrl = process.env.RELAY_ARCHIVE_URL
+  if (!clientUrl || !relayUrl) {
+    log('FAILED: CLIENT_ARCHIVE_URL / RELAY_ARCHIVE_URL not set -- these must be')
+    log('freshly-signed URLs from the get_archive_url MCP tool, passed as workflow inputs.')
+    log('The relay archive endpoint requires signing; a bare CI-side fetch cannot produce one.')
+    return
+  }
+  await fetchArchive(clientUrl, 'client')
+  await fetchArchive(relayUrl, 'relay')
   log('  client + relay fetched fresh')
   log('  playground: measuring this real checkout directly')
   log('')
