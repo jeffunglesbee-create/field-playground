@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - uses: actions/checkout@v4
       - name: Attempt real repo creation with the default GITHUB_TOKEN
         continue-on-error: true
         env:
