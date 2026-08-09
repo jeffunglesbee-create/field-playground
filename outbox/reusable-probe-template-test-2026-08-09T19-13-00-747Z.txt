@@ -1,0 +1,3 @@
+Reusable probe template verification
+ran at: 2026-08-09T19:13:00.747Z
+If this file exists and is committed, the template's checkout + tolerant-execution + commit-with-retry all worked correctly, end to end, on a real first attempt.
