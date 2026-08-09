@@ -1,0 +1,11 @@
+name: Reusable Probe Template Self-Test
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    uses: ./.github/workflows/_reusable-probe.yml
+    with:
+      script: scripts/probe-template-selftest.mjs
+      commit_message: "chore: reusable probe template self-test [skip ci]"
