@@ -1,0 +1,14 @@
+probe_at: 2026-08-09T00:45:03.072Z
+purpose: does production and playground share one real root cause -- unvalidated
+assumptions about external data shape -- measured, not asserted.
+
+=== fetching real, current source from all three repos ===
+FAILED: SyntaxError: Unexpected token 'M', "Missing exp or sig" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at parseJSONFromBytes (node:internal/deps/undici/undici:5888:19)
+    at successSteps (node:internal/deps/undici/undici:5869:27)
+    at fullyReadBody (node:internal/deps/undici/undici:4761:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async consumeBody (node:internal/deps/undici/undici:5878:7)
+    at async fetchArchive (file:///home/runner/work/field-playground/field-playground/scripts/probe-cross-repo-external-risk.mjs:25:15)
+    at async main (file:///home/runner/work/field-playground/field-playground/scripts/probe-cross-repo-external-risk.mjs:51:3)
