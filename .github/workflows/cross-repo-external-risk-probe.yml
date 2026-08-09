@@ -1,7 +1,14 @@
 name: Cross-Repo External Risk Probe
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      client_archive_url:
+        required: true
+        type: string
+      relay_archive_url:
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -18,6 +25,9 @@ jobs:
       - name: Run cross-repo measurement
         timeout-minutes: 3
         continue-on-error: true
+        env:
+          CLIENT_ARCHIVE_URL: ${{ inputs.client_archive_url }}
+          RELAY_ARCHIVE_URL: ${{ inputs.relay_archive_url }}
         run: node scripts/probe-cross-repo-external-risk.mjs
       - name: Commit result
         if: always()
