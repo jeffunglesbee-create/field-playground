@@ -1,0 +1,35 @@
+name: Cross-Repo External Risk Probe
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run cross-repo measurement
+        timeout-minutes: 3
+        continue-on-error: true
+        run: node scripts/probe-cross-repo-external-risk.mjs
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.name "cross-repo-risk-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: cross-repo external risk result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
