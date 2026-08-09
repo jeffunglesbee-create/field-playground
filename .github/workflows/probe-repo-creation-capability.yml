@@ -16,20 +16,30 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p outbox
+          set -x
+          mkdir -p outbox || true
           OUT="outbox/repo-creation-probe-$(date -u +%Y%m%dT%H%M%SZ).txt"
-          echo "=== real, empirical test: can the automatic GITHUB_TOKEN create a new repo? ===" | tee -a "$OUT"
+          echo "file target: $OUT"
+          {
+            echo "=== real, empirical test: can the automatic GITHUB_TOKEN create a new repo? ==="
+            echo "run started: $(date -u -Iseconds)"
+          } > "$OUT" 2>&1 || true
           HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
             -X POST "https://api.github.com/user/repos" \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
-            -d '{"name":"field-laboratory-probe-delete-me","private":true}')
-          echo "HTTP: $HTTP_CODE" | tee -a "$OUT"
-          cat /tmp/resp.json | tee -a "$OUT"
-          echo "" | tee -a "$OUT"
-          echo "=== documented GitHub behavior: the default GITHUB_TOKEN is scoped only to" | tee -a "$OUT"
-          echo "the repo the workflow runs in, and cannot create a new, separate repo. This" | tee -a "$OUT"
-          echo "call is expected to fail -- proving that empirically, not asserting it. ===" | tee -a "$OUT"
+            -d '{"name":"field-laboratory-probe-delete-me","private":true}' 2>>"$OUT" || echo "000")
+          {
+            echo "HTTP: $HTTP_CODE"
+            cat /tmp/resp.json 2>/dev/null || echo "(no response body captured)"
+            echo ""
+            echo "=== documented GitHub behavior: the default GITHUB_TOKEN is scoped only to"
+            echo "the repo the workflow runs in, and cannot create a new, separate repo. This"
+            echo "call is expected to fail -- proving that empirically, not asserting it. ==="
+          } >> "$OUT" 2>&1 || true
+          echo "=== final file contents ==="
+          cat "$OUT" || echo "FILE DOES NOT EXIST"
+          ls -la outbox/ || true
       - name: Commit result
         if: always()
         run: |
