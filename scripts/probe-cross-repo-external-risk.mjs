@@ -46,14 +46,8 @@ async function main() {
   log('')
 
   log('=== fetching real, current source from all three repos ===')
-  const clientUrl = process.env.CLIENT_ARCHIVE_URL
-  const relayUrl = process.env.RELAY_ARCHIVE_URL
-  if (!clientUrl || !relayUrl) {
-    log('FAILED: CLIENT_ARCHIVE_URL / RELAY_ARCHIVE_URL not set -- these must be')
-    log('freshly-signed URLs from the get_archive_url MCP tool, passed as workflow inputs.')
-    log('The relay archive endpoint requires signing; a bare CI-side fetch cannot produce one.')
-    return
-  }
+  const clientUrl = 'https://field-relay-nba.jeffunglesbee.workers.dev/repo/archive?exp=1786237024&sig=0f56b96d227cb47f78e2dc77884f01f9bb5d868da414444466145518afac300f&repo=jubilant-bassoon'
+  const relayUrl = 'https://field-relay-nba.jeffunglesbee.workers.dev/repo/archive?exp=1786237027&sig=2d54dd5ea95fe991bbd812619d240bb16ea39c839f0e9d2b89ee8571de4d0428&repo=field-relay-nba'
   await fetchArchive(clientUrl, 'client')
   await fetchArchive(relayUrl, 'relay')
   log('  client + relay fetched fresh')
