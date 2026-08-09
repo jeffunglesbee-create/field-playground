@@ -1,0 +1,21 @@
++ echo '=== real, empirical test: can the automatic GITHUB_TOKEN create a new repo? ==='
+=== real, empirical test: can the automatic GITHUB_TOKEN create a new repo? ===
+++ date -u -Iseconds
++ echo 'run started: 2026-08-09T18:51:20+00:00'
+run started: 2026-08-09T18:51:20+00:00
++ echo 'HTTP: 403'
+HTTP: 403
++ cat /tmp/resp.json
+{
+  "message": "Resource not accessible by integration",
+  "documentation_url": "https://docs.github.com/rest/repos/repos#create-a-repository-for-the-authenticated-user",
+  "status": "403"
+}
++ echo ''
+
++ echo '=== documented GitHub behavior: the default GITHUB_TOKEN is scoped only to'
+=== documented GitHub behavior: the default GITHUB_TOKEN is scoped only to
++ echo 'the repo the workflow runs in, and cannot create a new, separate repo. This'
+the repo the workflow runs in, and cannot create a new, separate repo. This
++ echo 'call is expected to fail -- proving that empirically, not asserting it. ==='
+call is expected to fail -- proving that empirically, not asserting it. ===
