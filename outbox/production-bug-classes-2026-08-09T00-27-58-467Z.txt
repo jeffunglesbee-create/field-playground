@@ -1,0 +1,35 @@
+probe_at: 2026-08-09T00:27:58.468Z
+purpose: real, empirical bug-class distribution from jubilant-bassoon's actual git history
+method: same shape as probe-detection-latency.mjs, applied to a fresh clone of a different repo
+
+=== cloning the real, public repo ===
+cloned HEAD: 5dcb936894c01d2e5be5db91c3f00d4272aa3d13
+
+total commits (all history): 6277
+commits matching fix/bug pattern: 999
+
+=== real keyword frequency across all matched fix commits ===
+(a commit can match more than one keyword; these are not exclusive buckets)
+  stale                37
+  cache                24
+  duplicate            16
+  auth                 15
+  race                 14
+  timeout              10
+  undefined            9
+  regex                8
+  null                 8
+  shape                5
+  field name           3
+  schema               2
+  validation           2
+  case-sensitiv        1
+
+=== structural fact, measured fresh, not recalled ===
+src/legacy/field.js real current line count: 40630
+fix commits touching this single file: 35 / 999 (4% of all matched fixes)
+
+=== verdict ===
+Real distribution above, not asserted. Use this alongside playground's own
+probe-detection-latency.mjs output for a genuine, evidence-based comparison
+rather than a memory-based one.
