@@ -12,6 +12,7 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: Attempt real repo creation with the default GITHUB_TOKEN
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
