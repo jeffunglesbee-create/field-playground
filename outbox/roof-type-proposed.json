@@ -119,11 +119,11 @@
   {
     "name": "Oriole Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Oriole Park was the name of multiple baseball parks in Baltimore, Maryland between 1883 and 1944, all built within a few blocks of each other.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Guaranteed Rate Field",
@@ -218,11 +218,11 @@
   {
     "name": "American Family Field",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": "retractable",
-    "leadSentence": "American Family Field is a retractable roof stadium in Milwaukee, Wisconsin.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Minute Maid Park",
@@ -317,20 +317,20 @@
   {
     "name": "Stade Saputo",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Saputo Stadium is a soccer-specific stadium at Olympic Park in the borough of Mercier–Hochelaga-Maisonneuve in Montreal, Quebec, Canada.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "BMO Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "BMO Field is an outdoor stadium located at Exhibition Place in Toronto, Ontario, Canada.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Chase Stadium",
@@ -416,11 +416,11 @@
   {
     "name": "Allianz Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Allianz Field is a soccer-specific stadium in Saint Paul, Minnesota, United States, located near Interstate 94 and Snelling Avenue.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "BMO Stadium",
@@ -498,7 +498,7 @@
     "name": "Mercedes-Benz Stadium",
     "currentRoofType": "retractable",
     "wikipediaRoofType": "retractable",
-    "leadSentence": "Mercedes-Benz Stadium is a retractable roof multi-purpose stadium in Atlanta, Georgia, U.S. Opened in 2017 as a replacement for the Georgia Dome, it is the home to the Atlanta Falcons of the National Football League (NFL), Atlanta United FC of Major League Soccer (MLS), and an expansion team of the National Women's Soccer League (NWSL).",
+    "leadSentence": "Mercedes-Benz Stadium is a retractable roof stadium in Atlanta, Georgia, United States.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -524,11 +524,11 @@
   {
     "name": "Etihad Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Etihad Stadium is the home of Premier League club Manchester City, with a domestic football capacity of 61,038, making it the 6th-largest football stadium in England and 8th-largest stadium in the United Kingdom.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Craven Cottage",
@@ -605,6 +605,15 @@
   {
     "name": "MKM Stadium",
     "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The MKM Stadium is a multi-purpose stadium in Kingston upon Hull, England.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "The Den",
+    "currentRoofType": "open",
     "wikipediaRoofType": null,
     "leadSentence": null,
     "agree": null,
@@ -612,22 +621,13 @@
     "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
-    "name": "The Den",
-    "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Den is a football stadium in New Cross Gate, south-east London, and the home of Millwall Football Club.",
-    "agree": true,
-    "knownUnfixable": false,
-    "note": null
-  },
-  {
     "name": "London Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "London Stadium is a multi-purpose outdoor stadium at Queen Elizabeth Olympic Park in the Stratford district of London.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Allianz Arena",
@@ -678,7 +678,7 @@
     "name": "TIO Stadium",
     "currentRoofType": "open",
     "wikipediaRoofType": "open",
-    "leadSentence": "Marrara Oval is a multi-purpose stadium in the Darwin suburb of Marrara.",
+    "leadSentence": "Marrara Stadium, the largest sporting venue in the Northern Territory, has a seating capacity of 12,215 and primarily hosts Australian rules football, cricket, soccer and rugby league.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -704,11 +704,11 @@
   {
     "name": "Foro Italico",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Foro Italico is a sports complex in Rome, Italy, on the slopes of Monte Mario.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Rajiv Gandhi International Stadium",
@@ -831,7 +831,7 @@
     "name": "East Lake Golf Club",
     "currentRoofType": "open",
     "wikipediaRoofType": "open",
-    "leadSentence": "East Lake Golf Club is a private golf club 5 miles east of downtown Atlanta, Georgia.",
+    "leadSentence": "East Lake Golf Club is a private golf club in the southeastern United States in Atlanta, Georgia, located five miles (8 km) east of downtown.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
