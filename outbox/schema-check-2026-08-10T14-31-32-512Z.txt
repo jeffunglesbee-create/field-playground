@@ -1,0 +1,17 @@
+mode: CHECK — re-measure live shape, diff against committed schema
+
+=== context-date-games ===
+  live records: 247  (schema built from 270)
+  new required field(s) in "pga tour": away_score, drama_arc, drama_peak, finalized_at, home_score  (schema is stale, not wrong)
+  DRIFT "efl cup": required field(s) no longer reliably present: away_score, drama_arc, drama_peak, finalized_at, home_score
+  new required field(s) in "golf": drama_arc, drama_peak  (schema is stale, not wrong)
+  NEW VARIANT: "cfl" (n=3) — unknown to the schema
+
+=== bsd-incidents ===
+  live records: 118  (schema built from 117)
+  DRIFT "card": required field(s) no longer reliably present: player_id
+
+=== VERDICT ===
+2 drift(s) detected. A field the code treats as guaranteed has stopped being
+guaranteed, or changed type. This is the failure that costs days: it does not throw,
+it produces wrong values downstream. Fix the consumer or regenerate deliberately.
