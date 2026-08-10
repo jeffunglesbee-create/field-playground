@@ -1,0 +1,44 @@
+probe_at: 2026-08-10T13:49:43.649Z
+purpose: exercise AnomalyWatch's SHIPPED analysis against the real uncensored corpus.
+The dev mock carries 3 distinct drama_peak values; the real corpus carries ~34, so the
+percentile path cannot be validated locally at all.
+window: 30 real days back from 2026-08-10
+
+days fetched OK: 30 / 30;  real games: 649
+
+=== REAL PER-SPORT BASELINES (shipped buildBaselines) ===
+  sport                  n  distinct  resolution     p10  median   p90  medRange  medTurns
+  mlb                   300        30  distribution    52     65    84        48        32
+  wnba                   74         7  tier            52     61    70        50        37
+  mls                    52         7  tier            52     57    70        25         1
+  efl cup                33         1  tier             0      0     0      null      null
+  fifa world cup          4         4  tier            52     70    78        26         1
+  cfl                     3         1  tier             0      0     0      null      null
+  duplicate rows dropped before building: 0
+
+=== EXCLUSION CHECK ===
+  "golf" -> EXCLUDED (drama never computed for this sport)
+  "pga tour" -> EXCLUDED (drama never computed for this sport)
+
+=== FINDING RATES ACROSS THE WHOLE REAL CORPUS ===
+  games judged (status ok): 459 of 649
+  games with >=1 finding:   346  (75.4%)
+    rare-high        31  (6.8% of judged games)
+    rare-low         36  (7.8% of judged games)
+    tier-top         36  (7.8% of judged games)
+    late-surge      197  (42.9% of judged games)
+    fizzle           93  (20.3% of judged games)
+    flat-tension     71  (15.5% of judged games)
+    volatile         19  (4.1% of judged games)
+  status breakdown: unscored=159, ok=459, not-measured=24, no-baseline=7
+
+=== WHAT THE COMPONENT WOULD SHOW for its default slate (2026-08-10) ===
+  games on slate: 18;  flagged: 0
+
+=== VERDICT ===
+Percentile resolution is REAL for at least one sport -- the distribution path is live,
+not theoretical, and the tier fallback is doing its job for the sports that need it.
+
+=== DEFINITIONAL SELF-CONSISTENCY on real data ===
+  mlb: rare-high actual 31 vs brute-force 31 MATCH
+  mlb: rare-low  actual 36 vs brute-force 36 MATCH
