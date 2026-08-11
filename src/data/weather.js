@@ -28,10 +28,17 @@ const OM_AQI_BASE = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 // an INPUT to a number this repo spends a lot of effort measuring.
 //
 //   WEATHER FEEDS THE DRAMA SCORE. weatherDramaModifier() returns a SIGNED
-//   delta added to sitBonus inside dramaScoreLive():
-//       cold <0F +8 (stacking with <28F +8), wind >20mph +6 (>30mph +4),
-//       snow >0.5mm +10, heavy rain >2mm +8 (>5mm +4),
+//   delta added to sitBonus inside dramaScoreLive(). The band table as the
+//   SOURCE writes it (jubilant-bassoon src/utils/weather.js, sha 0ecfaf5, read
+//   2026-08-11) -- note the fields, which the session doc's paraphrase of this
+//   table gets wrong in three places:
+//       feelsLike ?? temp  <0F +8, <28F +8       (APPARENT temperature)
+//       gusts || wind      >20mph +6, >30mph +4  (GUSTS, not sustained)
+//       snowfall >0.5 +10
+//       rain >2mm +8, PRECIPITATION >5mm +4      (two different fields)
 //       AQI >150 -15, AQI >200 -10
+//   And it is GATED: none of it is applied unless some cached venue trips
+//   wxAlert() or carries AQI over 100. See weatherDrama.js for both.
 //   So a drama_arc is partly a weather series. Nothing here consumes that,
 //   but anyone reasoning about why an arc rose should know a cold windy night
 //   moves it without anything happening on the field.
@@ -46,8 +53,13 @@ const OM_AQI_BASE = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 //   so an AQI failure cannot fail the weather fetch. Wildfire smoke is the
 //   real case.
 //
-//   Fields this file does not fetch: apparent_temperature, wind_gusts_10m,
-//   direct_radiation (captured for a future sun-glare check, logic unwritten).
+//   Fields this file does not fetch: direct_radiation (production captures it
+//   for a future sun-glare check whose logic is still unwritten; the Deep Dive
+//   doc's threshold is >350 W/m² during a 12:00-17:00 local start, and it
+//   replaces a SunCalc.js solar-angle approach because radiation already
+//   accounts for cloud cover). apparent_temperature and wind_gusts_10m WERE in
+//   this list and are now fetched -- both turned out to be load-bearing for
+//   the bands above rather than decorative.
 //
 // This module fetches temperature and a condition string, and stops. That is
 // a deliberate scope, not a partial port -- but the divergence is worth
@@ -308,7 +320,11 @@ async function fetchAqi(lat, lon) {
   const cached = wxCache.get(key)
   if (cached && Date.now() - cached.fetchedAt < AQI_TTL_MS) return cached.data
   try {
-    const url = `${OM_AQI_BASE}?latitude=${lat}&longitude=${lon}&current=us_aqi`
+    // pm2_5 alongside us_aqi, matching production's fetchAQI params exactly
+    // ("Params: current=us_aqi,pm2_5"). us_aqi is a composite that can be
+    // driven by ozone rather than particulates, so on a smoke day pm2_5 is
+    // the field that says WHY -- the wildfire case this term exists for.
+    const url = `${OM_AQI_BASE}?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5`
     const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
     if (!res.ok) return null
     const json = await res.json()
@@ -328,7 +344,17 @@ async function fetchOneVenue(venue) {
   if (cached && Date.now() - cached.fetchedAt < WX_TTL_MS) {
     return { venue, roofType, ...cached.data }
   }
-  const url = `${OM_BASE}?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,rain,snowfall,is_day,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`
+  // wind_gusts_10m added 2026-08-11 and it is load-bearing, not extra colour:
+  // production's wxAlert -- half of the gate in front of weatherDramaModifier
+  // -- tests GUSTS > 30mph, while the modifier itself tests SUSTAINED wind
+  // > 20mph. Without this field the gate can never open on wind, so a windy
+  // park would silently report a delta production would never apply.
+  // apparent_temperature added alongside it, and it is equally load-bearing:
+  // production's COLD bands read `wx.feelsLike ?? wx.temp`, not dry-bulb
+  // temperature. Wind chill moves that by 5-10F on precisely the nights those
+  // bands exist to catch, so fetching only temperature_2m made every cold band
+  // fire late.
+  const url = `${OM_BASE}?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,rain,snowfall,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`
   const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
   if (!res.ok) throw new Error(`open-meteo fetch failed: ${res.status}`)
   const json = await res.json()

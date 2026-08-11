@@ -135,6 +135,15 @@
 }
 .dramaUp   { background: #2a2410; color: #c94; }
 .dramaDown { background: #1a2430; color: #789; }
+
+/* Gate shut: production computes this delta and applies zero. Struck through
+   rather than hidden, because the number is real -- what is false is the
+   implication that it lands anywhere. Hiding it would just recreate the
+   original misreading one level down. */
+.dramaGated {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
 .dramaNote {
   font-size: 11px;
   line-height: 1.45;

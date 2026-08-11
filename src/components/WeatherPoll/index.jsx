@@ -1,6 +1,6 @@
 import { For, Show, onMount, onCleanup, createMemo } from 'solid-js'
 import { weatherData, refetchWeather, weatherPollCount, setWeatherPollCount } from '../../data/weather'
-import { weatherDramaModifier } from '../../data/weatherDrama'
+import { weatherDramaContribution, AQI_GATE } from '../../data/weatherDrama'
 import styles from './WeatherPoll.module.css'
 
 // Deliberately different cadence from App.jsx's shared 15s deskData poll
@@ -58,10 +58,16 @@ export function WeatherPoll() {
   const dramaEffects = createMemo(() => {
     if (weatherData.error) return []
     return (weatherData()?.venues ?? [])
-      .map(v => ({ venue: v.venue, ...weatherDramaModifier(v) }))
+      .map(v => ({ venue: v.venue, ...weatherDramaContribution(v) }))
       .filter(e => e.delta !== 0)
       .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
   })
+
+  // Venues whose band total is non-zero but whose gate never opened. This list
+  // is the whole reason the gate was ported: every one of these was previously
+  // rendered as a live "+N drama" chip, which claimed a contribution
+  // production would never have made.
+  const gatedOut = createMemo(() => dramaEffects().filter(e => !e.gate.open))
 
   const dramaVerdict = createMemo(() => {
     if (weatherData.error) return null
@@ -71,8 +77,13 @@ export function WeatherPoll() {
     if (!effects.length) {
       return `Conditions are unremarkable everywhere — no venue's weather would move a live drama score right now.`
     }
-    const top = effects[0]
-    return `${top.venue} has the largest weather effect: current conditions would ${top.delta > 0 ? 'add' : 'subtract'} ${Math.abs(top.delta)} to a live drama score (${top.reasons.join(', ')}).`
+    const applied = effects.filter(e => e.gate.open)
+    if (!applied.length) {
+      const top = effects[0]
+      return `No venue clears production's gate right now. ${top.venue} scores ${top.delta > 0 ? '+' : ''}${top.delta} on the band table (${top.reasons.join(', ')}), but nothing there trips wxAlert and its AQI is at or below ${AQI_GATE}, so production would add nothing at all.`
+    }
+    const top = applied[0]
+    return `${top.venue} has the largest weather effect: current conditions would ${top.delta > 0 ? 'add' : 'subtract'} ${Math.abs(top.delta)} to a live drama score (${top.reasons.join(', ')}), and it clears the gate via ${top.gate.why}.`
   })
 
   onMount(() => {
@@ -118,8 +129,21 @@ export function WeatherPoll() {
               <div class={styles.dramaNote}>
                 Production feeds this delta into <code>sitBonus</code> inside <code>dramaScoreLive()</code>,
                 so weather is part of the drama score itself. Current conditions only — it does not
-                decompose an archived peak.
+                decompose an archived peak. It is also <em>gated</em>: the modifier only runs when a
+                venue trips <code>wxAlert()</code> or carries AQI over {AQI_GATE}. A band total shown
+                with a struck-through chip is one production would compute and never apply.
               </div>
+            </Show>
+            <Show when={gatedOut().length}>
+              <p class={styles.verdict}>
+                {gatedOut().length === 1
+                  ? '1 venue scores on the band table but never reaches'
+                  : `${gatedOut().length} venues score on the band table but never reach`}
+                {' '}a drama score: the gate's thresholds sit above the first scoring band on the
+                same field (gusts open it at 30mph but already score at 20mph; rain opens it at
+                5mm but already scores at 2mm), so this gap is structural rather than a rounding
+                edge.
+              </p>
             </Show>
             <div class={styles.venueList}>
               <For each={weatherData().venues}>
@@ -128,13 +152,20 @@ export function WeatherPoll() {
                     <span class={styles.venueName}>{v.venue}</span>
                     <span class={styles.venueTemp}>{v.tempF}°F</span>
                     <span class={styles.venueCondition}>{v.condition}</span>
-                    <Show when={weatherDramaModifier(v).delta !== 0}>
-                      <span
-                        class={`${styles.dramaDelta} ${weatherDramaModifier(v).delta > 0 ? styles.dramaUp : styles.dramaDown}`}
-                        title={weatherDramaModifier(v).reasons.join(', ')}
-                      >
-                        {weatherDramaModifier(v).delta > 0 ? '+' : ''}{weatherDramaModifier(v).delta} drama
-                      </span>
+                    <Show when={weatherDramaContribution(v).delta !== 0}>
+                      {(() => {
+                        const c = weatherDramaContribution(v)
+                        return (
+                          <span
+                            class={`${styles.dramaDelta} ${c.delta > 0 ? styles.dramaUp : styles.dramaDown} ${c.gate.open ? '' : styles.dramaGated}`}
+                            title={c.gate.open
+                              ? `${c.reasons.join(', ')} — gate open via ${c.gate.why}`
+                              : `${c.reasons.join(', ')} — gate SHUT, so production applies 0`}
+                          >
+                            {c.delta > 0 ? '+' : ''}{c.delta} drama
+                          </span>
+                        )
+                      })()}
                     </Show>
                     <Show when={v.roofType !== 'open'}>
                       <span class={styles.roofNote} title="Weather is at the venue's real location -- the roof may still be closed for the game itself">

@@ -20,7 +20,7 @@
 // weather.js rather than duplicated here: a copied venue table would drift.
 
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
-import { weatherDramaModifier, normalizeOpenMeteo } from '../src/data/weatherDrama.js'
+import { weatherDramaContribution, normalizeOpenMeteo } from '../src/data/weatherDrama.js'
 
 mkdirSync('outbox', { recursive: true })
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -30,7 +30,7 @@ const log = s => { out.push(s); console.log(s); try { writeFileSync(outPath, out
 
 const OM = 'https://api.open-meteo.com/v1/forecast'
 const AQ = 'https://air-quality-api.open-meteo.com/v1/air-quality'
-const CURRENT = 'temperature_2m,precipitation,rain,snowfall,is_day,wind_speed_10m,wind_direction_10m'
+const CURRENT = 'temperature_2m,precipitation,rain,snowfall,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m'
 
 // Read the real table out of the shipped module.
 const src = readFileSync('src/data/weather.js', 'utf8')
@@ -82,7 +82,12 @@ for (const v of sample) {
   const u = fx.current_units ?? {}
 
   // Fields the app actually reads.
-  for (const f of ['temperature_2m', 'rain', 'snowfall', 'wind_speed_10m', 'precipitation', 'is_day']) {
+  // wind_gusts_10m is in this list because the GATE depends on it. If the API
+  // ever drops it, normalizeOpenMeteo yields gustsMph: null, wxAlert can never
+  // fire on wind, and every windy venue silently stops contributing to drama
+  // with no error anywhere -- a shut-gate failure is indistinguishable from
+  // calm weather unless something asserts the field arrived.
+  for (const f of ['temperature_2m', 'rain', 'snowfall', 'wind_speed_10m', 'wind_gusts_10m', 'precipitation', 'is_day']) {
     ok(`field ${f} present`, f in c, `= ${JSON.stringify(c[f])}`)
   }
 
@@ -97,13 +102,23 @@ for (const v of sample) {
      u.snowfall === 'cm', `got ${JSON.stringify(u.snowfall)}`)
 
   let aqi = null
+  let pm25 = null
   try {
-    const ares = await fetch(`${AQ}?latitude=${v.lat}&longitude=${v.lon}&current=us_aqi`)
+    // us_aqi,pm2_5 -- production's exact fetchAQI params. us_aqi drives both
+    // the gate (>100) and the negative band (>150); pm2_5 is the field that
+    // distinguishes wildfire smoke from an ozone-driven index on the same
+    // number, which is the case this whole term exists for.
+    const ares = await fetch(`${AQ}?latitude=${v.lat}&longitude=${v.lon}&current=us_aqi,pm2_5`)
     ok('air-quality HTTP 200', ares.ok, `status ${ares.status}`)
     if (ares.ok) {
       const aj = await ares.json()
       aqi = aj?.current?.us_aqi ?? null
+      pm25 = aj?.current?.pm2_5 ?? null
       ok('us_aqi present and numeric', typeof aqi === 'number', `= ${JSON.stringify(aqi)}`)
+      ok('pm2_5 present and numeric', typeof pm25 === 'number', `= ${JSON.stringify(pm25)}`)
+      ok('us_aqi unit is a plain index (unitless)',
+         (aj?.current_units?.us_aqi ?? '') === '',
+         `got ${JSON.stringify(aj?.current_units?.us_aqi)}`)
     }
   } catch (e) {
     failures++
@@ -117,26 +132,42 @@ for (const v of sample) {
   ok('snowfall normalised cm -> mm (x10)',
      c.snowfall === 0 ? wx.snowMm === 0 : wx.snowMm === c.snowfall * 10,
      `${c.snowfall}cm -> ${wx.snowMm}mm`)
-  const { delta, reasons } = weatherDramaModifier(wx)
-  log(`  live: ${Math.round(wx.tempF)}°F  ${wx.windMph}mph  rain ${wx.rainMm}  snow ${wx.snowMm}  AQI ${aqi}`)
-  log(`  weatherDramaModifier -> ${delta > 0 ? '+' : ''}${delta}${reasons.length ? '  (' + reasons.join(', ') + ')' : '  (no band met)'}`)
+  const { delta, reasons, gate, applied } = weatherDramaContribution(wx)
+  log(`  live: ${Math.round(wx.tempF)}°F  ${wx.windMph}mph (gusts ${wx.gustsMph})  rain ${wx.rainMm}  snow ${wx.snowMm}  AQI ${aqi}  pm2.5 ${pm25}`)
+  log(`  band table -> ${delta > 0 ? '+' : ''}${delta}${reasons.length ? '  (' + reasons.join(', ') + ')' : '  (no band met)'}`)
+  log(`  gate       -> ${gate.open ? 'OPEN via ' + gate.why : 'SHUT'}    production applies ${applied > 0 ? '+' : ''}${applied}`)
   ok('delta is a finite number, never NaN', Number.isFinite(delta), `= ${delta}`)
-  results.push({ venue: v.venue, delta, reasons, wx })
+  ok('applied is 0 whenever the gate is shut',
+     gate.open || applied === 0, `gate ${gate.open}, applied ${applied}`)
+  results.push({ venue: v.venue, delta, reasons, gate, applied, wx })
   log('')
 }
 
 log('=== SUMMARY ===')
+log('  venue            band   gate                applied')
 for (const r of results) {
-  log(`  ${r.venue.padEnd(16)} ${(r.delta > 0 ? '+' : '') + r.delta}  ${r.reasons.join(', ') || '(none)'}`)
+  log(`  ${r.venue.padEnd(16)} ${((r.delta > 0 ? '+' : '') + r.delta).padEnd(6)} ${(r.gate.open ? r.gate.why : 'shut').padEnd(19)} ${(r.applied > 0 ? '+' : '') + r.applied}   ${r.reasons.join(', ') || '(none)'}`)
 }
 const anyNonZero = results.some(r => r.delta !== 0)
+const anyApplied = results.some(r => r.applied !== 0)
+const deadZone = results.filter(r => r.delta !== 0 && !r.gate.open)
 log('')
 log(anyNonZero
   ? '  At least one venue met a band, so the positive path is exercised on real data.'
-  : '  Every venue scored 0. That is a REAL RESULT, not a failure -- calm weather')
+  : '  Every venue scored 0 on the band table. That is a REAL RESULT, not a failure')
 if (!anyNonZero) {
-  log('  everywhere means no band was met. It does mean this run did not exercise')
-  log('  any band end to end; the offline guard covers those.')
+  log('  -- calm weather everywhere means no band was met. It does mean this run did')
+  log('  not exercise any band end to end; the offline guard covers those.')
+}
+if (deadZone.length) {
+  log('')
+  log(`  DEAD ZONE OBSERVED ON REAL DATA: ${deadZone.length} venue(s) scored non-zero on the`)
+  log('  band table with the gate shut, so production would apply nothing there:')
+  for (const r of deadZone) log(`    ${r.venue}: ${(r.delta > 0 ? '+' : '') + r.delta} (${r.reasons.join(', ')})`)
+  log('  This is the case the app used to render as a live "+N drama" chip.')
+} else if (anyNonZero && anyApplied) {
+  log('  Every non-zero band total here also cleared the gate, so this run did not')
+  log('  happen to observe the dead zone. The offline guard covers it.')
 }
 
 log('')
