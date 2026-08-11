@@ -33,15 +33,23 @@
 // Absence of evidence over a window is not evidence of absence; the fix was
 // to widen the window past the feature's ship date, not to reason harder.
 //
-// THE OBJECT'S REAL SHAPE, and it diverges from its own documentation. The
-// Drive storage-layer doc specifies samples as [{t, s, p}] -- timestamp,
-// score, period. Across 37 real sample records there is NO `t` field at all:
+// THE OBJECT'S REAL SHAPE. Across 37 real sample records:
 //
 //     s   37/37 (100%)  number   the drama score, 0-100
 //     p   37/37 (100%)  number   period
 //
-// `peakMinute` is likewise null on all 7. Written against the measurement, not
-// the doc.
+// No `t`, and `peakMinute` is null on all 7. The Drive storage-layer doc does
+// specify [{t, s, p}] -- but that describes the localStorage key
+// field_drama_history_{gameId}, NOT this field. drama_arc is a derived object
+// whose samples drop the timestamp. Two layers, both documented accurately;
+// reading one as the other is what made this look like a divergence.
+//
+// WHERE THESE COME FROM, which explains why there are only 7. Per "FIELD
+// Architecture -- 03 Drama Intelligence System": dramaScoreLive "runs inside
+// injectDramaBadges() on every ESPN poll cycle (every 30 seconds for live
+// games)". The object shape accumulates in a BROWSER, during a LIVE game,
+// while a human has the app open. It is not a cron product, so its volume
+// tracks what someone watched -- 7 NBA games across the May-June playoffs.
 //
 // THE STRING "null" IS A RELAY DEFECT, not a format. All 121 carry
 // drama_peak: 0, concentrated in EFL Cup, golf, PGA Tour and CFL -- exactly

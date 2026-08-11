@@ -82,9 +82,32 @@ specifies samples as `[{t, s, p}]`. Across 37 real sample records there is **no 
 `peakMinute` is null on all 7. The playground now reads `samples[].s` and renders it on the same
 fixed 0-100 domain, asserted in `check-drama-sparkline.mjs` against this verbatim record.
 
-**The open question this leaves for the relay:** why did client-written drama stop after June?
-That is now a sharper question than the one I started with, and it is the one worth a D1 query —
-`SELECT MAX(created_at) ... WHERE drama_arc LIKE '{%'` would date the last write precisely.
+**Why it stopped — mostly answered by `FIELD Architecture — 03 Drama Intelligence System`.**
+
+> *"Computed during active games. Runs inside `injectDramaBadges()` on every ESPN poll cycle
+> (every 30 seconds for live games)."*
+
+The object shape is not written by a cron. It accumulates **in a browser, during a live game,
+while someone has the app open**, sampled every 30s with a 25s minimum gate. Its output is
+therefore a function of what a human watched, not of what the archive ingested.
+
+That reframes the whole finding. **7 rows in four months is not obviously a defect** — it is what
+a client-side, live-only, human-attended capture path produces. All 7 are NBA, in May and June,
+which is the NBA playoffs and Finals. Nothing since is consistent with the season ending.
+
+**The residual, stated because it is not explained:** `SPORT_CRUNCH_RULES` covers
+`Basketball, Baseball, Football, Hockey`, and MLB has been in season all summer with 497 and 122
+archived rows in July and August. If the live path fired for any watched MLB game, an object arc
+should exist. None does. So either no MLB game was watched live in the app during those two
+months, or something else stops the live path for baseball. That is the question worth a query
+now — and it is a usage question as much as a code one.
+
+**A correction to my own note above.** I wrote that the object shape "diverges from its own
+documentation" because the storage-layer doc specifies `[{t, s, p}]` and the measured samples
+carry only `{s, p}`. That was conflating two layers. The doc describes the **localStorage** key
+`field_drama_history_{gameId}`, which does carry `t`. What gets POSTed into `drama_arc` is a
+*derived* object whose `samples` drop the timestamp. Both docs are accurate about their own layer;
+I read one as describing the other.
 
 ### Drive context, checked 2026-08-11 — why the object shape is rare
 

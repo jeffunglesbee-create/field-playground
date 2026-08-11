@@ -144,5 +144,29 @@
     "falsifierAttempted": false,
     "verifiableHere": false,
     "confidence": 0.7
+  },
+  {
+    "id": "object-arcs-are-live-browser-capture",
+    "text": "The object drama_arc is written by a live in-browser capture path, not a cron, so its volume tracks games a human watched",
+    "provenance": "RETRIEVED",
+    "source": "drive:FIELD Architecture - 03 Drama Intelligence System (2026-05-18)",
+    "asOf": "2026-05-18T12:25:22Z",
+    "reverified": true,
+    "falsifier": "find an object-shape arc for a game with no plausible live in-app viewing, or a server-side writer of the object shape",
+    "falsifierCost": "one query",
+    "falsifierAttempted": false,
+    "verifiableHere": false,
+    "confidence": 0.7
+  },
+  {
+    "id": "mlb-live-path-silence-unexplained",
+    "text": "MLB is covered by SPORT_CRUNCH_RULES and in season, yet produced zero object arcs in July or August -- unexplained",
+    "provenance": "MEASURED",
+    "source": "outbox/drama-arc-shapes-2026-08-11T02-26-03-383Z.txt",
+    "falsifier": "find any MLB object-shape arc, or confirm no MLB game was opened live in the app in those months",
+    "falsifierCost": "one query",
+    "falsifierAttempted": false,
+    "verifiableHere": false,
+    "confidence": 0.6
   }
 ]
