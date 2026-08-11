@@ -62,6 +62,17 @@ not bookkeeping — it is the signal.
    `verifiableHere: false`. The boundary is knowable in advance — `src/index.js` was unreadable
    the whole time — so stating a flat claim about it is a category error, not bad luck.
 
+   **`verifiableHere` means "can I obtain evidence from this session", not "can I reach it from
+   this sandbox".** CI-as-proxy is part of this session's toolkit: a GitHub Actions runner has
+   real network, and its artifact lands in this repo where it can be read. So an Open-Meteo
+   measurement is `verifiableHere: true` even though the sandbox's egress allowlist blocks the
+   host — the evidence exists and is checkable. What is genuinely `false` is a claim about
+   something no channel available here can observe, like the relay's `src/index.js` or a D1 table
+   needing a credential this session does not hold.
+
+   This distinction was drawn after the checker correctly rejected two Open-Meteo claims stated at
+   0.95+ with `verifiableHere: false`. The confidence was right and the flag was wrong.
+
 ## What `gate-score.mjs` does — the part that closes the loop
 
 A confidence gate is a forward-stated probability that never gets resolved. That is *exactly* the
