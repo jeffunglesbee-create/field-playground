@@ -99,6 +99,8 @@ jobs:
         run: node scripts/check-gameid-parse.mjs
       - name: Check pick grading (draws credit neither side)
         run: node scripts/check-pick-grading.mjs
+      - name: Check confidence forward/hindsight split
+        run: node scripts/check-confidence-mode.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

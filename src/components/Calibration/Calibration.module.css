@@ -195,3 +195,25 @@
 .commitBtn:hover {
   border-color: #4a4a8a;
 }
+
+/* Retrospective ratings live in their own block, visually quieter than the
+   scored section. The point of the separation is that they are NOT the
+   headline number, so they must not read like one. */
+.retroSection {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  border-left: 2px solid var(--field-border, #333);
+  background: rgba(255, 255, 255, 0.02);
+}
+.retroLabel {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--field-text-muted, #888);
+}
+.retroNote {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--field-text-muted, #888);
+}

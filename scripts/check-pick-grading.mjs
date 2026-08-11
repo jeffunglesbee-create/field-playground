@@ -106,18 +106,41 @@ if (drawHome === drawAway && drawHome !== 'correct' && drawHome !== 'incorrect')
 // an unstarted game read 'live' and disable both pick buttons. This asserts
 // the current documented behaviour so a change to it is a decision, not a
 // surprise.
+// The 0-for-unplayed trap, and the exact extent to which it is closed.
+// probe-gamestatus-over-real-slate.mjs measured 150 real games: home_score is
+// never absent and no unstarted game is currently misclassified, so this is a
+// hardening guard, not a live-defect guard. What IS real is the CFL shape --
+// /cfl/scoreboard/rounds writes 0 on all 47 of its unplayed fixtures.
 console.log('')
-console.log('documented behaviour: unplayed detection keys off null, not 0')
-const zeroZeroUnplayed = gameStatus({ home_score: 0, away_score: 0, finalized_at: null })
-if (zeroZeroUnplayed === 'pre') {
-  console.log('  ok    a 0-0 unfinalized game reads "pre"')
+console.log('0-for-unplayed trap (the CFL shape)')
+const future = new Date(Date.now() + 3 * 3600 * 1000).toISOString()
+const past = new Date(Date.now() - 3 * 3600 * 1000).toISOString()
+
+const withStart = gameStatus({ home_score: 0, away_score: 0, finalized_at: null, start_time: future })
+if (withStart === 'pre') {
+  console.log('  ok    0-0 with a FUTURE start_time reads "pre" (pickable)')
 } else {
-  console.log(`  NOTE  a 0-0 unfinalized game reads "${zeroZeroUnplayed}", not "pre".`)
-  console.log('        Picking is disabled unless status is "pre", so if a 0-for-unplayed')
-  console.log('        source (CFL) is ever archived, its unstarted games become unpickable.')
-  console.log('        Not failing the build: this is the relay-side fix, tracked in')
-  console.log('        docs/pending-relay-fixes/README.md, not a defect in this component.')
+  failures++
+  console.log(`  FAIL  0-0 with a future start_time reads "${withStart}" — trap still open`)
 }
+
+const liveZero = gameStatus({ home_score: 0, away_score: 0, finalized_at: null, start_time: past })
+if (liveZero === 'live') {
+  console.log('  ok    0-0 with a PAST start_time reads "live" (a real scoreless game in progress)')
+} else {
+  failures++
+  console.log(`  FAIL  0-0 after kickoff reads "${liveZero}" — a live game would become pickable`)
+}
+
+// Honest statement of the limit rather than a silent pass. start_time fills
+// only 16.7% of MLS records, so without one the function cannot distinguish
+// "unplayed, written as 0" from "scoreless and in progress" and deliberately
+// chooses 'live': a blocked pick is harmless, a retroactive pick is not.
+const noStart = gameStatus({ home_score: 0, away_score: 0, finalized_at: null })
+console.log(`  NOTE  0-0 with NO start_time reads "${noStart}" — unresolvable from the record`)
+console.log('        alone, and deliberately failing toward "live" (blocked pick, not a')
+console.log('        retroactive one). Measured start_time fill is 16.7% for MLS, so this')
+console.log('        guard is partial by construction, not by oversight.')
 
 rmSync(dir, { recursive: true, force: true })
 

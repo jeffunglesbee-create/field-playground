@@ -76,11 +76,53 @@ export function clearAllOutcomes() {
   save(KEY, {})
 }
 
+// WAS the outcome already known when this confidence was stated?
+//
+// This is the difference between a forecast and a memory, and a Brier score
+// computed across both means nothing: rating a game you have already marked W
+// is not a prediction, and scoring it against 0.25 ("a coin flip") credits
+// skill for reading your own notes. The Calibration component displayed
+// exactly that number, under a header asking whether the user's confidence is
+// "actually predictive", while rendering the answer beside the slider.
+//
+// Rather than throw the retrospective ratings away or keep laundering them
+// into one figure, record which kind each one is, at write time, when it is
+// knowable for free. FORWARD = no outcome existed for this game yet.
+//
+// Separate map, same reasoning documented for pickMeta and confidence above:
+// confidence() is a bare gameId -> int read by existing call sites, and
+// widening it would break them for no gain.
+//
+// Entries stored before this existed have no mode. They are treated as
+// RETROSPECTIVE, not forward: every one of them was captured through a UI
+// that displayed the result next to the input, so "unknown" here is evidence
+// of hindsight, not an absence of evidence.
+const MODE_KEY = 'field-pick-confidence-mode'
+const [confidenceMode, setConfidenceModeSignal] = createSignal(load(MODE_KEY, {}))
+
+export const FORWARD = 'forward'
+export const RETRO = 'retro'
+
+export function confidenceModeFor(gameId) {
+  return confidenceMode()[gameId] === FORWARD ? FORWARD : RETRO
+}
+
 export function setConfidence(gameId, pct) {
   const clamped = Math.max(0, Math.min(100, Math.round(pct)))
   const next = { ...confidence(), [gameId]: clamped }
   setConfidenceSignal(next)
   save(CONFIDENCE_KEY, next)
+
+  // Classified once, at first write, from whether an outcome existed at that
+  // moment. Re-rating a game later must NOT promote it to forward -- by then
+  // the result is known -- so an existing mode is never overwritten.
+  if (confidenceMode()[gameId] === undefined) {
+    const knownOutcome = outcomes()[gameId]
+    const mode = (knownOutcome === 'W' || knownOutcome === 'L' || knownOutcome === 'P') ? RETRO : FORWARD
+    const nextMode = { ...confidenceMode(), [gameId]: mode }
+    setConfidenceModeSignal(nextMode)
+    save(MODE_KEY, nextMode)
+  }
 }
 
 export function clearConfidence(gameId) {

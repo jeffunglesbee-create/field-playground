@@ -40,9 +40,47 @@ createEffect(() => {
   }
 })
 
+// MEASURED BEFORE CHANGED, and the measurement moved the design.
+// probe-gamestatus-over-real-slate.mjs ran this function over 150 real
+// /context/date/ games across 7 days:
+//
+//   key absent entirely:  0      misclassified unstarted games: 0
+//   key present, null:   17      final 126 · pre 17 · final_ot 7
+//   numeric score:      133
+//
+// So the strict `=== null` was NOT producing a live defect -- the relay always
+// sends the key. That is a hardening change, and saying otherwise would be
+// claiming a fix for a bug that was not happening. Two real things remain:
+//
+// 1. `== null` instead of `=== null` costs nothing and removes the dependency
+//    on the relay never omitting the field. The schema lists home_score as
+//    optional, so absence is permitted by the contract even though it has
+//    never been observed.
+//
+// 2. The 0-for-unplayed trap is genuinely open, and the same probe proved it:
+//    gameStatus({home_score: 0, away_score: 0, finalized_at: null}) -> "live".
+//    /cfl/scoreboard/rounds writes 0 on all 47 of its unplayed fixtures, so
+//    if that route is ever archived, every unstarted CFL game becomes
+//    unpickable (picking is gated on 'pre'). start_time closes it where the
+//    relay provides one -- measured fill is only 16.7% for MLS, so this is a
+//    partial guard and is written to fail toward 'live' rather than 'pre'.
+//
+// FAILING TOWARD 'live' IS DELIBERATE. Wrongly calling an unstarted game live
+// blocks a pick; wrongly calling a live game 'pre' lets someone pick a match
+// already in progress. Between a blocked pick and a retroactive one, blocking
+// is the harmless direction.
+//
+// The null branch stays FIRST rather than being reordered behind finalized_at:
+// the reorder would change how a finalized-but-unscored row is classified, and
+// nothing in the measured sample pins down that case. Preserving it keeps this
+// function byte-identical in behaviour across all 150 observed records.
 function gameStatus(g) {
-  if (g.home_score === null) return 'pre'
+  if (g.home_score == null) return 'pre'
   if (g.finalized_at) return g.went_to_ot ? 'final_ot' : 'final'
+  if (g.start_time) {
+    const t = Date.parse(g.start_time)
+    if (Number.isFinite(t) && t > Date.now()) return 'pre'
+  }
   return 'live'
 }
 

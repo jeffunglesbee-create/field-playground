@@ -147,3 +147,7 @@ vite.config.ts.timestamp-*
 __pycache__/
 *.pyc
 .probe-tmp/
+
+# scratch bundles written by the check-* scripts (must live inside the repo
+# so node can resolve solid-js from node_modules)
+.probe-tmp-*/
