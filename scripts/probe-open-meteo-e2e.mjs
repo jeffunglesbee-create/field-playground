@@ -30,7 +30,7 @@ const log = s => { out.push(s); console.log(s); try { writeFileSync(outPath, out
 
 const OM = 'https://api.open-meteo.com/v1/forecast'
 const AQ = 'https://air-quality-api.open-meteo.com/v1/air-quality'
-const CURRENT = 'temperature_2m,precipitation,rain,snowfall,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m'
+const CURRENT = 'temperature_2m,apparent_temperature,precipitation,rain,snowfall,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m'
 
 // Read the real table out of the shipped module.
 const src = readFileSync('src/data/weather.js', 'utf8')
@@ -87,7 +87,11 @@ for (const v of sample) {
   // fire on wind, and every windy venue silently stops contributing to drama
   // with no error anywhere -- a shut-gate failure is indistinguishable from
   // calm weather unless something asserts the field arrived.
-  for (const f of ['temperature_2m', 'rain', 'snowfall', 'wind_speed_10m', 'wind_gusts_10m', 'precipitation', 'is_day']) {
+  // apparent_temperature is here for the same reason: the COLD bands read it
+  // in preference to temperature_2m, so losing it silently downgrades every
+  // cold band to dry-bulb and each one fires late by however much wind chill
+  // was worth that night.
+  for (const f of ['temperature_2m', 'apparent_temperature', 'rain', 'snowfall', 'wind_speed_10m', 'wind_gusts_10m', 'precipitation', 'is_day']) {
     ok(`field ${f} present`, f in c, `= ${JSON.stringify(c[f])}`)
   }
 
@@ -116,8 +120,14 @@ for (const v of sample) {
       pm25 = aj?.current?.pm2_5 ?? null
       ok('us_aqi present and numeric', typeof aqi === 'number', `= ${JSON.stringify(aqi)}`)
       ok('pm2_5 present and numeric', typeof pm25 === 'number', `= ${JSON.stringify(pm25)}`)
-      ok('us_aqi unit is a plain index (unitless)',
-         (aj?.current_units?.us_aqi ?? '') === '',
+      // Measured 2026-08-11: "USAQI" on all five venues. This assertion was
+      // first written as `=== ''` on the assumption that an index carries no
+      // unit, and it failed on every venue -- the guess, not the API. Asserted
+      // at its measured value now, because the thing worth catching is a
+      // switch to european_aqi, whose 0-100+ scale is NOT interchangeable with
+      // the US 0-500 one and would silently rescale both AQI thresholds.
+      ok('us_aqi unit is USAQI, not the European scale',
+         aj?.current_units?.us_aqi === 'USAQI',
          `got ${JSON.stringify(aj?.current_units?.us_aqi)}`)
     }
   } catch (e) {

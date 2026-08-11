@@ -173,7 +173,7 @@
     "id": "open-meteo-snowfall-is-cm",
     "text": "Open-Meteo returns snowfall in centimetres, so a millimetre threshold fires 10x too late",
     "provenance": "MEASURED",
-    "source": "outbox/open-meteo-e2e-2026-08-11T20-42-51-516Z.txt",
+    "source": "outbox/open-meteo-e2e-2026-08-11T21-05-53-348Z.txt",
     "falsifier": "read current_units.snowfall from a live forecast response",
     "falsifierCost": "one workflow run",
     "falsifierAttempted": true,
@@ -187,7 +187,7 @@
     "id": "open-meteo-reachable-and-fielded",
     "text": "Both Open-Meteo endpoints are reachable and return every field the weather path reads",
     "provenance": "MEASURED",
-    "source": "outbox/open-meteo-e2e-2026-08-11T20-42-51-516Z.txt",
+    "source": "outbox/open-meteo-e2e-2026-08-11T21-05-53-348Z.txt",
     "falsifier": "run the e2e probe and find a non-200 or a missing field",
     "falsifierCost": "one workflow run",
     "falsifierAttempted": true,
@@ -254,14 +254,18 @@
   {
     "id": "open-meteo-serves-gusts-and-pm25",
     "text": "api.open-meteo.com returns wind_gusts_10m on the forecast endpoint and air-quality-api.open-meteo.com returns pm2_5 alongside us_aqi, both as numbers.",
-    "provenance": "ASSUMED",
+    "provenance": "MEASURED",
     "asOf": "2026-08-11T00:00:00Z",
-    "reverified": false,
+    "reverified": true,
     "falsifier": "run probe-open-meteo-e2e.mjs on a runner; it now asserts both fields present and numeric",
     "falsifierCost": "one CI dispatch",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": true,
-    "confidence": 0.6
+    "confidence": 0.97,
+    "source": "outbox/open-meteo-e2e-2026-08-11T21-05-53-348Z.txt",
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-11T21:06:33Z",
+    "resolutionNote": "CI run 31536217451: wind_gusts_10m and pm2_5 present and numeric on all five venues. The same run REFUTED a separate guess in the probe -- us_aqi carries the unit \"USAQI\", not the empty string I asserted."
   },
   {
     "id": "modifier-bands-read-different-fields-than-the-doc-says",
@@ -305,5 +309,21 @@
     "falsifierAttempted": true,
     "verifiableHere": true,
     "confidence": 0.95
+  },
+  {
+    "id": "heat-arm-opens-the-gate-and-scores-nothing-on-real-data",
+    "text": "The documented asymmetry -- wxAlert fires above 100F while every temperature band in the modifier is a COLD band -- is observable on real weather, not just in unit tests. Chase Field at 100.1F opened the gate via wxAlert and contributed 0.",
+    "provenance": "MEASURED",
+    "source": "outbox/open-meteo-e2e-2026-08-11T21-05-53-348Z.txt",
+    "asOf": "2026-08-11T21:06:33Z",
+    "reverified": true,
+    "falsifier": "re-run the e2e probe on a hot day and check the Chase Field gate/band columns",
+    "falsifierCost": "one CI dispatch",
+    "falsifierAttempted": true,
+    "verifiableHere": true,
+    "confidence": 0.96,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-11T21:06:33Z",
+    "resolutionNote": "gate OPEN via wxAlert, band table 0, applied 0 -- exactly the predicted shape."
   }
 ]
