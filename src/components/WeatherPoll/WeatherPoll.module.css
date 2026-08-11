@@ -121,3 +121,29 @@
   padding: 1px 5px;
   flex-shrink: 0;
 }
+
+/* A signed delta, not a score, so it is deliberately NOT drawn as a bar --
+   the project's fixed 0-100 rule governs scores, and inventing a symmetric
+   scale for a modifier that ranges roughly -25..+34 would be inventing a
+   domain nobody defined. Rendered as a labelled number instead. */
+.dramaDelta {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.dramaUp   { background: #2a2410; color: #c94; }
+.dramaDown { background: #1a2430; color: #789; }
+.dramaNote {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--field-text-muted, #888);
+  margin: 0.35rem 0 0.5rem;
+}
+.dramaNote code {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0 3px;
+  border-radius: 2px;
+}

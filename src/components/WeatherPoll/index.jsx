@@ -1,5 +1,6 @@
 import { For, Show, onMount, onCleanup, createMemo } from 'solid-js'
 import { weatherData, refetchWeather, weatherPollCount, setWeatherPollCount } from '../../data/weather'
+import { weatherDramaModifier } from '../../data/weatherDrama'
 import styles from './WeatherPoll.module.css'
 
 // Deliberately different cadence from App.jsx's shared 15s deskData poll
@@ -17,6 +18,14 @@ export function WeatherPoll() {
   // excluded: their real weather is at the venue's location, not
   // necessarily what the game itself experiences (see roofNote below).
   const verdict = createMemo(() => {
+    // Guarded read. A createMemo re-runs when its resource errors, and reading
+    // an errored createResource accessor RE-THROWS -- from inside a memo that
+    // throw escapes to the section ErrorBoundary, which is why this component's
+    // own "Unable to load weather" state was unreachable on a total failure and
+    // the card showed a bare boundary "Retry" instead. Same bug class as
+    // src/data/safeResource.js and App.jsx's note at line ~142: check .error
+    // BEFORE ever calling the accessor.
+    if (weatherData.error) return null
     const venues = weatherData()?.venues ?? []
     const outdoor = venues.filter(v => v.roofType === 'open')
     if (!outdoor.length) return null
@@ -34,6 +43,36 @@ export function WeatherPoll() {
       return `Tonight's ${outdoor.length} real outdoor venues are all tied at ${warmest.tempF}°F (${warmest.condition}).`
     }
     return `Tonight's warmest real outdoor venue: ${warmest.venue} at ${warmest.tempF}°F (${warmest.condition}) -- coldest is ${coldest.venue} at ${coldest.tempF}°F (${coldest.condition}).`
+  })
+
+  // Production adds this delta to `sitBonus` inside dramaScoreLive(), which is
+  // why a drama_arc is partly a weather series. Surfaced here because that
+  // coupling is otherwise invisible: nothing on a desk card says a cold windy
+  // night moved the number without anything happening on the field.
+  //
+  // SCOPED CLAIM, and the scope is the point. This is what CURRENT conditions
+  // WOULD contribute to a live drama score computed right now. It is NOT a
+  // decomposition of any archived drama_peak -- that peak was computed from the
+  // weather during that game, which is not the weather now. Nothing here is
+  // joined to drama_peak, and the copy says "would add", never "of".
+  const dramaEffects = createMemo(() => {
+    if (weatherData.error) return []
+    return (weatherData()?.venues ?? [])
+      .map(v => ({ venue: v.venue, ...weatherDramaModifier(v) }))
+      .filter(e => e.delta !== 0)
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+  })
+
+  const dramaVerdict = createMemo(() => {
+    if (weatherData.error) return null
+    const venues = weatherData()?.venues ?? []
+    if (!venues.length) return null
+    const effects = dramaEffects()
+    if (!effects.length) {
+      return `Conditions are unremarkable everywhere — no venue's weather would move a live drama score right now.`
+    }
+    const top = effects[0]
+    return `${top.venue} has the largest weather effect: current conditions would ${top.delta > 0 ? 'add' : 'subtract'} ${Math.abs(top.delta)} to a live drama score (${top.reasons.join(', ')}).`
   })
 
   onMount(() => {
@@ -72,6 +111,16 @@ export function WeatherPoll() {
             <Show when={verdict()}>
               <p class={styles.verdict}>{verdict()}</p>
             </Show>
+            <Show when={dramaVerdict()}>
+              <p class={styles.verdict}>{dramaVerdict()}</p>
+            </Show>
+            <Show when={dramaEffects().length}>
+              <div class={styles.dramaNote}>
+                Production feeds this delta into <code>sitBonus</code> inside <code>dramaScoreLive()</code>,
+                so weather is part of the drama score itself. Current conditions only — it does not
+                decompose an archived peak.
+              </div>
+            </Show>
             <div class={styles.venueList}>
               <For each={weatherData().venues}>
                 {v => (
@@ -79,6 +128,14 @@ export function WeatherPoll() {
                     <span class={styles.venueName}>{v.venue}</span>
                     <span class={styles.venueTemp}>{v.tempF}°F</span>
                     <span class={styles.venueCondition}>{v.condition}</span>
+                    <Show when={weatherDramaModifier(v).delta !== 0}>
+                      <span
+                        class={`${styles.dramaDelta} ${weatherDramaModifier(v).delta > 0 ? styles.dramaUp : styles.dramaDown}`}
+                        title={weatherDramaModifier(v).reasons.join(', ')}
+                      >
+                        {weatherDramaModifier(v).delta > 0 ? '+' : ''}{weatherDramaModifier(v).delta} drama
+                      </span>
+                    </Show>
                     <Show when={v.roofType !== 'open'}>
                       <span class={styles.roofNote} title="Weather is at the venue's real location -- the roof may still be closed for the game itself">
                         {v.roofType === 'dome' ? 'dome' : 'retractable roof'}

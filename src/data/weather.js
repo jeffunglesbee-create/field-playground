@@ -13,6 +13,13 @@ import { deskStore } from './relay'
 // Open-Meteo directly; no relay/proxy route is needed.
 const OM_BASE = 'https://api.open-meteo.com/v1/forecast'
 
+// Second endpoint, added 2026-08-11 for weatherDramaModifier's only NEGATIVE
+// term. Without AQI the modifier can only ever be positive, which would
+// misrepresent it as "bad weather is always more dramatic" when the source
+// explicitly docks 15 points for wildfire smoke. Non-blocking by design, per
+// the production doc: an AQI failure must never fail the weather fetch.
+const OM_AQI_BASE = 'https://air-quality-api.open-meteo.com/v1/air-quality'
+
 // WHAT PRODUCTION'S WEATHER ENGINE DOES THAT THIS DOES NOT.
 // Checked against Drive, 2026-08-11: "FIELD App - May 22 2026 Session
 // Documentation (Weather Intelligence)". Recorded because the gap is much
@@ -274,6 +281,10 @@ const weatherEligibleVenues = createMemo(() => allVenues().filter(v => VENUE_COO
 // comment), not because the weather data itself needs 45s freshness.
 const wxCache = new Map()
 const WX_TTL_MS = 2 * 60 * 60 * 1000
+// 1h, matching production's AQI_CACHE_TIME rather than the 2h weather TTL --
+// air quality moves faster than temperature during a smoke event, which is
+// the case the negative term exists for.
+const AQI_TTL_MS = 60 * 60 * 1000
 
 function describeConditions(current) {
   if (!current) return 'unknown'
@@ -287,6 +298,28 @@ function describeConditions(current) {
   return current.is_day ? 'clear' : 'clear (night)'
 }
 
+// Resolves to null on ANY failure rather than throwing. That is the one place
+// in this file where swallowing is correct, and it is narrow: AQI is a bonus
+// term on a bonus signal, and the production doc is explicit that it must not
+// take the weather fetch down with it. A null simply drops the negative term.
+async function fetchAqi(lat, lon) {
+  const key = `aqi_${lat.toFixed(2)}_${lon.toFixed(2)}`
+  const cached = wxCache.get(key)
+  if (cached && Date.now() - cached.fetchedAt < AQI_TTL_MS) return cached.data
+  try {
+    const url = `${OM_AQI_BASE}?latitude=${lat}&longitude=${lon}&current=us_aqi`
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
+    if (!res.ok) return null
+    const json = await res.json()
+    const aqi = json?.current?.us_aqi
+    const value = typeof aqi === 'number' ? aqi : null
+    wxCache.set(key, { data: value, fetchedAt: Date.now() })
+    return value
+  } catch {
+    return null
+  }
+}
+
 async function fetchOneVenue(venue) {
   const [lat, lon, roofType] = VENUE_COORDS[venue]
   const key = `${lat.toFixed(2)}_${lon.toFixed(2)}`
@@ -298,9 +331,18 @@ async function fetchOneVenue(venue) {
   const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
   if (!res.ok) throw new Error(`open-meteo fetch failed: ${res.status}`)
   const json = await res.json()
+  // The raw components are kept, not just the rounded display temp. The
+  // previous version returned {tempF, condition} and discarded rain, snow and
+  // wind -- which meant the data needed to compute a weather drama delta was
+  // fetched, parsed, and thrown away one line before it could be used.
+  const c = json.current ?? {}
   const data = {
-    tempF: Math.round(json.current?.temperature_2m),
-    condition: describeConditions(json.current),
+    tempF: Math.round(c.temperature_2m),
+    condition: describeConditions(c),
+    windMph: typeof c.wind_speed_10m === 'number' ? c.wind_speed_10m : null,
+    rainMm: typeof c.rain === 'number' ? c.rain : null,
+    snowMm: typeof c.snowfall === 'number' ? c.snowfall : null,
+    aqi: await fetchAqi(lat, lon),
   }
   wxCache.set(key, { data, fetchedAt: Date.now() })
   return { venue, roofType, ...data }
