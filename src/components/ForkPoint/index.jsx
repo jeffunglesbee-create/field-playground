@@ -96,12 +96,19 @@ export function ForkPoint() {
     return computeFork(source, fork, point)
   })
 
-  const chartMinMax = createMemo(() => {
-    const r = result()
-    if (!r) return [0, 100]
-    const all = [...r.originalArc, ...r.splicedArc]
-    return [Math.min(...all), Math.max(...all)]
-  })
+  // FIXED 0-100, NOT the data's own range. This previously returned
+  // [min(all), max(all)] with a comment arguing for "the actual min/max of
+  // both real arcs shown, not a guessed 0-100 scale". That is overruled by a
+  // standing project rule: however a score is computed internally, anything
+  // user-facing is presented on 0-100.
+  //
+  // It is also the better chart. A data-derived domain silently rescales
+  // every render, so two forks of different magnitude drew identical-looking
+  // curves and the axis numbers were the only thing distinguishing them --
+  // the same defect measured in DeskCard's drama sparkline, where a real
+  // 44..74 arc rendered as a 59..100% wall. Drama is a documented 0-100
+  // score, so this domain is the score's own domain.
+  const chartMinMax = createMemo(() => [0, 100])
 
   const sharedLength = createMemo(() => {
     const r = result()
@@ -194,12 +201,11 @@ export function ForkPoint() {
     return spliceRealArcs(srcArc, forkArc, point, { clampMin: 0, clampMax: 100 })
   })
 
-  const wpChartMinMax = createMemo(() => {
-    const r = wpResult()
-    if (!r) return [0, 100]
-    const all = [...r.originalArc, ...r.splicedArc]
-    return [Math.min(...all), Math.max(...all)]
-  })
+  // Fixed 0-100 for the same reason, and here the old behaviour was worse:
+  // these axis labels already render with a "%" suffix, so a self-normalised
+  // domain printed "62%" at the top of a chart whose real ceiling is 100% --
+  // a percentage axis that did not go to one hundred.
+  const wpChartMinMax = createMemo(() => [0, 100])
 
   const wpSharedLength = createMemo(() => {
     const r = wpResult()
@@ -345,7 +351,8 @@ export function ForkPoint() {
                     </label>
 
                     <svg class={styles.chart} viewBox={`0 0 ${CHART_W} ${CHART_H}`} preserveAspectRatio="none">
-                      {/* Real Y-axis: the actual min/max of both real arcs shown, not a guessed 0-100 scale. */}
+                      {/* Y-axis is the score's own 0-100 domain, fixed across every render
+                          and every card, so two charts are comparable by eye. */}
                       <text x={PAD_L - 6} y={PAD_T + 4} text-anchor="end" class={styles.axisLabel}>{Math.round(chartMinMax()[1])}</text>
                       <text x={PAD_L - 6} y={CHART_H - PAD_B} text-anchor="end" class={styles.axisLabel}>{Math.round(chartMinMax()[0])}</text>
                       <line x1={PAD_L} x2={CHART_W - PAD_R} y1={CHART_H - PAD_B} y2={CHART_H - PAD_B} class={styles.axisLine} />

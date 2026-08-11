@@ -105,6 +105,11 @@ jobs:
         run: node scripts/check-ledger-separation.mjs
       - name: Check drama sparkline uses a fixed 0-100 domain
         run: node scripts/check-drama-sparkline.mjs
+      # Standing rule: user-facing scales are fixed 0-100, however a score is
+      # computed internally. Catches visual domains derived from the plotted
+      # data, which make the tallest thing full-height by construction.
+      - name: Check no self-normalising visual scales
+        run: node scripts/check-fixed-scale.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY
