@@ -1,0 +1,36 @@
+probe_at: 2026-08-11T02:26:03.383Z
+purpose: measure the real shapes of drama_arc, and open the object one, before
+any renderer is written against it.
+
+=== UNCENSORED SWEEP: /context/date/ over 45 days ===
+  games scanned: 948
+    array            661  (69.7%)
+    null             203  (21.4%)
+    other:string      84  (8.9%)
+
+  by sport (non-null shapes only):
+    MLB                array     468
+    WNBA               array      96
+    MLS                array      52
+    EFL Cup            other:string   34
+    FIFA World Cup     array      31
+    golf               other:string   30
+    PGA Tour           other:string   10
+    wnba               array       9
+    MLB                other:string    7
+    AFL                array       5
+    CFL                other:string    3
+
+=== CENSORED SOURCE, kept apart: /archive/drama/leaderboard ===
+  (ranked AND truncated -- dense in drama by construction, so its shape mix
+   says nothing about how common each shape is overall.)
+  HTTP 400
+
+=== THE OBJECT SHAPE ===
+  NOT ONE object-shape drama_arc found in either source.
+
+  That is a real result, not a failed probe. The two sources claiming this shape
+  exists are both PROSE, and the one measurement available (anomalyBaseline, golf,
+  2026-08-06) predates the 2026-08-03 MLB reset and any recompute since. Do NOT
+  write an extractor for a shape that cannot be produced on demand -- support it
+  when a real one appears.
