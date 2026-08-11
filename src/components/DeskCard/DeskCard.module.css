@@ -440,7 +440,14 @@
   display: flex;
   align-items: flex-end;
   gap: 1px;
-  height: 24px;
+  /* 44px is the GLYPH-mode minimum from "FIELD - Sparkline Spec: Three Modes
+     x All Viewports" (Drive, 2026-05-28), which specifies 44-52px graduated
+     P1->P3. This was 24px, below spec, and the shortfall only started to
+     matter with the fixed 0-100 domain: self-normalisation always used the
+     full track, so height never limited what could be seen. On a real 44..74
+     arc a fixed domain uses 30% of the range, which is ~7px of variation at
+     24px and ~13px at 44px. */
+  height: 44px;
   margin-bottom: 8px;
   /* The track is what makes a fixed 0-100 domain readable. Bars are now drawn
      at their true value rather than normalised to the game's own maximum, so
