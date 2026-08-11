@@ -1,0 +1,114 @@
+Evidence excerpt — jubilant-bassoon weather/drama code
+repo:   jeffunglesbee-create/jubilant-bassoon
+commit: a4c0e021911b100a27763aeb7f8402a7e8067edf
+read:   2026-08-11, shallow clone, read-only
+
+WHY THIS FILE EXISTS. The claims checker requires a MEASURED source to be a real
+path on disk, and it rejected these claims when they cited the clone -- correctly,
+because that clone is ephemeral and nobody reviewing this later could open it.
+These are the exact lines the claims rest on, quoted verbatim with line numbers.
+
+=== index.html:16795-16803  (wxBadge AQI labels) ===
+16795:   if(windDisplay && !wx.windNote) parts.push(windDisplay);
+16796:   else if(wx.windNote) { if(parts.length) parts[0] += ''; parts.push(`💨 ${wx.windNote}`); }
+16797:   if((wx.rain||0)>1||(wx.precip||0)>1) parts.push(`🌧️ ${Math.round(wx.precip||wx.rain)}mm`);
+16798:   if((wx.snowfall||0)>0.2) parts.push('❄️ Snow');
+16799:   if((wx.aqi||0)>100){
+16800:     const aqiEmoji = (wx.aqi||0)>200 ? '⚠️' : '🌫️';
+16801:     const aqiLabel = (wx.aqi||0)>200 ? 'Very unhealthy' : (wx.aqi||0)>150 ? 'Unhealthy' : 'Moderate AQI';
+16802:     parts.push(`${aqiEmoji} AQI ${wx.aqi} — ${aqiLabel}`);
+16803:   }
+
+=== index.html:16857-16872  (fetchWeather URL + wx object) ===
+16857:     const json = await r.json();
+16858:     const c = json.current || {};
+16859:     const wx = {
+16860:       temp:    Math.round(c.temperature_2m ?? 0),
+16861:       precip:  c.precipitation ?? 0,
+16862:       rain:    c.rain ?? 0,
+16863:       wind:      Math.round(c.wind_speed_10m ?? 0),
+16864:       gusts:     Math.round(c.wind_gusts_10m ?? 0),
+16865:       windDir:   c.wind_direction_10m ?? 0,
+16866:       feelsLike: Math.round(c.apparent_temperature ?? c.temperature_2m ?? 0),
+16867:       isDay:     c.is_day === 1,
+16868:       hourly:    json.hourly || null,
+16869:       snowfall:  (json.hourly?.snowfall || [])[new Date().getUTCHours()] || 0,
+16870:       directRad: (json.hourly?.direct_radiation || [])[new Date().getUTCHours()] || 0,
+16871:     };
+16872:     // AQI from separate Open-Meteo air quality endpoint (non-blocking)
+
+=== index.html:27159-27176  (the gate in dramaScoreLive) ===
+27159:   // ── Fix 6: Weather drama bonus ─────────────────────────────────────────
+27160:   // wxAlert fires for: rain > 5mm/hr, temp > 100°F, wind > 30mph
+27161:   // Bad weather genuinely affects outdoor game outcomes — legitimate drama signal
+27162:   // Outdoor sports only: MLB, NFL, Soccer, AFL. Indoor (NBA/NHL) ignored.
+27163:   const isOutdoor = sp.includes('baseball')||sp.includes('mlb')||sp.includes('nfl')||
+27164:                     sp.includes('football')||sp.includes('soccer')||sp.includes('league')||
+27165:                     sp.includes('mls')||sp.includes('liga')||sp.includes('premier')||
+27166:                     sp.includes('afl')||sp.includes('australian');
+27167:   if(isOutdoor && typeof wxCache !== 'undefined'){
+27168:     try{
+27169:       const wxEntry = Object.values(wxCache||{}).find(wx=>wx?.alert||(wx?.aqi||0)>100);
+27170:       if(wxEntry){
+27171:         // weatherDramaModifier: signed delta — replaces flat +10 (weather-intelligence build)
+27172:         sitBonus += weatherDramaModifier(wxEntry);
+27173:       } // weather drama modifier applied
+27174:     }catch(e){ captureFieldError('drama:live-weather-lookup', e, true); }
+27175:   }
+27176: 
+
+=== src/utils/weather.js  (wxAlert + weatherDramaModifier, whole file) ===
+1: // Weather classification and formatting utilities.
+2: 
+3: export function wxDescription(wx){
+4:   if((wx.rain||0)>5||(wx.precip||0)>5) return `Heavy rain · ${wx.temp}°F`;
+5:   if((wx.rain||0)>1||(wx.precip||0)>1) return `Rain · ${wx.temp}°F`;
+6:   if((wx.snowfall||0)>0.3) return `Snow · ${wx.temp}°F`;
+7:   if((wx.gusts||wx.wind||0)>25) return `Windy · ${wx.temp}°F`;
+8:   if(wx.temp < 32) return `Cold · ${wx.temp}°F`;
+9:   if(wx.temp > 95) return `Hot · ${wx.temp}°F`;
+10:   return `${wx.temp}°F`;
+11: }
+12: 
+13: export function wxIcon(wx){
+14:   if((wx.snowfall||0)>0.3) return '❄️';
+15:   if((wx.rain||0)>5||(wx.precip||0)>5) return '⛈️';
+16:   if((wx.rain||0)>1||(wx.precip||0)>1) return '🌧️';
+17:   if((wx.aqi||0)>150) return '🌫️';
+18:   if((wx.gusts||wx.wind||0)>25) return '💨';
+19:   if(wx.temp < 32) return '🌡️';
+20:   if(wx.temp > 95) return '☀️';
+21:   return wx.isDay ? '⛅' : '🌙';
+22: }
+23: 
+24: export function wxAlert(wx){
+25:   return (wx.rain||0) > 5
+26:       || (wx.gusts||wx.wind||0) > 30
+27:       || wx.temp < 28
+28:       || wx.temp > 100
+29:       || (wx.snowfall||0) > 0.5
+30:       || (wx.aqi||0) > 150;
+31: }
+32: 
+33: export function weatherDramaModifier(wx){
+34:   if(!wx) return 0;
+35:   let mod = 0;
+36:   const feels = wx.feelsLike !== undefined ? wx.feelsLike : wx.temp;
+37:   const gusts  = wx.gusts || wx.wind || 0;
+38:   if(feels < 0)           mod += 8;
+39:   if(feels < 28)          mod += 8;
+40:   if(gusts > 20)          mod += 6;
+41:   if(gusts > 30)          mod += 4;
+42:   if((wx.snowfall||0)>0.5) mod += 10;
+43:   if((wx.rain||0)>2)      mod += 8;
+44:   if((wx.precip||0)>5)    mod += 4;
+45:   if((wx.aqi||0)>150)     mod -= 15;
+46:   if((wx.aqi||0)>200)     mod -= 10;
+47:   return mod;
+48: }
+
+=== raw-drama-display check ===
+grep -oE '\$\{[^}]*drama(Score|_score|Live)[^}]*\}' index.html | grep -vi tier|bucket
+(no matches -- no raw drama score interpolated into markup)
+dramaScoreLive call sites: 14
+dramaTier( occurrences:    4

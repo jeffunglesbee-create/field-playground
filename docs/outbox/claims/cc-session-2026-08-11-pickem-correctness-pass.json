@@ -135,15 +135,19 @@
   {
     "id": "production-never-displays-raw-drama",
     "text": "Production never displays a raw drama score; all 8 call sites bucket through dramaTier() and smoke assertions guard it",
-    "provenance": "RETRIEVED",
-    "source": "drive:CC Outbox - Lock In Drama Score Display Compliance (2026-07-01)",
+    "provenance": "MEASURED",
+    "source": "docs/outbox/evidence/jubilant-bassoon-weather-2026-08-11.txt",
     "asOf": "2026-07-01T00:00:00Z",
     "reverified": true,
     "falsifier": "find a dramaScoreLive call site in index.html that interpolates the raw score",
     "falsifierCost": "one grep of a repo this session cannot read",
-    "falsifierAttempted": false,
-    "verifiableHere": false,
-    "confidence": 0.7
+    "falsifierAttempted": true,
+    "verifiableHere": true,
+    "confidence": 0.9,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-11T22:00:00Z",
+    "resolutionNote": "Substance confirmed: no raw drama score is interpolated into markup anywhere. But the claim's supporting DETAIL was wrong -- it said 'all 8 call sites bucket through dramaTier()'. There are 12+ dramaScoreLive call sites and dramaTier( appears 4 times. Right conclusion, invented arithmetic.",
+    "sourceDetail": "jubilant-bassoon@a4c0e02:index.html"
   },
   {
     "id": "object-arcs-are-live-browser-capture",
@@ -200,29 +204,37 @@
   {
     "id": "weather-drama-modifier-is-gated",
     "text": "weatherDramaModifier is not applied per-venue in production; a gate (wxAlert(wx) || aqi > 100) decides whether it runs at all. wxAlert itself is now confirmed from source; the GATE EXPRESSION is still doc-only -- the call site lives in index.html, which the code-search index does not cover.",
-    "provenance": "RETRIEVED",
-    "source": "drive:FIELD App - May 22 2026 Session Documentation (Weather Intelligence), item 7",
+    "provenance": "MEASURED",
+    "source": "docs/outbox/evidence/jubilant-bassoon-weather-2026-08-11.txt",
     "asOf": "2026-05-23T03:37:23Z",
     "reverified": true,
     "falsifier": "read the shipped dramaScoreLive() weather hook in jubilant-bassoon index.html and check whether the modifier call is wrapped in a find() predicate",
     "falsifierCost": "one read_source call",
     "falsifierAttempted": true,
     "verifiableHere": true,
-    "confidence": 0.82
+    "confidence": 0.98,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-11T22:00:00Z",
+    "resolutionNote": "Gate expression found verbatim: `Object.values(wxCache||{}).find(wx=>wx?.alert||(wx?.aqi||0)>100)`. There is also an outer arm the doc omits -- `isOutdoor`, a check on the SPORT string, not the venue.",
+    "sourceDetail": "jubilant-bassoon@a4c0e02:index.html:27168"
   },
   {
     "id": "aqi-100-and-150-are-sequential-not-contradictory",
     "text": "The Deep Dive's 'us_aqi > 100' and weatherDramaModifier's 'AQI > 150' are not two competing thresholds for the same decision: 100 is the gate that admits the modifier, 150 is the negative band inside it. AQI 101-150 therefore opens the gate while scoring zero itself.",
-    "provenance": "DERIVED",
+    "provenance": "MEASURED",
     "derivedFrom": "The May 22 doc's gate predicate uses >100; the same doc's band table uses >150 for the -15 term. Both are quoted from production in the same document, so they describe two different points in one pipeline rather than a disagreement.",
-    "source": "drive:FIELD App - May 22 2026 Session Documentation (Weather Intelligence) + FIELD - Weather API Deep Dive May 17 2026",
+    "source": "docs/outbox/evidence/jubilant-bassoon-weather-2026-08-11.txt",
     "asOf": "2026-05-23T03:37:23Z",
-    "reverified": false,
+    "reverified": true,
     "falsifier": "find a single production code path where 100 and 150 gate the same decision",
     "falsifierCost": "one read_source call",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": true,
-    "confidence": 0.9
+    "confidence": 0.98,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-11T22:00:00Z",
+    "resolutionNote": "100 appears in the gate predicate; 150 appears only inside weatherDramaModifier. Two points in one pipeline, as derived.",
+    "sourceDetail": "jubilant-bassoon@a4c0e02:index.html:27168"
   },
   {
     "id": "weather-drama-dead-zone-exists",
@@ -240,16 +252,20 @@
   {
     "id": "wxbadge-mislabels-the-101-150-aqi-band",
     "text": "Production's wxBadge labels AQI > 100 as 'Moderate AQI', but by the EPA banding quoted in FIELD's own Deep Dive doc, Moderate is 51-100 and 101-150 is 'Unhealthy for Sensitive Groups'. The badge names the band one step below the reading.",
-    "provenance": "DERIVED",
+    "provenance": "MEASURED",
     "derivedFrom": "May 22 doc item 6 gives wxBadge thresholds as '>100: Moderate AQI'; the May 17 Deep Dive gives the EPA table as '51-100: Moderate' and '101-150: Unhealthy for Sensitive Groups'. Both are FIELD's own docs, so the two disagree with each other.",
-    "source": "drive:FIELD App - May 22 2026 Session Documentation (Weather Intelligence) item 6",
+    "source": "docs/outbox/evidence/jubilant-bassoon-weather-2026-08-11.txt",
     "asOf": "2026-05-23T03:37:23Z",
-    "reverified": false,
+    "reverified": true,
     "falsifier": "read wxBadge's AQI label strings in the shipped index.html; if it says 'Unhealthy for Sensitive Groups' at >100 the docs are stale, not the code",
     "falsifierCost": "one read_source call",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": true,
-    "confidence": 0.8
+    "confidence": 0.97,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-11T22:00:00Z",
+    "resolutionNote": "Read from the file. `const aqiLabel = (wx.aqi||0)>200 ? 'Very unhealthy' : (wx.aqi||0)>150 ? 'Unhealthy' : 'Moderate AQI'`, inside `if((wx.aqi||0)>100)`. The final branch is reachable only for 101-150 and labels it Moderate.",
+    "sourceDetail": "jubilant-bassoon@a4c0e02:index.html:16801"
   },
   {
     "id": "open-meteo-serves-gusts-and-pm25",
@@ -287,15 +303,15 @@
     "id": "production-snow-band-may-be-10x",
     "text": "Production compares `(wx.snowfall||0) > 0.5` where wx.snowfall is Open-Meteo hourly snowfall, measured as CENTIMETRES. Its own spec calls that band 'Snow (>0.5mm)'. If the spec states the intent, production's snow band fires at 5mm rather than 0.5mm -- ten times heavier than documented.",
     "provenance": "DERIVED",
-    "derivedFrom": "(a) src/utils/weather.js compares wx.snowfall against the bare literal 0.5; (b) the May 22 doc says wx.snowfall is assigned from Open-Meteo's hourly snowfall; (c) this repo's own e2e probe measured Open-Meteo snowfall units as 'cm' on all five sampled venues. The alternative reading -- that 0.5cm is the real intent and the doc's 'mm' is the typo -- is NOT ruled out from here.",
-    "source": "jubilant-bassoon:src/utils/weather.js@0ecfaf51663ad0f316f4af77f2e21ce8c22aa9f0",
+    "derivedFrom": "MEASURED now on both halves: index.html:16869 assigns snowfall from hourly with no conversion, and the e2e probe asserts hourly_units.snowfall == 'cm' directly against the live API. What remains DERIVED is only the INTENT -- whether the doc's '0.5mm' states it, or whether 0.5cm was always meant and the doc has the typo. Not recoverable from the code, so not resolved.",
+    "source": "outbox/open-meteo-e2e-2026-08-11T22-03-23-507Z.txt",
     "asOf": "2026-08-11T00:00:00Z",
     "reverified": true,
     "falsifier": "find where wx.snowfall is assigned in index.html and check whether it converts cm to mm before storing; a conversion there refutes this entirely",
     "falsifierCost": "one grep of index.html, which the code-search index does not cover",
-    "falsifierAttempted": false,
-    "verifiableHere": false,
-    "confidence": 0.65
+    "falsifierAttempted": true,
+    "verifiableHere": true,
+    "confidence": 0.8
   },
   {
     "id": "field-has-a-repeated-unwired-code-pattern",
@@ -325,5 +341,22 @@
     "resolution": "CONFIRMED",
     "resolvedAt": "2026-08-11T21:06:33Z",
     "resolutionNote": "gate OPEN via wxAlert, band table 0, applied 0 -- exactly the predicted shape."
+  },
+  {
+    "id": "weather-delta-uses-an-arbitrary-venue",
+    "text": "dramaScoreLive applies the weather delta from an ARBITRARY cached venue to every outdoor game on the slate. `Object.values(wxCache).find(...)` takes the first qualifying entry in insertion order; the game's own venue is never looked up, and the only locality check is `isOutdoor`, which tests the sport string. One venue with bad weather moves every outdoor game's drama score.",
+    "provenance": "MEASURED",
+    "source": "docs/outbox/evidence/jubilant-bassoon-weather-2026-08-11.txt",
+    "asOf": "2026-08-11T22:00:00Z",
+    "reverified": true,
+    "falsifier": "find a venue lookup for the game being scored inside the isOutdoor block; eData and sport are in scope, so one could exist and be missed on a narrow read",
+    "falsifierCost": "one read of index.html:27150-27180",
+    "falsifierAttempted": true,
+    "verifiableHere": true,
+    "confidence": 0.96,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-11T22:00:00Z",
+    "resolutionNote": "Read 30 lines of surrounding context specifically to look for a per-game venue resolution. There is none. Found while running a DIFFERENT claim's falsifier, which is the argument for running them.",
+    "sourceDetail": "jubilant-bassoon@a4c0e02:index.html:27164-27175"
   }
 ]
