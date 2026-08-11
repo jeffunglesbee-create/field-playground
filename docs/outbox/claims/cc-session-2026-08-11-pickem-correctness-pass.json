@@ -238,7 +238,7 @@
   },
   {
     "id": "weather-drama-dead-zone-exists",
-    "text": "There is a band of real weather where weatherDramaModifier returns non-zero and production applies nothing, because wxAlert and the modifier test DIFFERENT FIELDS at DIFFERENT thresholds: wxAlert reads gusts > 30mph and rain > 5mm, the modifier reads sustained wind > 20mph and rain > 2mm.",
+    "text": "There is a band of real weather where weatherDramaModifier returns non-zero and production applies nothing: the gate's thresholds sit ABOVE the first scoring band on the same field. wxAlert admits at gusts > 30mph and rain > 5mm; the modifier already scores at gusts > 20mph and rain > 2mm.",
     "provenance": "MEASURED",
     "source": "scripts/check-weather-drama.mjs",
     "asOf": "2026-08-11T00:00:00Z",
@@ -247,7 +247,10 @@
     "falsifierCost": "one command",
     "falsifierAttempted": true,
     "verifiableHere": true,
-    "confidence": 0.97
+    "confidence": 0.97,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-11T22:00:00Z",
+    "resolutionNote": "Confirmed by the guard AND corrected by it. The original text said the two read DIFFERENT FIELDS -- sustained wind for the modifier, gusts for the alert -- taken from the session doc's paraphrase. Reading src/utils/weather.js showed the modifier reads `wx.gusts || wx.wind || 0`, the same expression wxAlert uses. The dead zone is real; my account of WHY was wrong."
   },
   {
     "id": "wxbadge-mislabels-the-101-150-aqi-band",
@@ -307,8 +310,8 @@
     "source": "outbox/open-meteo-e2e-2026-08-11T22-03-23-507Z.txt",
     "asOf": "2026-08-11T00:00:00Z",
     "reverified": true,
-    "falsifier": "find where wx.snowfall is assigned in index.html and check whether it converts cm to mm before storing; a conversion there refutes this entirely",
-    "falsifierCost": "one grep of index.html, which the code-search index does not cover",
+    "falsifier": "the unit half is settled -- index.html:16869 assigns from hourly with no conversion and the probe measured hourly_units.snowfall == 'cm'. What would still refute the INTENT half: a commit message, doc revision or author statement saying 0.5cm was meant, which would make the spec's 'mm' the typo",
+    "falsifierCost": "one grep of index.html (done: cloned the repo read-only)",
     "falsifierAttempted": true,
     "verifiableHere": true,
     "confidence": 0.8
