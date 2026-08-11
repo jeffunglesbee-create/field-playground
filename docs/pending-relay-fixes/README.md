@@ -70,8 +70,10 @@ June, then zero in July and August against 497 and 122 array rows. Since the 202
 matched `drama_arc LIKE '[%'` (array only), these 7 survived it, which is exactly what makes the
 sweep equivalent to `SELECT COUNT(*) WHERE drama_arc LIKE '{%'`.
 
-**Its real shape, which diverges from its own documentation.** The Drive storage-layer doc
-specifies samples as `[{t, s, p}]`. Across 37 real sample records there is **no `t` field**:
+**Its real shape.** Across 37 real sample records, `samples` elements carry only `s` and `p` —
+no timestamp. (The storage-layer doc's `[{t, s, p}]` describes the *localStorage* key
+`field_drama_history_{gameId}`, not this field; `drama_arc` is a derived object whose samples drop
+`t`. Two layers, each documented accurately.)
 
 ```json
 { "peak": 52, "peakPeriod": 1, "peakMinute": null, "sustainedMinutes": 0,
@@ -102,13 +104,6 @@ should exist. None does. So either no MLB game was watched live in the app durin
 months, or something else stops the live path for baseball. That is the question worth a query
 now — and it is a usage question as much as a code one.
 
-**A correction to my own note above.** I wrote that the object shape "diverges from its own
-documentation" because the storage-layer doc specifies `[{t, s, p}]` and the measured samples
-carry only `{s, p}`. That was conflating two layers. The doc describes the **localStorage** key
-`field_drama_history_{gameId}`, which does carry `t`. What gets POSTed into `drama_arc` is a
-*derived* object whose `samples` drop the timestamp. Both docs are accurate about their own layer;
-I read one as describing the other.
-
 ### Drive context, checked 2026-08-11 — why the object shape is rare
 
 Two primary docs explain the absence better than my measurement alone could.
@@ -128,9 +123,11 @@ escalating trend, 'sleeper' classification"*. Three things about how it fires:
   available from this sandbox."*
 
 A path writing at most 3 rows per human app-open explains the rarity precisely: **7 rows in four
-months.** It also explains the July/August silence less well — the cap limits volume, it does not
-stop writes entirely, so something else changed after June. The July verification gap is therefore
-still open, and now has a date attached to it.
+months.** Note this is the *retroactive backfill* path; the architecture doc above describes the
+*live* path. Both write the object shape, both are client-side, and both therefore depend on
+someone having the app open. The July verification gap — was `runDramaBackfillDiscovery()` ever
+confirmed to fire and land? — is now partly answered: object rows exist, so a client path has
+landed rows at some point. Which of the two produced them is not established.
 
 **A second detail worth carrying:** `dramaScoreLive` returns 0 for both `state==='pre'` and
 `state==='post'`. Drama exists only for live states, which is consistent with the 84
