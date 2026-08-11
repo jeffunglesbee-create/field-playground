@@ -23,6 +23,34 @@ Each entry is a real patch against a real commit, not a sketch.
 
 ---
 
+## STATUS, 2026-08-11 — three of these already have CC-CMDs in the relay repo
+
+**Read this before writing anything here.** A `codex_search` on the cc-cmd-queue turned up
+`cc-cmd-2026-08-08-desk-sports-followups`, filed 2026-08-08 22:38:
+
+> Three CC-CMDs from the Aug 8 desk-sports investigation, fully self-contained (no
+> field-playground dependency), **staged in field-relay-nba**: (1)
+> `cc-cmd-2026-08-08-cfl-archive-collection` … (2)
+> `cc-cmd-2026-08-08-confirm-duplicate-fixture-mechanism` … (3)
+> `cc-cmd-2026-08-08-investigate-mlb-wnba-archive-gap` … **None yet picked up.**
+
+So the specs exist. Writing them again here would be duplicate work — which is precisely what
+Rule 91's session-radius Collision Check (`codex_search` the cc-cmd-queue before minting a new
+CC-CMD) exists to catch. **This directory's job for these three is to supply measurements the
+CC-CMDs are blocked on, not to restate them.**
+
+### What this session can and cannot do
+
+`src/index.js` is **not readable from here** — `read_lines` returns an empty body at every range,
+for every offset. `scripts/` and `docs/` in field-relay-nba read fine; the main source does not.
+The line citations elsewhere in this file (`10629`, `11162`) came from a session that had that
+access and should be treated as unverified-from-here.
+
+That has a hard consequence, stated rather than worked around: **a real patch against a real commit
+cannot be produced from this session for anything touching `src/index.js`.** That includes the CFL
+collection path and the duplicate-id convergence. What can be produced is measurement, and that is
+what follows.
+
 ## `2026-08-06-soccer-league-label.patch`
 
 **Fixes:** every soccer league being archived as the World Cup. Measured at **52 of 60** checkable
@@ -218,6 +246,33 @@ answers "does this field exist", never "does it mean what its name says."**
 The probe is committed as `scripts/probe-cfl-scoreboard-shape.mjs` with a weekly workflow, so the
 staleness check keeps running rather than being a one-time reassurance.
 
+### The field mapping, derived from the measurement
+
+This is the deliverable `cc-cmd-2026-08-08-cfl-archive-collection` was blocked on: its first step
+was "record the real shape," and that is now done. Every row below is measured, not assumed.
+
+| `/archive/game` field | From `/cfl/scoreboard/rounds` | Confidence |
+|---|---|---|
+| `date` | `tournaments[].date` (ISO, `+00:00`) — take the date part | measured, 93/93 |
+| `start_time` | `tournaments[].date` in full | measured, 93/93 |
+| `home` / `away` | `homeSquad.name` / `awaySquad.name` | measured, 93/93 |
+| `home_score` / `away_score` | `homeSquad.score` / `awaySquad.score` | **only when `status === 'complete'`** |
+| `sport` / `league` | constant `football` / `CFL` | n/a |
+| `espn_event_id` | **none** — CFL has no usable ESPN feed at all | n/a |
+| `venue` | **ABSENT AT EVERY DEPTH** | measured |
+
+**The one hard gate.** `score` is non-null on 93/93, and 47 of those are unplayed fixtures carrying
+`0`. Gate the write on `status === 'complete'` or `winner != null` — the two agree on all 93 rows.
+A writer keyed on "is the score present" archives **47 phantom 0–0 finals**.
+
+**`/cfl/scoreboard/squads` is not needed.** Team names are inline on the game record, so the
+id→name lookup the spec anticipated is unnecessary. Squads carries standings (`wins`/`draw`/`loss`)
+and a `TBD` row with `id: 0` — useful for other things, not for this.
+
+**`venue` is a decision, not an oversight.** It comes from `echo.pims.cfl.ca` fixture detail or it
+is written null. Whoever picks this up should choose deliberately, because `/archive/game` takes it
+and a silent empty string is the kind of thing that reads as data later.
+
 ## `2026-08-08` — every seeded fixture is archived twice
 
 **Status:** diagnosed, **no patch — and a documented assumption looks wrong**.
@@ -269,6 +324,31 @@ not a proven mechanism. **Confirm before acting:** check whether the pre-game se
 
 Both need a decision this session should not make alone.
 
+### CORRECTION, 2026-08-11 — my hypothesis is contradicted by the relay's own account
+
+Two things surfaced that the entry above did not know:
+
+1. **A cleanup already ran.** `field-relay-nba/scripts/run-duplicate-row-cleanup.mjs` exists, from
+   `CC-CMD-2026-08-09-cleanup-stale-duplicate-rows` — dated the day *after* this entry. It deletes
+   stale name-scheme siblings from `postseason_games` under an `EXISTS`-guarded predicate.
+
+2. **It describes a different cause than I did.** Its header says the duplicates were
+   *"left behind by the two bulk schedule imports either side of the archive id-scheme change"* —
+   a one-time migration artifact. That is the original disclosure's "self-heals" account, the one
+   this entry doubted. My hypothesis was that the seed and resolution paths permanently disagree
+   because the seed has no `series_key`.
+
+**These cannot both be right, and I cannot settle it from here.** The discriminator is whether
+duplicates are still being *created* on dates after the cleanup, and confirming the mechanism needs
+`src/index.js`, which this session cannot read. `cc-cmd-2026-08-08-confirm-duplicate-fixture-mechanism`
+already exists to answer exactly this and remains the right instrument.
+
+**What is worth carrying forward:** the observation that duplicates appeared on four consecutive
+current dates (08-05 through 08-08), not in a historical block, is the evidence that argues against
+a pure migration artifact. It is not proof — a bulk import can cover future fixtures — but whoever
+picks up that CC-CMD should test the created-vs-imported distinction rather than assume either
+account. `scripts/probe-duplicate-created-at.mjs` in the relay repo appears built for precisely that.
+
 ---
 
 ## `2026-08-08` — MLB and WNBA missing from the archive for two whole days
@@ -297,3 +377,28 @@ repo has already found MLS fixtures stored as `FIFA World Cup`.
 **Cheapest discriminator:** query the archive directly for those two dates without the `/context/date/`
 filter. If rows exist, it's a read/label problem. If they don't, it's a write problem, and the cron logs
 for 2026-08-05/06 say which.
+
+### 2026-08-11 — the discriminator was attempted and does NOT work as written
+
+`/archive/query?date=2026-08-05` returns **briefs, not games**: `count: 5`, every row a
+`game_brief` / `slate` / `pre_game` record. It cannot answer "is there a games row," so the step
+above is not runnable as specified and needs a different route (or a `/d1/execute` SELECT, which
+requires the relay's `X-FIELD-Relay` credential this session does not hold and should not use).
+
+**One real signal did come out of it.** A `pre_game` brief for **MLB** exists on 2026-08-05:
+
+```
+pre_game_MLB_2026-08-04_diamondbacks_padres   sport: "mlb"   game_id: "401816398"
+source: cron   created_at: 2026-08-04 10:01:24
+```
+
+So the **cron was running and producing MLB output for that date.** That materially narrows the
+candidates in `cc-cmd-2026-08-08-investigate-mlb-wnba-archive-gap`: "the archive cron simply did not
+run" is now unlikely for MLB, and the live hypotheses are a failed archive *write* despite a
+successful brief, or rows written under a label `/context/date/` does not return.
+
+**And a fifth id scheme.** That brief's `game_id` is a bare ESPN event id — no date, no sport,
+matching none of the four schemes measured on 2026-08-08. It is recorded as a known-unparseable
+fixture in `scripts/check-gameid-parse.mjs`: the parser returns nulls rather than inventing a date,
+which is the safe failure, but anything joining briefs to games across these two id spaces should
+know they do not share one.

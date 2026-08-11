@@ -47,6 +47,20 @@ const CASES = [
   },
 ]
 
+// A FIFTH SCHEME, found 2026-08-11 in /archive/query and recorded here rather
+// than quietly ignored: briefs carry a bare ESPN event id.
+//
+//   "game_id": "401816398"   (pre_game_MLB_2026-08-04_diamondbacks_padres)
+//
+// It contains no date and no sport, so no parser can extract either -- this is
+// a genuine limit, not a bug to fix in the regex. What matters is that it
+// returns nulls rather than inventing something: a null is dropped by
+// PickStreak, which is visible as a shorter record, whereas a fabricated date
+// would be silently wrong. Asserted so the behaviour is deliberate.
+const KNOWN_UNPARSEABLE = [
+  ['401816398', 'bare ESPN event id, seen on briefs via /archive/query'],
+]
+
 // Inputs that must NOT produce a confident answer. A parser that invents a
 // date for junk is worse than one that returns null, because the caller
 // cannot tell the difference.
@@ -86,6 +100,14 @@ for (const [input, label] of MUST_BE_NULL) {
 // The regression itself, stated as an assertion rather than a comment: the
 // old inline regex required the id to START with a date. If someone
 // reintroduces that anchoring, this is the line that catches it.
+console.log('')
+console.log('known-unparseable id schemes must return nulls, never a guess')
+for (const [id, label] of KNOWN_UNPARSEABLE) {
+  const got = parseGameId(id)
+  if (got.date === null && got.sport === null) console.log(`  ok    ${label}`)
+  else { failures++; console.log(`  FAIL  ${label}: invented ${JSON.stringify(got)}`) }
+}
+
 console.log('')
 console.log('regression: underscore schemes must not require a leading date')
 const underscoreOnly = CASES.filter(c => !/^\d{4}-\d{2}-\d{2}/.test(c.id))
