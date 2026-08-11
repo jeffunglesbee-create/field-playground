@@ -1,0 +1,51 @@
+name: Drama Arc Shapes Probe
+
+# Measures the real shape of /cfl/scoreboard/rounds -- the documented live CFL
+# source -- before any archive-write work is designed against it.
+#
+# Context: CFL is missing from the archive entirely. The obvious fix (add CFL to
+# the ESPN-shaped LEAGUES list) is disqualified by FIELD's own spec, which
+# records that ESPN's CFL scoreboard returns 2022 data. That fix would have
+# returned HTTP 200 with a fully populated events[] of four-year-old games.
+#
+# So staleness is checked FIRST here, before any field is profiled. A source
+# that is well-shaped and four years old is worse than one that errors.
+#
+# Also closes the two questions the spec explicitly left open: whether
+# game_status is present in 2026, and what live scoring data actually looks like.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '07 16 * * 1'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Measure drama_arc shapes
+        timeout-minutes: 6
+        continue-on-error: true
+        run: node scripts/probe-drama-arc-shapes.mjs
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "drama-arc-shapes-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: drama arc shapes probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
