@@ -102,6 +102,7 @@ async function main() {
   const counts = new Map()
   const bySport = new Map()
   const objects = []
+  const others = []
   let games = 0, fetchFailures = 0
 
   log(`=== UNCENSORED SWEEP: /context/date/ over ${DAYS} days ===`)
@@ -122,6 +123,14 @@ async function main() {
       if (kind === 'object') {
         const parsed = parse(g.drama_arc)
         if (parsed) objects.push({ sport: g.sport, id: g.id, peak: g.drama_peak, obj: parsed })
+      }
+      // Run 1 proved the object shape absent but never captured what the
+      // 84 "other:string" rows actually contain -- it answered the question
+      // asked and left the interesting one closed, the same way the first
+      // CFL run reported homeSquad as "object". Capture them verbatim.
+      if (kind.startsWith('other')) {
+        others.push({ sport: g.sport, id: g.id, peak: g.drama_peak,
+                      raw: typeof g.drama_arc === 'string' ? g.drama_arc : JSON.stringify(g.drama_arc) })
       }
     }
   }
@@ -163,6 +172,34 @@ async function main() {
     }
     log(`  rows: ${rows.length}`)
     for (const [k, n] of [...lbCounts.entries()].sort((a, b) => b[1] - a[1])) log(`    ${k.padEnd(14)} ${String(n).padStart(4)}`)
+  }
+  log('')
+
+  log('=== THE THIRD SHAPE: what is in the non-array, non-object strings? ===')
+  if (!others.length) log('  none found')
+  else {
+    log(`  ${others.length} row(s)`)
+    const byValue = new Map()
+    for (const o of others) {
+      const k = o.raw === '' ? '(empty string)' : o.raw.slice(0, 60)
+      byValue.set(k, (byValue.get(k) ?? 0) + 1)
+    }
+    log('  distinct raw values, most common first:')
+    for (const [v, n] of [...byValue.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12)) {
+      log(`    ${String(n).padStart(4)}x  ${JSON.stringify(v)}`)
+    }
+    log('')
+    log('  a few whole rows:')
+    for (const o of others.slice(0, 5)) {
+      log(`    ${String(o.sport).padEnd(16)} peak=${JSON.stringify(o.peak)}  arc=${JSON.stringify(o.raw).slice(0, 90)}`)
+    }
+    // Does the third shape coincide with a missing peak? If drama was never
+    // computed for these sports, that is a different story from a parse bug.
+    const withPeak = others.filter(o => typeof o.peak === 'number' && o.peak > 0).length
+    log('')
+    log(`  rows whose drama_peak is a number > 0: ${withPeak} of ${others.length}`)
+    if (!withPeak) log('    None. Consistent with drama never being COMPUTED for these, rather than')
+    log(!withPeak ? '    computed and stored in an unreadable shape.' : '    So drama exists for these rows but the arc is not an array.')
   }
   log('')
 
