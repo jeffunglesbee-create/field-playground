@@ -49,6 +49,54 @@ recompute keyed on that predicate inherits the gap.
 The client side is already correct and now asserted: `parseDramaArc` returns null for both
 spellings, verified in `scripts/check-drama-sparkline.mjs` against the measured census.
 
+### Drive context, checked 2026-08-11 — why zero object arcs is not surprising
+
+Two primary docs explain the absence better than my measurement alone could.
+
+**`CC Outbox — Retroactive Drama Backfill` (2026-07-02)** is the object shape's write path. It
+produces exactly the documented fields — the run it reports ends with *"peak 57 at the equalizer,
+escalating trend, 'sleeper' classification"*. Three things about how it fires:
+
+- It runs **client-side, on app open**, via `runDramaBackfillDiscovery()` against
+  `/archive/drama-missing?limit=3`.
+- It is capped at **3 POSTs per app session**, `?limit=3` plus a client-side `.slice(0, 3)`,
+  locked by smoke assertion `DRAMA-BACKFILL-003`.
+- Its own Done Conditions record that it was **never verified to actually fire or land**:
+  *"the app itself hasn't been run in a real browser this session — confirming
+  `runDramaBackfillDiscovery()` actually fires on real app open, and that POSTed `drama_peak`
+  values actually land in D1 correctly, requires a real browser session or a live deploy, neither
+  available from this sandbox."*
+
+So a path that writes at most 3 rows per human app-open, and was never confirmed to fire, is a
+path that could easily have produced **zero** rows in the 45-day window I swept. My measurement
+does not prove it never fired — the 2026-08-03 reset of 537 rows and the 3-per-session cap each
+explain scarcity on their own — but the open verification gap from July and the zero count from
+August are the same question asked twice, five weeks apart, still unanswered.
+
+**Cheapest way to settle it:** one D1 query, `SELECT COUNT(*) ... WHERE drama_arc LIKE '{%'`
+across both game tables. If it returns zero, the client write path has never landed a row and the
+July gap is now a confirmed defect rather than an untested assumption.
+
+**A second detail worth carrying:** `dramaScoreLive` returns 0 for both `state==='pre'` and
+`state==='post'`. Drama exists only for live states, which is consistent with the 84
+stringified-null rows all carrying `drama_peak: 0` on sports whose live states are never fetched.
+
+### And a display constraint the playground deliberately breaks
+
+**`CC Outbox — Lock In Drama Score Display Compliance` (2026-07-01)** records that production
+**never displays a raw drama score**. All 8 `dramaScoreLive(` call sites in `index.html` convert
+through `dramaTier()` first, which returns only `'fire' | 'hot' | 'warm' | ''`, and two smoke
+assertions plus `A495` guard it.
+
+That matters for anything porting this sparkline back. The fixed 0-100 domain shipped here makes
+**bar height literally readable as the drama value**, which is the opposite of tier bucketing, and
+the Sparkline Spec's patent note calls the chart safe partly because it *"shows trajectory, not a
+point value"*. The spec does permit real numbers **post-game (Amnesty Zone)**.
+
+None of this binds field-playground — ADR-002 explicitly does not, and the 0-100 presentation is a
+standing project rule here. It is recorded so that a port is a decision someone makes knowingly,
+rather than a compliance regression someone discovers.
+
 **Also settled here: the documented object shape is not observable.**
 `CC-CMD-2026-08-03-fix-drama-backfill-situational-fields` describes every client write path as
 producing `{peak, peakPeriod, sustainedMinutes, trend, classification, samples}`. Zero were found

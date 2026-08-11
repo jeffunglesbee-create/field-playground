@@ -116,5 +116,30 @@
     "resolution": "CONFIRMED",
     "resolvedAt": "2026-08-11T02:40:00Z",
     "resolutionNote": "Four independent sources: TonightsPick, terrainFlight HEIGHT_SCALE, broadcastCall, and the Drive doc 'FIELD - Drama Arc Storage Layer' defining the stored sample as 'drama score 0-100'."
+  },
+  {
+    "id": "drama-object-write-path-may-never-have-landed",
+    "text": "The client-side drama backfill that writes the object shape may never have landed a row in production",
+    "provenance": "DERIVED",
+    "derivedFrom": "zero object arcs in 948 games, AND the 2026-07-02 outbox stating the path was never verified to fire or land, AND a 3-POST-per-session cap",
+    "source": "outbox/drama-arc-shapes-2026-08-11T02-26-03-383Z.txt",
+    "falsifier": "SELECT COUNT(*) FROM regular_season_games WHERE drama_arc LIKE '{%' (and postseason_games)",
+    "falsifierCost": "one query",
+    "falsifierAttempted": false,
+    "verifiableHere": false,
+    "confidence": 0.55
+  },
+  {
+    "id": "production-never-displays-raw-drama",
+    "text": "Production never displays a raw drama score; all 8 call sites bucket through dramaTier() and smoke assertions guard it",
+    "provenance": "RETRIEVED",
+    "source": "drive:CC Outbox - Lock In Drama Score Display Compliance (2026-07-01)",
+    "asOf": "2026-07-01T00:00:00Z",
+    "reverified": true,
+    "falsifier": "find a dramaScoreLive call site in index.html that interpolates the raw score",
+    "falsifierCost": "one grep of a repo this session cannot read",
+    "falsifierAttempted": false,
+    "verifiableHere": false,
+    "confidence": 0.7
   }
 ]
