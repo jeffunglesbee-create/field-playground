@@ -23,27 +23,29 @@ Each entry is a real patch against a real commit, not a sketch.
 
 ---
 
-## `2026-08-11` — `drama_arc` stores the STRING `"null"` on 84 rows
+## `2026-08-11` — `drama_arc` stores the STRING `"null"` on 121 rows
 
 **Status:** measured, not patched. Small, and the kind of thing that silently breaks a query.
 
-Sweeping `/context/date/` over 45 days, 948 games (`outbox/drama-arc-shapes-*.txt`):
+Sweeping `/context/date/` over **120 days, 1484 games** (`outbox/drama-arc-shapes-*.txt`):
 
 ```
-array           661   69.7%    a real JSON array of numbers
-SQL null        203   21.4%    no drama recorded
-string "null"    84    8.9%    the four-character string, NOT null
-object            0    0.0%
+array          1022   68.9%    a real JSON array of numbers
+SQL null        334   22.5%    no drama recorded
+string "null"   121    8.2%    the four-character string, NOT null
+object            7    0.5%    {peak, ..., samples:[{s,p}]}
 ```
 
-All 84 carry `drama_peak: 0`, and they cluster in **EFL Cup (34), golf (30), PGA Tour (10),
-MLB (7), CFL (3)** — the sports `anomalyBaseline.js` already records as never computing drama at
-all. So the value means "no drama here"; it is just spelled as a stringified null instead of SQL
-NULL.
+*(An earlier revision of this entry quoted a 45-day sweep and reported `object 0.0%`. That was a
+window artifact — see the correction below. The other three counts scaled as expected.)*
+
+All 121 stringified nulls carry `drama_peak: 0`, clustered in **EFL Cup, golf, PGA Tour, MLB and
+CFL** — the sports `anomalyBaseline.js` already records as never computing drama at all. So the
+value means "no drama here"; it is just spelled as a stringified null instead of SQL NULL.
 
 **Why it is worth fixing rather than tolerating.** Absent is now spelled two ways, so
-`WHERE drama_arc IS NULL` returns 203 rows and silently misses 84 more that mean the same thing —
-a 29% undercount of "no drama recorded", with no error anywhere. Any future backfill, audit or
+`WHERE drama_arc IS NULL` returns 334 rows and silently misses 121 more that mean the same thing —
+a **27% undercount** of "no drama recorded", with no error anywhere. Any future backfill, audit or
 recompute keyed on that predicate inherits the gap.
 
 The client side is already correct and now asserted: `parseDramaArc` returns null for both
@@ -127,13 +129,12 @@ None of this binds field-playground — ADR-002 explicitly does not, and the 0-1
 standing project rule here. It is recorded so that a port is a decision someone makes knowingly,
 rather than a compliance regression someone discovers.
 
-**Also settled here: the documented object shape is not observable.**
-`CC-CMD-2026-08-03-fix-drama-backfill-situational-fields` describes every client write path as
-producing `{peak, peakPeriod, sustainedMinutes, trend, classification, samples}`. Zero were found
-in 948 games. That is consistent with the 537 buggy MLB rows being reset to null on 2026-08-03 and
-drama not having been recomputed since — the shape may be real and simply unproduced right now —
-but no extractor has been written for it, because a shape that cannot be produced on demand cannot
-be built against.
+**On `CC-CMD-2026-08-03`'s account of the shape:** it describes the client write path as producing
+`{peak, peakPeriod, sustainedMinutes, trend, classification, samples}`, and the 7 measured rows
+match that field list exactly. Where it and the storage-layer doc diverge from reality is one level
+down — `samples` elements carry only `{s, p}`, never the documented `t`. The prose was right about
+the envelope and wrong about the payload, which is the same shape of error as the first CFL probe
+run and the first version of this entry.
 
 ---
 
