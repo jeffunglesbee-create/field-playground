@@ -23,6 +23,42 @@ Each entry is a real patch against a real commit, not a sketch.
 
 ---
 
+## `2026-08-11` — `drama_arc` stores the STRING `"null"` on 84 rows
+
+**Status:** measured, not patched. Small, and the kind of thing that silently breaks a query.
+
+Sweeping `/context/date/` over 45 days, 948 games (`outbox/drama-arc-shapes-*.txt`):
+
+```
+array           661   69.7%    a real JSON array of numbers
+SQL null        203   21.4%    no drama recorded
+string "null"    84    8.9%    the four-character string, NOT null
+object            0    0.0%
+```
+
+All 84 carry `drama_peak: 0`, and they cluster in **EFL Cup (34), golf (30), PGA Tour (10),
+MLB (7), CFL (3)** — the sports `anomalyBaseline.js` already records as never computing drama at
+all. So the value means "no drama here"; it is just spelled as a stringified null instead of SQL
+NULL.
+
+**Why it is worth fixing rather than tolerating.** Absent is now spelled two ways, so
+`WHERE drama_arc IS NULL` returns 203 rows and silently misses 84 more that mean the same thing —
+a 29% undercount of "no drama recorded", with no error anywhere. Any future backfill, audit or
+recompute keyed on that predicate inherits the gap.
+
+The client side is already correct and now asserted: `parseDramaArc` returns null for both
+spellings, verified in `scripts/check-drama-sparkline.mjs` against the measured census.
+
+**Also settled here: the documented object shape is not observable.**
+`CC-CMD-2026-08-03-fix-drama-backfill-situational-fields` describes every client write path as
+producing `{peak, peakPeriod, sustainedMinutes, trend, classification, samples}`. Zero were found
+in 948 games. That is consistent with the 537 buggy MLB rows being reset to null on 2026-08-03 and
+drama not having been recomputed since — the shape may be real and simply unproduced right now —
+but no extractor has been written for it, because a shape that cannot be produced on demand cannot
+be built against.
+
+---
+
 ## STATUS, 2026-08-11 — all three are DONE upstream. Corrected by the relay session.
 
 An earlier revision of this section said the three CC-CMDs were staged and **"None yet picked up,"**

@@ -96,10 +96,12 @@
     "reverified": true,
     "falsifier": "find an object-shape drama_arc in real relay output and render it",
     "falsifierCost": "one workflow run",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": true,
     "confidence": 0.8,
-    "resolutionNote": "OPEN. Corroborated from two directions (the CC-CMD, and anomalyBaseline.js recording all 26 golf rows as non-array) but zero object-shape arcs measured here against one array-shape. Deliberately not built against."
+    "resolutionNote": "Measured over 948 real games across 45 days (outbox/drama-arc-shapes-*.txt): 661 array (69.7%), 203 SQL null (21.4%), 84 the STRING \"null\" (8.9%), and ZERO objects. There are three shapes, not two, and the documented object shape is not observable. The non-array rows are stringified nulls with drama_peak 0, concentrated in EFL Cup, golf, PGA Tour and CFL -- the sports anomalyBaseline records as never computing drama. So parseArc returning null for them is correct, and there was nothing to support.",
+    "resolution": "REFUTED",
+    "resolvedAt": "2026-08-11T02:35:00Z"
   },
   {
     "id": "drama-scale-is-0-100",

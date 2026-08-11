@@ -1,7 +1,7 @@
 import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup, untrack, batch } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
 import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk, ambientData } from '../../data/relay'
-import { dramaBars } from '../../data/dramaScale'
+import { dramaBars, parseDramaArc } from '../../data/dramaScale'
 import { picks, NON_MATCHUP_SPORTS } from '../PickEm'
 import { clearAllOutcomes } from '../../data/outcomes'
 import { showToast } from '../Toast'
@@ -281,16 +281,9 @@ function ScoreEditor(props) {
 // happened here until this fix. DramaLeaderboard already parses this
 // field correctly elsewhere in this repo; this brings DeskCard in line
 // with that, rather than leaving two different unparsing conventions.
-function parseArc(raw) {
-  if (Array.isArray(raw)) return raw
-  if (typeof raw !== 'string') return null
-  try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : null
-  } catch {
-    return null
-  }
-}
+// parseArc now lives in src/data/dramaScale.js as parseDramaArc, where it is
+// testable and where the measured shape census is recorded next to it.
+const parseArc = parseDramaArc
 // Bar heights come from src/data/dramaScale.js -- a fixed 0-100 domain, so
 // height IS the drama value and cards are comparable to each other. This used
 // to normalise each game to its own maximum, which made the tallest bar 100%

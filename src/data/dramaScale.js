@@ -12,6 +12,42 @@
 // assumed: TonightsPick ("drama_peak 0-100, the real ported field"),
 // terrainFlight's HEIGHT_SCALE ("0-100 real range -> 0-35 tall"), and
 // broadcastCall ("a real drama peak of ${finalPeak} out of 100").
+// Parsing drama_arc, against the shapes that ACTUALLY occur.
+//
+// Measured 2026-08-11 over 948 real games across 45 days
+// (outbox/drama-arc-shapes-*.txt), uncensored /context/date/ sweep:
+//
+//     array           661   69.7%   a bare JSON array of numbers
+//     SQL null        203   21.4%   no drama recorded
+//     string "null"    84    8.9%   the FOUR-CHARACTER STRING, not null
+//     object            0    0.0%
+//
+// THE OBJECT SHAPE WAS NOT FOUND. Two prose sources describe it as the
+// canonical client-written form -- CC-CMD-2026-08-03 on Drive, and
+// anomalyBaseline's note that all 26 golf rows are non-array -- and neither is
+// contradicted by history: the 537 buggy MLB rows were reset to null on
+// 2026-08-03 and drama has evidently not been recomputed since. But a shape
+// that cannot be produced on demand cannot be built against, so no extractor
+// for {peak,...,samples} is written here. When a real one appears, measure it
+// and add a branch.
+//
+// THE THIRD SHAPE IS A RELAY DEFECT, not a format. All 84 are the string
+// "null" with drama_peak: 0, concentrated in EFL Cup, golf, PGA Tour, CFL --
+// exactly the sports anomalyBaseline records as never having drama computed.
+// So it means "no drama here", stored as stringified null rather than SQL
+// NULL. JSON.parse("null") yields null, so this returns null and the caller
+// renders nothing, which is correct. Handled explicitly rather than by
+// accident, because the two spellings of absent are a real trap for anything
+// querying `WHERE drama_arc IS NULL`.
+export function parseDramaArc(raw) {
+  if (raw === null || raw === undefined) return null
+  if (Array.isArray(raw)) return raw
+  if (typeof raw !== 'string') return null
+  let parsed
+  try { parsed = JSON.parse(raw) } catch { return null }
+  return Array.isArray(parsed) ? parsed : null
+}
+
 export const DRAMA_MAX = 100
 export const TARGET_BARS = 30
 

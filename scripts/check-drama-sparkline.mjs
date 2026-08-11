@@ -24,7 +24,7 @@
 // render maths locally, which would have kept passing if the component's copy
 // drifted. Extracting src/data/dramaScale.js was what made a real call
 // possible.
-import { dramaBars, downsampleMax, DRAMA_MAX } from '../src/data/dramaScale.js'
+import { dramaBars, downsampleMax, DRAMA_MAX, parseDramaArc } from '../src/data/dramaScale.js'
 
 const render = arc => dramaBars(arc)
 
@@ -95,6 +95,27 @@ ok('out-of-range value clamps rather than rescaling the card',
    Math.max(...render([50, 150])) === 100)
 ok('non-numeric entries are dropped, not coerced',
    render([10, null, 'x', 20]).length === 2)
+
+// ---- the shapes drama_arc actually takes, measured 2026-08-11 ----
+// 948 real games over 45 days: 661 array, 203 SQL null, 84 the STRING "null",
+// 0 object. Each branch below corresponds to a shape that was counted, not to
+// one that seemed plausible.
+console.log('')
+console.log('parseDramaArc over the measured shape census (948 games, 45 days)')
+ok('array of numbers -> the array (661 rows, 69.7%)',
+   JSON.stringify(parseDramaArc('[10,20,30]')) === '[10,20,30]')
+ok('SQL null -> null (203 rows, 21.4%)', parseDramaArc(null) === null)
+// The one that matters: the four-character string, not a null. All 84 carry
+// drama_peak 0, on sports anomalyBaseline records as never computing drama.
+ok('the STRING "null" -> null (84 rows, 8.9%)', parseDramaArc('null') === null)
+ok('already-parsed array passes through', Array.isArray(parseDramaArc([1, 2])))
+ok('garbage -> null, not a throw', parseDramaArc('{not json') === null)
+ok('a number -> null', parseDramaArc(42) === null)
+// No object branch exists because no object arc exists. If one ever appears,
+// this line is where the census gets updated -- deliberately asserting the
+// CURRENT truth rather than pre-building for a shape never observed.
+ok('object shape -> null (0 rows observed; no extractor written)',
+   parseDramaArc('{"peak":74,"samples":[1,2]}') === null)
 
 console.log('')
 if (failures) {
