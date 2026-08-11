@@ -83,7 +83,14 @@ async function main() {
       const res = await fetch(`${RELAY}/context/date/${date}`, { headers: { 'User-Agent': UA } })
       if (!res.ok) { failures++; log(`  ${date}: HTTP ${res.status}`); continue }
       const j = await res.json()
-      const list = Array.isArray(j) ? j : (j.games ?? j.data ?? [])
+      // Shape copied from the shipped reader in src/data/relay.js (~line 498),
+      // not guessed. The first version of this probe used `j.games ?? j.data`,
+      // which yields the {regular, postseason} WRAPPER rather than an array --
+      // seven "list is not iterable" failures, and the only reason that did
+      // not print as a clean bill of health is the degraded-sample guard.
+      const list = Array.isArray(j)
+        ? j
+        : [...(j?.games?.regular ?? []), ...(j?.games?.postseason ?? [])]
       for (const g of list) games.push({ ...g, __date: date })
     } catch (e) { failures++; log(`  ${date}: ${String(e).slice(0, 80)}`) }
   }
