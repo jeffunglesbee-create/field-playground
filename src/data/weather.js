@@ -13,6 +13,54 @@ import { deskStore } from './relay'
 // Open-Meteo directly; no relay/proxy route is needed.
 const OM_BASE = 'https://api.open-meteo.com/v1/forecast'
 
+// WHAT PRODUCTION'S WEATHER ENGINE DOES THAT THIS DOES NOT.
+// Checked against Drive, 2026-08-11: "FIELD App - May 22 2026 Session
+// Documentation (Weather Intelligence)". Recorded because the gap is much
+// larger than "same idea, smaller table", and because one item makes weather
+// an INPUT to a number this repo spends a lot of effort measuring.
+//
+//   WEATHER FEEDS THE DRAMA SCORE. weatherDramaModifier() returns a SIGNED
+//   delta added to sitBonus inside dramaScoreLive():
+//       cold <0F +8 (stacking with <28F +8), wind >20mph +6 (>30mph +4),
+//       snow >0.5mm +10, heavy rain >2mm +8 (>5mm +4),
+//       AQI >150 -15, AQI >200 -10
+//   So a drama_arc is partly a weather series. Nothing here consumes that,
+//   but anyone reasoning about why an arc rose should know a cold windy night
+//   moves it without anything happening on the field.
+//
+//   PARK_ORIENTATION + windContextNote(): ~20 MLB parks mapped to degrees
+//   from true north to centre field, turning wind direction into
+//   "18mph out to CF -- hitter's conditions" vs "in from CF -- pitcher's".
+//   Returns null under 8mph. NFL and non-MLB outdoor venues are an open item
+//   in that doc, not an oversight here.
+//
+//   fetchAQI() against air-quality-api.open-meteo.com, 1h cache, non-blocking
+//   so an AQI failure cannot fail the weather fetch. Wildfire smoke is the
+//   real case.
+//
+//   Fields this file does not fetch: apparent_temperature, wind_gusts_10m,
+//   direct_radiation (captured for a future sun-glare check, logic unwritten).
+//
+// This module fetches temperature and a condition string, and stops. That is
+// a deliberate scope, not a partial port -- but the divergence is worth
+// knowing before anyone treats this as equivalent.
+//
+// THE INCIDENT THAT DOC RECORDS, kept because it is the failure mode this
+// file is shaped to avoid. Six helpers (wxDescription, wxIcon, wxAlert,
+// wxBadge, isOutdoorVenue, getVenueCoords) were CALLED but never defined.
+// fetchWeather's try/catch swallowed the ReferenceError silently, wxCache
+// stayed empty, no badge ever rendered, the +10 drama bonus never fired --
+// and FIELD_FEATURES carried 'weather-drama-bonus': '2026-05-19' the whole
+// time. The doc's own words: "The feature-flag ... was a lie."
+//
+// Why this file cannot fail that way: fetchOneVenue THROWS on a non-ok
+// response rather than returning null, fetchWeather uses allSettled so one
+// venue's failure is visible as that venue missing, and a total failure
+// throws rather than resolving to an empty list -- which is what keeps
+// WeatherPoll's error state distinguishable from its no-venues state. A
+// swallowed error here would surface as a blank section with no console
+// output, the single hardest failure mode to diagnose in this codebase.
+
 // Ported 2026-07-27 from jubilant-bassoon's src/utils/venues.js
 // (production's own comprehensive, hand-maintained VENUE_COORDS table),
 // read directly via FIELD_Handoff -- not a fabricated list. Replaces the
