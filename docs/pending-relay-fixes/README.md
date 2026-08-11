@@ -23,21 +23,39 @@ Each entry is a real patch against a real commit, not a sketch.
 
 ---
 
-## STATUS, 2026-08-11 — three of these already have CC-CMDs in the relay repo
+## STATUS, 2026-08-11 — all three are DONE upstream. Corrected by the relay session.
 
-**Read this before writing anything here.** A `codex_search` on the cc-cmd-queue turned up
-`cc-cmd-2026-08-08-desk-sports-followups`, filed 2026-08-08 22:38:
+An earlier revision of this section said the three CC-CMDs were staged and **"None yet picked up,"**
+quoting the status line of `cc-cmd-2026-08-08-desk-sports-followups`. **That was stale and the
+quotation made it look current.** All three were picked up, each with its own Aug 8 investigation
+outbox:
 
-> Three CC-CMDs from the Aug 8 desk-sports investigation, fully self-contained (no
-> field-playground dependency), **staged in field-relay-nba**: (1)
-> `cc-cmd-2026-08-08-cfl-archive-collection` … (2)
-> `cc-cmd-2026-08-08-confirm-duplicate-fixture-mechanism` … (3)
-> `cc-cmd-2026-08-08-investigate-mlb-wnba-archive-gap` … **None yet picked up.**
+| Item | Investigation |
+|---|---|
+| CFL archive path | `cc-session-2026-08-08-cfl-ar…` |
+| id convergence / duplicate fixtures | `cc-session-2026-08-08-confir…` |
+| MLB/WNBA archive gap | `cc-session-2026-08-08-invest…` |
 
-So the specs exist. Writing them again here would be duplicate work — which is precisely what
-Rule 91's session-radius Collision Check (`codex_search` the cc-cmd-queue before minting a new
-CC-CMD) exists to catch. **This directory's job for these three is to supply measurements the
-CC-CMDs are blocked on, not to restate them.**
+**The error worth keeping, because it is a class and not a slip.** A codex status field is a
+statement about the moment it was written. I read `"None yet picked up"` as a fact about now, and
+built a plan on it — the same stale-premise failure `scripts/check-freshness.mjs` was built for,
+applied diligently to git refs and not at all to the codex. Freshness is a property of *every*
+retrieved claim, not just the ones with a commit SHA attached.
+
+**What this directory's job actually is for these three:** nothing. They are finished upstream. What
+follows is kept only as the record of what was measured here and where that measurement was wrong.
+
+### CFL — landed upstream, with a caveat worth carrying
+
+The CFL fix has landed. The relay session records that it did so **only after a failed first attempt
+that inserted two rows instead of filling two**, which were then deleted. Net state is correct; the
+path there was not clean. Worth knowing before anyone reads the row counts as evidence the write
+path is well-behaved on first contact.
+
+The field mapping below was derived here from the measured shape. It is retained as the record of
+what `/cfl/scoreboard/rounds` actually contains — the `0`-for-unplayed gate in particular is a
+property of the source, not of any one implementation, and stays true regardless of who wrote the
+collection path.
 
 ### What this session can and cannot do
 
@@ -324,7 +342,25 @@ not a proven mechanism. **Confirm before acting:** check whether the pre-game se
 
 Both need a decision this session should not make alone.
 
-### CORRECTION, 2026-08-11 — my hypothesis is contradicted by the relay's own account
+### RESOLVED — my hypothesis was refuted on 2026-08-08, and I mis-read how
+
+**Final state:** the mechanism was **two bulk schedule imports either side of the id-scheme change**,
+not the seed path. My "two writers, permanently disagreeing" hypothesis is **refuted**. The Aug 8
+CC-CMD's own outbox states it plainly — *"The CC-CMD's hypothesis is REFUTED by the data"* — and the
+Aug 9 cleanup script was built **from** that refutation.
+
+**So the script never contradicted the finding; it implemented it.** I found the script first, read
+its header as a rival account of the cause, and wrote this entry up as an open contradiction I could
+not settle. It had already been settled, three days earlier, against me. Reading the investigation
+outbox before the script would have shown that immediately — the fix is downstream of the
+conclusion, so the conclusion is the thing to look for.
+
+The original entry and my incorrect framing are preserved below, because a refuted hypothesis with
+its refutation attached is more useful than a deleted one.
+
+---
+
+### (superseded) CORRECTION, 2026-08-11 — my hypothesis is contradicted by the relay's own account
 
 Two things surfaced that the entry above did not know:
 
@@ -385,17 +421,35 @@ for 2026-08-05/06 say which.
 above is not runnable as specified and needs a different route (or a `/d1/execute` SELECT, which
 requires the relay's `X-FIELD-Relay` credential this session does not hold and should not use).
 
-**One real signal did come out of it.** A `pre_game` brief for **MLB** exists on 2026-08-05:
+**The inference I drew from it was WRONG.** I found a `pre_game` MLB brief on 2026-08-05:
 
 ```
 pre_game_MLB_2026-08-04_diamondbacks_padres   sport: "mlb"   game_id: "401816398"
 source: cron   created_at: 2026-08-04 10:01:24
 ```
 
-So the **cron was running and producing MLB output for that date.** That materially narrows the
-candidates in `cc-cmd-2026-08-08-investigate-mlb-wnba-archive-gap`: "the archive cron simply did not
-run" is now unlikely for MLB, and the live hypotheses are a failed archive *write* despite a
-successful brief, or rows written under a label `/context/date/` does not return.
+…and concluded the cron "was running and producing MLB output for that date," which "kills the
+simplest hypothesis."
+
+**It does not, because briefs and game rows are written by different paths.** A brief existing tells
+you nothing about whether the games were archived. I treated the presence of one artifact as
+evidence about a different table without first checking they shared a writer — the same shape as
+reading a fill rate as if it answered a question it cannot.
+
+**The real finding, from the relay session that can read the source:** `/archive/backfill` calls
+`executeBackfill`, whose first statement is
+
+```sql
+SELECT * FROM regular_season_games WHERE date = ?
+```
+
+It **consumes** archived games to generate a brief — it does not write them. It returned `ok: true`
+twice, for 2026-08-05 and 08-06, **while writing nothing**. An `ok` from a consumer over an empty
+source is not evidence of a healthy producer, and that is the whole gap.
+
+Re-spec'd upstream as `docs/CC-CMD-2026-08-10-archive-gap-real-write-path.md`, aimed at
+`POST /archive/game` — the actual write path — rather than at the backfill route I was reasoning
+about.
 
 **And a fifth id scheme.** That brief's `game_id` is a bare ESPN event id — no date, no sport,
 matching none of the four schemes measured on 2026-08-08. It is recorded as a known-unparseable

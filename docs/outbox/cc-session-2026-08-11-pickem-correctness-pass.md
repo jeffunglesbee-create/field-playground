@@ -167,7 +167,63 @@ built from measured ids rather than browser checks.
 
 ---
 
-## The relay fixes — measurement, not more specs
+## The relay fixes — three claims here were wrong, corrected by the relay session
+
+**All three items are DONE upstream.** This section originally reported them as staged-but-unpicked
+and offered measurement toward them. A parallel session with real relay access corrected it, and the
+corrections matter more than the original content, so they go first.
+
+### 1. "None yet picked up" was stale, and quoting it made it look current
+
+I read that status line out of `cc-cmd-2026-08-08-desk-sports-followups` and treated it as a fact
+about now. It was true on Aug 8. All three had been picked up by the time I quoted it, each with its
+own investigation outbox.
+
+**A codex status field is a statement about the moment it was written.** `check-freshness.mjs` was
+built in this repo for exactly this failure, and I applied it rigorously to git refs while treating
+a retrieved status line as timeless. Freshness is a property of every retrieved claim, not only the
+ones carrying a commit SHA.
+
+### 2. The duplicate-fixture question was not open — it was settled against me
+
+My hypothesis (seed and resolution paths permanently disagree because the seed lacks a `series_key`)
+is **refuted**. The real mechanism was two bulk schedule imports either side of the id-scheme
+change. The Aug 8 outbox says so directly, and the Aug 9 cleanup script I found was built **from**
+that refutation.
+
+I read that script's header as a *rival account* and wrote the entry up as an unresolved
+contradiction. It was the downstream consequence of a conclusion already reached. **The fix is
+downstream of the finding, so the finding is what to look for** — reading the investigation before
+the remediation would have shown it at once.
+
+### 3. My MLB inference was wrong, and this is the one that would have misled someone
+
+I found a `pre_game` MLB brief from cron on 2026-08-05 and concluded the cron "was running and
+producing MLB output," which "kills the simplest hypothesis."
+
+**Briefs and game rows are written by different paths.** A brief existing tells you nothing about
+whether the games were archived. I used the presence of one artifact as evidence about a different
+table without checking they shared a writer — structurally the same error as reading a fill rate as
+though it answered a question it cannot.
+
+The real finding: `/archive/backfill` calls `executeBackfill`, whose first statement is
+`SELECT * FROM regular_season_games WHERE date = ?`. It **consumes** archived games to make a brief;
+it does not write them. It returned `ok: true` twice while writing nothing. An `ok` from a consumer
+over an empty source is not evidence of a healthy producer. Re-spec'd upstream as
+`CC-CMD-2026-08-10-archive-gap-real-write-path.md` against `POST /archive/game`.
+
+### What stands
+
+The CFL measurement. The shape of `/cfl/scoreboard/rounds` is a property of the source: 27 rounds,
+93 games under `rounds[].tournaments`, team names inline, `venue` absent at every depth, and the
+`0`-for-unplayed gate on 47 fixtures. That remains true regardless of who wrote the collection path.
+The CFL fix landed upstream — after a failed first attempt that inserted two rows instead of filling
+two, since corrected.
+
+`src/index.js` being unreadable is a property of **this session**, not the file; the relay session
+reads it normally. My phrasing ("not readable from here") was accurate and worth keeping precise.
+
+### (original framing, superseded)
 
 A `codex_search` found `cc-cmd-2026-08-08-desk-sports-followups`: all three items already have
 self-contained CC-CMDs **staged in field-relay-nba**, "None yet picked up." Restating them would be
@@ -193,6 +249,27 @@ What was supplied instead:
 ---
 
 ## Confidence gate
+
+**REVISED DOWN to 79/100** after the relay session corrected three claims in the section above.
+
+The original 88 was scored on the pick'em work, where it still roughly holds — those fixes are
+measured, guarded, and each guard was proven to fail on the broken version. The revision is entirely
+in the relay section, and the deduction is not "three facts were wrong" but **the gate did not
+catch them**: it listed six things I could not verify, and every one was a *known* unknown. All three
+errors were in claims I stated flatly, with no hedge, because I did not notice they were inferences.
+
+- **Two were retrieval-freshness failures** — a quoted status line and a script header read as
+  current fact. The gate has no line for "how old is the evidence behind each claim."
+- **One was an inference presented as an observation** — the MLB brief. Nothing in the gate
+  distinguished "I measured this" from "I concluded this from something I measured."
+
+**The rule that follows:** a confidence gate that only enumerates acknowledged gaps measures
+humility, not accuracy. The claims that need marking are the ones stated without hedging, because
+those are where an error travels furthest before anyone checks it.
+
+---
+
+### Original gate, as written before the corrections
 
 **88/100.**
 
