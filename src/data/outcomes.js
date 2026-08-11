@@ -1,4 +1,4 @@
-import { createSignal, createEffect } from 'solid-js'
+import { createSignal, createEffect, untrack } from 'solid-js'
 import { parseGameId } from './gameId'
 
 const KEY = 'field-pick-outcomes'
@@ -143,6 +143,50 @@ export function setAnnotation(gameId, text) {
   save(NOTE_KEY, next)
 }
 
+// --- myResults: the verdict on YOUR OWN picks ---
+//
+// THIS IS A SECOND LEDGER ON PURPOSE, AND THE SEPARATION IS THE POINT.
+// outcomes() above is the EDITORIAL ledger: FIELD's ambient picks, carrying a
+// tier, marked by hand in AmbientPanel. Agreement and CrossCheck read it as
+// exactly that -- `editorialVerdict`, `editorialOutcome` -- and compare it
+// against the user's own pick from PickEm's `picks` store.
+//
+// So folding PickEm's results into outcomes() would not unify two halves of
+// one thing. It would make Agreement compare a pick against ITS OWN RESULT: a
+// tautology reporting 100% agreement, silently, with no error anywhere. That
+// was the shape of the change this ledger exists to avoid.
+//
+// What was genuinely missing is this: PickEm grades a pick by reading the live
+// score off deskStore, which only holds the CURRENT date. Change the date and
+// the grade is gone -- `picks` persists the pick but nothing ever persisted
+// the verdict, so a pick on any past day is unscorable. This records it once,
+// when the game finals, from the same derivation PickEm already performs.
+//
+// NOT SYNCED over BroadcastChannel, unlike the maps above. Those hold typed
+// human input that only exists in the tab where it was entered. This is
+// derived from (pick, final score) and every tab computes the same value from
+// the same inputs, so syncing it would add a write path for no new
+// information.
+const MY_RESULTS_KEY = 'field-my-pick-results'
+const [myResults, setMyResultsSignal] = createSignal(load(MY_RESULTS_KEY, {}))
+
+// Idempotent by construction: returns without writing when the stored value
+// already matches. That is what makes it safe to call from a reactive effect
+// that also observes this signal -- the second pass is a no-op and the graph
+// settles instead of looping.
+export function setMyResult(gameId, result) {
+  if (result !== 'W' && result !== 'L' && result !== 'P') return
+  if (untrack(myResults)[gameId] === result) return
+  const next = { ...untrack(myResults), [gameId]: result }
+  setMyResultsSignal(next)
+  save(MY_RESULTS_KEY, next)
+}
+
+export function clearMyResults() {
+  setMyResultsSignal({})
+  save(MY_RESULTS_KEY, {})
+}
+
 // --- BroadcastChannel sync: cross-tab outcomes ---
 //
 // New territory: date sync (relay.js) confirmed that external writes to a
@@ -185,4 +229,4 @@ export function initOutcomesSync() {
   })
 }
 
-export { outcomes, pickMeta, annotations, confidence }
+export { outcomes, pickMeta, annotations, confidence, myResults }

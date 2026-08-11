@@ -1,6 +1,7 @@
 import { For, Show, createMemo, createEffect, createSignal } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { deskStore } from '../../data/relay'
+import { setMyResult } from '../../data/outcomes'
 import { Tabs } from '../Tabs'
 import styles from './PickEm.module.css'
 import shared from '../shared.module.css'
@@ -143,6 +144,47 @@ function PickRow(props) {
 }
 
 export const NON_MATCHUP_SPORTS = new Set(['golf', 'pga', 'atp', 'wta'])
+
+// MODULE SCOPE, NOT INSIDE THE COMPONENT, and that placement is the whole
+// point of this effect existing.
+//
+// It was written inside PickEm() first. Driving the real app caught the flaw
+// immediately: the component only mounts while the Picks tab is open, so a
+// game that finalled while the reader was on any other tab had its verdict
+// derived, rendered, and then thrown away. Recording must not depend on which
+// tab happens to be visible. Both inputs are module-level already -- `picks`
+// above and deskStore imported -- so nothing else had to move. This sits
+// alongside the persistence effect at the top of this file, which is
+// module-scoped for the same reason.
+//
+// WHY RECORD AT ALL: PickEm grades a pick by reading the live score off
+// deskStore, which holds only the CURRENT date. Change the date and the grade
+// is gone. `picks` persisted the pick and nothing persisted the verdict, so a
+// pick from any earlier day was unscorable by anything downstream.
+//
+// WRITES TO myResults, NEVER TO outcomes(). outcomes() is the editorial
+// ledger that Agreement and CrossCheck compare these same picks against;
+// writing here would make them compare a pick to its own result. See the note
+// in src/data/outcomes.js, and scripts/check-ledger-separation.mjs, which
+// fails if any component other than PickEm reaches for the wrong one.
+//
+// setMyResult is idempotent and untracks its reads, so this settles after one
+// pass rather than re-triggering on the signal it just wrote.
+createEffect(() => {
+  const games = [
+    ...(deskStore.games?.regular ?? []),
+    ...(deskStore.games?.postseason ?? []),
+  ]
+  for (const g of games) {
+    if (NON_MATCHUP_SPORTS.has(g.sport?.toLowerCase())) continue
+    const pick = picks[g.id]
+    if (!pick) continue
+    const s = pickStatus(g, pick)
+    if (s === 'correct') setMyResult(g.id, 'W')
+    else if (s === 'incorrect') setMyResult(g.id, 'L')
+    else if (s === 'push') setMyResult(g.id, 'P')
+  }
+})
 
 export function PickEm() {
   const [activeSport, setActiveSport] = createSignal(null)

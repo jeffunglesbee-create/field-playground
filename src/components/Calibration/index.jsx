@@ -1,5 +1,5 @@
 import { For, Show, createMemo, createSignal } from 'solid-js'
-import { outcomes, confidence, setConfidence, confidenceModeFor, FORWARD } from '../../data/outcomes'
+import { outcomes, confidence, setConfidence, confidenceModeFor, FORWARD, myResults } from '../../data/outcomes'
 import { deskStore } from '../../data/relay'
 import styles from './Calibration.module.css'
 
@@ -99,10 +99,22 @@ function useCalibration() {
     const fwd = []
     const retro = []
     for (const [gameId, pct] of Object.entries(confidence())) {
-      const result = outcomes()[gameId]
+      // EACH POPULATION RESOLVES AGAINST ITS OWN TRUTH SOURCE, and crossing
+      // them would be the same error as summing them. A forward rating is
+      // made on a desk game before anything is marked -- what it predicts is
+      // the user's OWN pick, so myResults settles it. A retrospective rating
+      // is entered from the already-marked editorial list, so outcomes() does.
+      //
+      // Reading both from outcomes() (as this did until myResults existed)
+      // meant a forward rating could only resolve if that game also happened
+      // to be an editorial pick someone had marked by hand. Most never are, so
+      // the forward set -- the only set that is actually calibration -- was
+      // very nearly unfillable by construction.
+      const forward = confidenceModeFor(gameId) === FORWARD
+      const result = forward ? myResults()[gameId] : outcomes()[gameId]
       if (result !== 'W' && result !== 'L') continue
       const entry = { gameId, pct, result }
-      if (confidenceModeFor(gameId) === FORWARD) fwd.push(entry)
+      if (forward) fwd.push(entry)
       else retro.push(entry)
     }
     return { forward: scoreSet(fwd), retro: scoreSet(retro) }
@@ -163,7 +175,10 @@ function useUnresolvedGames() {
       ...(deskStore.games?.regular ?? []),
       ...(deskStore.games?.postseason ?? []),
     ]
-    return all.filter(g => outcomes()[g.id] === undefined && confidence()[g.id] === undefined)
+    return all.filter(g =>
+      myResults()[g.id] === undefined &&
+      outcomes()[g.id] === undefined &&
+      confidence()[g.id] === undefined)
   })
 }
 

@@ -101,6 +101,8 @@ jobs:
         run: node scripts/check-pick-grading.mjs
       - name: Check confidence forward/hindsight split
         run: node scripts/check-confidence-mode.mjs
+      - name: Check editorial and own-pick ledgers stay separate
+        run: node scripts/check-ledger-separation.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

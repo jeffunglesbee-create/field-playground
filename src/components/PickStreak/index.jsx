@@ -3,8 +3,16 @@ import { outcomes } from '../../data/outcomes'
 import { parseGameId } from '../../data/gameId'
 import styles from './PickStreak.module.css'
 
-// Personal performance narrative over data that already exists (outcomes()),
-// zero new fetch -- same "no fetch" posture as History. What's genuinely new:
+// Narrative over data that already exists (outcomes()), zero new fetch --
+// same "no fetch" posture as History.
+//
+// WHOSE RECORD THIS IS, stated plainly because the copy used to blur it.
+// outcomes() is the EDITORIAL ledger: FIELD's ambient picks that the user
+// marked by hand, which is why the empty state says "mark some outcomes in
+// Ambient". The narration said "you're 5-0 on NFL picks this week", which
+// reads as the user's own picks -- those live in PickEm's `picks` store and
+// are graded into myResults, a different ledger entirely. Same computation,
+// honest label. What's genuinely new:
 // History's MultiDayRecord shows per-day W/L/P totals; nothing anywhere
 // computes a CURRENT streak (how many in a row, right now) or breaks that
 // down per sport for a "you're 5-0 on NFL picks this week" narrative line.
@@ -74,7 +82,7 @@ function StreakBanner(props) {
       <div class={`${styles.banner} ${s().kind === 'W' ? styles.hot : styles.cold}`}>
         <span class={styles.bannerIcon}>{s().kind === 'W' ? '🔥' : '❄️'}</span>
         <span class={styles.bannerText}>
-          you're <strong>{s().kind === 'W' ? `${s().count}-0` : `0-${s().count}`}</strong> in a row
+          <strong>{s().kind === 'W' ? `${s().count}-0` : `0-${s().count}`}</strong> in a row on marked editorial picks
           {s().kind === 'L' ? ' (cold streak)' : ''}
         </span>
       </div>
@@ -88,7 +96,7 @@ function WeekRow(props) {
     <div class={styles.weekRow}>
       <span class={styles.sportTag}>{r().sport}</span>
       <span class={styles.narrative}>
-        you're <strong>{r().w}-{r().l}</strong>{r().p ? `-${r().p}` : ''} on {r().sport} picks this week
+        <strong>{r().w}-{r().l}</strong>{r().p ? `-${r().p}` : ''} on marked {r().sport} editorial picks this week
       </span>
     </div>
   )
@@ -102,7 +110,7 @@ export function PickStreak() {
     <div class={styles.root}>
       <header class={styles.header}>
         <span class={styles.label}>Pick Streak</span>
-        <span class={styles.sublabel}>your own record, no fetch</span>
+        <span class={styles.sublabel}>editorial picks you marked, no fetch</span>
       </header>
       <StreakBanner streak={streak} />
       <Show when={week().length}>
