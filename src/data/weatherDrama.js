@@ -49,6 +49,37 @@ export const RAIN_SEVERE_MM = 5
 export const AQI_UNHEALTHY = 150
 export const AQI_VERY_UNHEALTHY = 200
 
+// UNIT NORMALISATION AT THE BOUNDARY, and it exists because the e2e probe
+// caught a real 10x error on its first run.
+//
+// Open-Meteo returns snowfall in CENTIMETRES. Measured 2026-08-11 from the
+// live `current_units` block on all five sampled venues:
+//
+//     temperature_2m  "°F"    wind_speed_10m  "mp/h"
+//     rain            "mm"    snowfall        "cm"     <-- not mm
+//
+// The threshold is `snow > 0.5mm` per the production spec. Passing a
+// centimetre value straight into it meant the band only fired at 0.5cm = 5mm,
+// ten times heavier than intended -- a silent rescale with no error anywhere,
+// which is precisely the failure the probe's units assertion was written to
+// catch. Temperature and wind are requested explicitly as fahrenheit and mph
+// and came back as asked; snowfall has no unit parameter, so it is converted.
+//
+// Shared by weather.js and probe-open-meteo-e2e.mjs so there is exactly one
+// conversion. A second copy is how the two drift.
+export function normalizeOpenMeteo(current, aqi = null) {
+  const n = v => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+  const c = current ?? {}
+  const snowCm = n(c.snowfall)
+  return {
+    tempF: n(c.temperature_2m),
+    windMph: n(c.wind_speed_10m),
+    rainMm: n(c.rain),
+    snowMm: snowCm === null ? null : snowCm * 10,
+    aqi: n(aqi),
+  }
+}
+
 // Returns { delta, reasons[] }. The reasons are the point: a bare signed
 // number tells a reader nothing about why, and this repo's standing position
 // is that a named condition beats a raw score.

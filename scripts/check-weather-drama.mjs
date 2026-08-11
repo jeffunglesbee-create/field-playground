@@ -10,7 +10,7 @@
 // Offline, deterministic, no network. Calls the shipped module.
 
 import {
-  weatherDramaModifier,
+  weatherDramaModifier, normalizeOpenMeteo,
   COLD_SEVERE_F, COLD_F, WIND_MPH, WIND_SEVERE_MPH,
   SNOW_MM, RAIN_MM, RAIN_SEVERE_MM, AQI_UNHEALTHY, AQI_VERY_UNHEALTHY,
 } from '../src/data/weatherDrama.js'
@@ -83,6 +83,25 @@ ok('string temp -> 0, not coerced', d({ tempF: '-40' }) === 0, `got ${d({ tempF:
 ok('null AQI leaves the positive terms intact',
    d({ tempF: 20, windMph: 25, aqi: null }) === 14,
    `got ${d({ tempF: 20, windMph: 25, aqi: null })}`)
+
+// ---- the unit conversion, found by the e2e probe on its first run ----
+// Open-Meteo returns snowfall in CENTIMETRES while the band is in MM. Feeding
+// cm straight in made the band fire at 5mm instead of 0.5mm -- 10x too heavy,
+// silently. These assertions exist so that stays fixed.
+console.log('')
+console.log('normalizeOpenMeteo: snowfall arrives in cm, thresholds are in mm')
+const nz = normalizeOpenMeteo({ temperature_2m: 40, wind_speed_10m: 5, rain: 1, snowfall: 0.2 })
+ok('0.2cm becomes 2mm', nz.snowMm === 2, `got ${nz.snowMm}`)
+ok('a 0.2cm dusting now MEETS the 0.5mm band', d(nz) === 10, `got ${d(nz)}`)
+// The pre-fix behaviour, asserted as the thing that must not come back.
+ok('unconverted 0.2 would have missed the band', d({ snowMm: 0.2 }) === 0)
+ok('rain passes through unconverted (already mm)',
+   normalizeOpenMeteo({ rain: 3 }).rainMm === 3)
+ok('temperature and wind pass through (requested as F and mph)',
+   nz.tempF === 40 && nz.windMph === 5)
+ok('missing fields normalise to null, not 0',
+   normalizeOpenMeteo({}).snowMm === null && normalizeOpenMeteo({}).tempF === null)
+ok('null current -> all null, no throw', normalizeOpenMeteo(null).tempF === null)
 
 console.log('')
 if (failures) {

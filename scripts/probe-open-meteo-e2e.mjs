@@ -20,7 +20,7 @@
 // weather.js rather than duplicated here: a copied venue table would drift.
 
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
-import { weatherDramaModifier } from '../src/data/weatherDrama.js'
+import { weatherDramaModifier, normalizeOpenMeteo } from '../src/data/weatherDrama.js'
 
 mkdirSync('outbox', { recursive: true })
 const stamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -90,8 +90,11 @@ for (const v of sample) {
   ok('temperature unit is Fahrenheit', u.temperature_2m === '°F', `got ${JSON.stringify(u.temperature_2m)}`)
   ok('wind unit is mph', u.wind_speed_10m === 'mp/h', `got ${JSON.stringify(u.wind_speed_10m)}`)
   ok('rain unit is mm', u.rain === 'mm', `got ${JSON.stringify(u.rain)}`)
-  ok('snowfall unit is cm or mm (recorded, not assumed)',
-     u.snowfall === 'cm' || u.snowfall === 'mm', `got ${JSON.stringify(u.snowfall)}`)
+  // Measured 2026-08-11: cm on every sampled venue. Asserted strictly now that
+  // it is known, because a switch to mm would silently make the snow band fire
+  // 10x too EARLY, the mirror of the bug this assertion originally found.
+  ok('snowfall unit is cm (drives the x10 conversion)',
+     u.snowfall === 'cm', `got ${JSON.stringify(u.snowfall)}`)
 
   let aqi = null
   try {
@@ -108,13 +111,12 @@ for (const v of sample) {
   }
 
   // The shipped modifier, on real returned values.
-  const wx = {
-    tempF: c.temperature_2m,
-    windMph: c.wind_speed_10m,
-    rainMm: c.rain,
-    snowMm: c.snowfall,
-    aqi,
-  }
+  // Same normaliser the app uses, so a unit change breaks both together
+  // rather than only in production.
+  const wx = normalizeOpenMeteo(c, aqi)
+  ok('snowfall normalised cm -> mm (x10)',
+     c.snowfall === 0 ? wx.snowMm === 0 : wx.snowMm === c.snowfall * 10,
+     `${c.snowfall}cm -> ${wx.snowMm}mm`)
   const { delta, reasons } = weatherDramaModifier(wx)
   log(`  live: ${Math.round(wx.tempF)}°F  ${wx.windMph}mph  rain ${wx.rainMm}  snow ${wx.snowMm}  AQI ${aqi}`)
   log(`  weatherDramaModifier -> ${delta > 0 ? '+' : ''}${delta}${reasons.length ? '  (' + reasons.join(', ') + ')' : '  (no band met)'}`)

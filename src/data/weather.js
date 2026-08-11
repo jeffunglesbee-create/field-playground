@@ -1,5 +1,6 @@
 import { createResource, createSignal, createMemo } from 'solid-js'
 import { deskStore } from './relay'
+import { normalizeOpenMeteo } from './weatherDrama'
 
 // Real Open-Meteo integration, replacing the gated field-relay-nba
 // /weather/today/ route (confirmed 403 in production -- see
@@ -336,13 +337,13 @@ async function fetchOneVenue(venue) {
   // wind -- which meant the data needed to compute a weather drama delta was
   // fetched, parsed, and thrown away one line before it could be used.
   const c = json.current ?? {}
+  // normalizeOpenMeteo owns the unit conversion -- snowfall arrives in CM and
+  // the drama thresholds are in MM. Doing it here by hand is how the app and
+  // the e2e probe drifted apart in the first place.
   const data = {
     tempF: Math.round(c.temperature_2m),
     condition: describeConditions(c),
-    windMph: typeof c.wind_speed_10m === 'number' ? c.wind_speed_10m : null,
-    rainMm: typeof c.rain === 'number' ? c.rain : null,
-    snowMm: typeof c.snowfall === 'number' ? c.snowfall : null,
-    aqi: await fetchAqi(lat, lon),
+    ...normalizeOpenMeteo(c, await fetchAqi(lat, lon)),
   }
   wxCache.set(key, { data, fetchedAt: Date.now() })
   return { venue, roofType, ...data }
