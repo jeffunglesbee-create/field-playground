@@ -91,6 +91,14 @@ jobs:
       # consistent and wrong. This can, and it runs on every build.
       - name: Check anomaly analysis invariants
         run: node scripts/check-anomaly-invariants.mjs
+      # Both of these guard silent grading/parsing defects that cannot be
+      # reproduced by driving the app -- one needs a real draw on the slate,
+      # the other needs an archive-keyed outcome nobody has in localStorage.
+      # A fixture test is the only place either fix is observable.
+      - name: Check game-id parsing against real measured ids
+        run: node scripts/check-gameid-parse.mjs
+      - name: Check pick grading (draws credit neither side)
+        run: node scripts/check-pick-grading.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

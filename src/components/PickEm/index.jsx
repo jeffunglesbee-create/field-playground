@@ -46,10 +46,29 @@ function gameStatus(g) {
   return 'live'
 }
 
+// A level final score has no winner, and the old `home > away ? 'home' :
+// 'away'` had no branch for it -- a 2-2 draw fell to 'away', so every home
+// pick was marked incorrect and every away pick correct, silently and with
+// full confidence. Soccer is not excluded from this component (only
+// NON_MATCHUP_SPORTS is), and MLS ran 11-14 rows/day in the window measured
+// on 2026-08-08, so this was firing on real games.
+//
+// No sport list is involved on purpose. A draw is a level score at final,
+// full stop; in MLB and the NBA that state cannot occur, so the branch simply
+// never fires there. A hardcoded "these sports can draw" table would be one
+// more thing to keep true as leagues come and go.
+//
+// KNOWN LIMIT, stated rather than papered over: a cup tie decided on
+// penalties also finals level on the scoreline, and the relay does not carry
+// a penalty result today (that is the pending BSD /incidents/ fix). Such a
+// game is reported as a push here. That is wrong in the sense that somebody
+// did advance, but it is wrong in the direction of admitting ignorance
+// instead of crediting a coin-flip guess to one side.
 function pickStatus(game, pick) {
   if (!pick) return 'unpicked'
   const status = gameStatus(game)
   if (status !== 'final' && status !== 'final_ot') return 'pending'
+  if (game.home_score === game.away_score) return 'push'
   const winner = game.home_score > game.away_score ? 'home' : 'away'
   return pick === winner ? 'correct' : 'incorrect'
 }
@@ -95,27 +114,32 @@ export function PickEm() {
     ...(deskStore.games?.postseason ?? []),
   ].filter(g => !NON_MATCHUP_SPORTS.has(g.sport?.toLowerCase())))
 
+  // Pushes are counted but deliberately kept OUT of `decided` -- a draw
+  // neither validates nor refutes the pick, so folding it into either column
+  // would move the percentage on the strength of a game nobody won.
   const record = createMemo(() => {
-    let correct = 0, incorrect = 0, pending = 0
+    let correct = 0, incorrect = 0, pending = 0, push = 0
     for (const g of allGames()) {
       const s = pickStatus(g, picks[g.id])
       if (s === 'correct') correct++
       if (s === 'incorrect') incorrect++
       if (s === 'pending') pending++
+      if (s === 'push') push++
     }
-    return { correct, incorrect, pending }
+    return { correct, incorrect, pending, push }
   })
 
   // Real, plain-language payoff -- states the reader's real record on
   // finished games plus how many real picks are still pending/live,
   // instead of leaving a bare "3–1" chip for the reader to parse.
   const verdict = createMemo(() => {
-    const { correct, incorrect, pending } = record()
+    const { correct, incorrect, pending, push } = record()
     const decided = correct + incorrect
-    if (!decided && !pending) return null
-    if (!decided) return `No picks decided yet -- ${pending} of your real pick${pending === 1 ? '' : 's'} still pending or live.`
+    const drawn = push ? ` ${push} ended level and ${push === 1 ? 'is' : 'are'} not counted either way.` : ''
+    if (!decided && !pending) return push ? `No picks decided yet.${drawn}` : null
+    if (!decided) return `No picks decided yet -- ${pending} of your real pick${pending === 1 ? '' : 's'} still pending or live.${drawn}`
     const pct = Math.round((correct / decided) * 100)
-    return `You're ${correct}-${incorrect} (${pct}%) on decided real picks${pending ? `, with ${pending} more still pending or live` : ''}.`
+    return `You're ${correct}-${incorrect} (${pct}%) on decided real picks${pending ? `, with ${pending} more still pending or live` : ''}.${drawn}`
   })
 
   const grouped = createMemo(() => {
@@ -151,8 +175,10 @@ export function PickEm() {
     <div class={styles.root}>
       <header class={styles.header}>
         <span class={styles.label}>Pick'em</span>
-        <Show when={record().correct + record().incorrect > 0}>
-          <span class={styles.record}>{record().correct}–{record().incorrect}</span>
+        <Show when={record().correct + record().incorrect + record().push > 0}>
+          <span class={styles.record}>
+            {record().correct}–{record().incorrect}{record().push ? `–${record().push}` : ''}
+          </span>
         </Show>
       </header>
       <Show when={allGames().length} fallback={<p class={styles.empty}>No games today.</p>}>

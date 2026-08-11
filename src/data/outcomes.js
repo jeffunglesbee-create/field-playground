@@ -1,4 +1,5 @@
 import { createSignal, createEffect } from 'solid-js'
+import { parseGameId } from './gameId'
 
 const KEY = 'field-pick-outcomes'
 const META_KEY = 'field-pick-meta'
@@ -53,8 +54,11 @@ export function setOutcome(gameId, result, tier) {
   save(KEY, next)
 
   if (tier !== undefined) {
-    const dateMatch = gameId.match(/^(\d{4}-\d{2}-\d{2})/)
-    const nextMeta = { ...pickMeta(), [gameId]: { tier, date: dateMatch ? dateMatch[1] : null } }
+    // Was an anchored /^(\d{4}-\d{2}-\d{2})/, which stored date: null for
+    // every archive-keyed id (sport_date_tail and sport_series_round_date
+    // both put the date after the sport). Shared parser now, guarded by
+    // scripts/check-gameid-parse.mjs against the real measured ids.
+    const nextMeta = { ...pickMeta(), [gameId]: { tier, date: parseGameId(gameId).date } }
     setPickMetaSignal(nextMeta)
     save(META_KEY, nextMeta)
   }

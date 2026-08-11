@@ -134,6 +134,9 @@
 .statusBadge.pending   { background: #2a2410; color: #a80; }
 .statusBadge.correct   { background: #1a2e1a; color: #4c8; }
 .statusBadge.incorrect { background: #2a1a1a; color: #a66; }
+/* Neither a win nor a loss: kept visually distinct from both so a drawn
+   match doesn't read as a near-miss on either side. */
+.statusBadge.push      { background: #1a2430; color: #789; }
 
 .empty {
   font-size: 12px;

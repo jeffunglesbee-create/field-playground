@@ -1,5 +1,6 @@
 import { For, Show, createMemo } from 'solid-js'
 import { outcomes } from '../../data/outcomes'
+import { parseGameId } from '../../data/gameId'
 import styles from './PickStreak.module.css'
 
 // Personal performance narrative over data that already exists (outcomes()),
@@ -8,10 +9,11 @@ import styles from './PickStreak.module.css'
 // computes a CURRENT streak (how many in a row, right now) or breaks that
 // down per sport for a "you're 5-0 on NFL picks this week" narrative line.
 
-function parseGameId(gameId) {
-  const m = gameId.match(/^(\d{4}-\d{2}-\d{2})-([a-z]+)-/)
-  return m ? { date: m[1], sport: m[2].toUpperCase() } : { date: null, sport: null }
-}
+// parseGameId now lives in src/data/gameId.js. The inline version here
+// required the id to start with a date, which is true of the drama
+// leaderboard's scheme and false of all three archive schemes -- so every
+// outcome marked on an archive-keyed game was silently dropped from both the
+// streak and the week. See scripts/check-gameid-parse.mjs for the real ids.
 
 function daysAgo(dateStr) {
   const d = new Date(dateStr + 'T00:00:00Z')
