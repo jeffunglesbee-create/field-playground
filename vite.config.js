@@ -193,7 +193,14 @@ function mockRelay() {
       date,
       games: {
         regular: [
-          { id: `${date}-mlb-nym-phi`, sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets',        home_score: 4,    away_score: 2,    venue: 'Citizens Bank Park',        finalized_at: `${date}T02:15:00Z`, went_to_ot: null, local_note: nymPhiNote, streams: nymPhiStreams, drama_peak: 40 },
+          // drama_arc/drama_peak added 2026-08-11: NO /context/date mock game carried
+          // one, so DeskCard's sparkline was unreachable in dev and the
+          // self-normalising-scale bug could not be seen by running the app at all.
+          // This arc is the REAL one captured in
+          // outbox/drama-leaderboard-wp-movement-probe-*, downsampled the same way
+          // the leaderboard mocks above are -- a rise from 52 to a 74 peak, which is
+          // exactly the shape the old scaling flattened into a wall.
+          { id: `${date}-mlb-nym-phi`, sport: 'MLB', home: 'Philadelphia Phillies', away: 'NY Mets',        home_score: 4,    away_score: 2,    venue: 'Citizens Bank Park',        finalized_at: `${date}T02:15:00Z`, went_to_ot: null, drama_peak: 74, drama_arc: '[52,52,52,44,44,44,51,51,59,59,68,68,74,74,74,66,66,74,74,51]', local_note: nymPhiNote, streams: nymPhiStreams, drama_peak: 40 },
           { id: `${date}-mlb-bos-nyy`, sport: 'MLB', home: 'NY Yankees',            away: 'Boston Red Sox', home_score: 3,    away_score: bosNyyAway, venue: 'Yankee Stadium',            finalized_at: null,                went_to_ot: null, opening_odds: bosNyyOpeningOdds, closing_odds: bosNyyClosingOdds, streams: bosNyyStreams, drama_peak: bosNyyDramaPeak },
           { id: `${date}-mlb-hou-tex`, sport: 'MLB', home: 'Texas Rangers',          away: 'Houston Astros', home_score: houTexHome, away_score: houTexAway, venue: 'Globe Life Field',          finalized_at: null,                went_to_ot: null, streams: houTexStreams, drama_peak: 60 },
           { id: `${date}-mls-col-slc`, sport: 'MLS', home: 'Real Salt Lake',         away: 'Colorado Rapids',home_score: null, away_score: null, venue: 'America First Field',       finalized_at: null,                went_to_ot: null, streams: mlsStreams },

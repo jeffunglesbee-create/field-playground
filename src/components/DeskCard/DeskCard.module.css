@@ -442,6 +442,14 @@
   gap: 1px;
   height: 24px;
   margin-bottom: 8px;
+  /* The track is what makes a fixed 0-100 domain readable. Bars are now drawn
+     at their true value rather than normalised to the game's own maximum, so
+     a quiet game leaves most of the height empty -- and without a visible
+     track that empty space reads as a broken render instead of as "the rest
+     of the scale, not reached". */
+  background: var(--field-surface-sunken, rgba(255, 255, 255, 0.05));
+  border-radius: 2px;
+  padding: 0 1px;
 }
 
 .sparkBar {

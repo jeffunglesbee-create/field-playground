@@ -103,6 +103,8 @@ jobs:
         run: node scripts/check-confidence-mode.mjs
       - name: Check editorial and own-pick ledgers stay separate
         run: node scripts/check-ledger-separation.mjs
+      - name: Check drama sparkline uses a fixed 0-100 domain
+        run: node scripts/check-drama-sparkline.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

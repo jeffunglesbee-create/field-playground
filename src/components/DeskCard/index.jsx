@@ -1,6 +1,7 @@
 import { Show, For, createMemo, createSignal, createEffect, on, onMount, onCleanup, untrack, batch } from 'solid-js'
 import { createStore, reconcile } from 'solid-js/store'
 import { deskData, deskStore, currentDate, setCurrentDate, deskLastFetchedAt, refetchDesk, ambientData } from '../../data/relay'
+import { dramaBars } from '../../data/dramaScale'
 import { picks, NON_MATCHUP_SPORTS } from '../PickEm'
 import { clearAllOutcomes } from '../../data/outcomes'
 import { showToast } from '../Toast'
@@ -290,20 +291,13 @@ function parseArc(raw) {
     return null
   }
 }
-// drama values sampled across the game, not invented. Downsampled to a
-// manageable number of bars for a compact row rather than plotting
-// every point.
+// Bar heights come from src/data/dramaScale.js -- a fixed 0-100 domain, so
+// height IS the drama value and cards are comparable to each other. This used
+// to normalise each game to its own maximum, which made the tallest bar 100%
+// by construction: a real arc spanning 44..74 rendered as a 59%..100% wall,
+// and a game peaking at 20 drew the same silhouette as one peaking at 95.
 function DramaSparkline(props) {
-  const bars = createMemo(() => {
-    const arc = props.arc
-    if (!Array.isArray(arc) || arc.length === 0) return []
-    const targetBars = 30
-    const step = Math.max(1, Math.floor(arc.length / targetBars))
-    const sampled = []
-    for (let i = 0; i < arc.length; i += step) sampled.push(arc[i])
-    const max = Math.max(...sampled, 1)
-    return sampled.map(v => Math.max(4, Math.round((v / max) * 100)))
-  })
+  const bars = createMemo(() => dramaBars(props.arc))
   return (
     <Show when={bars().length}>
       <div class={styles.sparkline}>
@@ -317,7 +311,28 @@ function GameExpansion(props) {
   const g = () => props.game
   return (
     <div class={styles.gameExpansion}>
-      <Show when={g().drama_arc}>
+      {/* Gated on PARSED bars, not on the raw field being truthy.
+          drama_arc has two shapes in production, and this only understands
+          one. Per CC-CMD-2026-08-03-fix-drama-backfill-situational-fields
+          (Drive): the Node backfill writes a bare ARRAY of numbers, while
+          every client write path writes an OBJECT
+          {peak, peakPeriod, sustainedMinutes, trend, classification, samples}
+          -- "a row's drama_arc starting with [ vs { is a 100%-reliable
+          authorship signal". anomalyBaseline.js records the same thing from
+          the other side: all 26 real golf rows measured 2026-08-06 carry a
+          non-array drama_arc.
+
+          parseArc returns null for the object shape, so `when={g().drama_arc}`
+          rendered the caption "drama over time (peak N)" above an empty space
+          -- a header promising a chart that structurally could not appear.
+          Gating on bars means the block is present or absent as a unit.
+
+          NOT reading .samples out of the object here, deliberately. No
+          object-shape arc has been measured in this repo -- zero in outbox
+          against one array-shape -- and writing an extractor against a shape
+          known only from prose is the exact mistake the CFL probe exists to
+          prevent. Measure one, then support it. */}
+      <Show when={parseArc(g().drama_arc)?.length}>
         <div class={styles.expansionLabel}>drama over time (peak {g().drama_peak})</div>
         <DramaSparkline arc={parseArc(g().drama_arc)} />
       </Show>
