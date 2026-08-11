@@ -1,0 +1,16 @@
+probe_at: 2026-08-11T01:02:09.360Z
+purpose: run the SHIPPED gameStatus() over real /context/date/ records and find
+games it misclassifies -- specifically unstarted games it calls "live", which the
+UI renders as unpickable.
+
+  2026-08-11: TypeError: list is not iterable
+  2026-08-10: TypeError: list is not iterable
+  2026-08-09: TypeError: list is not iterable
+  2026-08-08: TypeError: list is not iterable
+  2026-08-07: TypeError: list is not iterable
+  2026-08-06: TypeError: list is not iterable
+  2026-08-05: TypeError: list is not iterable
+
+  7 of 7 date fetches FAILED -- sample is degraded.
+
+=== NO DATA. Verdict withheld rather than reported as healthy. ===
