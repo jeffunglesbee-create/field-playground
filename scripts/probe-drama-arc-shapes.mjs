@@ -37,6 +37,14 @@ const RELAY = 'https://field-relay-nba.jeffunglesbee.workers.dev'
 const UA = 'field-playground-probe/1.0 (github.com/jeffunglesbee-create/field-playground; research)'
 const DAYS = Number(process.env.PROBE_DAYS || 45)
 
+// WHY A WIDE WINDOW IS EQUIVALENT TO THE D1 QUERY, and this is the load-bearing
+// detail. The 2026-08-03 cleanup reset rows matching `drama_arc LIKE '[%'` --
+// ARRAY shape only. Any object-shape row the client write path ever produced
+// was therefore NOT reset, and is still in the archive today. So sweeping back
+// past the feature's ship date (2026-07-02) and finding zero objects is the
+// same evidence as SELECT COUNT(*) WHERE drama_arc LIKE '{%' returning zero,
+// without needing the relay's write credential.
+
 const shiftDate = (base, d) => {
   const x = new Date(base + 'T00:00:00Z')
   x.setUTCDate(x.getUTCDate() + d)
@@ -103,6 +111,7 @@ async function main() {
   const bySport = new Map()
   const objects = []
   const others = []
+  const byMonth = new Map()   // when, if ever, does each shape appear?
   let games = 0, fetchFailures = 0
 
   log(`=== UNCENSORED SWEEP: /context/date/ over ${DAYS} days ===`)
@@ -120,6 +129,8 @@ async function main() {
       counts.set(kind, (counts.get(kind) ?? 0) + 1)
       const key = `${g.sport}|${kind}`
       bySport.set(key, (bySport.get(key) ?? 0) + 1)
+      const mk = `${date.slice(0, 7)}|${kind}`
+      byMonth.set(mk, (byMonth.get(mk) ?? 0) + 1)
       if (kind === 'object') {
         const parsed = parse(g.drama_arc)
         if (parsed) objects.push({ sport: g.sport, id: g.id, peak: g.drama_peak, obj: parsed })
@@ -141,6 +152,17 @@ async function main() {
   log(`  games scanned: ${games}`)
   for (const [k, n] of [...counts.entries()].sort((a, b) => b[1] - a[1])) {
     log(`    ${k.padEnd(14)} ${String(n).padStart(5)}  (${((n / Math.max(games, 1)) * 100).toFixed(1)}%)`)
+  }
+  log('')
+
+  // Month buckets answer the temporal question the counts cannot: did the
+  // object shape EVER appear, including before the Aug 3 reset?
+  log('  by month:')
+  const months = [...new Set([...byMonth.keys()].map(k => k.split('|')[0]))].sort()
+  const kinds = [...new Set([...byMonth.keys()].map(k => k.split('|')[1]))].sort()
+  log('    month      ' + kinds.map(k => k.padStart(13)).join(''))
+  for (const m of months) {
+    log('    ' + m.padEnd(11) + kinds.map(k => String(byMonth.get(`${m}|${k}`) ?? 0).padStart(13)).join(''))
   }
   log('')
 

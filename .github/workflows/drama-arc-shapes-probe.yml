@@ -34,6 +34,11 @@ jobs:
       - name: Measure drama_arc shapes
         timeout-minutes: 6
         continue-on-error: true
+        env:
+          # Spans well before the client write path shipped (2026-07-02). The
+          # Aug 3 reset only touched array-shape rows, so an object row from
+          # any point in this window would have survived and should be visible.
+          PROBE_DAYS: '120'
         run: node scripts/probe-drama-arc-shapes.mjs
       - name: Commit probe result
         if: always()
