@@ -49,7 +49,42 @@ recompute keyed on that predicate inherits the gap.
 The client side is already correct and now asserted: `parseDramaArc` returns null for both
 spellings, verified in `scripts/check-drama-sparkline.mjs` against the measured census.
 
-### Drive context, checked 2026-08-11 — why zero object arcs is not surprising
+### CORRECTION — the object shape DOES exist, and the write path stopped
+
+A 120-day sweep (1484 games) found **7 object-shape arcs**, all NBA. The earlier "zero objects"
+figure came from a 45-day window starting 2026-06-27, and every object row predates it:
+
+```
+month        array   null   object   string "null"
+2026-04         19     60        0        0
+2026-05        159     55        6        0
+2026-06        225     16        1       40
+2026-07        497     86        0       37
+2026-08        122    117        0       44
+```
+
+**The finding is not that the path never fired — it is that it stopped.** Rows landed in May and
+June, then zero in July and August against 497 and 122 array rows. Since the 2026-08-03 reset
+matched `drama_arc LIKE '[%'` (array only), these 7 survived it, which is exactly what makes the
+sweep equivalent to `SELECT COUNT(*) WHERE drama_arc LIKE '{%'`.
+
+**Its real shape, which diverges from its own documentation.** The Drive storage-layer doc
+specifies samples as `[{t, s, p}]`. Across 37 real sample records there is **no `t` field**:
+
+```json
+{ "peak": 52, "peakPeriod": 1, "peakMinute": null, "sustainedMinutes": 0,
+  "trend": "steady", "classification": "sleeper",
+  "samples": [{ "s": 52, "p": 1 }, { "s": 44, "p": 0 }, ...] }
+```
+
+`peakMinute` is null on all 7. The playground now reads `samples[].s` and renders it on the same
+fixed 0-100 domain, asserted in `check-drama-sparkline.mjs` against this verbatim record.
+
+**The open question this leaves for the relay:** why did client-written drama stop after June?
+That is now a sharper question than the one I started with, and it is the one worth a D1 query —
+`SELECT MAX(created_at) ... WHERE drama_arc LIKE '{%'` would date the last write precisely.
+
+### Drive context, checked 2026-08-11 — why the object shape is rare
 
 Two primary docs explain the absence better than my measurement alone could.
 
@@ -67,15 +102,10 @@ escalating trend, 'sleeper' classification"*. Three things about how it fires:
   values actually land in D1 correctly, requires a real browser session or a live deploy, neither
   available from this sandbox."*
 
-So a path that writes at most 3 rows per human app-open, and was never confirmed to fire, is a
-path that could easily have produced **zero** rows in the 45-day window I swept. My measurement
-does not prove it never fired — the 2026-08-03 reset of 537 rows and the 3-per-session cap each
-explain scarcity on their own — but the open verification gap from July and the zero count from
-August are the same question asked twice, five weeks apart, still unanswered.
-
-**Cheapest way to settle it:** one D1 query, `SELECT COUNT(*) ... WHERE drama_arc LIKE '{%'`
-across both game tables. If it returns zero, the client write path has never landed a row and the
-July gap is now a confirmed defect rather than an untested assumption.
+A path writing at most 3 rows per human app-open explains the rarity precisely: **7 rows in four
+months.** It also explains the July/August silence less well — the cap limits volume, it does not
+stop writes entirely, so something else changed after June. The July verification gap is therefore
+still open, and now has a date attached to it.
 
 **A second detail worth carrying:** `dramaScoreLive` returns 0 for both `state==='pre'` and
 `state==='post'`. Drama exists only for live states, which is consistent with the 84

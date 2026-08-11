@@ -99,7 +99,7 @@
     "falsifierAttempted": true,
     "verifiableHere": true,
     "confidence": 0.8,
-    "resolutionNote": "Measured over 948 real games across 45 days (outbox/drama-arc-shapes-*.txt): 661 array (69.7%), 203 SQL null (21.4%), 84 the STRING \"null\" (8.9%), and ZERO objects. There are three shapes, not two, and the documented object shape is not observable. The non-array rows are stringified nulls with drama_peak 0, concentrated in EFL Cup, golf, PGA Tour and CFL -- the sports anomalyBaseline records as never computing drama. So parseArc returning null for them is correct, and there was nothing to support.",
+    "resolutionNote": "Measured over 948 real games across 45 days (outbox/drama-arc-shapes-*.txt): 661 array (69.7%), 203 SQL null (21.4%), 84 the STRING \"null\" (8.9%), and ZERO objects. There are three shapes, not two, and the documented object shape is not observable. The non-array rows are stringified nulls with drama_peak 0, concentrated in EFL Cup, golf, PGA Tour and CFL -- the sports anomalyBaseline records as never computing drama. So parseArc returning null for them is correct, and there was nothing to support. SUPERSEDED 2026-08-11 by a 120-day sweep: there are FOUR shapes, and the object one does exist (7 rows, NBA, May-June). The 45-day figures in this note were window-limited, not wrong about the data.",
     "resolution": "REFUTED",
     "resolvedAt": "2026-08-11T02:35:00Z"
   },
@@ -125,9 +125,12 @@
     "source": "outbox/drama-arc-shapes-2026-08-11T02-26-03-383Z.txt",
     "falsifier": "SELECT COUNT(*) FROM regular_season_games WHERE drama_arc LIKE '{%' (and postseason_games)",
     "falsifierCost": "one query",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": false,
-    "confidence": 0.55
+    "confidence": 0.55,
+    "resolution": "REFUTED",
+    "resolvedAt": "2026-08-11T03:05:00Z",
+    "resolutionNote": "REFUTED by widening the same probe from 45 to 120 days. 7 object-shape arcs exist, all NBA: 6 in 2026-05 and 1 in 2026-06. The path landed rows and then STOPPED -- zero objects in July and August against 497 and 122 array rows. My 45-day window began 2026-06-27 and every object row predates it. The 2026-08-03 reset was array-only so these survived it, which is what makes the sweep equivalent to the D1 COUNT."
   },
   {
     "id": "production-never-displays-raw-drama",

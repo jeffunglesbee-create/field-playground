@@ -14,38 +14,60 @@
 // broadcastCall ("a real drama peak of ${finalPeak} out of 100").
 // Parsing drama_arc, against the shapes that ACTUALLY occur.
 //
-// Measured 2026-08-11 over 948 real games across 45 days
+// Measured 2026-08-11 over 1484 real games across 120 days
 // (outbox/drama-arc-shapes-*.txt), uncensored /context/date/ sweep:
 //
-//     array           661   69.7%   a bare JSON array of numbers
-//     SQL null        203   21.4%   no drama recorded
-//     string "null"    84    8.9%   the FOUR-CHARACTER STRING, not null
-//     object            0    0.0%
+//     array         1022   68.9%   a bare JSON array of numbers
+//     SQL null       334   22.5%   no drama recorded
+//     string "null"  121    8.2%   the FOUR-CHARACTER STRING, not null
+//     object           7    0.5%   {peak, ..., samples:[{s,p}]}
 //
-// THE OBJECT SHAPE WAS NOT FOUND. Two prose sources describe it as the
-// canonical client-written form -- CC-CMD-2026-08-03 on Drive, and
-// anomalyBaseline's note that all 26 golf rows are non-array -- and neither is
-// contradicted by history: the 537 buggy MLB rows were reset to null on
-// 2026-08-03 and drama has evidently not been recomputed since. But a shape
-// that cannot be produced on demand cannot be built against, so no extractor
-// for {peak,...,samples} is written here. When a real one appears, measure it
-// and add a branch.
+// A NARROWER SWEEP GOT THIS WRONG. A 45-day run reported ZERO objects and this
+// file said the shape "was not found". It exists; the window started
+// 2026-06-27 and every object row predates it:
 //
-// THE THIRD SHAPE IS A RELAY DEFECT, not a format. All 84 are the string
-// "null" with drama_peak: 0, concentrated in EFL Cup, golf, PGA Tour, CFL --
-// exactly the sports anomalyBaseline records as never having drama computed.
-// So it means "no drama here", stored as stringified null rather than SQL
-// NULL. JSON.parse("null") yields null, so this returns null and the caller
-// renders nothing, which is correct. Handled explicitly rather than by
-// accident, because the two spellings of absent are a real trap for anything
+//     2026-04   0     2026-05   6     2026-06   1     2026-07   0     2026-08   0
+//
+// All 7 are NBA. So the client write path DID land rows, and then stopped
+// after June -- 0 objects against 497 and 122 array rows in July and August.
+// Absence of evidence over a window is not evidence of absence; the fix was
+// to widen the window past the feature's ship date, not to reason harder.
+//
+// THE OBJECT'S REAL SHAPE, and it diverges from its own documentation. The
+// Drive storage-layer doc specifies samples as [{t, s, p}] -- timestamp,
+// score, period. Across 37 real sample records there is NO `t` field at all:
+//
+//     s   37/37 (100%)  number   the drama score, 0-100
+//     p   37/37 (100%)  number   period
+//
+// `peakMinute` is likewise null on all 7. Written against the measurement, not
+// the doc.
+//
+// THE STRING "null" IS A RELAY DEFECT, not a format. All 121 carry
+// drama_peak: 0, concentrated in EFL Cup, golf, PGA Tour and CFL -- exactly
+// the sports anomalyBaseline records as never having drama computed. It means
+// "no drama here", stored as a stringified null rather than SQL NULL. Handled
+// explicitly because the two spellings of absent are a real trap for anything
 // querying `WHERE drama_arc IS NULL`.
 export function parseDramaArc(raw) {
   if (raw === null || raw === undefined) return null
-  if (Array.isArray(raw)) return raw
-  if (typeof raw !== 'string') return null
-  let parsed
-  try { parsed = JSON.parse(raw) } catch { return null }
-  return Array.isArray(parsed) ? parsed : null
+  const value = typeof raw === 'string' ? tryParse(raw) : raw
+  if (Array.isArray(value)) return value
+  // The object form carries the series under `samples`, each element {s, p}.
+  // Only `s` is read: `p` is the period, useful for axis markers the glyph
+  // does not draw. A non-numeric or missing `s` drops that sample rather than
+  // becoming NaN and poisoning the max.
+  if (value && typeof value === 'object' && Array.isArray(value.samples)) {
+    const series = value.samples
+      .map(x => (x && typeof x === 'object' ? x.s : x))
+      .filter(v => typeof v === 'number' && Number.isFinite(v))
+    return series.length ? series : null
+  }
+  return null
+}
+
+function tryParse(raw) {
+  try { return JSON.parse(raw) } catch { return null }
 }
 
 export const DRAMA_MAX = 100

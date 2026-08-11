@@ -97,25 +97,48 @@ ok('non-numeric entries are dropped, not coerced',
    render([10, null, 'x', 20]).length === 2)
 
 // ---- the shapes drama_arc actually takes, measured 2026-08-11 ----
-// 948 real games over 45 days: 661 array, 203 SQL null, 84 the STRING "null",
-// 0 object. Each branch below corresponds to a shape that was counted, not to
-// one that seemed plausible.
+// 1484 real games over 120 days: 1022 array, 334 SQL null, 121 the STRING
+// "null", 7 object. Each branch corresponds to a shape that was COUNTED.
+//
+// An earlier 45-day run reported ZERO objects and this file asserted the
+// object shape returns null. That assertion was measuring a too-narrow window,
+// not the data: all 7 object rows are from May and June, and the window began
+// 2026-06-27. Widening it past the feature's ship date found them.
 console.log('')
-console.log('parseDramaArc over the measured shape census (948 games, 45 days)')
-ok('array of numbers -> the array (661 rows, 69.7%)',
+console.log('parseDramaArc over the measured shape census (1484 games, 120 days)')
+ok('array of numbers -> the array (1022 rows, 68.9%)',
    JSON.stringify(parseDramaArc('[10,20,30]')) === '[10,20,30]')
-ok('SQL null -> null (203 rows, 21.4%)', parseDramaArc(null) === null)
-// The one that matters: the four-character string, not a null. All 84 carry
-// drama_peak 0, on sports anomalyBaseline records as never computing drama.
-ok('the STRING "null" -> null (84 rows, 8.9%)', parseDramaArc('null') === null)
+ok('SQL null -> null (334 rows, 22.5%)', parseDramaArc(null) === null)
+// The four-character string, not a null. All 121 carry drama_peak 0, on
+// sports anomalyBaseline records as never computing drama.
+ok('the STRING "null" -> null (121 rows, 8.2%)', parseDramaArc('null') === null)
+
+// THE OBJECT SHAPE, verbatim from a real measured row (NBA, drama_peak 52).
+// Note there is no `t` in the samples, though the Drive storage-layer doc
+// specifies [{t,s,p}] -- 37 of 37 real sample records carry only s and p.
+const REAL_OBJECT_ARC = JSON.stringify({
+  peak: 52, peakPeriod: 1, peakMinute: null, sustainedMinutes: 0,
+  trend: 'steady', classification: 'sleeper',
+  samples: [{ s: 52, p: 1 }, { s: 52, p: 1 }, { s: 52, p: 0 }, { s: 44, p: 0 }, { s: 29, p: 4 }],
+})
+ok('object shape -> the s series (7 rows, 0.5%)',
+   JSON.stringify(parseDramaArc(REAL_OBJECT_ARC)) === '[52,52,52,44,29]')
+ok('object arc renders bars on the same fixed domain',
+   JSON.stringify(dramaBars(parseDramaArc(REAL_OBJECT_ARC))) === '[52,52,52,44,29]')
+// The tallest bar must equal the object's own stated peak, the same invariant
+// the fixed domain creates for array arcs.
+ok('tallest bar equals the object\'s stated peak',
+   Math.max(...dramaBars(parseDramaArc(REAL_OBJECT_ARC))) === 52)
+ok('object with empty samples -> null, not an empty chart',
+   parseDramaArc('{"peak":0,"samples":[]}') === null)
+ok('object with no samples key -> null',
+   parseDramaArc('{"peak":74,"trend":"steady"}') === null)
+ok('non-numeric samples are dropped, not coerced to NaN',
+   JSON.stringify(parseDramaArc('{"samples":[{"s":10},{"s":null},{"s":20}]}')) === '[10,20]')
+
 ok('already-parsed array passes through', Array.isArray(parseDramaArc([1, 2])))
 ok('garbage -> null, not a throw', parseDramaArc('{not json') === null)
 ok('a number -> null', parseDramaArc(42) === null)
-// No object branch exists because no object arc exists. If one ever appears,
-// this line is where the census gets updated -- deliberately asserting the
-// CURRENT truth rather than pre-building for a shape never observed.
-ok('object shape -> null (0 rows observed; no extractor written)',
-   parseDramaArc('{"peak":74,"samples":[1,2]}') === null)
 
 console.log('')
 if (failures) {
