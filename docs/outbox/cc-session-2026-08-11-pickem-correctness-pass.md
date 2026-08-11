@@ -250,6 +250,30 @@ What was supplied instead:
 
 ## Confidence gate
 
+**SUPERSEDED BY A MEASURED SCORE.** The claims in this document are now a real
+ledger (`docs/outbox/claims/cc-session-2026-08-11-pickem-correctness-pass.json`), resolved
+against what actually happened and scored by `scripts/gate-score.mjs`:
+
+```
+provenance     n   brier   stated   actual   gap
+RETRIEVED     1   0.810    0.90     0.00   +0.90  <-- systematically overconfident
+DERIVED       2   0.526    0.72     0.00   +0.72  <-- systematically overconfident
+MEASURED      4   0.002    0.96     1.00   -0.04
+OVERALL       7   0.267
+```
+
+**0.267 is worse than a coin flip (0.25).** Both hand-picked numbers below -- the 88 and the
+revised 79 -- were guesses at a quantity that can be computed, and both were far too generous.
+
+The breakdown is the finding. Measured claims score 0.002 and are very slightly
+*under*-confident; every single failure is RETRIEVED or DERIVED, and **3 of 3 refuted claims had
+a falsifier that was never run**. An aggregate score would have hidden that, because most claims
+that day were measured and correct.
+
+---
+
+### Earlier hand-scored gate, kept for the record
+
 **REVISED DOWN to 79/100** after the relay session corrected three claims in the section above.
 
 The original 88 was scored on the pick'em work, where it still roughly holds — those fixes are

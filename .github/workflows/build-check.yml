@@ -110,6 +110,16 @@ jobs:
       # data, which make the tallest thing full-height by construction.
       - name: Check no self-normalising visual scales
         run: node scripts/check-fixed-scale.mjs
+      # Claims ledger: provenance typed, MEASURED backed by a real artifact,
+      # RETRIEVED carrying its source's age, every claim naming a falsifier.
+      # Exists because the 2026-08-11 confidence gate listed six acknowledged
+      # unknowns and all three real errors were outside them.
+      - name: Check claims ledger
+        run: node scripts/check-claims.mjs
+      # Report, not a gate: Brier score over resolved claims, split by
+      # provenance. A gate on your own calibration would just invite gaming.
+      - name: Score confidence gates against outcomes
+        run: node scripts/gate-score.mjs
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

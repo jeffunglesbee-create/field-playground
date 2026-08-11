@@ -102,12 +102,18 @@ export function ForkPoint() {
   // standing project rule: however a score is computed internally, anything
   // user-facing is presented on 0-100.
   //
-  // It is also the better chart. A data-derived domain silently rescales
-  // every render, so two forks of different magnitude drew identical-looking
-  // curves and the axis numbers were the only thing distinguishing them --
-  // the same defect measured in DeskCard's drama sparkline, where a real
-  // 44..74 arc rendered as a 59..100% wall. Drama is a documented 0-100
-  // score, so this domain is the score's own domain.
+  // It is also the better chart on its own terms: a data-derived domain
+  // rescales on every render, so two forks of different magnitude drew
+  // identical-looking curves and the axis numbers were the only thing
+  // distinguishing them. Drama is a documented 0-100 score, so this domain is
+  // the score's own domain.
+  //
+  // NOT A REFERENCE FOR THE DRAMA SPARKLINE, and the direction matters.
+  // ForkPoint is an experiment; its charting choices are not precedent for
+  // anything. DeskCard's sparkline is governed by "FIELD - Sparkline Spec:
+  // Three Modes x All Viewports" (Drive, 2026-05-28) and by the 0-100 scale
+  // the drama score is defined on. This file was changed BY that rule, it is
+  // not the source of it.
   const chartMinMax = createMemo(() => [0, 100])
 
   const sharedLength = createMemo(() => {
