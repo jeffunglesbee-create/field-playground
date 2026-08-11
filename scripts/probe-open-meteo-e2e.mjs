@@ -81,6 +81,20 @@ for (const v of sample) {
   const c = fx.current ?? {}
   const u = fx.current_units ?? {}
 
+  // Second request, shaped like PRODUCTION's: hourly snowfall, no timezone
+  // parameter. Production reads its snow value out of the hourly series and
+  // this probe was only ever checking the current block, so the field that
+  // actually drives the snow band was the one field never measured.
+  let fxHourly = {}
+  try {
+    const hres = await fetch(`${OM}?latitude=${v.lat}&longitude=${v.lon}&hourly=snowfall,direct_radiation&wind_speed_unit=mph&temperature_unit=fahrenheit`)
+    ok('hourly forecast HTTP 200', hres.ok, `status ${hres.status}`)
+    if (hres.ok) fxHourly = await hres.json()
+  } catch (e) {
+    failures++
+    log(`  FAIL  hourly forecast threw: ${String(e).slice(0, 120)}`)
+  }
+
   // Fields the app actually reads.
   // wind_gusts_10m is in this list because the GATE depends on it. If the API
   // ever drops it, normalizeOpenMeteo yields gustsMph: null, wxAlert can never
@@ -104,6 +118,22 @@ for (const v of sample) {
   // 10x too EARLY, the mirror of the bug this assertion originally found.
   ok('snowfall unit is cm (drives the x10 conversion)',
      u.snowfall === 'cm', `got ${JSON.stringify(u.snowfall)}`)
+
+  // HOURLY snowfall, asserted separately from CURRENT, because production
+  // reads the hourly series -- `(json.hourly?.snowfall||[])[getUTCHours()]` --
+  // not the current block. The two are different response fields and nothing
+  // guarantees they carry the same unit, so inferring hourly's unit from
+  // current's would be exactly the kind of unchecked step this probe exists to
+  // stop. Also asserts the default timezone, because an hourly array indexed
+  // by UTC hour is only correct while the series itself is on GMT.
+  const hu = fxHourly.hourly_units ?? {}
+  ok('hourly snowfall unit is cm too', hu.snowfall === 'cm', `got ${JSON.stringify(hu.snowfall)}`)
+  ok('hourly series is GMT by default, so a UTC-hour index lines up',
+     (fxHourly.timezone_abbreviation ?? '') === 'GMT',
+     `got ${JSON.stringify(fxHourly.timezone_abbreviation)}`)
+  const hourlySnow = fxHourly.hourly?.snowfall
+  ok('hourly.snowfall is an array covering a full day',
+     Array.isArray(hourlySnow) && hourlySnow.length >= 24, `len ${hourlySnow?.length}`)
 
   let aqi = null
   let pm25 = null
