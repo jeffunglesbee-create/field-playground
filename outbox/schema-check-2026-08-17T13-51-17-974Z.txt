@@ -1,0 +1,16 @@
+mode: CHECK — re-measure live shape, diff against committed schema
+
+=== context-date-games ===
+  live records: 311  (schema built from 270)
+  new required field(s) in "mlb": opening_odds, streams  (schema is stale, not wrong)
+  new required field(s) in "pga tour": away_score, drama_arc, drama_peak, finalized_at, home_score  (schema is stale, not wrong)
+  NEW VARIANT: "la liga" (n=5) — unknown to the schema
+  NEW VARIANT: "nfl" (n=16) — unknown to the schema
+  NEW VARIANT: "cfl" (n=7) — unknown to the schema
+
+=== bsd-incidents ===
+  live records: 127  (schema built from 117)
+  NEW VARIANT: "varDecision" (n=3) — unknown to the schema
+
+=== VERDICT ===
+No drift. Live shapes still match what was measured when the schemas were built.
