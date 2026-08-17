@@ -1,0 +1,46 @@
+probe_at: 2026-08-17T13:10:47.629Z
+purpose: exercise AnomalyWatch's SHIPPED analysis against the real uncensored corpus.
+The dev mock carries 3 distinct drama_peak values; the real corpus carries ~34, so the
+percentile path cannot be validated locally at all.
+window: 30 real days back from 2026-08-17
+
+days fetched OK: 30 / 30;  real games: 796
+
+=== REAL PER-SPORT BASELINES (shipped buildBaselines) ===
+  sport                  n  distinct  resolution     p10  median   p90  medRange  medTurns
+  mlb                   375        30  distribution    52     65    83        48        33
+  wnba                   80         7  tier            52     61    70        50        35
+  mls                    62         8  tier            52     57    70        25         1
+  efl cup                34         1  tier             0      0     0      null      null
+  nfl                    16         1  tier             0      0     0      null      null
+  cfl                     7         1  tier             0      0     0      null      null
+  la liga                 4         3  tier            52     55    57        28         3
+  fifa world cup          1         1  tier            70     70    70        18         1
+  duplicate rows dropped before building: 0
+
+=== EXCLUSION CHECK ===
+  "golf" -> EXCLUDED (drama never computed for this sport)
+  "pga tour" -> EXCLUDED (drama never computed for this sport)
+
+=== FINDING RATES ACROSS THE WHOLE REAL CORPUS ===
+  games judged (status ok): 551 of 796
+  games with >=1 finding:   417  (75.7%)
+    rare-high        48  (8.7% of judged games)
+    rare-low         43  (7.8% of judged games)
+    tier-top         39  (7.1% of judged games)
+    late-surge      236  (42.8% of judged games)
+    fizzle          115  (20.9% of judged games)
+    flat-tension     89  (16.2% of judged games)
+    volatile         27  (4.9% of judged games)
+  status breakdown: unscored=193, no-baseline=29, not-measured=23, ok=551
+
+=== WHAT THE COMPONENT WOULD SHOW for its default slate (2026-08-17) ===
+  games on slate: 15;  flagged: 0
+
+=== VERDICT ===
+Percentile resolution is REAL for at least one sport -- the distribution path is live,
+not theoretical, and the tier fallback is doing its job for the sports that need it.
+
+=== DEFINITIONAL SELF-CONSISTENCY on real data ===
+  mlb: rare-high actual 48 vs brute-force 48 MATCH
+  mlb: rare-low  actual 43 vs brute-force 43 MATCH
