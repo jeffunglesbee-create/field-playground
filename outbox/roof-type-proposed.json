@@ -92,11 +92,11 @@
   {
     "name": "Kauffman Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Kauffman Stadium is a ballpark located in Kansas City, Missouri, and the home of Major League Baseball's Kansas City Royals.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Comerica Park",
@@ -119,11 +119,11 @@
   {
     "name": "Oriole Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Oriole Park was the name of multiple baseball parks in Baltimore, Maryland between 1883 and 1944, all built within a few blocks of each other.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Guaranteed Rate Field",
@@ -182,11 +182,11 @@
   {
     "name": "Citi Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Citi Field is a baseball stadium located in Flushing Meadows–Corona Park, in the borough of Queens, New York City, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Sutter Health Park",
@@ -218,11 +218,11 @@
   {
     "name": "American Family Field",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "American Family Field, known as Miller Park until 2020, is a retractable roof stadium in Milwaukee, Wisconsin.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Minute Maid Park",
@@ -285,16 +285,16 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (disambiguation)"
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "CityPark",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Energizer Park, previously CityPark, is a 22,423-seat soccer-specific stadium in St. Louis, Missouri, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "America First Field",
@@ -317,20 +317,20 @@
   {
     "name": "Stade Saputo",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Saputo Stadium is a soccer-specific stadium at Olympic Park in the borough of Mercier–Hochelaga-Maisonneuve in Montreal, Quebec, Canada.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "BMO Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "BMO Field is an outdoor stadium located at Exhibition Place in Toronto, Ontario, Canada.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Chase Stadium",
@@ -389,11 +389,11 @@
   {
     "name": "Inter&Co Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Inter.co Stadium is a soccer-specific stadium in downtown Orlando, Florida, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "GEODIS Park",
@@ -416,11 +416,11 @@
   {
     "name": "Allianz Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Allianz Field is a soccer-specific stadium in Saint Paul, Minnesota, United States, located near Interstate 94 and Snelling Avenue.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "BMO Stadium",
@@ -479,11 +479,11 @@
   {
     "name": "Shell Energy Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Shell Energy Stadium is a multi-purpose stadium located in Houston, Texas, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Toyota Stadium",
@@ -524,11 +524,11 @@
   {
     "name": "Etihad Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Etihad Stadium is the home of Premier League club Manchester City, with a domestic football capacity of 61,038, making it the 6th-largest football stadium in England and 8th-largest stadium in the United Kingdom.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Craven Cottage",
@@ -578,20 +578,20 @@
   {
     "name": "Selhurst Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Selhurst Park is a football stadium in Selhurst, in the London Borough of Croydon, England.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "City Ground",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The  City Ground is a football stadium in West Bridgford, Nottinghamshire, England, on the banks of the River Trent.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Riverside Stadium",
@@ -614,20 +614,20 @@
   {
     "name": "The Den",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Den is a football stadium in New Cross Gate, south-east London, and the home of Millwall Football Club.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "London Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "London Stadium is a multi-purpose outdoor stadium at Queen Elizabeth Olympic Park in the Stratford district of London.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Allianz Arena",
@@ -642,7 +642,7 @@
     "name": "Europa-Park Stadion",
     "currentRoofType": "open",
     "wikipediaRoofType": "open",
-    "leadSentence": "The Europa-Park Stadion, which opened in 2021 and is also known as the Mooswald-Stadion, is a stadium in Freiburg im Breisgau, Germany, that serves mainly as the home of football club SC Freiburg, replacing the Dreisamstadion in this role.",
+    "leadSentence": "Europa-Park Stadion, also known as the Mooswald-Stadion, is a stadium in Freiburg im Breisgau, Germany, that serves mainly as the home of football club SC Freiburg, replacing the Dreisamstadion in this role.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -686,11 +686,11 @@
   {
     "name": "People First Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Carrara Stadium is a stadium located in the Gold Coast suburb of Carrara.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Marvel Stadium",
@@ -713,11 +713,11 @@
   {
     "name": "Rajiv Gandhi International Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Rajiv Gandhi International Cricket Stadium, commonly known as Uppal Stadium, is an international cricket stadium in Hyderabad, Telangana, India.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Sawai Mansingh Stadium",
@@ -767,20 +767,20 @@
   {
     "name": "Pebble Beach Golf Links",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Pebble Beach Golf Links is a public golf course located in Pebble Beach, California, U.S.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "TPC Sawgrass",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Tournament Players Club at Sawgrass is a golf course in the southeastern United States, located in Ponte Vedra Beach, Florida, southeast of Jacksonville.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Riviera Country Club",
@@ -812,11 +812,11 @@
   {
     "name": "TPC Scottsdale",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "TPC Scottsdale is a 36-hole golf complex in the southwestern United States, located in Scottsdale, Arizona, northeast of Phoenix.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Muirfield Village Golf Club",
