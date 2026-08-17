@@ -1,0 +1,31 @@
+probe_at: 2026-08-17T12:59:27.618Z
+purpose: scope the soccer sport-label defect -- how many archived rows, across which
+REAL competitions, are stored under the wrong label by the relay's three archive
+write sites. Truth comes from ESPN per event id, never inferred from team names.
+window: 30 real days back from 2026-08-17
+
+days fetched OK: 30 / 30
+
+=== POPULATION ===
+real games in window:            796
+real soccer-ish archived rows:   230
+  ...with an espn_event_id:      68   (only these can be checked against ESPN)
+  ...without one:                162   <- unverifiable, reported not hidden
+
+archived `sport` labels as stored:
+  "MLS": 224
+  "La Liga": 5
+  "FIFA World Cup": 1
+
+=== PER-ROW: stored label vs ESPN's real competition ===
+  resolved: 68   unresolved: 0
+  ESPN payload path used to resolve league: header.league.name x68
+
+=== MISLABELED ROWS, grouped by the competition they REALLY are ===
+  none in this sample.
+
+=== VERDICT ===
+CLEAN on this sample: all 68 resolved rows carry the label matching ESPN's real
+competition. If the three-site ternary is still present in the relay, this is more
+likely a sampling artifact than a fix -- check whether the window contained any
+non-WC soccer at all before reading it as green.
