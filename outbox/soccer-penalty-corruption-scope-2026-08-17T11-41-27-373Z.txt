@@ -1,0 +1,108 @@
+probe_at: 2026-08-17T11:41:27.373Z
+purpose: scope WHICH archived soccer games carry a corrupted drama_arc from the confirmed
+penalty-dropping filter, and act as the standing regression detector once a fix ships.
+window: 30 real days back from 2026-08-17; max 60 soccer games profiled
+
+=== POPULATION ===
+real games in window:            795
+real soccer games:               230
+  ...carrying an espn_event_id:  68  (only these can be checked)
+  ...WITHOUT one:                162  <- unverifiable by this method, reported not hidden
+
+NOTE: capped at 60 of 68 eligible games (PROBE_MAX_GAMES).
+8 eligible games were NOT checked -- this is a sample, not a census.
+
+=== PER-GAME: real scoring events vs what the relay filter keeps ===
+profiled 60 games successfully, 0 failed to fetch
+real scoring events (scoringPlay === true): 169
+kept by the relay's real filter:            147
+DROPPED:                                    22   (13.0% of real goals)
+
+=== CORRUPTED ROWS (>=1 real goal dropped -> drama_arc wrong from that point on) ===
+These are the rows a reset->refill would need to target. Reviewable list, not an estimate.
+  2026-08-16  Philadelphia @ NYCFC
+      game_id=MLS_2026-08-16_nycfc_philadelphia  espn_event_id=761722  sport=MLS  drama_peak=52
+      real=5 kept=3 DROPPED=2 -> Penalty - Scored | Penalty - Scored
+      corruption begins at clock: 4'
+  2026-08-16  Villarreal @ Racing
+      game_id=La Liga_2026-08-16_racing_villarreal  espn_event_id=401882920  sport=La Liga  drama_peak=55
+      real=4 kept=3 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 21'
+  2026-08-15  D.C. United @ CF Montréal
+      game_id=MLS_2026-08-15_cfmontral_dcunited  espn_event_id=761711  sport=MLS  drama_peak=52
+      real=2 kept=1 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 50'
+  2026-08-15  Columbus @ Charlotte
+      game_id=MLS_2026-08-15_charlotte_columbus  espn_event_id=761710  sport=MLS  drama_peak=57
+      real=4 kept=3 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 9'
+  2026-08-15  LA Galaxy @ Houston
+      game_id=MLS_2026-08-15_houston_lagalaxy  espn_event_id=761715  sport=MLS  drama_peak=70
+      real=1 kept=0 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 21'
+  2026-08-15  San Diego @ LAFC
+      game_id=MLS_2026-08-15_lafc_sandiego  espn_event_id=761720  sport=MLS  drama_peak=70
+      real=1 kept=0 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 89'
+  2026-08-15  Rayo @ Sevilla
+      game_id=La Liga_2026-08-15_sevilla_rayo  espn_event_id=401882918  sport=La Liga  drama_peak=52
+      real=3 kept=1 DROPPED=2 -> Penalty - Scored | Penalty - Scored
+      corruption begins at clock: 52'
+  2026-08-01  New England @ CF Montréal
+      game_id=FIFA World Cup 2026_2026-08-01_cfmontral_newengland  espn_event_id=761697  sport=MLS  drama_peak=52
+      real=4 kept=3 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 30'
+  2026-08-01  Nashville @ D.C. United
+      game_id=FIFA World Cup 2026_2026-08-01_dcunited_nashville  espn_event_id=761699  sport=MLS  drama_peak=57
+      real=4 kept=3 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 32'
+  2026-08-01  LAFC @ Vancouver
+      game_id=FIFA World Cup 2026_2026-08-01_vancouver_lafc  espn_event_id=761698  sport=MLS  drama_peak=52
+      real=2 kept=1 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 76'
+  2026-08-01  San Diego @ Minnesota
+      game_id=FIFA World Cup 2026_2026-08-01_minnesota_sandiego  espn_event_id=761703  sport=MLS  drama_peak=52
+      real=2 kept=1 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 64'
+  2026-08-01  Austin @ Colorado
+      game_id=FIFA World Cup 2026_2026-08-01_colorado_austin  espn_event_id=761707  sport=MLS  drama_peak=70
+      real=1 kept=0 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 90'+4'
+  2026-07-31  Toronto @ NYCFC
+      game_id=FIFA World Cup 2026_2026-07-31_nycfc_toronto  espn_event_id=761695  sport=MLS  drama_peak=55
+      real=2 kept=1 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 8'
+  2026-07-25  Cincinnati @ Columbus
+      game_id=FIFA World Cup 2026_2026-07-25_columbus_cincinnati  espn_event_id=761680  sport=MLS  drama_peak=62
+      real=3 kept=2 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 45'+6'
+  2026-07-25  Miami @ CF Montréal
+      game_id=FIFA World Cup 2026_2026-07-25_cfmontral_miami  espn_event_id=761687  sport=MLS  drama_peak=70
+      real=1 kept=0 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 81'
+  2026-07-25  Toronto @ D.C. United
+      game_id=FIFA World Cup 2026_2026-07-25_dcunited_toronto  espn_event_id=761681  sport=MLS  drama_peak=62
+      real=3 kept=2 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 90'+10'
+  2026-07-22  NYCFC @ Columbus
+      game_id=FIFA World Cup 2026_2026-07-22_columbus_nycfc  espn_event_id=761668  sport=MLS  drama_peak=55
+      real=3 kept=1 DROPPED=2 -> Penalty - Scored | Penalty - Scored
+      corruption begins at clock: 28'
+  2026-07-22  Chicago @ Miami
+      game_id=FIFA World Cup 2026_2026-07-22_miami_chicago  espn_event_id=761667  sport=MLS  drama_peak=62
+      real=5 kept=4 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 27'
+  2026-07-22  CF Montréal @ Nashville
+      game_id=FIFA World Cup 2026_2026-07-22_nashville_cfmontral  espn_event_id=761673  sport=MLS  drama_peak=70
+      real=1 kept=0 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 68'
+
+=== SIGNAL CHECK: did this window contain any droppable event type at all? ===
+  "Penalty - Scored" x22
+
+=== VERDICT ===
+BUG STILL LIVE. 19 of 60 profiled soccer games carry a
+corrupted drama_arc. The listed rows are the reset->refill target set.
+Fix is un-applied by design: it lives in field-relay-nba, where a push to
+scripts/** auto-deploys and rewriting history collides with the drama_peak
+immutability guard. Human go/no-go, not this probe's call.
