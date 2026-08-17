@@ -1,0 +1,37 @@
+probe_at: 2026-08-17T13:27:04.747Z
+purpose: permutation test -- does the per-sport framing find anything a shuffled-label
+control does not? This is the one check that can conclude the feature is unearned.
+window: 30 days; permutation trials: 200
+
+days OK: 30/30;  real games: 796
+
+=== OBSERVED (real per-sport baselines) ===
+  judged: 551;  flagged: 417  (75.7%)
+    mlb                n= 375 distinct= 30 distribution
+    wnba               n=  80 distinct=  7 tier
+    mls                n=  62 distinct=  8 tier
+    efl cup            n=  34 distinct=  1 tier
+    nfl                n=  16 distinct=  1 tier
+    cfl                n=   7 distinct=  1 tier
+    la liga            n=   4 distinct=  3 tier
+    fifa world cup     n=   1 distinct=  1 tier
+
+=== NULL MODEL: 200 label permutations (marginal counts preserved) ===
+  shuffled flagged count: mean 390.2, p5 378, median 389, p95 409
+  observed flagged count: 417
+  permutation p-value (count >= observed): 0.0249
+  mean Jaccard overlap between real and shuffled flag sets: 0.718
+
+=== CONTROL: pooled baseline (the simpler design that was rejected) ===
+  pooled baseline: n=601 distinct=35 resolution=distribution
+  pooled flagged: 417;  per-sport flagged: 417
+  Jaccard(per-sport, pooled): 0.763
+  found ONLY by per-sport: 56;  found ONLY by pooled: 56
+
+=== VERDICT ===
+MIXED. The flagged COUNT is distinguishable from the null, but shuffled labels still
+select largely the same games -- so most of the signal is marginal, and the per-sport
+structure is adding less than the design assumed.
+
+The pooled control diverges (Jaccard 0.763), confirming the rejection of a
+pooled baseline was a real decision and not a stylistic one.
