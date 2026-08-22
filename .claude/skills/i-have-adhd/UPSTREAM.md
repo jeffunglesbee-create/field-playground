@@ -24,6 +24,32 @@ upstream commit is the same failure one step removed: it drifts, and nobody can
 say from what. The commit hash above is what makes a re-sync checkable rather
 than a guess.
 
+### It caught something on the first try
+
+A copy of this skill reached the repo from another session at `c62ab6e`,
+described in its commit message as "Verbatim content, not reconstructed." It
+was not byte-identical to upstream — 141 lines and 6808 bytes against
+upstream's 140 and 6813 — and the differences were the signature of a YAML
+round-trip rather than a copy: quotes stripped from `description`, `tags` and
+`category`, plus one blank line added.
+
+Stripping the quotes off `description` is not cosmetic. The value contains
+`ADHD: lead with…`, and a plain YAML scalar may not contain a colon-space. The
+frontmatter therefore did not parse at all:
+
+```
+yaml.scanner.ScannerError: mapping values are not allowed here
+  line 3, column 49
+```
+
+So the skill was present in the tree and unloadable. That is the worst version
+of this failure — the file is there, `git log` says it was installed, and
+nothing announces that it is inert.
+
+The resolution kept the upstream bytes, which parse. This is the argument for
+`cmp` against a recorded commit rather than reading a file and judging it to
+look right: the broken copy looked entirely reasonable.
+
 ## Re-syncing
 
 ```sh

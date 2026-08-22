@@ -361,5 +361,21 @@
     "resolvedAt": "2026-08-11T22:00:00Z",
     "resolutionNote": "Read 30 lines of surrounding context specifically to look for a per-game venue resolution. There is none. Found while running a DIFFERENT claim's falsifier, which is the argument for running them.",
     "sourceDetail": "jubilant-bassoon@a4c0e02:index.html:27164-27175"
+  },
+  {
+    "id": "vendored-skill-arrived-with-unparseable-frontmatter",
+    "text": "The copy of the i-have-adhd skill that reached this repo at c62ab6e, committed as 'Verbatim content, not reconstructed', was not byte-identical to upstream and its YAML frontmatter did not parse: `description` was unquoted while containing a colon-space, which is not a legal plain YAML scalar. The skill was present in the tree and unloadable.",
+    "provenance": "MEASURED",
+    "source": ".claude/skills/i-have-adhd/UPSTREAM.md",
+    "asOf": "2026-08-22T00:00:00Z",
+    "reverified": true,
+    "falsifier": "run yaml.safe_load over the frontmatter of git show c62ab6e:.claude/skills/i-have-adhd/SKILL.md; a clean parse refutes this",
+    "falsifierCost": "one command",
+    "falsifierAttempted": true,
+    "verifiableHere": true,
+    "confidence": 0.98,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-22T00:00:00Z",
+    "resolutionNote": "ScannerError at line 3 column 49. Diff against upstream b42a45a showed quotes stripped from description/tags/category and one blank line added -- a YAML round-trip signature, not a copy. Resolved by taking the upstream bytes, which parse. Notable because the file looked entirely reasonable to read; only cmp against a recorded commit caught it."
   }
 ]
