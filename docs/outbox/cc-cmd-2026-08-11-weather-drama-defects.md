@@ -155,6 +155,146 @@ on purpose.
 
 ---
 
+---
+
+## 4. Bundesliga live broadcasts overwrite the rights table with a partial object
+
+Unrelated to weather; found while looking at Bundesliga broadcasters and filed
+here because it is the same repo and the same review format.
+
+`index.html:23881`, the tail of `_fetchBundesligaRealBroadcastStreams`:
+
+```js
+const names = broadcastsBody.data.broadcasts
+  .map(b => b?.name || b?.broadcaster || b?.channel || b?.title || null)
+  .filter(Boolean);
+if(!names.length) return null;
+return names.map(n => ({ name:n, label:n, auth:'tv' }));
+```
+
+and its consumer at `index.html:23978`:
+
+```js
+if(league === 'ger.1' && games.length){
+  const realStreams = await _fetchBundesligaRealBroadcastStreams(dateStr);
+  if(realStreams && realStreams.length){
+    games.forEach(g => { g.streams = realStreams; });   // replaces, not enriches
+  }
+}
+```
+
+### What a stream object is supposed to be
+
+`expandStreams` (`index.html:6671`) is the one place that builds them, from the
+`SR` table:
+
+```js
+return s ? {key:k, label:s[0], name:s[0], url:s[1], col:s[2],
+            auth:s[3]||"sub", authNote:s[4]||"Subscription required"} : null;
+```
+
+Seven fields. The Bundesliga mapper emits three, and **drops `url`** — so a
+broadcaster chip produced by this path has nowhere to link. It also drops `key`,
+which is what `VALID_SR_KEYS` validates against, so the registry check never
+sees these entries.
+
+### The `auth:'tv'` hardcode is wrong for this league specifically
+
+`auth` is a real field with a real vocabulary — measured across the `SR` table:
+
+| value | count | meaning |
+|---|---|---|
+| `sub` | 42 | subscription |
+| `tv` | 30 | TV-provider login |
+| `geo` | 8 | region-locked |
+| `free` | 7 | no account needed |
+
+So `'tv'` is a legitimate value in general. It is the wrong one here. The
+`BUNDESLIGA` bundle is:
+
+```js
+BUNDESLIGA: ["usa","fandango","youtubetv","fubo","sling","hulu","directv"]
+```
+
+and `fandango` carries `auth: "free"`:
+
+```js
+fandango: ["Fandango", "https://www.fandango.com/sports", "#FF4D00", "free",
+           "Free live streaming — no subscription or account required. All Bundesliga
+            matches streamed free on Fandango starting 2026-27 season…"]
+```
+
+When the live path fires it relabels that as `auth:'tv'`, telling the reader
+they need a TV provider for a match the repo's own rights data says is free to
+watch. Getting a paywall wrong in that direction is the costly one: the reader
+skips a game they could have watched.
+
+### Also: "per-match" is per-date
+
+The block comment says *"Real per-match broadcast enrichment"* and the function
+is named `…RealBroadcastStreams`, but the call is made once for the whole date
+and assigned with `games.forEach`, so every match that day gets an identical
+list. The line immediately above it admits this (*"one call for the whole date
+(not per game)"*), which makes the name and the comment above it the misleading
+part rather than the behaviour.
+
+### Suggested shape, not a drop-in patch
+
+The fix is to treat the API's broadcaster names as a *lookup* into `SR` rather
+than as a replacement for it, so everything downstream keeps the seven-field
+contract:
+
+```js
+// Build a name -> SR key index once, from the table itself, so it cannot
+// drift from SR the way a hand-written mapping would.
+const _srByName = new Map(
+  Object.entries(SR).map(([k, v]) => [String(v[0]).toLowerCase(), k])
+);
+
+const keys = names
+  .map(n => _srByName.get(String(n).toLowerCase()))
+  .filter(Boolean);
+
+// Only override when every returned name resolved. A partial resolve means
+// the API named a broadcaster this table does not carry, and a partial list
+// is worse than the curated bundle -- it silently drops the rest.
+return keys.length === names.length ? expandStreams(keys) : null;
+```
+
+`return null` is already the "unavailable" signal the consumer handles by
+keeping the static bundle, so no change is needed at the call site.
+
+**One caveat measured before proposing this, not after.** Parsing the 87 `SR`
+rows shows labels are unique except one: `cleguardians.tv` appears twice. A
+plain `new Map(...)` keeps the last of a duplicate pair silently. That pair is
+an MLB local entry and cannot be reached by the Bundesliga path, so the snippet
+is safe as scoped — but it is a footgun if this index is ever lifted somewhere
+league-agnostic. Building it once and asserting `map.size === rows.length`
+would catch a future duplicate instead of swallowing it.
+
+**How wrong the hardcode is, exactly.** The seven bundle members carry:
+
+| key | auth |
+|---|---|
+| `usa` | `tv` |
+| `fandango` | `free` |
+| `youtubetv` | `sub` |
+| `fubo` | `sub` |
+| `sling` | `sub` |
+| `hulu` | `sub` |
+| `directv` | `sub` |
+
+`auth:'tv'` is correct for one of seven and wrong for six.
+
+**Open question for whoever applies this:** what should happen when the API
+returns a real broadcaster that has no `SR` row — say a German-market channel
+with no US rights entry? The snippet above discards the whole response, which
+is safe but throws away real data. Adding an `SR` row per missing broadcaster
+is the honest fix and needs someone who knows the rights position. Not decided
+here.
+
+---
+
 ## Also worth a look, not defects
 
 - **`index.html:27160`** — the comment above the block reads *"wxAlert fires

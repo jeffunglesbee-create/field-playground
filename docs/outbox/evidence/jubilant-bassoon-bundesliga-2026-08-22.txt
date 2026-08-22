@@ -1,0 +1,67 @@
+Evidence excerpt — jubilant-bassoon Bundesliga broadcast path
+commit: a4c0e021911b100a27763aeb7f8402a7e8067edf
+read:   2026-08-22, shallow clone, read-only
+
+=== index.html:23856-23883  (_fetchBundesligaRealBroadcastStreams) ===
+23856: async function _fetchBundesligaRealBroadcastStreams(dateStr8){
+23857:   try{
+23858:     const y = parseInt(dateStr8.slice(0,4),10), mo = parseInt(dateStr8.slice(4,6),10);
+23859:     const isoDate = `${dateStr8.slice(0,4)}-${dateStr8.slice(4,6)}-${dateStr8.slice(6,8)}`;
+23860:     const season = _bundesligaSeasonFromDate(y, mo);
+23861:     const rResolve = await fetch(
+23862:       `${BUNDESLIGA_RELAY_BASE}/bundesliga-bapi/resolve-dayid?season=${season}&date=${isoDate}`,
+23863:       { signal: AbortSignal.timeout(15000) }
+23864:     );
+23865:     if(!rResolve.ok) return null;
+23866:     const resolveBody = await rResolve.json();
+23867:     if(!resolveBody?.ok || !resolveBody.dayId || !resolveBody.comId) return null;
+23868: 
+23869:     const rBroadcasts = await fetch(
+23870:       `${BUNDESLIGA_RELAY_BASE}/bundesliga-bapi/broadcasts?comId=${encodeURIComponent(resolveBody.comId)}&dayId=${encodeURIComponent(resolveBody.dayId)}`,
+23871:       { signal: AbortSignal.timeout(10000) }
+23872:     );
+23873:     if(!rBroadcasts.ok) return null;
+23874:     const broadcastsBody = await rBroadcasts.json();
+23875:     if(!broadcastsBody?.available || !Array.isArray(broadcastsBody.data?.broadcasts) || !broadcastsBody.data.broadcasts.length) return null;
+23876: 
+23877:     const names = broadcastsBody.data.broadcasts
+23878:       .map(b => b?.name || b?.broadcaster || b?.channel || b?.title || null)
+23879:       .filter(Boolean);
+23880:     if(!names.length) return null;
+23881:     return names.map(n => ({ name:n, label:n, auth:'tv' }));
+23882:   }catch(e){ return null; }
+23883: }
+
+=== index.html:23973-23983  (consumer: replaces g.streams) ===
+23973:       // Real per-match broadcast enrichment, Bundesliga only, one call for
+23974:       // the whole date (not per game) -- see _fetchBundesligaRealBroadcastStreams.
+23975:       // Falls back to the static bundle already set on each game
+23976:       // (streams:resolveBundle(bundle) above) when unavailable/empty/failed.
+23977:       if(league === 'ger.1' && games.length){
+23978:         const realStreams = await _fetchBundesligaRealBroadcastStreams(dateStr);
+23979:         if(realStreams && realStreams.length){
+23980:           games.forEach(g => { g.streams = realStreams; });
+23981:         }
+23982:       }
+23983:       if(games.length && !scoresOnly) newSections.push({sport:section,games}); // scoresOnly: scores only, no new section
+
+=== index.html:6671-6677  (expandStreams: the 7-field contract) ===
+6671: function expandStreams(keys){
+6672:   return (keys||[]).map(k=>{
+6673:     const s=SR[k];
+6674:     return s?{key:k,label:s[0],name:s[0],url:s[1],col:s[2],auth:s[3]||"sub",authNote:s[4]||"Subscription required"}:null;
+6675:   }).filter(Boolean);
+6676: }
+6677: 
+
+=== BUNDESLIGA bundle ===
+BUNDESLIGA:    ["usa","fandango","youtubetv","fubo","sling","hulu","directv"]
+
+=== fandango SR row (auth=free) ===
+fandango:  ["Fandango",       "https://www.fandango.com/sports",                   "#FF4D00","free","Free live streaming — no subscription or account required. All Bundesliga matches streamed free on Fandango starting 2026-27 season under Versant/USA Sports deal. Availa
+
+=== auth vocabulary across the SR table ===
+     42 "sub"
+     30 "tv"
+      8 "geo"
+      7 "free"

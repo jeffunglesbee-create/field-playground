@@ -377,5 +377,38 @@
     "resolution": "CONFIRMED",
     "resolvedAt": "2026-08-22T00:00:00Z",
     "resolutionNote": "ScannerError at line 3 column 49. Diff against upstream b42a45a showed quotes stripped from description/tags/category and one blank line added -- a YAML round-trip signature, not a copy. Resolved by taking the upstream bytes, which parse. Notable because the file looked entirely reasonable to read; only cmp against a recorded commit caught it."
+  },
+  {
+    "id": "bundesliga-live-broadcasts-mislabel-free-streams",
+    "text": "_fetchBundesligaRealBroadcastStreams returns {name,label,auth:'tv'} for every broadcaster and the consumer assigns it over g.streams, replacing the validated BUNDESLIGA bundle. auth:'tv' is correct for 1 of the bundle's 7 members and wrong for 6, including fandango, whose SR row is auth:'free' with an authNote saying no subscription is required. The emitted object also drops url, key, col and authNote from the 7-field contract expandStreams guarantees.",
+    "provenance": "MEASURED",
+    "source": "docs/outbox/evidence/jubilant-bassoon-bundesliga-2026-08-22.txt",
+    "sourceDetail": "jubilant-bassoon@a4c0e02:index.html:23881, :23978, :6671",
+    "asOf": "2026-08-22T00:00:00Z",
+    "reverified": true,
+    "falsifier": "find a normalisation step between the mapper and render that re-resolves these names against SR, or an SR row for Bundesliga carrying auth 'tv'",
+    "falsifierCost": "one grep of the consumer path",
+    "falsifierAttempted": true,
+    "verifiableHere": true,
+    "confidence": 0.93,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-22T00:00:00Z",
+    "resolutionNote": "Read the mapper, the consumer and expandStreams. Assignment is `g.streams = realStreams`, unconditional replacement. NOT confirmed: what the UI actually renders for a stream with url undefined -- that needs the render path, so the user-visible severity is inferred from the missing field, not observed."
+  },
+  {
+    "id": "auth-is-a-real-field-with-a-four-value-vocabulary",
+    "text": "`auth` is a real stream field built by expandStreams as SR[k][3]||'sub', with four values in use across 87 SR rows: sub 42, tv 30, geo 8, free 7.",
+    "provenance": "MEASURED",
+    "source": "docs/outbox/evidence/jubilant-bassoon-bundesliga-2026-08-22.txt",
+    "asOf": "2026-08-22T00:00:00Z",
+    "reverified": true,
+    "falsifier": "re-parse the SR table's 4th tuple element and count distinct values",
+    "falsifierCost": "one command",
+    "falsifierAttempted": true,
+    "verifiableHere": true,
+    "confidence": 0.97,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-22T00:00:00Z",
+    "resolutionNote": "Recorded because I first reported the OPPOSITE to the user -- that `auth` was not a field this codebase had, based on greps for \"auth\":\"...\" and auth:'tv' that returned almost nothing. Both greps were blind to a property built programmatically from a tuple index. A grep proving absence is only as good as the spellings it anticipates."
   }
 ]
