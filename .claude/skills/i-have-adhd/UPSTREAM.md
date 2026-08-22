@@ -74,6 +74,24 @@ and is never auto-triggered by topic. It applies only when invoked explicitly:
 It then persists for the rest of the session by its own terms, until told
 `stop adhd mode` or `normal mode`.
 
+### Where it loads from, which is not the same everywhere
+
+A **local** Claude Code session reads project skills out of this directory. A
+**cloud** session (claude.ai/code, the mobile app) does not: its registry is
+built from `~/.claude/skills/`, which the harness provisions at session start —
+`~/.claude/skills/synced/` plus a `manifest.json` carrying the skills enabled on
+the claude.ai account.
+
+So a skill committed here is invisible to a cloud session, and `/i-have-adhd`
+returns `Unknown command` there no matter how correct this file is. Confirmed
+2026-08-22 by copying it to `~/.claude/skills/i-have-adhd/`, after which it
+registered immediately with no restart.
+
+That copy does not survive — the container is ephemeral and rebuilt per session.
+Making it durable in cloud sessions means enabling it on the claude.ai account
+so it arrives via `synced/`. This file is still the right home for local
+sessions and for anyone cloning the repo.
+
 Being a **project** skill, it covers this repo only. The global install
 (`~/.claude/skills/`), which would make it available in every project on a
 machine, is a separate act outside this repo:
