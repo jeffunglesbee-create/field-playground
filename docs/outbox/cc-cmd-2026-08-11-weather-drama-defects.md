@@ -293,6 +293,44 @@ is safe but throws away real data. Adding an `SR` row per missing broadcaster
 is the honest fix and needs someone who knows the rights position. Not decided
 here.
 
+### Probed 2026-08-23, and the answer is still "no data"
+
+`scripts/probe-bundesliga-broadcasts.mjs` in field-playground, run on CI
+(`outbox/bundesliga-broadcasts-2026-08-23T00-20-15-503Z.txt`). Six dates
+spanning the break boundary.
+
+**`data.broadcasts` is still `[]`** — including matchday 1 of 2026-27
+(2026-08-28, `dayId DFL-DAY-004CBT`, `available:true`), and the completed
+control matchday. So the extraction list is *still* unconfirmed against real
+data, five days past the documented resume date. The route itself is fine:
+`resolve-dayid` returned real matchday/comId/dayId. Empty is an answer about
+the data, not the route.
+
+This makes the fix above **latent**: it cannot be wrong today, because the
+mapper never receives an entry. It is still worth applying — an empty array
+already returns `null` and keeps the curated bundle either way, so the change
+costs nothing now and is correct the day data appears.
+
+### A second thing the probe found, which is not latent
+
+Only 2 of 6 dates answered, and **both carried `cached:true`**. The other four
+exceeded a 20-second probe timeout.
+
+The client allows `AbortSignal.timeout(15000)` for `resolve-dayid`. A date that
+cannot answer inside 20s cannot answer inside 15s either — so on any date the
+relay has not already warmed, the client's first call aborts, the function
+returns `null`, and the enrichment silently never runs. It can only ever fire
+on pre-warmed dates.
+
+That is a real constraint on the whole feature, independent of the broadcaster
+mapping, and it is not recorded anywhere in the three CC-CMDs that built this.
+Worth deciding deliberately: either warm the cache ahead of each matchday, or
+raise the client timeout, or accept that the enrichment is opportunistic.
+
+Not measured: how long an uncached call actually takes. Only that it is over
+20s. Whether that is 21 seconds or 90 changes which of those three options is
+reasonable.
+
 ---
 
 ## Also worth a look, not defects

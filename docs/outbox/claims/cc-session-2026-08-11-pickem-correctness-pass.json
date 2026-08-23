@@ -410,5 +410,35 @@
     "resolution": "CONFIRMED",
     "resolvedAt": "2026-08-22T00:00:00Z",
     "resolutionNote": "Recorded because I first reported the OPPOSITE to the user -- that `auth` was not a field this codebase had, based on greps for \"auth\":\"...\" and auth:'tv' that returned almost nothing. Both greps were blind to a property built programmatically from a tuple index. A grep proving absence is only as good as the spellings it anticipates."
+  },
+  {
+    "id": "bundesliga-broadcasts-still-empty-after-break-resume",
+    "text": "The /bundesliga-bapi/broadcasts route returns available:true with data.broadcasts: [] for matchday 1 of 2026-27 (2026-08-28, dayId DFL-DAY-004CBT) as well as for the completed control matchday 33. The client's broadcaster-name extraction has therefore still never run against real data, five days after the documented break-resume date.",
+    "provenance": "MEASURED",
+    "source": "outbox/bundesliga-broadcasts-2026-08-23T00-20-15-503Z.txt",
+    "asOf": "2026-08-23T00:20:15Z",
+    "reverified": true,
+    "falsifier": "re-run the probe on a date whose broadcast schedule is published and see a non-empty array",
+    "falsifierCost": "one CI dispatch (now scheduled weekly)",
+    "falsifierAttempted": true,
+    "verifiableHere": true,
+    "confidence": 0.96,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-23T00:20:15Z",
+    "resolutionNote": "Route is working -- resolve-dayid returned real matchday/dayId/comId. Empty is a real answer about the DATA, not about the route."
+  },
+  {
+    "id": "bundesliga-resolve-dayid-only-answers-from-cache-within-client-timeout",
+    "text": "resolve-dayid answers fast only when the date is already cached. Both dates that returned carried cached:true; all four uncached dates exceeded a 20s probe timeout. The client allows 15s for that call, so an uncached date cannot complete in the client either -- the enrichment can in practice only ever fire on dates the relay has already warmed.",
+    "provenance": "DERIVED",
+    "derivedFrom": "Probe: 2/6 dates returned, both with cached:true, and 4/6 threw TimeoutError at 20s. Client timeouts read from index.html: 15000ms for resolve-dayid, 10000ms for broadcasts. 20s > 15s, so a call that misses the probe's budget also misses the client's. NOT measured: the actual uncached latency, only that it exceeds 20s -- it could be 21s or 90s, which changes how fixable this is.",
+    "source": "outbox/bundesliga-broadcasts-2026-08-23T00-20-15-503Z.txt",
+    "asOf": "2026-08-23T00:20:15Z",
+    "reverified": true,
+    "falsifier": "time an uncached resolve-dayid call to completion and compare against 15000ms",
+    "falsifierCost": "one CI dispatch with a longer timeout",
+    "falsifierAttempted": false,
+    "verifiableHere": true,
+    "confidence": 0.82
   }
 ]
