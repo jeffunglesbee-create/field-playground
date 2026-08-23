@@ -1,0 +1,60 @@
+name: Bundesliga Broadcasts Probe
+
+# Observes what /bundesliga-bapi/broadcasts actually returns, so the client's
+# broadcaster-name extraction stops being a guess.
+#
+# The CC-CMD that shipped that extraction (Drive, 2026-08-02,
+# "wire-bundesliga-broadcasts-date-mode") states plainly that its field-name
+# list -- name || broadcaster || channel || title -- is "not confirmed against
+# a real non-empty example", because every check it ran returned an empty
+# broadcasts array. Anything built on top of it inherits that unknown,
+# including the SR-resolution fix on fix/bundesliga-broadcast-sr-resolve.
+#
+# WHY CI: *.workers.dev is blocked by the dev sandbox's egress allowlist. No
+# credential is involved -- the bapi key lives server-side in the relay and
+# these routes are public, which is why this workflow needs no secrets.
+#
+# The schedule is weekly through the season rather than one-shot: an empty
+# array is not a failure and not an answer, so the probe has to keep asking
+# until real broadcast data appears.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Fridays 15:00 UTC -- ahead of a typical Bundesliga matchday, when a
+    # forward-looking broadcast schedule is most likely to be populated.
+    - cron: '0 15 * * 5'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Probe the Bundesliga broadcasts route
+        timeout-minutes: 6
+        # An empty broadcasts array is a real observation, not a failure, and
+        # the summary says so explicitly. Failing the run would turn "no data
+        # yet" into a red badge nobody reads.
+        continue-on-error: true
+        run: node scripts/probe-bundesliga-broadcasts.mjs
+      - name: Commit probe result
+        if: always()
+        run: |
+          git config user.name "bundesliga-probe-bot"
+          git config user.email "actions@github.com"
+          git add outbox/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: bundesliga broadcasts probe result [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          exit 1
