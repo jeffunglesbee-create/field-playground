@@ -1,0 +1,43 @@
+probe_at: 2026-08-24T13:37:55.632Z
+purpose: permutation test -- does the per-sport framing find anything a shuffled-label
+control does not? This is the one check that can conclude the feature is unearned.
+window: 30 days; permutation trials: 200
+
+days OK: 30/30;  real games: 916
+
+=== OBSERVED (real per-sport baselines) ===
+  judged: 613;  flagged: 450  (73.4%)
+    mlb                n= 376 distinct= 31 distribution
+    wnba               n=  85 distinct=  7 tier
+    mls                n=  62 distinct=  8 tier
+    efl cup            n=  34 distinct=  1 tier
+    nfl                n=  32 distinct=  1 tier
+    uefa europa conference league qualifying n=  24 distinct=  7 tier
+    la liga            n=  14 distinct=  5 tier
+    uefa europa league qualifying n=  12 distinct=  4 tier
+    cfl                n=  11 distinct=  1 tier
+    epl                n=   9 distinct=  3 tier
+    ligue 1            n=   9 distinct=  3 tier
+    serie a            n=   8 distinct=  1 tier
+    efl trophy         n=   7 distinct=  1 tier
+    uefa champions league qualifying n=   4 distinct=  4 tier
+
+=== NULL MODEL: 200 label permutations (marginal counts preserved) ===
+  shuffled flagged count: mean 409.2, p5 395, median 409, p95 424
+  observed flagged count: 450
+  permutation p-value (count >= observed): 0.0050
+  mean Jaccard overlap between real and shuffled flag sets: 0.674
+
+=== CONTROL: pooled baseline (the simpler design that was rejected) ===
+  pooled baseline: n=711 distinct=34 resolution=distribution
+  pooled flagged: 477;  per-sport flagged: 450
+  Jaccard(per-sport, pooled): 0.766
+  found ONLY by per-sport: 48;  found ONLY by pooled: 75
+
+=== VERDICT ===
+MIXED. The flagged COUNT is distinguishable from the null, but shuffled labels still
+select largely the same games -- so most of the signal is marginal, and the per-sport
+structure is adding less than the design assumed.
+
+The pooled control diverges (Jaccard 0.766), confirming the rejection of a
+pooled baseline was a real decision and not a stylistic one.
