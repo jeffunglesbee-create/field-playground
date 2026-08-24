@@ -1,4 +1,4 @@
-probe_at: 2026-08-17T10:15:21.765Z
+probe_at: 2026-08-24T10:22:00.549Z
 statsapi.mlb.com live feed: HTTP 200  Access-Control-Allow-Origin=*
   -> browser fetch from an arbitrary origin would be: ALLOWED
 statsapi.mlb.com schedule: HTTP 200  Access-Control-Allow-Origin=*
