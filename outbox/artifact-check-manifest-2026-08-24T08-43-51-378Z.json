@@ -1,0 +1,318 @@
+{
+  "timestamp": "2026-08-24T08-43-51-378Z",
+  "checks": [
+    {
+      "name": "root_has_rendered_children",
+      "pass": true,
+      "rootChildCount": 1
+    },
+    {
+      "name": "multiple_sections_rendered",
+      "pass": true,
+      "sectionCount": 20
+    },
+    {
+      "name": "every_tab_renders_content",
+      "pass": true,
+      "tabResults": [
+        {
+          "tab": "Games15",
+          "clicked": true,
+          "sections": 20,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "Picks7",
+          "clicked": true,
+          "sections": 14,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "Stats7",
+          "clicked": true,
+          "sections": 15,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "Journalism2",
+          "clicked": true,
+          "sections": 9,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "Social3",
+          "clicked": true,
+          "sections": 10,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "System2",
+          "clicked": true,
+          "sections": 6,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "Lab18",
+          "clicked": true,
+          "sections": 34,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "",
+          "clicked": false,
+          "sections": 34,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "",
+          "clicked": false,
+          "sections": 34,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        },
+        {
+          "tab": "",
+          "clicked": false,
+          "sections": 34,
+          "deadSections": 0,
+          "rendered": true,
+          "pageErrorsSoFar": 0
+        }
+      ]
+    },
+    {
+      "name": "no_dead_sections",
+      "pass": true,
+      "deadSectionCount": 0,
+      "deadSectionMessages": [],
+      "note": "a rendered Retry button means a section threw and its subtree was replaced"
+    },
+    {
+      "name": "expected_components_rendered",
+      "pass": true,
+      "missingLabels": [],
+      "note": "a component can render nothing while its tab and siblings look healthy"
+    },
+    {
+      "name": "no_uncaught_page_errors",
+      "pass": true,
+      "pageErrors": []
+    }
+  ],
+  "mainJs": "dist-artifact/assets/index-bj2Cjjj8.js",
+  "cssFiles": [
+    "dist-artifact/assets/index-Bufaxu1p.css"
+  ],
+  "htmlBytes": 684236,
+  "mode": "offline (all fetches aborted)",
+  "tabButtonsFound": 10,
+  "tabResults": [
+    {
+      "tab": "Games15",
+      "clicked": true,
+      "sections": 20,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "Picks7",
+      "clicked": true,
+      "sections": 14,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "Stats7",
+      "clicked": true,
+      "sections": 15,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "Journalism2",
+      "clicked": true,
+      "sections": 9,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "Social3",
+      "clicked": true,
+      "sections": 10,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "System2",
+      "clicked": true,
+      "sections": 6,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "Lab18",
+      "clicked": true,
+      "sections": 34,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "",
+      "clicked": false,
+      "sections": 34,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "",
+      "clicked": false,
+      "sections": 34,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    },
+    {
+      "tab": "",
+      "clicked": false,
+      "sections": 34,
+      "deadSections": 0,
+      "rendered": true,
+      "pageErrorsSoFar": 0
+    }
+  ],
+  "tabCount": 10,
+  "maxSectionsInAnyTab": 34,
+  "deadSectionCount": 0,
+  "deadSectionMessages": [],
+  "rootChildCount": 1,
+  "sectionCount": 20,
+  "bodyTextSample": "HEALTH PANEL\nFAIL\n\nSame primitives as the mechanism demos above, run unattended on mount instead of waiting for a button press. A demo needs a human to trigger it; a health check runs itself.\n\nAll 3 real self-checks are passing -- 50 real requests, 50 failed -- no successful real poll yet.\n\n✓\nreactive root disposal\npass\n✓\nerror boundary catch\npass\n✓\nweb worker round-trip\npass\nFETCH HEALTH\n50 requests · 50 failed · avg 84ms\nPOLL FRESHNESS\nno successful poll yet\n\nTypeError: Failed to fetch\n\nTypeError: Failed to fetch\n\nGames\n15\nPicks\n7\nStats\n7\nJournalism\n2\nSocial\n3\nSystem\n2\nLab\n18\nTONIGHT'S PICK\n",
+  "consoleErrors": [
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED",
+    "Failed to load resource: net::ERR_FAILED"
+  ],
+  "pageErrors": [],
+  "expectedLabels": [
+    "Desk",
+    "Standing Room",
+    "Stats",
+    "Pick'em"
+  ],
+  "labelsSeen": [
+    "Desk",
+    "Stats",
+    "Pick'em",
+    "Standing Room"
+  ],
+  "missingLabels": [],
+  "allPass": true
+}
