@@ -92,11 +92,11 @@
   {
     "name": "Kauffman Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Kauffman Stadium is a ballpark located in Kansas City, Missouri, and the home of Major League Baseball's Kansas City Royals.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Comerica Park",
@@ -516,7 +516,7 @@
     "name": "Anfield",
     "currentRoofType": "open",
     "wikipediaRoofType": "open",
-    "leadSentence": "Anfield is a football stadium in the area of Anfield, Liverpool, England, which has been the home of Liverpool F.C. since its formation in 1892.",
+    "leadSentence": "Anfield is a football stadium in the area of Anfield, Liverpool, England, which has been the home of Liverpool Football Club since their formation in 1892.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -587,11 +587,11 @@
   {
     "name": "City Ground",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The  City Ground is a football stadium in West Bridgford, Nottinghamshire, England, on the banks of the River Trent.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Riverside Stadium",
@@ -677,20 +677,20 @@
   {
     "name": "TIO Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Marrara Stadium, the largest sporting venue in the Northern Territory, has a seating capacity of 12,215 and primarily hosts Australian rules football, cricket, soccer and rugby league.",
-    "agree": true,
-    "knownUnfixable": false,
-    "note": null
-  },
-  {
-    "name": "People First Stadium",
-    "currentRoofType": "open",
     "wikipediaRoofType": null,
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
     "note": "no Wikipedia data resolved (no title variant resolved)"
+  },
+  {
+    "name": "People First Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Carrara Stadium is a stadium located in the Gold Coast suburb of Carrara.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
   },
   {
     "name": "Marvel Stadium",
@@ -767,11 +767,11 @@
   {
     "name": "Pebble Beach Golf Links",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Pebble Beach Golf Links is a public golf course located in Pebble Beach, California, U.S.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "TPC Sawgrass",
@@ -785,11 +785,11 @@
   {
     "name": "Riviera Country Club",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Riviera Country Club is a private club with a championship golf course as well as tennis courts, located in the Pacific Palisades neighborhood of the Westside of Los Angeles, California.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Torrey Pines South Course",
@@ -875,10 +875,10 @@
   {
     "name": "TPC Twin Cities",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "TPC Twin Cities is a private golf club in the north central United States, located within the subdivision of Deacon’s Walk in Blaine, Minnesota, a suburb north of Minneapolis.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   }
 ]
