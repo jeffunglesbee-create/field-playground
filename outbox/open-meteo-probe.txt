@@ -1,4 +1,4 @@
-probe_at: 2026-08-17T10:19:43Z
+probe_at: 2026-08-24T10:26:27Z
 url: https://api.open-meteo.com/v1/forecast?latitude=42.3390&longitude=-83.0485&hourly=temperature_2m,precipitation_probability,wind_speed_10m,weather_code&forecast_days=1&temperature_unit=fahrenheit&wind_speed_unit=mph
 
 === HEADERS (CORS is the point; no API key was sent) ===
@@ -28,9 +28,9 @@ top-level keys: elevation, generationtime_ms, hourly, hourly_units, latitude, lo
 hourly vars: precipitation_probability, temperature_2m, time, weather_code, wind_speed_10m
 units: {"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"}
 timezone: GMT | elevation: 177.0
-first 6 temps: [83.2,80.4,77.6,76.0,74.8,73.0]
-first 6 precip%: [12,13,6,3,3,3]
-first 6 wind: [5.1,4.1,5.5,1.8,3.8,4.4]
+first 6 temps: [63.9,63.8,62.2,59.3,57.7,56.4]
+first 6 precip%: [29,13,3,0,4,1]
+first 6 wind: [10.0,4.6,6.0,4.2,3.9,4.3]
 
 === RAW BODY (first 800 chars) ===
-{"latitude":42.351395,"longitude":-83.06135,"generationtime_ms":0.12302398681640625,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":177.0,"hourly_units":{"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"},"hourly":{"time":["2026-08-17T00:00","2026-08-17T01:00","2026-08-17T02:00","2026-08-17T03:00","2026-08-17T04:00","2026-08-17T05:00","2026-08-17T06:00","2026-08-17T07:00","2026-08-17T08:00","2026-08-17T09:00","2026-08-17T10:00","2026-08-17T11:00","2026-08-17T12:00","2026-08-17T13:00","2026-08-17T14:00","2026-08-17T15:00","2026-08-17T16:00","2026-08-17T17:00","2026-08-17T18:00","2026-08-17T19:00","2026-08-17T20:00","2026-08-17T21:00","2026-08-17T22:00","2026-08-17T23:00"],"temperature_2
+{"latitude":42.351395,"longitude":-83.06135,"generationtime_ms":0.10156631469726562,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":177.0,"hourly_units":{"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"},"hourly":{"time":["2026-08-24T00:00","2026-08-24T01:00","2026-08-24T02:00","2026-08-24T03:00","2026-08-24T04:00","2026-08-24T05:00","2026-08-24T06:00","2026-08-24T07:00","2026-08-24T08:00","2026-08-24T09:00","2026-08-24T10:00","2026-08-24T11:00","2026-08-24T12:00","2026-08-24T13:00","2026-08-24T14:00","2026-08-24T15:00","2026-08-24T16:00","2026-08-24T17:00","2026-08-24T18:00","2026-08-24T19:00","2026-08-24T20:00","2026-08-24T21:00","2026-08-24T22:00","2026-08-24T23:00"],"temperature_2
