@@ -1,0 +1,167 @@
+probe_at: 2026-08-24T15:05:01.393Z
+purpose: measure the real shape of /cfl/scoreboard/rounds before any archive-write
+work is designed against it. Staleness is checked FIRST -- that is what disqualified ESPN.
+
+=== TOP LEVEL === (172627 bytes)
+  root type: array
+  root is an array of 27
+
+  rounds: 27
+
+=== ROUND-LEVEL SHAPE ===
+  rounds[] — 27 records
+    field                    present  non-null        types            samples
+    id                          27     27 (100%)  number           1420009 | 1420010 | 1420011 | 1420012
+    status                      27     27 (100%)  string           complete | scheduled
+    name                        27     27 (100%)  string           Preseason Week 1 | Preseason Week 2 | Presea
+    type                        27     27 (100%)  string           PRE | REG | POST
+    number                      27     27 (100%)  number           0 | 1 | 2 | 3
+    startDate                   27     27 (100%)  string           2026-05-18T00:00:00+00:00 | 2026-05-22T00:00
+    endDate                     27     27 (100%)  string           2026-05-18T23:59:00+00:00 | 2026-05-23T23:59
+    tournaments                 27     27 (100%)  array            
+
+=== GAME-LEVEL SHAPE ===  (nested under rounds[].tournaments)
+  rounds[].tournaments — 93 records
+    field                    present  non-null        types            samples
+    id                          93     93 (100%)  number           13419665 | 13419666 | 13419667 | 13419668
+    date                        93     93 (100%)  string           2026-05-18T19:00:00+00:00 | 2026-05-22T23:00
+    status                      93     93 (100%)  string           complete | scheduled
+    homeSquad                   93     93 (100%)  object           
+    awaySquad                   93     93 (100%)  object           
+    activePeriod                93      0 (  0%)  null             
+    timeouts                    93     93 (100%)  object           
+    possession                  93     93 (100%)  string           None | Away | Home
+    cflId                       93     90 ( 97%)  number           6582 | 6583 | 6584 | 6586
+    clock                       93      0 (  0%)  null             
+    winner                      93     55 ( 59%)  number           112939 | 88019 | 122345 | 114347
+    isHidden                    93     93 (100%)  boolean          false
+    markets                     93     93 (100%)  object           
+    marketsBCLC                 93     93 (100%)  array|object     
+    marketsScorebet             93     93 (100%)  array|object     
+
+=== ONE LEVEL DOWN === (object-valued keys: homeSquad, awaySquad, timeouts, markets, marketsBCLC, marketsScorebet)
+
+    homeSquad{} — 93 records
+      field                    present  non-null        types            samples
+      id                          93     93 (100%)  number           112939 | 86680 | 83579 | 93775
+      name                        93     93 (100%)  string           Calgary Stampeders | Montreal Alouettes | Ha
+      shortName                   93     93 (100%)  string           CGY | MTL | HAM | BC
+      score                       93     93 (100%)  number           20 | 12 | 10 | 16
+
+    awaySquad{} — 93 records
+      field                    present  non-null        types            samples
+      id                          93     93 (100%)  number           106752 | 88019 | 122345 | 114347
+      name                        93     93 (100%)  string           Saskatchewan Roughriders | Ottawa RedBlacks 
+      shortName                   93     93 (100%)  string           SSK | OTT | TOR | EDM
+      score                       93     93 (100%)  number           15 | 27 | 20 | 34
+
+    timeouts{} — 93 records
+      field                    present  non-null        types            samples
+      away                        93     93 (100%)  number           2 | 1 | 0
+      home                        93     93 (100%)  number           2 | 1 | 0
+
+    markets{} — 93 records
+      field                    present  non-null        types            samples
+      away                        59     59 ( 63%)  object           
+      home                        59     59 ( 63%)  object           
+
+    marketsBCLC{} — 32 records
+      field                    present  non-null        types            samples
+      total                       32     22 ( 69%)  object           
+      spread                      32     18 ( 56%)  object           
+      moneyline                   32     15 ( 47%)  object           
+
+    marketsScorebet{} — 29 records
+      field                    present  non-null        types            samples
+      moneyline                   25     25 ( 86%)  object           
+      spread                      23     23 ( 79%)  object           
+      total                       21     21 ( 72%)  object           
+
+=== ONE COMPLETE GAME, VERBATIM ===
+  (fill rates say a field exists; only a real record says what it holds)
+  {
+    "id": 13419665,
+    "date": "2026-05-18T19:00:00+00:00",
+    "status": "complete",
+    "homeSquad": {
+      "id": 112939,
+      "name": "Calgary Stampeders",
+      "shortName": "CGY",
+      "score": 20
+    },
+    "awaySquad": {
+      "id": 106752,
+      "name": "Saskatchewan Roughriders",
+      "shortName": "SSK",
+      "score": 15
+    },
+    "activePeriod": null,
+    "timeouts": {
+      "away": 2,
+      "home": 2
+    },
+    "possession": "None",
+    "cflId": 6582,
+    "clock": null,
+    "winner": 112939,
+    "isHidden": false,
+    "markets": {
+      "away": {
+        "value": "+850",
+        "handicap": ""
+      },
+      "home": {
+        "value": "-6667",
+        "handicap": ""
+      }
+    },
+    "marketsBCLC": [],
+    "marketsScorebet": []
+  }
+
+=== SCORE x STATUS: does a filled score mean a played game? ===
+    status        n    0-0   null   points   winner-set
+    complete      55      0      0      55          55
+    scheduled     38     38      0       0           0
+  *** UNPLAYED GAMES CARRY 0, NOT NULL. The 100% fill rate on score is
+  *** therefore meaningless as a played/unplayed signal. Any archive write must
+  *** gate on status (or winner), never on score being present.
+
+=== VENUE ===
+  venue-like keys anywhere in the payload: (none)
+  /archive/game takes a venue. This route does not carry one at any depth, so it
+  must come from a second source or be written null -- a decision, not an oversight.
+
+=== STALENESS: WHAT YEAR IS THIS DATA? ===
+  years found in date-shaped strings:
+    2026: 147 occurrence(s)
+
+  current year (2026) occurrences: 147
+  Contains current-year dates -- does not exhibit the ESPN staleness failure.
+
+=== SPEC OPEN QUESTIONS ===
+  game_status / status field present anywhere: YES
+    (Spec: confirmed in 2025 fixtures, "verify presence in 2026")
+  score-like keys seen: score, marketsScorebet
+
+=== ARCHIVE-WRITE FEASIBILITY ===
+/archive/game needs: sport, league, date, home, away, home_score, away_score,
+venue, start_time. Which of those are directly available above, and which need a
+second lookup (team ids -> names via /cfl/scoreboard/squads), is the question the
+field lists answer. Read them rather than trusting this line.
+  /cfl/scoreboard/squads: 2970 bytes, 10 squad record(s)
+  squads[] — 10 records
+    field                    present  non-null        types            samples
+    id                          10     10 (100%)  number           0 | 83579 | 86680 | 88019
+    name                        10     10 (100%)  string           TBD | Hamilton Tiger-Cats | Montreal Alouett
+    abbreviation                10     10 (100%)  string           TBD | HAM | MTL | OTT
+    wins                        10     10 (100%)  number           0 | 4 | 9 | 5
+    draw                        10     10 (100%)  number           0
+    loss                        10     10 (100%)  number           0 | 7 | 1 | 10
+    ticketUrls                  10     10 (100%)  array|object     
+
+=== VERDICT ===
+This probe measures and stops. It proposes no field mapping and writes no code:
+the staged CFL fix it replaces was produced by designing against an unmeasured
+source, and repeating that here would be the same mistake with a different URL.
+The next step is a human reading the field lists above against /archive/game.
