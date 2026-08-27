@@ -1,0 +1,68 @@
+# The unslop-ui checklist, counted across field-playground on 2026-08-27.
+#
+# FORMAT:  <max-occurrences>  <pattern>  # note
+#
+# `max` is a RATCHET, not a target. A count that grows fails the build; a count
+# that shrinks is a fix, and the number is lowered in the same commit that
+# shrinks it.
+#
+# WHY THIS REPO NOW. The audit that took jubilant-bassoon's decorative emoji from
+# 275 to 4 over 2026-08-26/27 never looked here. An unmeasured codebase is where
+# the next 275 accumulates, and this one is the SolidJS rebuild of the same app —
+# the place its patterns are most likely to be re-derived from scratch.
+#
+# WHAT THE PORT INHERITED, without having to learn it twice:
+#
+#   comments stripped     a counter that reads prose ABOUT the page measures
+#                         mentions. Deleting three gradient rules in the sibling
+#                         repo dropped its gradient count by TWO, because the
+#                         comment explaining the deletion says linear-gradient.
+#   escapes decoded       `\u{1F3C0}` hid 24 glyphs there until bodyOf decoded.
+#                         A ratchet a spelling can bypass is not a ratchet.
+#   corpus built, not sliced   every .css and every source file, not one entry
+#                         point. The original read index.html alone and missed
+#                         two bundled files for a day.
+#   vacuity guards        a run that reads no files reports zero of everything.
+#                         The original shipped exactly that and passed 5/5.
+
+49  decorative-emoji
+# First measurement. For scale, the sibling repo started at 275 and its audit
+# established that the useful split is captioned vs uncaptioned — a glyph whose
+# own literal, next DOM node, sibling object field, or concatenated value
+# already carries the words is removable without a judgement call. That split is
+# NOT ported yet: it needs `labelledBySibling`, which reads HTML text nodes, and
+# this repo renders through Solid rather than string templates. Recording the
+# total first is the honest order.
+
+0  flag-emoji
+# No country flags. The sibling carries 92 and defends them as data in a global
+# sports app; this repo simply has none, so the line exists to keep it that way
+# rather than to permit anything.
+
+24  status-glyph
+# ✓ ⚠ ★ ✕ ☆ standing in for state icons — typography doing an icon's job.
+
+11  gradient
+# linear- and radial-gradient across 82 CSS files. Checklist item 6 allows at
+# most one, serving a specific purpose.
+
+0  gradient-text
+0  backdrop-filter
+# Both clean. Item 5 names glassmorphism as "the new purple gradient" and item 6
+# names gradient-on-text as a default styling choice to avoid; neither is here,
+# and these lines are what stops the first one arriving unnoticed.
+
+3  coloured-shadow
+# A shadow whose colour has a channel above 40. Black at low alpha is elevation
+# and is not counted.
+
+6  keyframes
+# Item 8: purposeful or none. Not audited individually.
+
+1  icon-in-a-box
+# Checklist item 2: "NEVER wrap icons in a colored rounded-square/circle
+# container unless it is an avatar or app icon." One instance. The sibling repo
+# had four and the carve-out it kept was a 22px circle showing a team's initials
+# when its logo image fails — counted rather than exempted by name, so a second
+# cannot join it quietly. Same treatment here: the number is visible and the
+# next one fails the build.

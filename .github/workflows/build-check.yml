@@ -114,6 +114,15 @@ jobs:
       # RETRIEVED carrying its source's age, every claim naming a falsifier.
       # Exists because the 2026-08-11 confidence gate listed six acknowledged
       # unknowns and all three real errors were outside them.
+      # The unslop-ui checklist, ratcheted. Ported from jubilant-bassoon on
+      # 2026-08-27, where the same audit took decorative emoji from 275 to 4.
+      # This repo is the SolidJS rebuild of that app and had never been measured
+      # — an unmeasured codebase is where the next 275 accumulates.
+      # --self-test first: the counter is only as good as its own tests, and the
+      # sibling's shipped measuring MENTIONS rather than declarations.
+      - name: Chrome inventory (unslop-ui checklist, ratcheted)
+        run: node scripts/check-chrome-inventory.mjs --self-test && node scripts/check-chrome-inventory.mjs
+
       - name: Check claims ledger
         run: node scripts/check-claims.mjs
       # Report, not a gate: Brier score over resolved claims, split by
