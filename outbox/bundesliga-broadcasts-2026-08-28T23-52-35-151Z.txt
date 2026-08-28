@@ -1,0 +1,56 @@
+probe_at: 2026-08-28T23:52:35.152Z
+purpose: observe the REAL shape of data.broadcasts[] and test whether its
+broadcaster names match the SR labels the client fix resolves against.
+
+=== 2026-08-22  (season 2026-2027) ===
+  resolve-dayid threw: TimeoutError: The operation was aborted due to timeout
+
+=== 2026-08-28  (season 2026-2027) ===
+  resolve-dayid HTTP 200
+  resolve body: {"ok":true,"season":"2026-2027","date":"2026-08-28","matchday":1,"dayId":"DFL-DAY-004CBT","comId":"DFL-COM-000001","resolvedAt":"2026-08-22 18:49:48","cached":true}
+  broadcasts HTTP 200
+  available: true   broadcasts is array: true   length: 0
+  EMPTY -- same as every check the CC-CMD recorded.
+
+=== 2026-08-29  (season 2026-2027) ===
+  resolve-dayid HTTP 200
+  resolve body: {"ok":true,"season":"2026-2027","date":"2026-08-29","matchday":1,"dayId":"DFL-DAY-004CBT","comId":"DFL-COM-000001","resolvedAt":"2026-08-23 00:21:08","cached":true}
+  broadcasts HTTP 200
+  available: true   broadcasts is array: true   length: 0
+  EMPTY -- same as every check the CC-CMD recorded.
+
+=== 2026-08-30  (season 2026-2027) ===
+  resolve-dayid HTTP 200
+  resolve body: {"ok":true,"season":"2026-2027","date":"2026-08-30","matchday":1,"dayId":"DFL-DAY-004CBT","comId":"DFL-COM-000001","resolvedAt":"2026-08-23 00:21:25","cached":true}
+  broadcasts HTTP 200
+  available: true   broadcasts is array: true   length: 0
+  EMPTY -- same as every check the CC-CMD recorded.
+
+=== 2026-09-12  (season 2026-2027) ===
+  resolve-dayid HTTP 200
+  resolve body: {"ok":true,"season":"2026-2027","date":"2026-09-12","matchday":3,"dayId":"DFL-DAY-004CBV","comId":"DFL-COM-000001","resolvedAt":"2026-08-23 00:21:47","cached":true}
+  broadcasts HTTP 200
+  available: true   broadcasts is array: true   length: 0
+  EMPTY -- same as every check the CC-CMD recorded.
+
+=== 2026-05-09  (season 2025-2026) ===
+  resolve-dayid HTTP 200
+  resolve body: {"ok":true,"season":"2025-2026","date":"2026-05-09","matchday":33,"dayId":"DFL-DAY-004C9X","comId":"DFL-COM-000001","resolvedAt":"2026-08-02 13:18:37","cached":true}
+  broadcasts HTTP 200
+  available: true   broadcasts is array: true   length: 0
+  EMPTY -- same as every check the CC-CMD recorded.
+
+=== SUMMARY ===
+  Every sampled date returned an empty broadcasts array.
+
+  That is a REAL RESULT and it settles something: the client mapper still
+  has never run against real data, so BOTH the guessed field names and the
+  SR-name-resolution fix built on top of them remain unverified. The fix is
+  strictly safer than what it replaced -- an empty array already returns
+  null, which keeps the curated BUNDESLIGA bundle -- but this run does not
+  and cannot confirm it ever fires.
+
+  It does NOT mean the route is broken: resolve-dayid answering with a real
+  comId/dayId above is the route working. Re-run closer to a real matchday.
+
+written: outbox/bundesliga-broadcasts-2026-08-28T23-52-35-151Z.txt
