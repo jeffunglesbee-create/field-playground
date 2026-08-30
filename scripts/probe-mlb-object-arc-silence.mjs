@@ -170,6 +170,19 @@ for (const sport of ['MLB', 'NBA']) {
     }
     if (sport === 'MLB') mlbObjectArcs = counts.object || 0
     log(`  ${sport.padEnd(4)} ${String(rows.length).padStart(3)} row(s)  ${JSON.stringify(counts)}`)
+    // Dates per shape, because "MLB arcs are arrays" and "MLB arcs IN THE
+    // CLAIM'S OWN WINDOW are arrays" are different statements, and only the
+    // second one is about July and August 2026.
+    const byShape = {}
+    for (const r of rows) {
+      const sh = arcShape(r.drama_arc)
+      ;(byShape[sh] ||= []).push(r.date)
+    }
+    for (const [sh, dates] of Object.entries(byShape)) {
+      const d = dates.filter(Boolean).sort()
+      const julAug = d.filter(x => /^2026-0[78]/.test(x)).length
+      log(`       ${sh.padEnd(11)} ${d.length} row(s)  ${d[0] ?? '?'} .. ${d[d.length - 1] ?? '?'}   ${julAug} in Jul/Aug 2026`)
+    }
   } catch (e) {
     log(`  ${sport.padEnd(4)} FAILED: ${e.message}`)
     if (sport === 'MLB') mlbObjectArcs = 0
