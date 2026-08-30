@@ -8,7 +8,7 @@
     "reverified": true,
     "falsifier": "search the relay repo for cc-session-2026-08-08-* investigation outboxes",
     "falsifierCost": "one search",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": true,
     "confidence": 0.9,
     "resolution": "REFUTED",
@@ -23,7 +23,7 @@
     "source": "field-relay-nba:scripts/run-duplicate-row-cleanup.mjs",
     "falsifier": "read the Aug 8 investigation outbox, which states the conclusion the script implements",
     "falsifierCost": "one search",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": true,
     "confidence": 0.75,
     "resolution": "REFUTED",
@@ -38,7 +38,7 @@
     "source": "outbox/gamestatus-over-real-slate-2026-08-11T01-03-06-297Z.txt",
     "falsifier": "check whether briefs and game rows share a write path",
     "falsifierCost": "one query",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": false,
     "confidence": 0.7,
     "resolution": "REFUTED",
@@ -158,9 +158,12 @@
     "reverified": true,
     "falsifier": "find an object-shape arc for a game with no plausible live in-app viewing, or a server-side writer of the object shape",
     "falsifierCost": "one query",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": false,
-    "confidence": 0.7
+    "confidence": 0.7,
+    "resolution": "PARTIAL",
+    "resolvedAt": "2026-08-30T18:05:00Z",
+    "resolutionNote": "Both branches of the falsifier run. (a) SERVER-SIDE WRITER: found, but of the wrong shape. field-relay-nba writes drama_arc from exactly three SQL sites, all inside POST /archive/drama and POST /archive/drama-by-id (src/index.js:11200, 11311, 11315); no INSERT writes the column. scripts/drama-backfill.mjs POSTs to /archive/drama-by-id and IS a cron -- .github/workflows/drama-backfill.yml runs it on '0 */2 * * *', every two hours. But its computeDramaRetroactive returns { peak, arc: scores } where scores is an ARRAY, so the cron writes the array shape. The object half of the claim survives this branch. (b) OBJECT ARC FOR A GAME NOBODY WATCHED: found. All three object-shape writers are in jubilant-bassoon and all send JSON.stringify(<object>). field.js:34578 is reached from runDramaBackfillDiscovery(), which the code's own comment says 'fires once per app session', sweeps GET /archive/drama-missing?limit=20, and reconstructs arcs from ESPN historical states for games THE RELAY NOMINATED. field.js:13288 fires from loadPGASlate() on slate load. Only field.js:38197 (saveEspnFinal) is the live path. So: 'in-browser, not a cron' HOLDS for the object shape. 'its volume tracks games a human watched' is REFUTED -- two of the three object writers fire on app open and slate load, over a game list the relay chose. The 7 object rows the 120-day sweep found (NBA, May-June, recorded in drama-arc-two-shapes) cannot be read as 7 games somebody watched."
   },
   {
     "id": "mlb-live-path-silence-unexplained",
@@ -314,7 +317,10 @@
     "falsifierCost": "one grep of index.html (done: cloned the repo read-only)",
     "falsifierAttempted": true,
     "verifiableHere": true,
-    "confidence": 0.8
+    "confidence": 0.9,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-30T18:05:00Z",
+    "resolutionNote": "All three legs now verified, and the falsifier's escape hatch searched for and not found. (1) THE COMPARISON: jubilant-bassoon/src/utils/weather.js:29 (wxAlert) and :42 (weatherDramaModifier) both compare (wx.snowfall||0) > 0.5 at HEAD. (2) THE UNIT: cm, already CONFIRMED at 0.97 by open-meteo-snowfall-is-cm. (3) THE SPEC: field-playground's own docs/outbox/cc-cmd-2026-08-11-weather-drama-defects.md lines 130-131 tabulate the documented strings verbatim -- 'snowfall >0.5mm' and 'Snow (>0.5mm): +10'. 0.5cm against a documented 0.5mm is 10x. FALSIFIER RUN: searched for any commit message, doc revision or source comment stating 0.5cm was intended. Zero hits across 3949 commits (git log -i --grep=snow, all refs), zero in docs/, and src/utils/weather.js declares no units anywhere in the file. The prescribed refuting evidence does not exist. AND IT IS LIVE CODE, not dead: 'sitBonus += weatherDramaModifier(wxEntry)' at src/legacy/field.js:22813. METHOD NOTE, because it nearly went the other way: the first pass grepped src/legacy/field.js and index.html, found (wx.snowfall||0)>0.2, and read the claim as refuted on its premise. That is the wxBadge line -- a different function. The >0.5 sites live in the extracted module src/utils/weather.js, which the claim names and the first pass did not open. The same pass also searched a SHALLOW clone whose history began 2026-08-20, nine days after the claim's own date, and concluded from it that a 0.5 band had never existed. Both readings were of a copy."
   },
   {
     "id": "field-has-a-repeated-unwired-code-pattern",
@@ -327,7 +333,10 @@
     "falsifierCost": "one read_file call",
     "falsifierAttempted": true,
     "verifiableHere": true,
-    "confidence": 0.95
+    "confidence": 0.95,
+    "resolution": "PARTIAL",
+    "resolvedAt": "2026-08-30T18:05:00Z",
+    "resolutionNote": "Doc re-read (jubilant-bassoon:docs/outbox/chat-update-2026-07-30-drama-dead-code-pattern.md). By the falsifier's stated test the claim passes: the Wired? column reads No on all four rows. But re-reading shows the claim's WORDING overcounts. The Coded? column reads No on three of the four -- NFL WPA Drama Profiles, Escalating Milestones and the Soccer 4-layer formula were designed and never built. Only PL Final Day Stakes is 'correct code with zero real callers', and the doc says so itself: 'The PL Final Day case is the sharpest data point: this is not a stale idea, it is correct, tested code sitting completely unreachable'. Its own prose scopes the pattern loosely -- 'sometimes with real external data ... even correct math coded into the client'. So: four confirmed instances of DESIGNED-AND-NEVER-REACHED-PRODUCTION, of which exactly ONE is coded-but-unwired. The base rate this claim was invoked to supply is therefore weaker than stated, and a direct counter-instance exists: weatherDramaModifier, the weather hook in question, IS wired -- 'sitBonus += weatherDramaModifier(wxEntry)' at src/legacy/field.js:22813 and index.html:27697."
   },
   {
     "id": "heat-arm-opens-the-gate-and-scores-nothing-on-real-data",

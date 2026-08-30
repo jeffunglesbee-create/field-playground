@@ -1,0 +1,57 @@
+# Puts a NUMBER on the uncached resolve-dayid latency.
+#
+# The claims ledger carries
+# `bundesliga-resolve-dayid-only-answers-from-cache-within-client-timeout` at
+# 82%, and its own derivedFrom names the gap exactly:
+#
+#   NOT measured: the actual uncached latency, only that it exceeds 20s -- it
+#   could be 21s or 90s, which changes how fixable this is.
+#
+# 21s is a client timeout that could be raised. 90s is a route that has to
+# change. The earlier probe capped its AbortSignal at 20s, so every cold date
+# came back as the same indistinguishable TimeoutError.
+#
+# WHY CI: *.workers.dev is blocked by the dev sandbox's egress allowlist. No
+# credential is involved — the bapi key lives server-side in the relay and
+# these routes are public, which is why this needs no secrets.
+#
+# DISPATCH ONLY. This is a measurement, not a monitor. It takes up to seven
+# minutes of wall clock in the worst case (seven dates against a 120s cap) and
+# there is nothing to watch for on a schedule — the number either exists or it
+# does not.
+name: resolve-dayid latency probe
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    # Seven dates x a 120s cap is 14 minutes worst case; 20 leaves headroom for
+    # checkout and npm without letting a hung run sit for an hour.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Time an uncached resolve-dayid to completion
+        run: |
+          node scripts/probe-resolve-dayid-latency.mjs --self-test
+          node scripts/probe-resolve-dayid-latency.mjs
+
+      # Committed, because the whole point is that the number outlives the run.
+      # A latency measured only in a log is the same as one never taken.
+      - name: Commit the artifact
+        if: always()
+        run: |
+          git config user.name "Claude"
+          git config user.email "noreply@anthropic.com"
+          git add outbox/resolve-dayid-latency-*.txt || true
+          git diff --staged --quiet || git commit -m "probe: uncached resolve-dayid latency [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
