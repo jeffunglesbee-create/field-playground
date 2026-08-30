@@ -1,0 +1,54 @@
+# Explains, or fails to explain, MLB's zero object-shape drama arcs.
+#
+# `mlb-live-path-silence-unexplained` has sat at 60% since 2026-08-11 in the
+# "needs access this session does not have" bucket. Its original falsifier --
+# "confirm no MLB game was opened live in the app" -- was retired on 2026-08-30
+# because it assumed the object shape implies live viewing, and that premise
+# resolved PARTIAL the same day.
+#
+# The replacement asks three separable questions: is the backfill sweep ever
+# offered an MLB row, do MLB arcs of any shape exist, and does the ESPN summary
+# carry the wallclock field the reconstruction filters on. Reconstruction
+# failure outranks starvation, because a game that cannot be reconstructed stays
+# silent even once it is offered.
+#
+# WHY CI: *.workers.dev is blocked by the dev sandbox's egress allowlist. No
+# credential is involved — every route used here is public and the ESPN key, if
+# any, lives server-side in the relay.
+#
+# DISPATCH ONLY. This is a diagnosis, not a monitor. It runs until the claim is
+# settled and then it has no further job.
+name: MLB object-arc silence probe
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Probe the MLB object-arc silence
+        run: |
+          node scripts/probe-mlb-object-arc-silence.mjs --self-test
+          node scripts/probe-mlb-object-arc-silence.mjs
+
+      # The artifact is the point: a diagnosis that lives only in a run log is
+      # the same as one never taken.
+      - name: Commit the artifact
+        if: always()
+        run: |
+          git config user.name "Claude"
+          git config user.email "noreply@anthropic.com"
+          git add outbox/mlb-object-arc-silence-*.txt || true
+          git diff --staged --quiet || git commit -m "probe: MLB object-arc silence [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
