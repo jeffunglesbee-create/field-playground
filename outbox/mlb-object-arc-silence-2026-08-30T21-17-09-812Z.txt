@@ -1,0 +1,27 @@
+probe_at: 2026-08-30T21:17:09.812Z
+relay: https://field-relay-nba.jeffunglesbee.workers.dev
+
+=== ARM 1: /archive/drama-missing — what does the sweep get offered? ===
+  13 row(s) returned (the route caps limit at 20, no sport filter, ORDER BY date DESC)
+  by sport: {"Ligue 1":1,"Serie A":2,"La Liga":1,"WNBA":1,"MLB":8}
+  MLB rows offered: 8
+  date range: 2026-08-30 .. 2026-08-30
+
+=== ARM 2: /archive/drama/leaderboard — arc shapes, MLB vs a control ===
+  MLB   50 row(s)  {"array":50}
+  NBA    7 row(s)  {"object":7}
+  (NBA is the control: the 120-day sweep found its 7 object rows there, May-June.)
+
+=== ARM 3: does the ESPN MLB summary carry wallclock plays? ===
+  fetchMLBHistoricalStates filters plays on p.wallclock and returns [];
+  _backfillOneDramaGame then exits on `if (!states.length) return` before any POST.
+  sample: event 401816742 (Pirates @ Cardinals, via /archive/drama-missing)
+  plays returned: 588   carrying wallclock: 588
+
+inputs: mlbOffered=8 wallclockPlays=588 mlbObjectArcs=0
+VERDICT: still-unexplained
+
+MLB rows ARE offered and the summary DOES carry wallclock plays, so neither candidate
+mechanism holds. The claim stands at 60% and its next falsifier is elsewhere.
+
+artifact: outbox/mlb-object-arc-silence-2026-08-30T21-17-09-812Z.txt
