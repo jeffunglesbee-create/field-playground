@@ -170,11 +170,13 @@
     "text": "MLB is covered by SPORT_CRUNCH_RULES and in season, yet produced zero object arcs in July or August -- unexplained",
     "provenance": "MEASURED",
     "source": "outbox/drama-arc-shapes-2026-08-11T03-01-43-362Z.txt",
-    "falsifier": "find any MLB object-shape arc, or confirm no MLB game was opened live in the app in those months",
-    "falsifierCost": "one query",
+    "falsifier": "dispatch a probe that (a) fetches GET /archive/drama-missing and reports whether any MLB rows appear at all, and (b) calls {ESPN_SUMMARY_RELAY}/sports/baseball/mlb/summary?event=<id> for one of them and counts plays carrying a wallclock field. Zero MLB rows in (a) means the sweep is never offered an MLB game; zero wallclock plays in (b) means fetchMLBHistoricalStates returns [] and _backfillOneDramaGame exits before writing",
+    "falsifierCost": "one CI dispatch",
     "falsifierAttempted": false,
     "verifiableHere": false,
-    "confidence": 0.6
+    "confidence": 0.6,
+    "falsifierSupersededOn": "2026-08-30T20:55:00Z",
+    "falsifierSupersededWhy": "The previous falsifier read 'find any MLB object-shape arc, or confirm no MLB game was opened live in the app in those months'. Its second branch assumed object arcs imply live viewing, which is the premise object-arcs-are-live-browser-capture asserted and which was resolved PARTIAL on 2026-08-30: runDramaBackfillDiscovery writes the OBJECT shape for games the relay nominates, once per app session, and _backfillOneDramaGame has an explicit MLB branch (fetchMLBHistoricalStates, src/legacy/field.js). So 'nobody watched MLB' can no longer explain zero MLB object arcs, and confirming it would settle nothing. Running the old falsifier would have produced an answer to a question that had stopped being the question. The claim itself is untouched and still open at 0.6 -- the silence is still unexplained. What changed is where to look: the MLB branch of the backfill sweep, not the viewer."
   },
   {
     "id": "open-meteo-snowfall-is-cm",
@@ -446,8 +448,11 @@
     "reverified": true,
     "falsifier": "time an uncached resolve-dayid call to completion and compare against 15000ms",
     "falsifierCost": "one CI dispatch with a longer timeout",
-    "falsifierAttempted": false,
+    "falsifierAttempted": true,
     "verifiableHere": true,
-    "confidence": 0.82
+    "confidence": 0.95,
+    "resolution": "CONFIRMED",
+    "resolvedAt": "2026-08-30T20:50:00Z",
+    "resolutionNote": "MEASURED, run 33334669090, artifact outbox/resolve-dayid-latency-2026-08-30T20-48-35-501Z.txt. Two genuinely cold dates completed in 31356ms and 35847ms, both HTTP 200 with cached:false. The client allows 15000ms, so neither could have completed there. The claim holds and its own open question -- 'it could be 21s or 90s, which changes how fixable this is' -- is answered: roughly 31-36s, about 2.2x the client budget. That is a raisable timeout, not a route that has to be rewritten. The mechanism is visible in the same table: the four dates the 2026-08-23 probe timed out on (2026-08-28, 08-29, 08-30, 09-12) all came back cached:true in 147-481ms this time, so the relay warmed them in the intervening week -- exactly the 'only ever fires on dates the relay has already warmed' behaviour the claim describes. The two cold dates were chosen far enough out (2026-10-24, 2026-11-07) that nothing had warmed them. Why the earlier probe could not produce this: it capped AbortSignal.timeout at 20000ms, so every cold date returned the same indistinguishable TimeoutError. A 120s cap was all that stood between 'exceeds 20s' and a number."
   }
 ]
