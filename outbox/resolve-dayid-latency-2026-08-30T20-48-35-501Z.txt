@@ -1,0 +1,21 @@
+probe_at: 2026-08-30T20:48:35.502Z
+purpose: measure the UNCACHED resolve-dayid completion time in ms.
+client budget: 15000ms   probe cap: 120000ms
+
+date         season      ms      cached  http  verdict
+2026-08-28   2026-2027      481   true    200   cached
+2026-08-29   2026-2027      159   true    200   cached
+2026-08-30   2026-2027      152   true    200   cached
+2026-09-12   2026-2027      147   true    200   cached
+2026-10-24   2026-2027    31356   false   200   exceeds-client-budget
+2026-11-07   2026-2027    35847   false   200   exceeds-client-budget
+2026-05-09   2025-2026      149   true    200   cached
+
+7 date(s): 5 cached, 2 cold and measured, 0 still running at 120000ms
+
+COLD LATENCY MEASURED: 31356ms to 35847ms across 2 date(s).
+All 2 exceeded the client's 15000ms budget. The claim holds,
+and the fix question is now answerable: raising the client timeout to
+above 35847ms would let the cold path complete.
+
+artifact: outbox/resolve-dayid-latency-2026-08-30T20-48-35-501Z.txt
