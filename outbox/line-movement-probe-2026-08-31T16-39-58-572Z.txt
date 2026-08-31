@@ -1,0 +1,36 @@
+probe_at: 2026-08-31T16:39:58.573Z
+endpoint: https://field-relay-nba.jeffunglesbee.workers.dev/context/date/{date}
+method: for every game with both opening_odds and closing_odds, compare
+  captured_at timestamps AND whether the actual odds values differ
+
+
+RESULT
+  total games seen: 636
+  games with both opening_odds AND closing_odds present: 269
+  same-cron duplicates (delta < 300s): 132
+  genuine time-separated pairs (delta >= 300s): 137
+  of those with both present, values actually differ: 102
+
+--- same-cron duplicate examples (up to 5) ---
+  2026-08-17 Orioles @ Rays: delta -12s, values identical
+  2026-08-17 Marlins @ Phillies: delta -11s, values identical
+  2026-08-17 Tigers @ Pirates: delta -10s, values identical
+  2026-08-17 Diamondbacks @ Red Sox: delta -9s, values DIFFER (real move despite tiny delta)
+  2026-08-17 Padres @ Mets: delta -9s, values identical
+
+--- genuinely time-separated examples (up to 8) ---
+  2026-08-17 Cardinals @ Reds: delta 19.0h, values identical (stable line)
+  2026-08-19 Austin FC @ Seattle Sounders FC: delta 13.9h, values CHANGED
+  2026-08-19 FC Dallas @ Real Salt Lake: delta 13.9h, values CHANGED
+  2026-08-19 San Diego FC @ Portland Timbers: delta 13.9h, values CHANGED
+  2026-08-19 San Jose Earthquakes @ LA Galaxy: delta 13.9h, values CHANGED
+  2026-08-19 St. Louis CITY SC @ Sporting Kansas City: delta 13.9h, values CHANGED
+  2026-08-19 Charlotte FC @ Toronto FC: delta 13.9h, values CHANGED
+  2026-08-19 Inter Miami CF @ Philadelphia Union: delta 13.9h, values CHANGED
+
+If sameCronDuplicate is the large majority of bothPresent, chat's
+finding holds at the broader sample too: a naive line-movement
+feature comparing open vs close as-is would report noise as "no
+movement" on most games. The fix (gate on captured_at delta, exclude
+games below the threshold rather than reporting them) should apply
+to whatever real feature reads these fields.
