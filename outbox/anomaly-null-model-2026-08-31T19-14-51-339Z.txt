@@ -1,0 +1,45 @@
+probe_at: 2026-08-31T19:14:51.376Z
+purpose: permutation test -- does the per-sport framing find anything a shuffled-label
+control does not? This is the one check that can conclude the feature is unearned.
+window: 30 days; permutation trials: 200
+
+days OK: 30/30;  real games: 1064
+
+=== OBSERVED (real per-sport baselines) ===
+  judged: 730;  flagged: 528  (72.3%)
+    mlb                n= 372 distinct= 31 distribution
+    wnba               n=  92 distinct=  7 tier
+    mls                n=  61 distinct=  8 tier
+    efl cup            n=  57 distinct=  1 tier
+    nfl                n=  48 distinct=  1 tier
+    uefa europa conference league qualifying n=  48 distinct=  8 tier
+    la liga            n=  28 distinct=  6 tier
+    uefa europa league qualifying n=  24 distinct=  5 tier
+    epl                n=  19 distinct=  5 tier
+    serie a            n=  18 distinct=  1 tier
+    ligue 1            n=  18 distinct=  5 tier
+    cfl                n=  15 distinct=  1 tier
+    uefa champions league qualifying n=  11 distinct=  5 tier
+    bundesliga         n=   9 distinct=  5 tier
+    cfb                n=   8 distinct=  1 tier
+    efl trophy         n=   8 distinct=  1 tier
+
+=== NULL MODEL: 200 label permutations (marginal counts preserved) ===
+  shuffled flagged count: mean 476.9, p5 457, median 478, p95 499
+  observed flagged count: 528
+  permutation p-value (count >= observed): 0.0050
+  mean Jaccard overlap between real and shuffled flag sets: 0.623
+
+=== CONTROL: pooled baseline (the simpler design that was rejected) ===
+  pooled baseline: n=859 distinct=34 resolution=distribution
+  pooled flagged: 560;  per-sport flagged: 528
+  Jaccard(per-sport, pooled): 0.724
+  found ONLY by per-sport: 71;  found ONLY by pooled: 103
+
+=== VERDICT ===
+MIXED. The flagged COUNT is distinguishable from the null, but shuffled labels still
+select largely the same games -- so most of the signal is marginal, and the per-sport
+structure is adding less than the design assumed.
+
+The pooled control diverges (Jaccard 0.724), confirming the rejection of a
+pooled baseline was a real decision and not a stylistic one.
