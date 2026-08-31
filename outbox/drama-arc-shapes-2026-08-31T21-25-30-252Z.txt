@@ -1,0 +1,123 @@
+probe_at: 2026-08-31T21:25:30.252Z
+purpose: measure the real shapes of drama_arc, and open the object one, before
+any renderer is written against it.
+
+=== UNCENSORED SWEEP: /context/date/ over 120 days ===
+  games scanned: 2217
+    array           1584  (71.4%)
+    null             369  (16.6%)
+    other:string     257  (11.6%)
+    object             7  (0.3%)
+
+  by month:
+    month              array         null       object other:string
+    2026-05              151           55            6            0
+    2026-06              225           16            1           40
+    2026-07              497           86            0           37
+    2026-08              711          212            0          180
+
+  by sport (non-null shapes only):
+    MLB                array     892
+    WNBA               array     193
+    MLS                array     122
+    FIFA World Cup     array     103
+    AFL                array      66
+    EFL Cup            other:string   57
+    golf               other:string   55
+    NFL                other:string   48
+    UEFA Europa Conference League Qualifying array      48
+    EPL                array      45
+    La Liga            array      34
+    MLB                other:string   29
+    UEFA Europa League Qualifying array      24
+    Ligue 1            array      20
+    Serie A            other:string   18
+    CFL                other:string   17
+    wnba               array      14
+    PGA Tour           other:string   14
+    UEFA Champions League Qualifying array      11
+    Bundesliga         array       9
+    CFB                other:string    8
+    EFL Trophy         other:string    8
+    NBA                object      7
+    WNBA               other:string    3
+    UEFA Champions League array       1
+    UEFA Europa Conference League array       1
+    UEFA Europa League array       1
+
+=== CENSORED SOURCE, kept apart: /archive/drama/leaderboard ===
+  (ranked AND truncated -- dense in drama by construction, so its shape mix
+   says nothing about how common each shape is overall.)
+  HTTP 400
+
+=== THE THIRD SHAPE: what is in the non-array, non-object strings? ===
+  257 row(s)
+  distinct raw values, most common first:
+     257x  "null"
+
+  a few whole rows:
+    Serie A          peak=0  arc="null"
+    Serie A          peak=0  arc="null"
+    Serie A          peak=0  arc="null"
+    golf             peak=0  arc="null"
+    CFL              peak=0  arc="null"
+
+  rows whose drama_peak is a number > 0: 0 of 257
+    None. Consistent with drama never being COMPUTED for these, rather than
+    computed and stored in an unreadable shape.
+
+=== THE OBJECT SHAPE ===
+  found 7 object-shape arc(s)
+  drama_arc{} — 7 record(s)
+    field                 present  non-null       types        samples
+    peak                      7      7 (100%)  number       52 | 44
+    peakPeriod                7      7 (100%)  number       1 | 0
+    peakMinute                7      0 (  0%)  null         
+    sustainedMinutes          7      7 (100%)  number       0
+    trend                     7      7 (100%)  string       steady | declining | escalating
+    classification            7      7 (100%)  string       sleeper
+    samples                   7      7 (100%)  array        
+
+  array-valued key(s) — candidates for the series: samples
+    samples: 37 element(s), element type(s): object
+  samples[] element — 37 record(s)
+    field                 present  non-null       types        samples
+    s                        37     37 (100%)  number       52 | 44 | 29
+    p                        37     37 (100%)  number       1 | 0 | 4
+
+=== ONE OBJECT ARC, VERBATIM (truncated) ===
+  sport=NBA id=nba_finals_2026_g2 drama_peak=52
+  {
+    "peak": 52,
+    "peakPeriod": 1,
+    "peakMinute": null,
+    "sustainedMinutes": 0,
+    "trend": "steady",
+    "classification": "sleeper",
+    "samples": [
+      {
+        "s": 52,
+        "p": 1
+      },
+      {
+        "s": 52,
+        "p": 1
+      },
+      {
+        "s": 52,
+        "p": 0
+      },
+      {
+        "s": 52,
+        "p": 0
+      },
+      {
+        "s": 52,
+        "p": 0
+      }
+    ]
+  }
+
+=== VERDICT ===
+Read the array-valued key list above. That is what a renderer must consume, and
+whether its elements are bare numbers or {t,s,p} records decides the extractor.
