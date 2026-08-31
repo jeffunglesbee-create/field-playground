@@ -1,0 +1,30 @@
+mode: CHECK — re-measure live shape, diff against committed schema
+
+=== context-date-games ===
+  live records: 453  (schema built from 270)
+  DRIFT "mlb": required field(s) no longer reliably present: closing_odds
+  new required field(s) in "mlb": streams  (schema is stale, not wrong)
+  new required field(s) in "wnba": away_score, drama_arc, drama_peak, finalized_at, home_score, went_to_ot  (schema is stale, not wrong)
+  new required field(s) in "pga tour": away_score, drama_arc, drama_peak, finalized_at, home_score  (schema is stale, not wrong)
+  NEW VARIANT: "epl" (n=19) — unknown to the schema
+  NEW VARIANT: "la liga" (n=22) — unknown to the schema
+  NEW VARIANT: "serie a" (n=20) — unknown to the schema
+  NEW VARIANT: "bundesliga" (n=9) — unknown to the schema
+  NEW VARIANT: "ligue 1" (n=17) — unknown to the schema
+  NEW VARIANT: "cfl" (n=7) — unknown to the schema
+  NEW VARIANT: "nfl" (n=27) — unknown to the schema
+  NEW VARIANT: "cfb" (n=8) — unknown to the schema
+  NEW VARIANT: "uefa europa league qualifying" (n=12) — unknown to the schema
+  NEW VARIANT: "uefa europa conference league qualifying" (n=24) — unknown to the schema
+  NEW VARIANT: "uefa champions league qualifying" (n=7) — unknown to the schema
+  NEW VARIANT: "efl trophy" (n=2) — unknown to the schema
+
+=== bsd-incidents ===
+  live records: 122  (schema built from 117)
+  new required field(s) in "card": reason  (schema is stale, not wrong)
+  NEW VARIANT: "varDecision" (n=3) — unknown to the schema
+
+=== VERDICT ===
+1 drift(s) detected. A field the code treats as guaranteed has stopped being
+guaranteed, or changed type. This is the failure that costs days: it does not throw,
+it produces wrong values downstream. Fix the consumer or regenerate deliberately.
