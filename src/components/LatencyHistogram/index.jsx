@@ -1,5 +1,6 @@
-import { For, Show, createMemo } from 'solid-js'
+import { For, Show, createEffect, createMemo, onCleanup, onMount } from 'solid-js'
 import { samples } from '../../data/fetchTiming'
+import { fieldChart, destroyChart } from '../../data/chart'
 import styles from './LatencyHistogram.module.css'
 
 // Reads fetchTiming's globally-instrumented sample stream -- every
@@ -48,6 +49,34 @@ function EndpointRow(props) {
 }
 
 export function LatencyHistogram() {
+  // The sequence, beside the distribution. `samples()` is a rolling 300-entry
+  // series of real durations with timestamps; the histogram below buckets it
+  // and everything else about it is discarded at the point of display. A
+  // distribution answers "how slow, typically"; a line answers "is it getting
+  // worse, and when did it change". Both, not either.
+  let chartEl
+  const durations = createMemo(() => samples().map(s => s.durationMs))
+
+  // FIXED DOMAIN, 0-1500ms. Auto-scaling to the series maximum makes a calm
+  // minute and a bad one draw identically, which is the whole failure
+  // field-laboratory's spark-check.mjs was written to catch. A sample beyond
+  // the ceiling is clamped rather than allowed to rescale everything.
+  const CEILING_MS = 1500
+  const draw = () => {
+    const d = durations()
+    if (!chartEl || d.length < 2) return
+    fieldChart(chartEl,
+      [d.map((_, i) => i), d.map(v => Math.min(v, CEILING_MS))],
+      { height: 44, range: [0, CEILING_MS], colors: ['var(--accent, #7aa2f7)'],
+        labels: ['request duration (ms)'] })
+  }
+  onMount(draw)
+  // createEffect re-runs on every new sample. fieldChart takes its setData path
+  // for the same element, so this updates the line rather than rebuilding the
+  // canvas on each request the app makes.
+  createEffect(draw)
+  onCleanup(() => destroyChart(chartEl))
+
   const histogram = createMemo(() => {
     const counts = new Map(BUCKETS.map(b => [b.label, 0]))
     for (const s of samples()) {
@@ -110,6 +139,9 @@ export function LatencyHistogram() {
         </p>
         <Show when={verdict()}>
           <p class={styles.verdict}>{verdict()}</p>
+        </Show>
+        <Show when={durations().length >= 2}>
+          <div class={styles.latencyChart} ref={chartEl} />
         </Show>
         <div class={styles.histogram}>
           <For each={histogram()}>{h => <HistogramBar bucket={h.bucket} count={h.count} pct={h.pct} />}</For>

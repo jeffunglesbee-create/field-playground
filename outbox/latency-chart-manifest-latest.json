@@ -1,0 +1,23 @@
+{
+  "url": "http://localhost:4173/",
+  "runId": "1788563695246",
+  "commit": null,
+  "timestamp": "2026-09-04T23:15:10.822Z",
+  "seeded": true,
+  "tabbed": true,
+  "panelInDom": true,
+  "mountPresent": true,
+  "canvases": 1,
+  "uplotRoot": true,
+  "ariaLabel": "7 points. request duration (ms): 2.9 to 265.0",
+  "consoleErrors": [
+    "Failed to load resource: net::ERR_CONNECTION_RESET",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+  ]
+}

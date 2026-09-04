@@ -129,3 +129,12 @@
   color: #e66;
   flex-shrink: 0;
 }
+
+/* The latency line, above the bucket histogram. Width-driven by the panel;
+   uPlot sets `width: min-content` on .uplot, which would collapse it here. */
+.latencyChart {
+  width: 100%;
+  min-height: 2.75rem;
+  margin: 0 0 .6rem;
+}
+.latencyChart :global(.uplot) { width: 100%; }
