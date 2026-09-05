@@ -129,6 +129,31 @@ jobs:
       # provenance. A gate on your own calibration would just invite gaming.
       - name: Score confidence gates against outcomes
         run: node scripts/gate-score.mjs
+      # The chart renderer's three promises. src/data/chart.js is a deliberate
+      # port of jubilant-bassoon's, not a copy — this one is Solid-lifecycle,
+      # that one carries a sweep — so byte-identity would be the wrong check and
+      # would be deleted the first time either legitimately diverges. What must
+      # not diverge is the behaviour: a fixed domain reaching the y scale,
+      # setData rather than a remount, and an aria summary on the mount. The
+      # umpire table in the sibling repo is the case study for a copy that was
+      # locally true and silently reverted for eight weeks.
+      - name: Check the chart renderer's invariants
+        run: node scripts/check-chart-invariants.mjs --self-test && node scripts/check-chart-invariants.mjs
+
+      # The latency line actually draws, in a real browser, against the build
+      # this job just produced. Two things make it non-obvious and both are
+      # handled in the script: the panel lives behind the System tab, and the
+      # series needs real samples — so the probe seeds them through the app's
+      # own instrumented window.fetch rather than waiting for a relay it may
+      # not be able to reach.
+      - name: Install Chromium for the chart probe
+        run: npx playwright install chromium --with-deps
+      - name: Probe the latency chart
+        run: |
+          npx vite preview --port 4173 &
+          for i in $(seq 1 20); do curl -sf -o /dev/null http://localhost:4173/ && break; sleep 1; done
+          PLAYGROUND_URL=http://localhost:4173/ node scripts/latency-chart-probe.mjs
+
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY
