@@ -92,11 +92,11 @@
   {
     "name": "Kauffman Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Kauffman Stadium is a ballpark located in Kansas City, Missouri, and the home of Major League Baseball's Kansas City Royals.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Comerica Park",
@@ -110,20 +110,20 @@
   {
     "name": "Petco Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Petco Park is a ballpark in San Diego, California.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Oriole Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Oriole Park was the name of multiple baseball parks in Baltimore, Maryland between 1883 and 1944, all built within a few blocks of each other.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Guaranteed Rate Field",
@@ -191,20 +191,20 @@
   {
     "name": "Sutter Health Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Sutter Health Park is a ballpark in West Sacramento, California, directly adjacent to downtown Sacramento.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Globe Life Field",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Globe Life Field is a retractable roof stadium in Arlington, Texas, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Chase Field",
@@ -245,11 +245,11 @@
   {
     "name": "T-Mobile Park",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": "retractable",
-    "leadSentence": "T-Mobile Park is a retractable roof ballpark in Seattle, Washington, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Rogers Centre",
@@ -290,20 +290,20 @@
   {
     "name": "CityPark",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Energizer Park, previously CityPark, is a 22,423-seat soccer-specific stadium in St. Louis, Missouri, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "America First Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "America First Field is a soccer-specific stadium in Sandy, Utah, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Snapdragon Stadium",
@@ -344,20 +344,20 @@
   {
     "name": "Subaru Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Subaru Park is a soccer-specific stadium in Chester, Pennsylvania, located next to Commodore Barry Bridge on the waterfront along the Delaware River.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Bank of America Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Bank of America Stadium is a multi-purpose stadium located in the Uptown section of Charlotte, North Carolina, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Audi Field",
@@ -380,11 +380,11 @@
   {
     "name": "TQL Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "TQL Stadium is a soccer-specific stadium in Cincinnati, Ohio, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Inter&Co Stadium",
@@ -461,20 +461,20 @@
   {
     "name": "PayPal Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "PayPal Park is a soccer-specific stadium in San Jose, California.",
-    "agree": true,
-    "knownUnfixable": false,
-    "note": null
-  },
-  {
-    "name": "Q2 Stadium",
-    "currentRoofType": "open",
     "wikipediaRoofType": null,
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
     "note": "no Wikipedia data resolved (no title variant resolved)"
+  },
+  {
+    "name": "Q2 Stadium",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Q2 Stadium is a soccer-specific stadium located in the North Burnet section of North Austin, Texas, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
   },
   {
     "name": "Shell Energy Stadium",
@@ -578,11 +578,11 @@
   {
     "name": "Selhurst Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Selhurst Park is a football stadium in Selhurst, in the London Borough of Croydon, England.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "City Ground",
@@ -668,11 +668,11 @@
   {
     "name": "ENGIE Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Sydney Showground Stadium is a sports and events stadium located at the Sydney Olympic Park in Sydney.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "TIO Stadium",
@@ -686,11 +686,11 @@
   {
     "name": "People First Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Carrara Stadium is a stadium located in the Gold Coast suburb of Carrara.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Marvel Stadium",
@@ -767,29 +767,29 @@
   {
     "name": "Pebble Beach Golf Links",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Pebble Beach Golf Links is a public golf course located in Pebble Beach, California, U.S.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "TPC Sawgrass",
     "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Tournament Players Club at Sawgrass is a golf course in the southeastern United States, located in Ponte Vedra Beach, Florida, southeast of Jacksonville.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Riviera Country Club",
+    "currentRoofType": "open",
     "wikipediaRoofType": null,
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
     "note": "no Wikipedia data resolved (no title variant resolved)"
-  },
-  {
-    "name": "Riviera Country Club",
-    "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Riviera Country Club is a private club with a championship golf course as well as tennis courts, located in the Pacific Palisades neighborhood of the Westside of Los Angeles, California.",
-    "agree": true,
-    "knownUnfixable": false,
-    "note": null
   },
   {
     "name": "Torrey Pines South Course",
@@ -870,15 +870,15 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": "no Wikipedia data resolved (disambiguation)"
   },
   {
     "name": "TPC Twin Cities",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "TPC Twin Cities is a private golf club in the north central United States, located within the subdivision of Deacon’s Walk in Blaine, Minnesota, a suburb north of Minneapolis.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   }
 ]
