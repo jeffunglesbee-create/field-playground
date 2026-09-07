@@ -1,0 +1,84 @@
+probe_at: 2026-09-07T17:46:18.663Z
+purpose: exercise AnomalyWatch's SHIPPED analysis against the real uncensored corpus.
+The dev mock carries 3 distinct drama_peak values; the real corpus carries ~34, so the
+percentile path cannot be validated locally at all.
+window: 30 real days back from 2026-09-07
+
+days fetched OK: 30 / 30;  real games: 1148
+
+=== REAL PER-SPORT BASELINES (shipped buildBaselines) ===
+  sport                  n  distinct  resolution     p10  median   p90  medRange  medTurns
+  mlb                   390        31  distribution    52     65    83        48        34
+  cfb                    98         1  tier             0      0     0      null      null
+  mls                    74         8  tier            52     57    70        28         2
+  wnba                   68         7  tier            52     52    62        49        29
+  nfl                    48         1  tier             0      0     0      null      null
+  uefa europa conference league qualifying   48         8  tier            52     62    70        26         2
+  la liga                39         7  tier            52     52    70        25         1
+  epl                    30         7  tier            52     57    70        26         1
+  serie a                28         1  tier             0      0     0      null      null
+  ligue 1                27         6  tier            52     52    70        25         2
+  efl cup                25         1  tier             0      0     0      null      null
+  uefa europa league qualifying   24         5  tier            52     52    70        33         1
+  bundesliga             18         6  tier            52     52    70        44         2
+  cfl                    14         1  tier             0      0     0      null      null
+  uefa champions league qualifying   11         5  tier            52     55    62        35         2
+  efl trophy              8         1  tier             0      0     0      null      null
+  duplicate rows dropped before building: 0
+
+=== EXCLUSION CHECK ===
+  "golf" -> EXCLUDED (drama never computed for this sport)
+  "pga tour" -> EXCLUDED (drama never computed for this sport)
+
+=== FINDING RATES ACROSS THE WHOLE REAL CORPUS ===
+  games judged (status ok): 899 of 1148
+  games with >=1 finding:   682  (75.9%)
+    rare-high        52  (5.8% of judged games)
+    rare-low         45  (5.0% of judged games)
+    tier-top        217  (24.1% of judged games)
+    late-surge      304  (33.8% of judged games)
+    fizzle          121  (13.5% of judged games)
+    flat-tension    132  (14.7% of judged games)
+    volatile         52  (5.8% of judged games)
+  status breakdown: unscored=178, ok=899, no-baseline=52, not-measured=19
+
+=== WHAT THE COMPONENT WOULD SHOW for its default slate (2026-09-06) ===
+  games on slate: 42;  flagged: 29
+  Man United @ Everton (epl)
+      Top tier: reached the highest drama level any real epl game hit in this window (7 distinct levels exist for this sport, so this is a tier, not a percentile)
+      Late surge: opened cold and finished hot -- early peak 52, real peak 78
+      Volatile: changed direction 3 times, at least double the median 1 for real epl games
+  Sevilla @ Espanyol (la liga)
+      Top tier: reached the highest drama level any real la liga game hit in this window (7 distinct levels exist for this sport, so this is a tier, not a percentile)
+      Late surge: opened cold and finished hot -- early peak 52, real peak 78
+      Volatile: changed direction 2 times, at least double the median 1 for real la liga games
+  Levante @ Málaga (la liga)
+      Late surge: opened cold and finished hot -- early peak 52, real peak 70
+      Flat tension: above-median drama with less swing than a typical la liga game (moved 18 vs a median of 25)
+  Braves @ Phillies (mlb)
+      Rare high: peaked at or above the level only the top tenth of real mlb games in this window reached
+      Late surge: opened cold and finished hot -- early peak 58, real peak 83
+  Red Sox @ Orioles (mlb)
+      Late surge: opened cold and finished hot -- early peak 58, real peak 68
+      Flat tension: above-median drama with less swing than a typical mlb game (moved 39 vs a median of 48)
+  Twins @ White Sox (mlb)
+      Late surge: opened cold and finished hot -- early peak 58, real peak 66
+      Fizzled out: reached real drama then cooled before the end -- down 39 from its peak by the late window
+  Brewers @ Reds (mlb)
+      Late surge: opened cold and finished hot -- early peak 52, real peak 60
+      Fizzled out: reached real drama then cooled before the end -- down 13 from its peak by the late window
+  Athletics @ Mariners (mlb)
+      Late surge: opened cold and finished hot -- early peak 52, real peak 60
+      Fizzled out: reached real drama then cooled before the end -- down 5 from its peak by the late window
+  Venezia @ Frosinone (serie a)
+      Top tier: reached the highest drama level any real serie a game hit in this window (1 distinct levels exist for this sport, so this is a tier, not a percentile)
+  Monza @ Parma (serie a)
+      Top tier: reached the highest drama level any real serie a game hit in this window (1 distinct levels exist for this sport, so this is a tier, not a percentile)
+
+=== VERDICT ===
+Percentile resolution is REAL for at least one sport -- the distribution path is live,
+not theoretical, and the tier fallback is doing its job for the sports that need it.
+
+=== DEFINITIONAL SELF-CONSISTENCY on real data ===
+  mlb: rare-high actual 52 vs brute-force 52 MATCH
+  mlb: rare-low  actual 45 vs brute-force 45 MATCH
