@@ -110,20 +110,20 @@
   {
     "name": "Petco Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Petco Park is a ballpark in San Diego, California.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Oriole Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Oriole Park was the name of multiple baseball parks in Baltimore, Maryland between 1883 and 1944, all built within a few blocks of each other.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Guaranteed Rate Field",
@@ -200,11 +200,11 @@
   {
     "name": "Globe Life Field",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": "retractable",
-    "leadSentence": "Globe Life Field is a retractable roof stadium in Arlington, Texas, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Chase Field",
@@ -245,11 +245,11 @@
   {
     "name": "T-Mobile Park",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "T-Mobile Park is a retractable roof ballpark in Seattle, Washington, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Rogers Centre",
@@ -299,11 +299,11 @@
   {
     "name": "America First Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "America First Field is a soccer-specific stadium in Sandy, Utah, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Snapdragon Stadium",
@@ -344,20 +344,20 @@
   {
     "name": "Subaru Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Subaru Park is a soccer-specific stadium in Chester, Pennsylvania, located next to Commodore Barry Bridge on the waterfront along the Delaware River.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Bank of America Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Bank of America Stadium is a multi-purpose stadium located in the Uptown section of Charlotte, North Carolina, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Audi Field",
@@ -407,11 +407,11 @@
   {
     "name": "Soldier Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Soldier Field is a multi-purpose stadium on the Near South Side of Chicago, Illinois, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Allianz Field",
@@ -461,11 +461,11 @@
   {
     "name": "PayPal Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "PayPal Park is a soccer-specific stadium in San Jose, California.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Q2 Stadium",
@@ -515,11 +515,11 @@
   {
     "name": "Anfield",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Anfield is a football stadium in the area of Anfield, Liverpool, England, which has been the home of Liverpool Football Club since their formation in 1892.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Etihad Stadium",
@@ -569,20 +569,20 @@
   {
     "name": "Turf Moor",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Turf Moor is an association football stadium in Burnley, Lancashire, England, which has been the home of Burnley F.C. since 1883.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Selhurst Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Selhurst Park is a football stadium in Selhurst, in the London Borough of Croydon, England.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "City Ground",
@@ -614,20 +614,20 @@
   {
     "name": "The Den",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Den is a football stadium in New Cross Gate, south-east London, and the home of Millwall Football Club.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "London Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "London Stadium is a multi-purpose outdoor stadium at Queen Elizabeth Olympic Park in the Stratford district of London.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Allianz Arena",
@@ -686,11 +686,11 @@
   {
     "name": "People First Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Carrara Stadium is a stadium located in the Gold Coast suburb of Carrara.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Marvel Stadium",
@@ -713,11 +713,11 @@
   {
     "name": "Rajiv Gandhi International Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Rajiv Gandhi International Cricket Stadium, commonly known as Uppal Stadium, is an international cricket stadium in Hyderabad, Telangana, India.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Sawai Mansingh Stadium",
@@ -785,11 +785,11 @@
   {
     "name": "Riviera Country Club",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Riviera Country Club is a private club with a championship golf course as well as tennis courts, located in the Pacific Palisades neighborhood of the Westside of Los Angeles, California.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Torrey Pines South Course",
@@ -812,11 +812,11 @@
   {
     "name": "TPC Scottsdale",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "TPC Scottsdale is a 36-hole golf complex in the southwestern United States, located in Scottsdale, Arizona, northeast of Phoenix.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Muirfield Village Golf Club",
@@ -875,10 +875,10 @@
   {
     "name": "TPC Twin Cities",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "TPC Twin Cities is a private golf club in the north central United States, located within the subdivision of Deacon’s Walk in Blaine, Minnesota, a suburb north of Minneapolis.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   }
 ]
