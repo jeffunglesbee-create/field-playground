@@ -1,4 +1,4 @@
-probe_at: 2026-09-14T16:01:44Z
+probe_at: 2026-09-21T16:03:58Z
 
 Verifies two changes to src/data/weather.js's VENUE_COORDS, both run
 from a GitHub Actions runner because this sandbox's egress allowlist
@@ -14,3 +14,4 @@ Coordinates below are read directly out of src/data/weather.js's
 VENUE_COORDS at run time (not a hand-copied fixture) so this probe
 can't silently drift from the table it's meant to verify.
 
+Globe Life Field [retractable]: http=200 temp_f=86.2
