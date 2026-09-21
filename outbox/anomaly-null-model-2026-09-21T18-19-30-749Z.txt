@@ -1,0 +1,48 @@
+probe_at: 2026-09-21T18:19:30.784Z
+purpose: permutation test -- does the per-sport framing find anything a shuffled-label
+control does not? This is the one check that can conclude the feature is unearned.
+window: 30 days; permutation trials: 200
+
+days OK: 30/30;  real games: 1366
+
+=== OBSERVED (real per-sport baselines) ===
+  judged: 1102;  flagged: 884  (80.2%)
+    mlb                n= 388 distinct= 31 distribution
+    cfb                n= 260 distinct=  1 tier
+    mls                n=  75 distinct=  7 tier
+    la liga            n=  58 distinct=  8 tier
+    nfl                n=  48 distinct=  1 tier
+    serie a            n=  46 distinct=  1 tier
+    wnba               n=  45 distinct=  5 tier
+    epl                n=  44 distinct=  7 tier
+    ligue 1            n=  39 distinct=  6 tier
+    efl cup            n=  39 distinct=  1 tier
+    bundesliga         n=  36 distinct=  7 tier
+    uefa europa conference league qualifying n=  24 distinct=  8 tier
+    uefa europa league n=  18 distinct=  3 tier
+    uefa champions league n=  18 distinct=  5 tier
+    cfl                n=  17 distinct=  1 tier
+    nhl                n=  14 distinct=  1 tier
+    uefa europa league qualifying n=  12 distinct=  5 tier
+    efl trophy         n=   8 distinct=  1 tier
+    uefa champions league qualifying n=   7 distinct=  3 tier
+
+=== NULL MODEL: 200 label permutations (marginal counts preserved) ===
+  shuffled flagged count: mean 760.3, p5 727, median 762, p95 795
+  observed flagged count: 884
+  permutation p-value (count >= observed): 0.0050
+  mean Jaccard overlap between real and shuffled flag sets: 0.652
+
+=== CONTROL: pooled baseline (the simpler design that was rejected) ===
+  pooled baseline: n=1212 distinct=34 resolution=distribution
+  pooled flagged: 938;  per-sport flagged: 884
+  Jaccard(per-sport, pooled): 0.785
+  found ONLY by per-sport: 83;  found ONLY by pooled: 137
+
+=== VERDICT ===
+MIXED. The flagged COUNT is distinguishable from the null, but shuffled labels still
+select largely the same games -- so most of the signal is marginal, and the per-sport
+structure is adding less than the design assumed.
+
+The pooled control diverges (Jaccard 0.785), confirming the rejection of a
+pooled baseline was a real decision and not a stylistic one.
