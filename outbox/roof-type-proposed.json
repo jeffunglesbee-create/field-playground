@@ -182,11 +182,11 @@
   {
     "name": "Citi Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Citi Field is a baseball stadium located in Flushing Meadows–Corona Park, in the borough of Queens, New York City, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Sutter Health Park",
@@ -200,11 +200,11 @@
   {
     "name": "Globe Life Field",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Globe Life Field is a retractable roof stadium in Arlington, Texas, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Chase Field",
@@ -285,7 +285,7 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (disambiguation)"
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "CityPark",
@@ -299,11 +299,11 @@
   {
     "name": "America First Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "America First Field is a soccer-specific stadium in Sandy, Utah, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Snapdragon Stadium",
@@ -380,11 +380,11 @@
   {
     "name": "TQL Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "TQL Stadium is a soccer-specific stadium in Cincinnati, Ohio, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Inter&Co Stadium",
@@ -407,11 +407,11 @@
   {
     "name": "Soldier Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Soldier Field is a multi-purpose stadium on the Near South Side of Chicago, Illinois, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Allianz Field",
@@ -479,11 +479,11 @@
   {
     "name": "Shell Energy Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Shell Energy Stadium is a multi-purpose stadium located in Houston, Texas, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Toyota Stadium",
@@ -515,11 +515,11 @@
   {
     "name": "Anfield",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Anfield is a football stadium in the area of Anfield, Liverpool, England, which has been the home of Liverpool Football Club since their formation in 1892.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Etihad Stadium",
@@ -578,11 +578,11 @@
   {
     "name": "Selhurst Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Selhurst Park is a football stadium in Selhurst, in the London Borough of Croydon, England.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "City Ground",
@@ -614,20 +614,20 @@
   {
     "name": "The Den",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Den is a football stadium in the New Cross and Bermondsey area of south-east London, and the home of Millwall Football Club.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "London Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "London Stadium is a multi-purpose outdoor stadium at Queen Elizabeth Olympic Park in the Stratford district of London.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Allianz Arena",
@@ -677,11 +677,11 @@
   {
     "name": "TIO Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Marrara Stadium is a multi-purpose stadium in the Darwin suburb of Marrara.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "People First Stadium",
@@ -713,11 +713,11 @@
   {
     "name": "Rajiv Gandhi International Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Rajiv Gandhi International Cricket Stadium, commonly known as Uppal Stadium, is an international cricket stadium in Hyderabad, Telangana, India.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Sawai Mansingh Stadium",
@@ -776,11 +776,11 @@
   {
     "name": "TPC Sawgrass",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Tournament Players Club at Sawgrass is a golf course in the southeastern United States, located in Ponte Vedra Beach, Florida, southeast of Jacksonville.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Riviera Country Club",
@@ -812,17 +812,17 @@
   {
     "name": "TPC Scottsdale",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "TPC Scottsdale is a 36-hole golf complex in the southwestern United States, located in Scottsdale, Arizona, northeast of Phoenix.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Muirfield Village Golf Club",
     "currentRoofType": "open",
     "wikipediaRoofType": "open",
-    "leadSentence": "Muirfield Village is an golf-oriented community in the central United States, located in Dublin, Ohio, a suburb north of Columbus.",
+    "leadSentence": "Muirfield Village is a golf-oriented community in the central United States, located in Dublin, Ohio, a suburb north of Columbus.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -870,7 +870,7 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (disambiguation)"
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "TPC Twin Cities",
