@@ -1,0 +1,185 @@
+Extracted from src/components/Arbitrage/index.jsx: PRICES (17 keys), SERVICE_MAP (38 patterns)
+probe_at: 2026-09-28T17:45:47.939Z
+endpoint: https://field-relay-nba.jeffunglesbee.workers.dev/context/date/{date}
+method: for every game, check game.streams; parse with the real SERVICE_MAP/PRICES
+
+
+--- per-date counts ---
+  2026-09-07: 18 games, 16 with streams
+  2026-09-08: 28 games, 24 with streams
+  2026-09-09: 44 games, 37 with streams
+  2026-09-10: 22 games, 13 with streams
+  2026-09-11: 24 games, 23 with streams
+  2026-09-12: 143 games, 127 with streams
+  2026-09-13: 55 games, 42 with streams
+  2026-09-14: 17 games, 16 with streams
+  2026-09-15: 31 games, 21 with streams
+  2026-09-16: 35 games, 31 with streams
+  2026-09-17: 32 games, 29 with streams
+  2026-09-18: 45 games, 26 with streams
+  2026-09-19: 141 games, 127 with streams
+  2026-09-20: 75 games, 61 with streams
+  2026-09-21: 15 games, 12 with streams
+  2026-09-22: 54 games, 29 with streams
+  2026-09-23: 23 games, 21 with streams
+  2026-09-24: 33 games, 29 with streams
+  2026-09-25: 27 games, 25 with streams
+  2026-09-26: 126 games, 104 with streams
+  2026-09-27: 47 games, 34 with streams
+  2026-09-28: 2 games, 1 with streams
+  2026-09-29: 0 games, 0 with streams
+  2026-09-30: 0 games, 0 with streams
+  2026-10-01: 0 games, 0 with streams
+  2026-10-02: 1 games, 0 with streams
+  2026-10-03: 0 games, 0 with streams
+  2026-10-04: 0 games, 0 with streams
+  2026-10-05: 0 games, 0 with streams
+
+RESULT
+  total games seen: 1038
+  games with a non-empty streams field: 848
+  distinct raw stream labels seen: 123
+  label mentions matched to a PRICES key: 794
+  label mentions unmatched by SERVICE_MAP: 819
+
+--- most common raw labels (up to 20) ---
+  268x  "MLB.TV"
+  135x  "ESPN+"
+  70x  "Paramount+"
+  64x  "Apple TV"
+  33x  "FOX"
+  27x  "ESPN"
+  26x  "CBS"
+  24x  "USA Net"
+  22x  "ESPN Unlmtd"
+  22x  "CBSSN"
+  21x  "CHSN"
+  21x  "ESPN Deportes"
+  19x  "BravesVision"
+  19x  "Angels.TV"
+  19x  "Twins.TV"
+  19x  "Tigers.TV"
+  19x  "Peacock"
+  19x  "Sportsnet"
+  19x  "Rockies.TV"
+  18x  "Marlins.TV"
+
+--- unmatched labels (SERVICE_MAP has no pattern for these) ---
+  "BravesVision"
+  "NBC 10"
+  "Marlins.TV"
+  "SNY"
+  "NESN"
+  "Angels.TV"
+  "CLEGuardians.TV"
+  "MASN"
+  "DBACKS.TV"
+  "Royals.TV"
+  "KCTV5"
+  "Marquee Sports Net"
+  "Brewers.TV"
+  "Twins.TV"
+  "Tigers.TV"
+  "Padres.TV"
+  "Nationals.TV"
+  "SportsNet LA"
+  "Reds.TV"
+  "NBC Sports CA"
+  "NBC Sports Phil"
+  "Space City Home Network"
+  "Rockies.TV"
+  "YES"
+  "Gray Media"
+  "Rays.TV"
+  "CHSN"
+  "Rangers Sports Network"
+  "Mariners.TV"
+  "NBC Sports BA"
+  "Cardinals.TV"
+  "CBSSN"
+  "ACC Network"
+  "WPIX"
+  "WBFS"
+  "KMOV-TV"
+  "CW33"
+  "Fandango"
+  "ACCNX"
+  "ESPNU"
+  "ESPN2"
+  "USA Net"
+  "Universo"
+  "Tele"
+  "ESPN Deportes"
+  "BTN"
+  "TNT"
+  "CW"
+  "SEC Network"
+  "MW+"
+  "SECN+"
+  "WXIX FOX19"
+  "Space City Home (Alt.)"
+  "NBC Sports BO"
+  "Atlanta News First"
+  "Victory+ ATL"
+  "MNMT"
+  "CW26"
+  "KFAA-TV"
+  "Spectrum Sports Net"
+  "Merc+"
+  "Arizona's Family 3TV"
+  "Fox 12 Plus"
+  "CW Seattle"
+  "Vegas 34"
+  "WKYC 3"
+  "NHL Net"
+  "Blues App"
+  "CHSN+"
+  "Scripps Sports"
+  "KONG"
+  "KHN"
+  "MSGSN"
+  "MSG"
+  "NESN+"
+  "MNMT2"
+  "The Spot - MTN"
+  "Utah 16"
+  "Victory+ MIN"
+  "Fox 9+"
+  "WWOR-TV"
+  "Liberty Live"
+  "WTHR Channel 13"
+  "MSGB"
+  "AZ Family Sports Net"
+  "NBC Sports Phil +"
+  "SportsNet PIT+"
+  "DSN"
+  "KSTC"
+  "KPIX+"
+  "truTV"
+  "ABTV"
+  "KCOP"
+  "RDS"
+  "TSN5"
+
+--- example parsed rows (up to 12) ---
+  2026-09-07 Braves @ Phillies: "MLB.TV, BravesVision, NBC 10" -> mlbtv($24.99), BravesVision(unmatched), NBC 10(unmatched)
+  2026-09-07 Mets @ Marlins: "MLB.TV, Marlins.TV, SNY" -> mlbtv($24.99), Marlins.TV(unmatched), SNY(unmatched)
+  2026-09-07 Angels @ Red Sox: "MLB.TV, NESN, Angels.TV" -> mlbtv($24.99), NESN(unmatched), Angels.TV(unmatched)
+  2026-09-07 Guardians @ Orioles: "MLB.TV, CLEGuardians.TV, MASN" -> mlbtv($24.99), CLEGuardians.TV(unmatched), MASN(unmatched)
+  2026-09-07 Diamondbacks @ Royals: "MLB.TV, DBACKS.TV, Royals.TV, KCTV5" -> mlbtv($24.99), DBACKS.TV(unmatched), Royals.TV(unmatched), KCTV5(unmatched)
+  2026-09-07 Cubs @ Brewers: "ESPN Unlmtd, MLB.TV, Marquee Sports Net, Brewers.TV" -> espnplus($11.99), mlbtv($24.99), Marquee Sports Net(unmatched), Brewers.TV(unmatched)
+  2026-09-07 Twins @ Tigers: "MLB.TV, Twins.TV, Tigers.TV" -> mlbtv($24.99), Twins.TV(unmatched), Tigers.TV(unmatched)
+  2026-09-07 Nationals @ Padres: "MLB.TV, Padres.TV, Nationals.TV" -> mlbtv($24.99), Padres.TV(unmatched), Nationals.TV(unmatched)
+  2026-09-07 Cardinals @ Giants: "NBC, Peacock" -> nbc($undefined), peacock($9.99)
+  2026-09-07 Reds @ Dodgers: "MLB.TV, SportsNet LA, Reds.TV" -> mlbtv($24.99), SportsNet LA(unmatched), Reds.TV(unmatched)
+  2026-09-07 Blue Jays @ Athletics: "MLB.TV, NBC Sports CA, Sportsnet, TVA" -> mlbtv($24.99), NBC Sports CA(unmatched), sportsnet($undefined), tva($undefined)
+  2026-09-07 Celta Vigo @ Getafe: "ESPN+" -> espnplus($11.99)
+
+If gamesWithStreams is 0 across this whole -21/+7 window, the
+6-day-back live check was not a fluke -- something changed about
+the streams field itself, worth a follow-up. If it is nonzero,
+TonightsPick's cost badges and Arbitrage's My Services modal
+will actually appear on those real dates, and the unmatched-
+labels list above shows exactly what SERVICE_MAP is currently
+missing against live data, not just the 3 hardcoded examples in
+Arbitrage's own header comment.
