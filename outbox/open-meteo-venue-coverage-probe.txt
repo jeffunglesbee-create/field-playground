@@ -1,4 +1,4 @@
-probe_at: 2026-09-21T16:03:58Z
+probe_at: 2026-09-28T17:51:19Z
 
 Verifies two changes to src/data/weather.js's VENUE_COORDS, both run
 from a GitHub Actions runner because this sandbox's egress allowlist
@@ -14,4 +14,26 @@ Coordinates below are read directly out of src/data/weather.js's
 VENUE_COORDS at run time (not a hand-copied fixture) so this probe
 can't silently drift from the table it's meant to verify.
 
-Globe Life Field [retractable]: http=200 temp_f=86.2
+Globe Life Field [retractable]: http=200 temp_f=89.7
+loanDepot park [retractable]: http=200 temp_f=86.3
+Rogers Centre [retractable]: http=200 temp_f=69.6
+Daikin Park [retractable]: http=200 temp_f=88.1
+Tropicana Field [dome]: http=200 temp_f=85.7
+PNC Park [open]: http=200 temp_f=61.5
+Citi Field [open]: http=200 temp_f=59.6
+Sutter Health Park [open]: http=200 temp_f=65.9
+Comerica Park [open]: http=200 temp_f=74.7
+Nationals Park [open]: http=200 temp_f=65.5
+Great American Ball Park [open]: http=200 temp_f=75.1
+Rate Field [open]: http=200 temp_f=65.6
+Busch Stadium [open]: http=200 temp_f=77.2
+Angel Stadium [open]: http=200 temp_f=79.7
+Oracle Park [open]: http=200 temp_f=61.1
+TPC Twin Cities [open]: http=200 temp_f=64.7
+
+=== VERDICT ===
+All 16 venues resolved: http=200 and a real
+temperature, roofType included, sourced straight from
+src/data/weather.js. Confirms the retractable/dome-roof reversal
+works: every site has real, fetchable weather regardless of roof
+status, including Tropicana Field, the one true fixed dome.

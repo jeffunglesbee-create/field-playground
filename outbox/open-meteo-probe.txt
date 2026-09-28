@@ -1,4 +1,4 @@
-probe_at: 2026-09-21T16:03:51Z
+probe_at: 2026-09-28T17:51:13Z
 url: https://api.open-meteo.com/v1/forecast?latitude=42.3390&longitude=-83.0485&hourly=temperature_2m,precipitation_probability,wind_speed_10m,weather_code&forecast_days=1&temperature_unit=fahrenheit&wind_speed_unit=mph
 
 === HEADERS (CORS is the point; no API key was sent) ===
@@ -28,9 +28,9 @@ top-level keys: elevation, generationtime_ms, hourly, hourly_units, latitude, lo
 hourly vars: precipitation_probability, temperature_2m, time, weather_code, wind_speed_10m
 units: {"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"}
 timezone: GMT | elevation: 177.0
-first 6 temps: [62.3,61.3,60.3,59.7,59.6,58.5]
-first 6 precip%: [4,2,1,0,0,0]
-first 6 wind: [8.8,11.0,10.6,9.6,7.4,8.8]
+first 6 temps: [66.1,62.8,60.5,58.8,57.5,55.9]
+first 6 precip%: [0,0,0,0,0,0]
+first 6 wind: [6.5,4.1,4.5,5.4,4.9,4.8]
 
 === RAW BODY (first 800 chars) ===
-{"latitude":42.351395,"longitude":-83.06135,"generationtime_ms":0.18024444580078125,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":177.0,"hourly_units":{"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"},"hourly":{"time":["2026-09-21T00:00","2026-09-21T01:00","2026-09-21T02:00","2026-09-21T03:00","2026-09-21T04:00","2026-09-21T05:00","2026-09-21T06:00","2026-09-21T07:00","2026-09-21T08:00","2026-09-21T09:00","2026-09-21T10:00","2026-09-21T11:00","2026-09-21T12:00","2026-09-21T13:00","2026-09-21T14:00","2026-09-21T15:00","2026-09-21T16:00","2026-09-21T17:00","2026-09-21T18:00","2026-09-21T19:00","2026-09-21T20:00","2026-09-21T21:00","2026-09-21T22:00","2026-09-21T23:00"],"temperature_2
+{"latitude":42.351395,"longitude":-83.06135,"generationtime_ms":0.1577138900756836,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":177.0,"hourly_units":{"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"},"hourly":{"time":["2026-09-28T00:00","2026-09-28T01:00","2026-09-28T02:00","2026-09-28T03:00","2026-09-28T04:00","2026-09-28T05:00","2026-09-28T06:00","2026-09-28T07:00","2026-09-28T08:00","2026-09-28T09:00","2026-09-28T10:00","2026-09-28T11:00","2026-09-28T12:00","2026-09-28T13:00","2026-09-28T14:00","2026-09-28T15:00","2026-09-28T16:00","2026-09-28T17:00","2026-09-28T18:00","2026-09-28T19:00","2026-09-28T20:00","2026-09-28T21:00","2026-09-28T22:00","2026-09-28T23:00"],"temperature_2m
