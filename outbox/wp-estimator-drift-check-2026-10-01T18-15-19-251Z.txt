@@ -1,0 +1,41 @@
+drift_check_at: 2026-10-01T18:15:19.251Z
+purpose: check the FROZEN, already-shipped estimator weights against real games
+  it has never seen -- not the static validation-lab sample, real drift detection
+
+candidate real Final games, 2026-09-21 to 2026-09-30: 10 (capped at 10)
+
+Toronto Blue Jays @ Baltimore Orioles  (2026-09-21, gamePk=824787)  joined 65/65
+Washington Nationals @ Detroit Tigers  (2026-09-21, gamePk=824221)  joined 73/73
+Minnesota Twins @ San Francisco Giants  (2026-09-21, gamePk=823169)  joined 65/65
+Tampa Bay Rays @ New York Yankees  (2026-09-22, gamePk=823543)  joined 58/58
+Tampa Bay Rays @ New York Yankees  (2026-09-22, gamePk=823494)  joined 73/73
+Washington Nationals @ Detroit Tigers  (2026-09-22, gamePk=824222)  joined 72/72
+St. Louis Cardinals @ Pittsburgh Pirates  (2026-09-22, gamePk=823328)  joined 64/64
+Milwaukee Brewers @ Philadelphia Phillies  (2026-09-22, gamePk=823412)  joined 70/70
+Cleveland Guardians @ Boston Red Sox  (2026-09-22, gamePk=824709)  joined 83/83
+Cincinnati Reds @ Atlanta Braves  (2026-09-22, gamePk=824867)  joined 73/73
+
+=== SKIPPED ===
+
+real games with joined data: 10 / 10
+total fresh points (never used to fit or validate before): 696
+
+=== DRIFT CHECK (frozen weights vs FRESH real Savant data, never used to fit) ===
+overall MAE: 0.0332
+regulation-inning MAE: 0.0332
+original validation-lab regulation MAE (baseline): 0.0289
+
+=== BY INNING ===
+  inning 1:  n=79  mean_abs_err=0.0286
+  inning 2:  n=77  mean_abs_err=0.0261
+  inning 3:  n=78  mean_abs_err=0.0255
+  inning 4:  n=80  mean_abs_err=0.0292
+  inning 5:  n=79  mean_abs_err=0.0200
+  inning 6:  n=78  mean_abs_err=0.0269
+  inning 7:  n=84  mean_abs_err=0.0390
+  inning 8:  n=83  mean_abs_err=0.0341
+  inning 9:  n=58  mean_abs_err=0.0816
+
+=== VERDICT ===
+No drift detected: regulation-inning MAE (0.0332) on fresh real games stays under the ~0.08 trustworthy threshold.
+The frozen weights still track real Savant WP on games they have never seen.
