@@ -92,11 +92,11 @@
   {
     "name": "Kauffman Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Kauffman Stadium is a ballpark located in Kansas City, Missouri, and the home of Major League Baseball's Kansas City Royals.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Comerica Park",
@@ -110,11 +110,11 @@
   {
     "name": "Petco Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Petco Park is a ballpark in San Diego, California.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Oriole Park",
@@ -182,11 +182,11 @@
   {
     "name": "Citi Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Citi Field is a baseball stadium located in Flushing Meadows–Corona Park, in the borough of Queens, New York City, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Sutter Health Park",
@@ -209,11 +209,11 @@
   {
     "name": "Chase Field",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Chase Field, formerly Bank One Ballpark, is a retractable roof stadium in downtown Phoenix, Arizona, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "American Family Field",
@@ -285,16 +285,16 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (disambiguation)"
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "CityPark",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Energizer Park, previously CityPark, is a 22,423-seat soccer-specific stadium in St. Louis, Missouri, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "America First Field",
@@ -317,20 +317,20 @@
   {
     "name": "Stade Saputo",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Saputo Stadium is a soccer-specific stadium at Olympic Park in the borough of Mercier–Hochelaga-Maisonneuve in Montreal, Quebec, Canada.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "BMO Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "BMO Field is an outdoor stadium located at Exhibition Place in Toronto, Ontario, Canada.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Chase Stadium",
@@ -389,11 +389,11 @@
   {
     "name": "Inter&Co Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Inter.co Stadium is a soccer-specific stadium in downtown Orlando, Florida, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "GEODIS Park",
@@ -434,11 +434,11 @@
   {
     "name": "Dignity Health Sports Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Dignity Health Sports Park is a multi-use sports complex located on the campus of California State University, Dominguez Hills, in Carson, California, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Lumen Field",
@@ -479,11 +479,11 @@
   {
     "name": "Shell Energy Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Shell Energy Stadium is a multi-purpose stadium located in Houston, Texas, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Toyota Stadium",
@@ -560,20 +560,20 @@
   {
     "name": "Villa Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Villa Park is a football stadium in Aston, Birmingham, with a seating capacity of 43,205.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Turf Moor",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Turf Moor is an association football stadium in Burnley, Lancashire, England, which has been the home of Burnley F.C. since 1883.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Selhurst Park",
@@ -587,20 +587,20 @@
   {
     "name": "City Ground",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The  City Ground is a football stadium in West Bridgford, Nottinghamshire, England, on the banks of the River Trent.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Riverside Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Riverside Stadium is a football stadium in Middlesbrough, England, which has been the home of Middlesbrough since its opening in 1995.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "MKM Stadium",
@@ -660,7 +660,7 @@
     "name": "MCG",
     "currentRoofType": "open",
     "wikipediaRoofType": "open",
-    "leadSentence": "The Melbourne Cricket Ground (MCG), also known locally as the 'G', is a multi-purpose stadium located in Yarra Park in the suburb of East Melbourne, Victoria, Australia.",
+    "leadSentence": "The Melbourne Cricket Ground (MCG), also known locally as the 'G, is a multi-purpose stadium located in Yarra Park in the suburb of East Melbourne, Victoria, Australia.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -677,20 +677,20 @@
   {
     "name": "TIO Stadium",
     "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Marrara Stadium is a multi-purpose stadium in the Darwin suburb of Marrara.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "People First Stadium",
+    "currentRoofType": "open",
     "wikipediaRoofType": null,
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
     "note": "no Wikipedia data resolved (no title variant resolved)"
-  },
-  {
-    "name": "People First Stadium",
-    "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Carrara Stadium is a stadium located in the Gold Coast suburb of Carrara.",
-    "agree": true,
-    "knownUnfixable": false,
-    "note": null
   },
   {
     "name": "Marvel Stadium",
@@ -776,11 +776,11 @@
   {
     "name": "TPC Sawgrass",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Tournament Players Club at Sawgrass is a golf course in the southeastern United States, located in Ponte Vedra Beach, Florida, southeast of Jacksonville.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Riviera Country Club",
