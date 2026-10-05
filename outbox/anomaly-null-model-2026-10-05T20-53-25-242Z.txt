@@ -1,0 +1,47 @@
+probe_at: 2026-10-05T20:53:25.269Z
+purpose: permutation test -- does the per-sport framing find anything a shuffled-label
+control does not? This is the one check that can conclude the feature is unearned.
+window: 30 days; permutation trials: 200
+
+days OK: 30/30;  real games: 1250
+
+=== OBSERVED (real per-sport baselines) ===
+  judged: 1030;  flagged: 881  (85.5%)
+    mlb                n= 305 distinct= 27 distribution
+    cfb                n= 295 distinct=  1 tier
+    nhl                n= 104 distinct=  1 tier
+    nfl                n=  63 distinct=  1 tier
+    mls                n=  61 distinct=  7 tier
+    wnba               n=  48 distinct=  7 tier
+    la liga            n=  34 distinct=  7 tier
+    efl trophy         n=  31 distinct=  1 tier
+    serie a            n=  26 distinct=  1 tier
+    epl                n=  22 distinct=  6 tier
+    ligue 1            n=  21 distinct=  5 tier
+    bundesliga         n=  20 distinct=  6 tier
+    cfl                n=  18 distinct=  1 tier
+    uefa europa league n=  18 distinct=  3 tier
+    uefa champions league n=  18 distinct=  5 tier
+    efl cup            n=  16 distinct=  1 tier
+    nba                n=   3 distinct=  1 tier
+
+=== NULL MODEL: 200 label permutations (marginal counts preserved) ===
+  shuffled flagged count: mean 779.9, p5 742, median 779, p95 819
+  observed flagged count: 881
+  permutation p-value (count >= observed): 0.0050
+  mean Jaccard overlap between real and shuffled flag sets: 0.654
+
+=== CONTROL: pooled baseline (the simpler design that was rejected) ===
+  pooled baseline: n=1127 distinct=33 resolution=distribution
+  pooled flagged: 1024;  per-sport flagged: 881
+  Jaccard(per-sport, pooled): 0.806
+  found ONLY by per-sport: 31;  found ONLY by pooled: 174
+
+=== VERDICT ===
+MIXED. The flagged COUNT is distinguishable from the null, but shuffled labels still
+select largely the same games -- so most of the signal is marginal, and the per-sport
+structure is adding less than the design assumed.
+
+Separately: the pooled control flags nearly the same set (Jaccard 0.806). The
+simpler rejected design would produce almost this output, so the per-sport machinery
+is buying little on the CURRENT corpus even if it is theoretically sounder.
