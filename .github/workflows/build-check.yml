@@ -73,6 +73,11 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run build
+      - name: Document citations are anchored, not just numbered
+        run: |
+          node scripts/check-doc-citations.mjs --self-test
+          node scripts/check-doc-citations.mjs
+
       - name: Check for the resource-accessor re-throw bug class
         run: node scripts/check-resource-safety.mjs
       - name: Check for unread createMemo declarations
