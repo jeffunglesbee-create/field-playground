@@ -4,7 +4,40 @@
 **Repo:** field-playground
 **Branch:** main — commit directly, do not create a feature branch or PR
 **Type:** B (gap) — a workflow that cannot go green is a workflow nobody checks
-**Status:** FILED, not started.
+**Status:** DONE 2026-10-11. Four tasks, four done conditions, no stop
+condition hit. Session doc:
+`outbox/cc-session-2026-10-11-build-check-latency-probe-red.md`.
+
+**`Build Check` run `38142199452` — conclusion `success`.** The first green run
+in its visible history.
+
+**THE CAUSE WAS NONE OF THE THREE READINGS BELOW**, and that is the finding
+worth keeping: all three assume the module loaded. It never did.
+`scripts/latency-chart-probe.mjs` imported `@playwright/test`, which is not a
+dependency of this repo — `package.json` declares `playwright` — so it threw
+`ERR_MODULE_NOT_FOUND` before a browser was launched. **It was the only script
+in `scripts/` doing that; 21 import `{ chromium } from 'playwright'`.** Rule 62:
+the convention already existed and this was the single file outside it.
+
+**Task 0's log could not be read from here.** `gh api .../jobs/<id>/logs`
+redirects to blob storage, and the annotations carry only
+`Process completed with exit code 1` — six days of exactly that, which is why
+nobody read it. Reproduced locally instead, which gave the error verbatim.
+
+**One word changed.** None of this document's three forbidden fixes was used —
+not the 20-second wait, not `continue-on-error`, not deleting the step — and
+none of them would have touched the cause.
+
+**The chart never regressed.** With the import fixed: `canvases 1`,
+`uplotRoot true`, `ariaLabel "15 points. request duration (ms): 8.8 to 583.6"`.
+
+**Task 3 — and one green run proves nothing here.** The probe's assertions had
+never been exercised; its only two states on record were "crashed before
+launching a browser" and "passed once". `scripts/mutate-latency-chart-probe.mjs`
+is now a CI step beside it: **2 caught, 0 wrong, 0 never anchored**, restored
+green. It reports `ANCHOR` when an anchor is not unique, `BUILD-FAILED` when a
+mutation stops the bundle compiling, and `RED-FOR-THE-WRONG-REASON` when the
+probe fails without the expected message.
 
 **Second CC-CMD per Rule 87.4**, opened rather than widening the citation-check
 port that found it. That port's own step passes; this one does not, and it
