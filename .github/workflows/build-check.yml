@@ -159,6 +159,19 @@ jobs:
           for i in $(seq 1 20); do curl -sf -o /dev/null http://localhost:4173/ && break; sleep 1; done
           PLAYGROUND_URL=http://localhost:4173/ node scripts/latency-chart-probe.mjs
 
+      # The probe above had never been seen to pass: it imported
+      # `@playwright/test`, which is not a dependency of this repo, and died
+      # with ERR_MODULE_NOT_FOUND before launching a browser. Build Check was
+      # red on every run from at least 2026-10-06 to 2026-10-11 and the
+      # annotations showed only "Process completed with exit code 1".
+      #
+      # So its assertions had never been exercised, and one green run does not
+      # fix that. This breaks each of them on purpose and requires the probe to
+      # go red for the right reason. A mutation whose anchor no longer matches
+      # reports ANCHOR rather than a verdict.
+      - name: The latency probe can still fail
+        run: node scripts/mutate-latency-chart-probe.mjs
+
       - name: Report bundle size
         run: |
           echo "### Build output" >> $GITHUB_STEP_SUMMARY

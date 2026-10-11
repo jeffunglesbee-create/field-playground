@@ -18,7 +18,15 @@
 //
 // Pass needs the canvas AND the aria summary. All-zero is a FAIL, not silence.
 
-import { chromium } from '@playwright/test'
+// `playwright`, not `@playwright/test`. The latter was never a dependency of
+// this repo — package.json declares `playwright` — so this import threw
+// ERR_MODULE_NOT_FOUND before a browser was ever launched, and Build Check
+// failed on every run from at least 2026-10-06 to 2026-10-11 with nothing but
+// "Process completed with exit code 1" visible in the annotations.
+//
+// It was the only script in scripts/ importing that name: 21 import from
+// 'playwright', this one did not. Rule 62 — the convention existed.
+import { chromium } from 'playwright'
 import { writeFileSync, mkdirSync } from 'fs'
 
 const URL_ = process.env.PLAYGROUND_URL || 'http://localhost:4173/'
