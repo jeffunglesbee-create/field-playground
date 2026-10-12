@@ -1,0 +1,55 @@
+probe_at: 2026-10-12T04:25:48Z
+url:      https://nominatim.openstreetmap.org/search?q=Lambeau+Field&format=json&limit=1
+origin:   https://field-playground.jeffunglesbee.workers.dev
+accept:   application/json  maxtime: 20s
+
+=== GET with a real Origin (what a browser sends) ===
+HTTP/2 200 
+access-control-allow-origin: *
+server: gunicorn/asgi
+x-nominatim-server: poldi.openstreetmap.org
+content-type: application/json; charset=utf-8
+accept-ranges: bytes
+age: 0
+date: Mon, 12 Oct 2026 04:25:48 GMT
+via: 1.1 varnish
+x-served-by: cache-iad-khef600030-IAD, cache-iad-kiad7000117-IAD
+x-cache: MISS, MISS
+x-cache-hits: 0, 0
+x-timer: S1791779148.093813,VS0,VE267
+vary: accept-language, Accept-Encoding
+strict-transport-security: max-age=300
+alt-svc: h3=":443";ma=86400,h3-29=":443";ma=86400,h3-27=":443";ma=86400
+content-length: 503
+
+
+curl_exit_pending http_code=200
+curl_exit: 0
+
+=== OPTIONS preflight (Origin + Access-Control-Request-Method) ===
+HTTP/2 204 
+access-control-allow-methods: GET,OPTIONS
+server: nginx
+access-control-allow-origin: *
+content-type: text/plain; charset=UTF-8
+accept-ranges: bytes
+date: Mon, 12 Oct 2026 04:25:48 GMT
+via: 1.1 varnish
+x-served-by: cache-chi-kigq8000062-CHI, cache-chi-kigq8000062-CHI
+x-cache: MISS, MISS
+x-cache-hits: 0, 0
+x-timer: S1791779148.420539,VS0,VE189
+strict-transport-security: max-age=300
+alt-svc: h3=":443";ma=86400,h3-29=":443";ma=86400,h3-27=":443";ma=86400
+
+
+preflight_http_code=204
+
+=== VERDICT ===
+access-control-allow-origin: *
+access-control-allow-methods: GET,OPTIONS
+access-control-allow-origin: *
+CORS-OPEN for this Origin — a browser can call it directly.
+
+=== BODY (first 900 chars) ===
+[{"place_id":374509798,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"way","osm_id":24772913,"lat":"44.5009705","lon":"-88.0619681","class":"leisure","type":"stadium","place_rank":30,"importance":0.5177074433692108,"addresstype":"leisure","name":"Lambeau Field","display_name":"Lambeau Field, 1265, Lombardi Avenue, Lombardi, Green Bay, Brown County, Wisconsin, 54304, United States","boundingbox":["44.4992217","44.5027122","-88.0637090","-88.0596532"]}]
