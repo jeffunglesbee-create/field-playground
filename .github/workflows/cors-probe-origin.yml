@@ -1,0 +1,141 @@
+name: CORS Probe (Origin-aware)
+
+# WHY THIS EXISTS SEPARATELY FROM jubilant-bassoon's cors-probe.yml.
+#
+# That workflow reads url=/limit=/maxtime=/accept= from a trigger file and
+# dumps GET headers — but it sends NO Origin header. A server that only
+# reflects access-control-allow-origin when an Origin is present will
+# therefore read as "NO access-control-allow-origin HEADER", which is not
+# evidence of anything.
+#
+# That is not hypothetical. It already happened, and it is recorded in this
+# repo's own src/data/weather.js: the first Open-Meteo probe reported no CORS
+# header, and the cause was that curl sent no Origin, so none could come
+# back. That false negative would have pointed the fix at building a relay
+# proxy that should not exist.
+#
+# This workflow sends a real Origin on the GET and runs a real OPTIONS
+# preflight, which is what a browser actually does. The pattern is lifted
+# from .github/workflows/open-meteo-probe.yml in this same repo, which got
+# it right.
+#
+# It lives in field-playground because production's WRITE_ALLOWLIST is
+# deliberately ['docs/', 'HANDOFF.md', 'CODE_MAP.json'] — "tighter than READ
+# because writes mutate production" — and two CC-CMDs from 2026-07-23 exist
+# to keep it that way. field-playground takes unrestricted writes by design.
+#
+# RESULTS GO TO docs/, NOT outbox/. The MCP read allowlist covers docs/ and
+# not outbox/, so a result written to outbox/ cannot be read back by the
+# session that asked for it. That is the whole point of the probe.
+
+on:
+  workflow_dispatch: {}
+  push:
+    paths: ['docs/cors-probe-target.txt']
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe
+        run: |
+          set +e
+          TGT=docs/cors-probe-target.txt
+          URL=$(grep    '^url='     "$TGT" | cut -d= -f2-)
+          ORIGIN=$(grep '^origin='  "$TGT" | cut -d= -f2-)
+          ACCEPT=$(grep '^accept='  "$TGT" | cut -d= -f2-)
+          MAXTIME=$(grep '^maxtime=' "$TGT" | cut -d= -f2-)
+          LIMIT=$(grep  '^limit='   "$TGT" | cut -d= -f2-)
+          [ -z "$MAXTIME" ] && MAXTIME=20
+          [ -z "$LIMIT" ]   && LIMIT=1200
+          [ -z "$ORIGIN" ]  && ORIGIN="https://field-playground.jeffunglesbee.workers.dev"
+          if [ -z "$URL" ]; then echo "::error::no url= in $TGT"; exit 1; fi
+
+          TS=$(date -u +%Y%m%dT%H%M%SZ)
+          OUT="docs/cors-result-${TS}.txt"
+          {
+            echo "probe_at: $(date -u +%FT%TZ)"
+            echo "url:      $URL"
+            echo "origin:   $ORIGIN"
+            echo "accept:   ${ACCEPT:-(none)}  maxtime: ${MAXTIME}s"
+            echo ""
+            echo "=== GET with a real Origin (what a browser sends) ==="
+          } > "$OUT"
+
+          if [ -n "$ACCEPT" ]; then
+            curl -s -D - -o /tmp/body.txt --max-time "$MAXTIME" \
+              -H "Origin: $ORIGIN" -H "Accept: ${ACCEPT}" \
+              -w "\ncurl_exit_pending http_code=%{http_code}\n" "$URL" >> "$OUT" 2>&1
+          else
+            curl -s -D - -o /tmp/body.txt --max-time "$MAXTIME" \
+              -H "Origin: $ORIGIN" \
+              -w "\ncurl_exit_pending http_code=%{http_code}\n" "$URL" >> "$OUT" 2>&1
+          fi
+          echo "curl_exit: $?" >> "$OUT"
+
+          {
+            echo ""
+            echo "=== OPTIONS preflight (Origin + Access-Control-Request-Method) ==="
+          } >> "$OUT"
+          curl -s -X OPTIONS -D - -o /dev/null --max-time "$MAXTIME" \
+            -H "Origin: $ORIGIN" -H "Access-Control-Request-Method: GET" \
+            -w "\npreflight_http_code=%{http_code}\n" "$URL" >> "$OUT" 2>&1
+
+          # READ FROM A COPY. `grep FILE >> FILE` makes grep read the file it
+          # is writing; GNU grep refuses with "input file is also the output",
+          # exits non-zero, and the else branch fires — so the verdict printed
+          # NO every time regardless of the headers. jubilant-bassoon's
+          # cors-probe.yml carries the same note; it was measured 2026-09-06
+          # on /live/ambient, where the dump four lines above the verdict read
+          # `access-control-allow-origin: *` and the verdict read NO.
+          cp "$OUT" /tmp/scan.txt
+          {
+            echo ""
+            echo "=== VERDICT ==="
+          } >> "$OUT"
+          if grep -qi '^access-control-allow-origin' /tmp/scan.txt; then
+            grep -i '^access-control-allow-' /tmp/scan.txt >> "$OUT"
+            echo "CORS-OPEN for this Origin — a browser can call it directly." >> "$OUT"
+          else
+            echo "NO access-control-allow-origin on EITHER the GET or the preflight." >> "$OUT"
+            echo "An Origin WAS sent, so this is a real negative, not the 2026-07 probe bug." >> "$OUT"
+          fi
+
+          {
+            echo ""
+            echo "=== BODY (first ${LIMIT} chars) ==="
+            head -c "$LIMIT" /tmp/body.txt
+            echo ""
+          } >> "$OUT"
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+          cat "$OUT" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit result
+        if: always()
+        run: |
+          git config user.name  "cors-probe-bot"
+          git config user.email "actions@github.com"
+          git add docs/
+          git diff --cached --quiet && { echo "nothing to commit"; exit 0; }
+          git commit -m "probe: ${OUT} [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main && git push origin main && break
+            echo "push attempt $i failed; retrying in $((i * 5))s"
+            sleep $((i * 5))
+          done
+          # The loop exits 0 when EVERY attempt fails — its last command is
+          # `sleep`, and a failing && list is a tested command so `set -e`
+          # never fires. Without the ancestry check below, a lost result
+          # reports as a green step. Same defect jubilant-bassoon's probe
+          # documents.
+          git fetch -q origin main
+          git merge-base --is-ancestor HEAD origin/main \
+            || { echo "::error::push did not land after retries"; exit 1; }
+        env:
+          OUT: ${{ env.OUT }}
