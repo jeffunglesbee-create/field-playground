@@ -1,0 +1,13 @@
+# Target for .github/workflows/cors-probe-origin.yml
+# Nominatim is the one unmeasured field in the OSM source-registry row:
+# corsAvailable. The ODbL/share-alike question is already answered by the
+# OSMF geocoding guideline (board-endorsed 2017-08-24) — individual
+# geocoding results are insubstantial extracts and carry no share-alike
+# impact on other data. What is NOT measured is whether a browser can call
+# Nominatim directly, which decides whether a relay route is needed at all
+# under the Cloudflare Worker Relay Pattern reference (2026-05-17).
+url=https://nominatim.openstreetmap.org/search?q=Lambeau+Field&format=json&limit=1
+origin=https://field-playground.jeffunglesbee.workers.dev
+accept=application/json
+maxtime=20
+limit=900
