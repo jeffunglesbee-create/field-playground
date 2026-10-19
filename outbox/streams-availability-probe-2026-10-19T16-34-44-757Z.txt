@@ -1,0 +1,135 @@
+Extracted from src/components/Arbitrage/index.jsx: PRICES (17 keys), SERVICE_MAP (38 patterns)
+probe_at: 2026-10-19T16:34:44.760Z
+endpoint: https://field-relay-nba.jeffunglesbee.workers.dev/context/date/{date}
+method: for every game, check game.streams; parse with the real SERVICE_MAP/PRICES
+
+
+--- per-date counts ---
+  2026-09-28: 2 games, 1 with streams
+  2026-09-29: 11 games, 11 with streams
+  2026-09-30: 11 games, 9 with streams
+  2026-10-01: 16 games, 15 with streams
+  2026-10-02: 14 games, 9 with streams
+  2026-10-03: 77 games, 72 with streams
+  2026-10-04: 29 games, 24 with streams
+  2026-10-05: 13 games, 9 with streams
+  2026-10-06: 36 games, 14 with streams
+  2026-10-07: 18 games, 14 with streams
+  2026-10-08: 25 games, 18 with streams
+  2026-10-09: 21 games, 14 with streams
+  2026-10-10: 125 games, 98 with streams
+  2026-10-11: 47 games, 38 with streams
+  2026-10-12: 18 games, 12 with streams
+  2026-10-13: 39 games, 30 with streams
+  2026-10-14: 51 games, 29 with streams
+  2026-10-15: 64 games, 54 with streams
+  2026-10-16: 24 games, 13 with streams
+  2026-10-17: 121 games, 102 with streams
+  2026-10-18: 43 games, 33 with streams
+  2026-10-19: 11 games, 11 with streams
+  2026-10-20: 0 games, 0 with streams
+  2026-10-21: 3 games, 0 with streams
+  2026-10-22: 1 games, 0 with streams
+  2026-10-23: 0 games, 0 with streams
+  2026-10-24: 15 games, 0 with streams
+  2026-10-25: 7 games, 0 with streams
+  2026-10-26: 1 games, 0 with streams
+
+RESULT
+  total games seen: 843
+  games with a non-empty streams field: 630
+  distinct raw stream labels seen: 67
+  label mentions matched to a PRICES key: 547
+  label mentions unmatched by SERVICE_MAP: 384
+
+--- most common raw labels (up to 20) ---
+  174x  "ESPN+"
+  72x  "Paramount+"
+  46x  "Apple TV"
+  37x  "ESPN"
+  24x  "CBSSN"
+  23x  "Scripps Sports"
+  22x  "Peacock"
+  22x  "Prime Video (Local)"
+  21x  "CBS"
+  20x  "truTV"
+  20x  "Fox"
+  19x  "ESPN2"
+  19x  "NBA TV"
+  18x  "FS1"
+  17x  "NBC"
+  17x  "USA Net"
+  16x  "ESPN Deportes"
+  16x  "Fandango"
+  15x  "TBS"
+  14x  "ABC"
+
+--- unmatched labels (SERVICE_MAP has no pattern for these) ---
+  "USA Net"
+  "TNT"
+  "truTV"
+  "MSGSN"
+  "MSGB"
+  "CBJNHL"
+  "MSG"
+  "The Spot - MTN"
+  "Scripps Sports"
+  "MINNHL"
+  "KONG"
+  "KHN"
+  "NBC Sports BA"
+  "CBSSN"
+  "MNMT"
+  "CARNHL"
+  "NESN"
+  "KCOP"
+  "ESPN2"
+  "CHSN"
+  "NBC Sports Phil"
+  "Utah 16"
+  "NHL Net"
+  "Blues App"
+  "BN+"
+  "Altitude Sports"
+  "ABTV"
+  "CW"
+  "ESPNU"
+  "ACC Network"
+  "BTN"
+  "SEC Network"
+  "MW+"
+  "DSN"
+  "NFL Net"
+  "KING 5"
+  "KTVD-TV (My20)"
+  "ESPN Deportes"
+  "Fandango"
+  "Universo"
+  "Tele"
+  "MSG2"
+  "SECN+"
+  "ACCNX"
+  "E!"
+
+--- example parsed rows (up to 12) ---
+  2026-09-28 Eagles @ Bears: "ESPN, ABC" -> espn($undefined), abc($undefined)
+  2026-09-29 Panthers @ Hurricanes: "ESPN" -> espn($undefined)
+  2026-09-29 Canadiens @ Maple Leafs: "ESPN+" -> espnplus($11.99)
+  2026-09-29 Rangers @ Bruins: "ESPN" -> espn($undefined)
+  2026-09-29 Canucks @ Oilers: "ESPN+" -> espnplus($11.99)
+  2026-09-29 Blackhawks @ Golden Knights: "ESPN" -> espn($undefined)
+  2026-09-29 Phillies @ Braves: "NBC" -> nbc($undefined)
+  2026-09-29 White Sox @ Astros: "Peacock, NBCSN" -> peacock($9.99), nbcsn($undefined)
+  2026-09-29 Red Sox @ Yankees: "NBC" -> nbc($undefined)
+  2026-09-29 Cubs @ Padres: "Peacock, NBCSN" -> peacock($9.99), nbcsn($undefined)
+  2026-09-29 Aces @ Fever: "Prime Video" -> prime($14.99)
+  2026-09-29 Lynx @ Liberty: "USA Net, CNBC" -> USA Net(unmatched), cnbc($undefined)
+
+If gamesWithStreams is 0 across this whole -21/+7 window, the
+6-day-back live check was not a fluke -- something changed about
+the streams field itself, worth a follow-up. If it is nonzero,
+TonightsPick's cost badges and Arbitrage's My Services modal
+will actually appear on those real dates, and the unmatched-
+labels list above shows exactly what SERVICE_MAP is currently
+missing against live data, not just the 3 hardcoded examples in
+Arbitrage's own header comment.
