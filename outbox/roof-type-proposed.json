@@ -128,11 +128,11 @@
   {
     "name": "Guaranteed Rate Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Rate Field is a baseball stadium on the South Side of Chicago, Illinois.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Rate Field",
@@ -146,11 +146,11 @@
   {
     "name": "Angels Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Angel Stadium is a ballpark in Anaheim, California, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Angel Stadium",
@@ -227,11 +227,11 @@
   {
     "name": "Minute Maid Park",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Daikin Park is a retractable roof stadium in Houston, Texas, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Daikin Park",
@@ -245,11 +245,11 @@
   {
     "name": "T-Mobile Park",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": "retractable",
-    "leadSentence": "T-Mobile Park is a retractable roof ballpark in Seattle, Washington, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Rogers Centre",
@@ -335,29 +335,29 @@
   {
     "name": "Chase Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Inter Miami CF Stadium is a soccer-specific stadium in Fort Lauderdale, Florida, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Subaru Park",
     "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Subaru Park is a soccer-specific stadium in Chester, Pennsylvania, located next to Commodore Barry Bridge on the waterfront along the Delaware River.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
+  },
+  {
+    "name": "Bank of America Stadium",
+    "currentRoofType": "open",
     "wikipediaRoofType": null,
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
     "note": "no Wikipedia data resolved (no title variant resolved)"
-  },
-  {
-    "name": "Bank of America Stadium",
-    "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Bank of America Stadium is a multi-purpose stadium located in the Uptown section of Charlotte, North Carolina, United States.",
-    "agree": true,
-    "knownUnfixable": false,
-    "note": null
   },
   {
     "name": "Audi Field",
@@ -452,11 +452,11 @@
   {
     "name": "Providence Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Providence Park is an outdoor soccer venue located in the Goose Hollow neighborhood of Portland, Oregon, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "PayPal Park",
@@ -471,7 +471,7 @@
     "name": "Q2 Stadium",
     "currentRoofType": "open",
     "wikipediaRoofType": "open",
-    "leadSentence": "Q2 Stadium is a soccer-specific stadium located in the North Burnet section of North Austin, Texas, United States.",
+    "leadSentence": "Q2 Stadium is a soccer-specific stadium in Austin, Texas, United States, and the home of Austin FC, a Major League Soccer (MLS) club.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -492,7 +492,7 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (disambiguation)"
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Mercedes-Benz Stadium",
@@ -560,20 +560,20 @@
   {
     "name": "Villa Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Villa Park is a football stadium in Aston, Birmingham, with a seating capacity of 43,205.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Turf Moor",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Turf Moor is an association football stadium in Burnley, Lancashire, England, which has been the home of Burnley F.C. since 1883.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Selhurst Park",
@@ -614,11 +614,11 @@
   {
     "name": "The Den",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Den is a football stadium in the New Cross and Bermondsey area of south-east London, and the home of Millwall Football Club.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "London Stadium",
@@ -668,11 +668,11 @@
   {
     "name": "ENGIE Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Sydney Showground Stadium is a sports and events stadium located at the Sydney Olympic Park in Sydney.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "TIO Stadium",
@@ -713,11 +713,11 @@
   {
     "name": "Rajiv Gandhi International Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Rajiv Gandhi International Cricket Stadium, commonly known as Uppal Stadium, is an international cricket stadium in Hyderabad, Telangana, India.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Sawai Mansingh Stadium",
@@ -767,11 +767,11 @@
   {
     "name": "Pebble Beach Golf Links",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Pebble Beach Golf Links is a public golf course located in Pebble Beach, California, U.S.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "TPC Sawgrass",
@@ -812,20 +812,20 @@
   {
     "name": "TPC Scottsdale",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "TPC Scottsdale is a 36-hole golf complex in the southwestern United States, located in Scottsdale, Arizona, northeast of Phoenix.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Muirfield Village Golf Club",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Muirfield Village is a golf-oriented community in the central United States, located in Dublin, Ohio, a suburb north of Columbus.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "East Lake Golf Club",
@@ -870,7 +870,7 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": "no Wikipedia data resolved (disambiguation)"
   },
   {
     "name": "TPC Twin Cities",
