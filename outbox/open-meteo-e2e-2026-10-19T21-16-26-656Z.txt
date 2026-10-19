@@ -1,0 +1,165 @@
+probe_at: 2026-10-19T21:16:26.657Z
+purpose: verify the live weather path end to end -- reachability, FIELDS, UNITS,
+and the shipped modifier running on real returned data.
+
+venue table read from src/data/weather.js: 98 entries
+sampling 5: Chase Field, Coors Field, Oracle Park, Fenway Park, Wrigley Field
+
+=== Chase Field (33.4453, -112.0667, retractable) ===
+  ok    forecast HTTP 200   status 200
+  ok    hourly forecast HTTP 200   status 200
+  ok    field temperature_2m present   = 87.9
+  ok    field apparent_temperature present   = 89
+  ok    field rain present   = 0
+  ok    field snowfall present   = 0
+  ok    field wind_speed_10m present   = 3
+  ok    field wind_gusts_10m present   = 7.2
+  ok    field precipitation present   = 0
+  ok    field is_day present   = 1
+  ok    temperature unit is Fahrenheit   got "°F"
+  ok    wind unit is mph   got "mp/h"
+  ok    rain unit is mm   got "mm"
+  ok    snowfall unit is cm (drives the x10 conversion)   got "cm"
+  ok    hourly snowfall unit is cm too   got "cm"
+  ok    hourly series is GMT by default, so a UTC-hour index lines up   got "GMT"
+  ok    hourly.snowfall is an array covering a full day   len 168
+  ok    air-quality HTTP 200   status 200
+  ok    us_aqi present and numeric   = 39
+  ok    pm2_5 present and numeric   = 9.5
+  ok    us_aqi unit is USAQI, not the European scale   got "USAQI"
+  ok    snowfall normalised cm -> mm (x10)   0cm -> 0mm
+  live: 88°F  3mph (gusts 7.2)  rain 0  snow 0  AQI 39  pm2.5 9.5
+  band table -> 0  (no band met)
+  gate       -> SHUT    production applies 0
+  ok    delta is a finite number, never NaN   = 0
+  ok    applied is 0 whenever the gate is shut   gate false, applied 0
+
+=== Coors Field (39.7559, -104.9942, open) ===
+  ok    forecast HTTP 200   status 200
+  ok    hourly forecast HTTP 200   status 200
+  ok    field temperature_2m present   = 70.1
+  ok    field apparent_temperature present   = 62.8
+  ok    field rain present   = 0
+  ok    field snowfall present   = 0
+  ok    field wind_speed_10m present   = 7.7
+  ok    field wind_gusts_10m present   = 13
+  ok    field precipitation present   = 0
+  ok    field is_day present   = 1
+  ok    temperature unit is Fahrenheit   got "°F"
+  ok    wind unit is mph   got "mp/h"
+  ok    rain unit is mm   got "mm"
+  ok    snowfall unit is cm (drives the x10 conversion)   got "cm"
+  ok    hourly snowfall unit is cm too   got "cm"
+  ok    hourly series is GMT by default, so a UTC-hour index lines up   got "GMT"
+  ok    hourly.snowfall is an array covering a full day   len 168
+  ok    air-quality HTTP 200   status 200
+  ok    us_aqi present and numeric   = 43
+  ok    pm2_5 present and numeric   = 2.3
+  ok    us_aqi unit is USAQI, not the European scale   got "USAQI"
+  ok    snowfall normalised cm -> mm (x10)   0cm -> 0mm
+  live: 70°F  7.7mph (gusts 13)  rain 0  snow 0  AQI 43  pm2.5 2.3
+  band table -> 0  (no band met)
+  gate       -> SHUT    production applies 0
+  ok    delta is a finite number, never NaN   = 0
+  ok    applied is 0 whenever the gate is shut   gate false, applied 0
+
+=== Oracle Park (37.7786, -122.3893, open) ===
+  ok    forecast HTTP 200   status 200
+  ok    hourly forecast HTTP 200   status 200
+  ok    field temperature_2m present   = 62.4
+  ok    field apparent_temperature present   = 57.3
+  ok    field rain present   = 0
+  ok    field snowfall present   = 0
+  ok    field wind_speed_10m present   = 12.1
+  ok    field wind_gusts_10m present   = 17
+  ok    field precipitation present   = 0
+  ok    field is_day present   = 1
+  ok    temperature unit is Fahrenheit   got "°F"
+  ok    wind unit is mph   got "mp/h"
+  ok    rain unit is mm   got "mm"
+  ok    snowfall unit is cm (drives the x10 conversion)   got "cm"
+  ok    hourly snowfall unit is cm too   got "cm"
+  ok    hourly series is GMT by default, so a UTC-hour index lines up   got "GMT"
+  ok    hourly.snowfall is an array covering a full day   len 168
+  ok    air-quality HTTP 200   status 200
+  ok    us_aqi present and numeric   = 51
+  ok    pm2_5 present and numeric   = 9.2
+  ok    us_aqi unit is USAQI, not the European scale   got "USAQI"
+  ok    snowfall normalised cm -> mm (x10)   0cm -> 0mm
+  live: 62°F  12.1mph (gusts 17)  rain 0  snow 0  AQI 51  pm2.5 9.2
+  band table -> 0  (no band met)
+  gate       -> SHUT    production applies 0
+  ok    delta is a finite number, never NaN   = 0
+  ok    applied is 0 whenever the gate is shut   gate false, applied 0
+
+=== Fenway Park (42.3467, -71.0972, open) ===
+  ok    forecast HTTP 200   status 200
+  ok    hourly forecast HTTP 200   status 200
+  ok    field temperature_2m present   = 54.1
+  ok    field apparent_temperature present   = 50.2
+  ok    field rain present   = 0
+  ok    field snowfall present   = 0
+  ok    field wind_speed_10m present   = 5.6
+  ok    field wind_gusts_10m present   = 8.7
+  ok    field precipitation present   = 0
+  ok    field is_day present   = 1
+  ok    temperature unit is Fahrenheit   got "°F"
+  ok    wind unit is mph   got "mp/h"
+  ok    rain unit is mm   got "mm"
+  ok    snowfall unit is cm (drives the x10 conversion)   got "cm"
+  ok    hourly snowfall unit is cm too   got "cm"
+  ok    hourly series is GMT by default, so a UTC-hour index lines up   got "GMT"
+  ok    hourly.snowfall is an array covering a full day   len 168
+  ok    air-quality HTTP 200   status 200
+  ok    us_aqi present and numeric   = 57
+  ok    pm2_5 present and numeric   = 10.4
+  ok    us_aqi unit is USAQI, not the European scale   got "USAQI"
+  ok    snowfall normalised cm -> mm (x10)   0cm -> 0mm
+  live: 54°F  5.6mph (gusts 8.7)  rain 0  snow 0  AQI 57  pm2.5 10.4
+  band table -> 0  (no band met)
+  gate       -> SHUT    production applies 0
+  ok    delta is a finite number, never NaN   = 0
+  ok    applied is 0 whenever the gate is shut   gate false, applied 0
+
+=== Wrigley Field (41.9484, -87.6553, open) ===
+  ok    forecast HTTP 200   status 200
+  ok    hourly forecast HTTP 200   status 200
+  ok    field temperature_2m present   = 62.6
+  ok    field apparent_temperature present   = 58.8
+  ok    field rain present   = 0
+  ok    field snowfall present   = 0
+  ok    field wind_speed_10m present   = 6
+  ok    field wind_gusts_10m present   = 7.4
+  ok    field precipitation present   = 0
+  ok    field is_day present   = 1
+  ok    temperature unit is Fahrenheit   got "°F"
+  ok    wind unit is mph   got "mp/h"
+  ok    rain unit is mm   got "mm"
+  ok    snowfall unit is cm (drives the x10 conversion)   got "cm"
+  ok    hourly snowfall unit is cm too   got "cm"
+  ok    hourly series is GMT by default, so a UTC-hour index lines up   got "GMT"
+  ok    hourly.snowfall is an array covering a full day   len 168
+  ok    air-quality HTTP 200   status 200
+  ok    us_aqi present and numeric   = 38
+  ok    pm2_5 present and numeric   = 11.9
+  ok    us_aqi unit is USAQI, not the European scale   got "USAQI"
+  ok    snowfall normalised cm -> mm (x10)   0cm -> 0mm
+  live: 63°F  6mph (gusts 7.4)  rain 0  snow 0  AQI 38  pm2.5 11.9
+  band table -> 0  (no band met)
+  gate       -> SHUT    production applies 0
+  ok    delta is a finite number, never NaN   = 0
+  ok    applied is 0 whenever the gate is shut   gate false, applied 0
+
+=== SUMMARY ===
+  venue            band   gate                applied
+  Chase Field      0      shut                0   (none)
+  Coors Field      0      shut                0   (none)
+  Oracle Park      0      shut                0   (none)
+  Fenway Park      0      shut                0   (none)
+  Wrigley Field    0      shut                0   (none)
+
+  Every venue scored 0 on the band table. That is a REAL RESULT, not a failure
+  -- calm weather everywhere means no band was met. It does mean this run did
+  not exercise any band end to end; the offline guard covers those.
+
+Open-Meteo end-to-end verified.
