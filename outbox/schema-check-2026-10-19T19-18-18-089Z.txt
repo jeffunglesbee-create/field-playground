@@ -1,0 +1,35 @@
+mode: CHECK — re-measure live shape, diff against committed schema
+
+=== context-date-games ===
+  live records: 543  (schema built from 270)
+  DRIFT "mlb": required field(s) no longer reliably present: closing_odds
+  new required field(s) in "mlb": opening_odds, streams  (schema is stale, not wrong)
+  DRIFT "pga tour": required field(s) no longer reliably present: streams
+  new required field(s) in "pga tour": away_score, drama_arc, drama_peak, finalized_at, home_score  (schema is stale, not wrong)
+  VARIANT GONE: "efl cup" existed in the schema and produced no records now
+  new required field(s) in "golf": drama_arc, drama_peak  (schema is stale, not wrong)
+  NEW VARIANT: "nhl" (n=71) — unknown to the schema
+  NEW VARIANT: "epl" (n=20) — unknown to the schema
+  NEW VARIANT: "la liga" (n=19) — unknown to the schema
+  NEW VARIANT: "serie a" (n=20) — unknown to the schema
+  NEW VARIANT: "nfl" (n=28) — unknown to the schema
+  NEW VARIANT: "bundesliga" (n=17) — unknown to the schema
+  NEW VARIANT: "ligue 1" (n=17) — unknown to the schema
+  NEW VARIANT: "cfb" (n=108) — unknown to the schema
+  NEW VARIANT: "cfl" (n=6) — unknown to the schema
+  NEW VARIANT: "nba" (n=42) — unknown to the schema
+  NEW VARIANT: "uefa europa league" (n=18) — unknown to the schema
+  NEW VARIANT: "uefa europa conference league" (n=18) — unknown to the schema
+  NEW VARIANT: "uefa champions league" (n=18) — unknown to the schema
+  NEW VARIANT: "efl trophy" (n=6) — unknown to the schema
+
+=== bsd-incidents ===
+  live records: 123  (schema built from 117)
+  DRIFT "card": required field(s) no longer reliably present: player_id
+  new required field(s) in "card": reason  (schema is stale, not wrong)
+  NEW VARIANT: "varDecision" (n=2) — unknown to the schema
+
+=== VERDICT ===
+4 drift(s) detected. A field the code treats as guaranteed has stopped being
+guaranteed, or changed type. This is the failure that costs days: it does not throw,
+it produces wrong values downstream. Fix the consumer or regenerate deliberately.
