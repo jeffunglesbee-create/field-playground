@@ -1,4 +1,4 @@
-probe_at: 2026-10-19T16:40:38Z
+probe_at: 2026-10-26T16:20:51Z
 base: https://geocoding-api.open-meteo.com/v1/search
 
 Testing whether geocoding-by-name can replace this repo's hand-maintained
