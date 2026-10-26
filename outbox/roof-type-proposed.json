@@ -146,11 +146,11 @@
   {
     "name": "Angels Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Angel Stadium is a ballpark in Anaheim, California, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Angel Stadium",
@@ -191,20 +191,20 @@
   {
     "name": "Sutter Health Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Sutter Health Park is a ballpark in West Sacramento, California, directly adjacent to downtown Sacramento.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Globe Life Field",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": "retractable",
-    "leadSentence": "Globe Life Field is a retractable roof stadium in Arlington, Texas, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Chase Field",
@@ -219,7 +219,7 @@
     "name": "American Family Field",
     "currentRoofType": "retractable",
     "wikipediaRoofType": "retractable",
-    "leadSentence": "American Family Field, known as Miller Park until 2020, is a retractable roof stadium in Milwaukee, Wisconsin.",
+    "leadSentence": "American Family Field, still known as Miller Park by many, is a retractable roof stadium in Milwaukee, Wisconsin.",
     "agree": true,
     "knownUnfixable": false,
     "note": null
@@ -236,20 +236,20 @@
   {
     "name": "Daikin Park",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Daikin Park is a retractable roof stadium in Houston, Texas, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "T-Mobile Park",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "T-Mobile Park is a retractable roof ballpark in Seattle, Washington, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Rogers Centre",
@@ -290,20 +290,20 @@
   {
     "name": "CityPark",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Energizer Park, previously CityPark, is a 22,423-seat soccer-specific stadium in St. Louis, Missouri, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "America First Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "America First Field is a soccer-specific stadium in Sandy, Utah, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Snapdragon Stadium",
@@ -353,11 +353,11 @@
   {
     "name": "Bank of America Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Bank of America Stadium is a multi-purpose stadium located in the Uptown section of Charlotte, North Carolina, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Audi Field",
@@ -389,11 +389,11 @@
   {
     "name": "Inter&Co Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Inter.co Stadium is a soccer-specific stadium in downtown Orlando, Florida, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "GEODIS Park",
@@ -492,16 +492,16 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": "no Wikipedia data resolved (disambiguation)"
   },
   {
     "name": "Mercedes-Benz Stadium",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": "retractable",
-    "leadSentence": "Mercedes-Benz Stadium is a retractable roof stadium in Atlanta, Georgia, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "BC Place",
@@ -587,20 +587,20 @@
   {
     "name": "City Ground",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The  City Ground is a football stadium in West Bridgford, Nottinghamshire, England, on the banks of the River Trent.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Riverside Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Riverside Stadium is a football stadium in Middlesbrough, England, which has been the home of Middlesbrough since its opening in 1995.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "MKM Stadium",
@@ -614,11 +614,11 @@
   {
     "name": "The Den",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Den is a football stadium in the New Cross and Bermondsey area of south-east London, and the home of Millwall Football Club.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "London Stadium",
@@ -686,11 +686,11 @@
   {
     "name": "People First Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Carrara Stadium is a stadium located in the Gold Coast suburb of Carrara.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Marvel Stadium",
@@ -713,11 +713,11 @@
   {
     "name": "Rajiv Gandhi International Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Rajiv Gandhi International Cricket Stadium, commonly known as Uppal Stadium, is an international cricket stadium in Hyderabad, Telangana, India.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Sawai Mansingh Stadium",
@@ -785,11 +785,11 @@
   {
     "name": "Riviera Country Club",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Riviera Country Club is a private club with a championship golf course as well as tennis courts, located in the Pacific Palisades neighborhood of the Westside of Los Angeles, California.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Torrey Pines South Course",
@@ -812,20 +812,20 @@
   {
     "name": "TPC Scottsdale",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "TPC Scottsdale is a 36-hole golf complex in the southwestern United States, located in Scottsdale, Arizona, northeast of Phoenix.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Muirfield Village Golf Club",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Muirfield Village is a golf-oriented community in the central United States, located in Dublin, Ohio, a suburb north of Columbus.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "East Lake Golf Club",
@@ -875,10 +875,10 @@
   {
     "name": "TPC Twin Cities",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "TPC Twin Cities is a private golf club in the north central United States, located within the subdivision of Deacon’s Walk in Blaine, Minnesota, a suburb north of Minneapolis.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   }
 ]
