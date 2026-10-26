@@ -1,0 +1,47 @@
+probe_at: 2026-10-26T18:52:09.837Z
+purpose: permutation test -- does the per-sport framing find anything a shuffled-label
+control does not? This is the one check that can conclude the feature is unearned.
+window: 30 days; permutation trials: 200
+
+days OK: 30/30;  real games: 1201
+
+=== OBSERVED (real per-sport baselines) ===
+  judged: 1022;  flagged: 866  (84.7%)
+    cfb                n= 235 distinct=  1 tier
+    nhl                n= 186 distinct=  1 tier
+    nba                n= 110 distinct=  1 tier
+    nfl                n=  73 distinct=  1 tier
+    mls                n=  65 distinct=  8 tier
+    mlb                n=  51 distinct= 19 distribution
+    uefa europa league n=  36 distinct=  7 tier
+    uefa europa conference league n=  36 distinct=  6 tier
+    uefa champions league n=  36 distinct=  7 tier
+    epl                n=  30 distinct=  7 tier
+    serie a            n=  30 distinct=  1 tier
+    la liga            n=  29 distinct=  5 tier
+    bundesliga         n=  27 distinct=  6 tier
+    ligue 1            n=  26 distinct=  5 tier
+    wnba               n=  26 distinct=  7 tier
+    efl trophy         n=  26 distinct=  1 tier
+    cfl                n=  16 distinct=  1 tier
+
+=== NULL MODEL: 200 label permutations (marginal counts preserved) ===
+  shuffled flagged count: mean 405.1, p5 261, median 400, p95 517
+  observed flagged count: 866
+  permutation p-value (count >= observed): 0.0050
+  mean Jaccard overlap between real and shuffled flag sets: 0.339
+
+=== CONTROL: pooled baseline (the simpler design that was rejected) ===
+  pooled baseline: n=1071 distinct=25 resolution=distribution
+  pooled flagged: 985;  per-sport flagged: 866
+  Jaccard(per-sport, pooled): 0.870
+  found ONLY by per-sport: 5;  found ONLY by pooled: 124
+
+=== VERDICT ===
+PER-SPORT FRAMING EARNS ITS PLACE. Shuffling sport labels selects a materially
+different set of games, so sport identity carries real information about what counts
+as unusual -- which is exactly the premise the design rests on.
+
+Separately: the pooled control flags nearly the same set (Jaccard 0.870). The
+simpler rejected design would produce almost this output, so the per-sport machinery
+is buying little on the CURRENT corpus even if it is theoretically sounder.
