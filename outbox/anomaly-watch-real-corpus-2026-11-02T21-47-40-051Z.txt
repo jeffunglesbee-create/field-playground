@@ -1,0 +1,64 @@
+probe_at: 2026-11-02T21:47:40.085Z
+purpose: exercise AnomalyWatch's SHIPPED analysis against the real uncensored corpus.
+The dev mock carries 3 distinct drama_peak values; the real corpus carries ~34, so the
+percentile path cannot be validated locally at all.
+window: 30 real days back from 2026-11-02
+
+days fetched OK: 30 / 30;  real games: 1363
+
+=== REAL PER-SPORT BASELINES (shipped buildBaselines) ===
+  sport                  n  distinct  resolution     p10  median   p90  medRange  medTurns
+  cfb                   232         1  tier             0      0     0      null      null
+  nhl                   204         1  tier             0      0     0      null      null
+  nba                   158         1  tier             0      0     0      null      null
+  mls                    91         8  tier            52     52    70        35         1
+  nfl                    71         1  tier             0      0     0      null      null
+  serie a                49         1  tier             0      0     0      null      null
+  epl                    39         7  tier            52     52    62        25         2
+  la liga                39         6  tier            52     52    70        25         1
+  bundesliga             36         7  tier            52     57    70        25         2
+  uefa europa league     36         7  tier            52     52    70        33         2
+  uefa europa conference league   36         6  tier            52     52    63        25         1
+  uefa champions league   36         7  tier            52     52    63        36         2
+  ligue 1                35         6  tier            52     52    62        25         2
+  efl trophy             29         1  tier             0      0     0      null      null
+  mlb                    27        14  tier            53     65    83        43        31
+  wnba                   18         6  tier            52     57    70        49        31
+  cfl                    14         1  tier             0      0     0      null      null
+  efl cup                 8         1  tier             0      0     0      null      null
+  duplicate rows dropped before building: 0
+
+=== EXCLUSION CHECK ===
+  "golf" -> EXCLUDED (drama never computed for this sport)
+  "pga tour" -> EXCLUDED (drama never computed for this sport)
+
+=== FINDING RATES ACROSS THE WHOLE REAL CORPUS ===
+  games judged (status ok): 1118 of 1363
+  games with >=1 finding:   967  (86.5%)
+    rare-high         0  (0.0% of judged games)   <- never fires on real data
+    rare-low          0  (0.0% of judged games)   <- never fires on real data
+    tier-top        761  (68.1% of judged games)
+    late-surge      138  (12.3% of judged games)
+    fizzle           10  (0.9% of judged games)
+    flat-tension     88  (7.9% of judged games)
+    volatile         92  (8.2% of judged games)
+  status breakdown: unscored=168, ok=1118, not-measured=37, no-baseline=40
+
+=== WHAT THE COMPONENT WOULD SHOW for its default slate (2026-11-02) ===
+  games on slate: 29;  flagged: 1
+  Fiorentina @ Sassuolo (serie a)
+      Top tier: reached the highest drama level any real serie a game hit in this window (1 distinct levels exist for this sport, so this is a tier, not a percentile)
+
+=== VERDICT ===
+NO SPORT REACHES PERCENTILE RESOLUTION on real data. The percentile path is dead code
+in production and the feature is tier-only -- which the UI should state outright rather
+than implying a precision no sport supports.
+
+CONDITIONS THAT NEVER FIRE on this real corpus: rare-high, rare-low
+A condition that never fires is decoration, not a finding. Either its test is wrong,
+or the corpus genuinely lacks that shape -- distinguish before shipping it as a feature.
+
+=== DEFINITIONAL SELF-CONSISTENCY on real data ===
+
+CONDITIONS FIRING ON >50% OF JUDGED GAMES: tier-top (761)
+An "anomaly" that describes most games is not an anomaly. Worth tightening.
