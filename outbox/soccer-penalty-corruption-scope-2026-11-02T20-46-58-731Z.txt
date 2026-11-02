@@ -1,0 +1,48 @@
+probe_at: 2026-11-02T20:46:58.732Z
+purpose: scope WHICH archived soccer games carry a corrupted drama_arc from the confirmed
+penalty-dropping filter, and act as the standing regression detector once a fix ships.
+window: 30 real days back from 2026-11-02; max 60 soccer games profiled
+
+=== POPULATION ===
+real games in window:            1363
+real soccer games:               310
+  ...carrying an espn_event_id:  168  (only these can be checked)
+  ...WITHOUT one:                142  <- unverifiable by this method, reported not hidden
+
+NOTE: capped at 60 of 168 eligible games (PROBE_MAX_GAMES).
+108 eligible games were NOT checked -- this is a sample, not a census.
+
+=== PER-GAME: real scoring events vs what the relay filter keeps ===
+profiled 60 games successfully, 0 failed to fetch
+real scoring events (scoringPlay === true): 194
+kept by the relay's real filter:            190
+DROPPED:                                    4   (2.1% of real goals)
+
+=== CORRUPTED ROWS (>=1 real goal dropped -> drama_arc wrong from that point on) ===
+These are the rows a reset->refill would need to target. Reviewable list, not an estimate.
+  2026-11-01  Real Madrid @ Racing
+      game_id=La Liga_2026-11-01_e401882819  espn_event_id=401882819  sport=La Liga  drama_peak=52
+      real=3 kept=2 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 11'
+  2026-11-01  Real Sociedad @ Athletic
+      game_id=La Liga_2026-11-01_e401882826  espn_event_id=401882826  sport=La Liga  drama_peak=70
+      real=3 kept=2 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 45'+2'
+  2026-10-31  RB Leipzig @ Schalke
+      game_id=Bundesliga_2026-10-31_e401884747  espn_event_id=401884747  sport=Bundesliga  drama_peak=57
+      real=2 kept=1 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 37'
+  2026-10-25  Leverkusen @ Hoffenheim
+      game_id=Bundesliga_2026-10-25_e401884760  espn_event_id=401884760  sport=Bundesliga  drama_peak=62
+      real=3 kept=2 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 79'
+
+=== SIGNAL CHECK: did this window contain any droppable event type at all? ===
+  "Penalty - Scored" x4
+
+=== VERDICT ===
+BUG STILL LIVE. 4 of 60 profiled soccer games carry a
+corrupted drama_arc. The listed rows are the reset->refill target set.
+Fix is un-applied by design: it lives in field-relay-nba, where a push to
+scripts/** auto-deploys and rewriting history collides with the drama_peak
+immutability guard. Human go/no-go, not this probe's call.
