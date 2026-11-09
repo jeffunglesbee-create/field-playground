@@ -92,20 +92,20 @@
   {
     "name": "Kauffman Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Kauffman Stadium is a ballpark located in Kansas City, Missouri, and the home of Major League Baseball's Kansas City Royals.",
-    "agree": true,
-    "knownUnfixable": false,
-    "note": null
-  },
-  {
-    "name": "Comerica Park",
-    "currentRoofType": "open",
     "wikipediaRoofType": null,
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
     "note": "no Wikipedia data resolved (no title variant resolved)"
+  },
+  {
+    "name": "Comerica Park",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "Comerica Park is an open-air baseball stadium in Detroit, Michigan, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
   },
   {
     "name": "Petco Park",
@@ -182,11 +182,11 @@
   {
     "name": "Citi Field",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Citi Field is a baseball stadium located in Flushing Meadows–Corona Park, in the borough of Queens, New York City, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Sutter Health Park",
@@ -200,11 +200,11 @@
   {
     "name": "Globe Life Field",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "retractable",
+    "leadSentence": "Globe Life Field is a retractable roof stadium in Arlington, Texas, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Chase Field",
@@ -285,25 +285,25 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (disambiguation)"
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "CityPark",
-    "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Energizer Park, previously CityPark, is a 22,423-seat soccer-specific stadium in St. Louis, Missouri, United States.",
-    "agree": true,
-    "knownUnfixable": false,
-    "note": null
-  },
-  {
-    "name": "America First Field",
     "currentRoofType": "open",
     "wikipediaRoofType": null,
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
     "note": "no Wikipedia data resolved (no title variant resolved)"
+  },
+  {
+    "name": "America First Field",
+    "currentRoofType": "open",
+    "wikipediaRoofType": "open",
+    "leadSentence": "America First Field is a soccer-specific stadium in Sandy, Utah, United States.",
+    "agree": true,
+    "knownUnfixable": false,
+    "note": null
   },
   {
     "name": "Snapdragon Stadium",
@@ -389,11 +389,11 @@
   {
     "name": "Inter&Co Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Inter.co Stadium is a soccer-specific stadium in downtown Orlando, Florida, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "GEODIS Park",
@@ -492,7 +492,7 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (disambiguation)"
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Mercedes-Benz Stadium",
@@ -506,20 +506,20 @@
   {
     "name": "BC Place",
     "currentRoofType": "retractable",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "BC Place is a multi-purpose stadium in Vancouver, British Columbia, Canada.",
+    "agree": false,
     "knownUnfixable": true,
     "note": "Lead sentence omits roof type entirely (\"multi-purpose stadium\"); venue is genuinely retractable."
   },
   {
     "name": "Anfield",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Anfield is a football stadium in the area of Anfield, Liverpool, England, which has been the home of Liverpool Football Club since their formation in 1892.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Etihad Stadium",
@@ -578,20 +578,20 @@
   {
     "name": "Selhurst Park",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Selhurst Park is a football stadium in Selhurst, in the London Borough of Croydon, England.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "City Ground",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The  City Ground is a football stadium in West Bridgford, Nottinghamshire, England, on the banks of the River Trent.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Riverside Stadium",
@@ -614,11 +614,11 @@
   {
     "name": "The Den",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "The Den is a football stadium in the New Cross and Bermondsey area of south-east London, and the home of Millwall Football Club.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "London Stadium",
@@ -632,11 +632,11 @@
   {
     "name": "Allianz Arena",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Allianz Arena is a football stadium in Munich, Germany, with a 70,000 seating capacity for international matches and 75,000 for domestic matches.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Europa-Park Stadion",
@@ -686,11 +686,11 @@
   {
     "name": "People First Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Carrara Stadium is a stadium located in the Gold Coast suburb of Carrara.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Marvel Stadium",
@@ -731,11 +731,11 @@
   {
     "name": "Quail Hollow Club",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "Quail Hollow Club is a country club and golf course located in the Quail Hollow neighborhood in Charlotte, North Carolina, United States.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "Aronimink Golf Club",
@@ -785,11 +785,11 @@
   {
     "name": "Riviera Country Club",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "The Riviera Country Club is a private club with a championship golf course as well as tennis courts, located in the Pacific Palisades neighborhood of the Westside of Los Angeles, California.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Torrey Pines South Course",
@@ -830,11 +830,11 @@
   {
     "name": "East Lake Golf Club",
     "currentRoofType": "open",
-    "wikipediaRoofType": null,
-    "leadSentence": null,
-    "agree": null,
+    "wikipediaRoofType": "open",
+    "leadSentence": "East Lake Golf Club is a private golf club in the southeastern United States in Atlanta, Georgia, located five miles (8 km) east of downtown.",
+    "agree": true,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": null
   },
   {
     "name": "St Andrews Links Old Course",
@@ -875,10 +875,10 @@
   {
     "name": "TPC Twin Cities",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "TPC Twin Cities is a private golf club in the north central United States, located within the subdivision of Deacon’s Walk in Blaine, Minnesota, a suburb north of Minneapolis.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   }
 ]
