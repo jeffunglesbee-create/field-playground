@@ -1,0 +1,168 @@
+Extracted from src/components/Arbitrage/index.jsx: PRICES (17 keys), SERVICE_MAP (38 patterns)
+probe_at: 2026-11-09T19:57:05.059Z
+endpoint: https://field-relay-nba.jeffunglesbee.workers.dev/context/date/{date}
+method: for every game, check game.streams; parse with the real SERVICE_MAP/PRICES
+
+
+--- per-date counts ---
+  2026-10-19: 11 games, 11 with streams
+  2026-10-20: 26 games, 26 with streams
+  2026-10-21: 29 games, 24 with streams
+  2026-10-22: 57 games, 54 with streams
+  2026-10-23: 29 games, 25 with streams
+  2026-10-24: 120 games, 99 with streams
+  2026-10-25: 57 games, 44 with streams
+  2026-10-26: 20 games, 16 with streams
+  2026-10-27: 28 games, 23 with streams
+  2026-10-28: 57 games, 43 with streams
+  2026-10-29: 33 games, 21 with streams
+  2026-10-30: 23 games, 21 with streams
+  2026-10-31: 119 games, 96 with streams
+  2026-11-01: 51 games, 43 with streams
+  2026-11-02: 29 games, 25 with streams
+  2026-11-03: 26 games, 22 with streams
+  2026-11-04: 31 games, 29 with streams
+  2026-11-05: 52 games, 51 with streams
+  2026-11-06: 26 games, 21 with streams
+  2026-11-07: 151 games, 105 with streams
+  2026-11-08: 58 games, 52 with streams
+  2026-11-09: 14 games, 13 with streams
+  2026-11-10: 0 games, 0 with streams
+  2026-11-11: 0 games, 0 with streams
+  2026-11-12: 0 games, 0 with streams
+  2026-11-13: 0 games, 0 with streams
+  2026-11-14: 0 games, 0 with streams
+  2026-11-15: 0 games, 0 with streams
+  2026-11-16: 0 games, 0 with streams
+
+RESULT
+  total games seen: 1047
+  games with a non-empty streams field: 864
+  distinct raw stream labels seen: 98
+  label mentions matched to a PRICES key: 651
+  label mentions unmatched by SERVICE_MAP: 708
+
+--- most common raw labels (up to 20) ---
+  189x  "ESPN+"
+  158x  "Paramount+"
+  83x  "NBA League Pass"
+  59x  "Apple TV"
+  35x  "ESPN"
+  31x  "Fox"
+  27x  "USA Net"
+  26x  "ESPN Deportes"
+  26x  "CBSSN"
+  24x  "Prime Video (Local)"
+  24x  "Scripps Sports"
+  24x  "Fandango"
+  23x  "beIn Sports"
+  22x  "Peacock"
+  22x  "ESPN2"
+  19x  "CBS"
+  16x  "MNMT"
+  14x  "NBC"
+  14x  "Disney+"
+  13x  "ABC"
+
+--- unmatched labels (SERVICE_MAP has no pattern for these) ---
+  "MSG"
+  "KCOP"
+  "NBC Sports Phil"
+  "Altitude Sports"
+  "NBC Sports BA"
+  "Utah 16"
+  "truTV"
+  "USA Net"
+  "E!"
+  "Universo"
+  "ESPN Deportes"
+  "MSG2"
+  "KTVD-TV (My20)"
+  "MSGSN"
+  "MNMT"
+  "ABTV"
+  "CBJNHL"
+  "Blues App"
+  "BN+"
+  "MINNHL"
+  "DSN"
+  "KONG"
+  "KHN"
+  "CARNHL"
+  "CBSSN"
+  "ESPNU"
+  "ESPN2"
+  "NBA League Pass"
+  "TNT"
+  "Scripps Sports"
+  "NESN"
+  "KDFW 4"
+  "MyMi"
+  "Bucks App"
+  "KFAA-TV"
+  "MavsTV"
+  "DAZN MIN"
+  "GCSEN"
+  "Pelicans.com"
+  "KJZZ-TV"
+  "Jazz+"
+  "ClipperVision"
+  "Spectrum Sports Net"
+  "Spectrum Sports Net +"
+  "KUNP 16"
+  "BlazerVision"
+  "NHL Net"
+  "CHSN"
+  "The Spot - MTN"
+  "Fandango"
+  "CW"
+  "DAZN (YES)"
+  "DAZN CLE"
+  "DAZN SAS"
+  "Suns Live"
+  "Arizona's Family CBS5"
+  "MSGB"
+  "Tele"
+  "BTN"
+  "SEC Network"
+  "ACC Network"
+  "MW+"
+  "DAZN IND"
+  "KSBI"
+  "Thunder App"
+  "DAZN MEM"
+  "NFL Net"
+  "Arizona's Family 3TV"
+  "KTLA"
+  "NBC Sports Phil +"
+  "KING 5"
+  "SYFY"
+  "KTTV"
+  "ALT2/KTVD"
+  "CHSN+"
+  "KSTP"
+  "Mammoth+"
+  "KUSA-TV (9NEWS)"
+
+--- example parsed rows (up to 12) ---
+  2026-10-19 Ducks @ Rangers: "ESPN+, MSG, KCOP, Prime Video (Local)" -> espnplus($11.99), MSG(unmatched), KCOP(unmatched), prime($14.99)
+  2026-10-19 Avalanche @ Flyers: "ESPN+, NBC Sports Phil, Altitude Sports" -> espnplus($11.99), NBC Sports Phil(unmatched), Altitude Sports(unmatched)
+  2026-10-19 Sharks @ Maple Leafs: "ESPN+, NBC Sports BA" -> espnplus($11.99), NBC Sports BA(unmatched)
+  2026-10-19 Penguins @ Mammoth: "ESPN+, Utah 16" -> espnplus($11.99), Utah 16(unmatched)
+  2026-10-19 Guardians @ Rays: "TBS, truTV" -> tbs($undefined), truTV(unmatched)
+  2026-10-19 Dream @ Valkyries: "USA Net, CNBC, Peacock, E!" -> USA Net(unmatched), cnbc($undefined), peacock($9.99), E!(unmatched)
+  2026-10-19 Coventry @ Spurs: "USA Net, Universo" -> USA Net(unmatched), Universo(unmatched)
+  2026-10-19 Rayo @ Getafe: "ESPN Deportes, ESPN+" -> ESPN Deportes(unmatched), espnplus($11.99)
+  2026-10-19 Cagliari @ Monza: "Paramount+" -> paramount($7.99)
+  2026-10-19 Torino @ Parma: "Paramount+" -> paramount($7.99)
+  2026-10-19 Commanders @ 49ers: "ESPN, ABC" -> espn($undefined), abc($undefined)
+  2026-10-20 Celtics @ Pistons: "NBC" -> nbc($undefined)
+
+If gamesWithStreams is 0 across this whole -21/+7 window, the
+6-day-back live check was not a fluke -- something changed about
+the streams field itself, worth a follow-up. If it is nonzero,
+TonightsPick's cost badges and Arbitrage's My Services modal
+will actually appear on those real dates, and the unmatched-
+labels list above shows exactly what SERVICE_MAP is currently
+missing against live data, not just the 3 hardcoded examples in
+Arbitrage's own header comment.
