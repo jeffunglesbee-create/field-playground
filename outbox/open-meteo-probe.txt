@@ -1,4 +1,4 @@
-probe_at: 2026-11-02T19:51:59Z
+probe_at: 2026-11-09T20:14:46Z
 url: https://api.open-meteo.com/v1/forecast?latitude=42.3390&longitude=-83.0485&hourly=temperature_2m,precipitation_probability,wind_speed_10m,weather_code&forecast_days=1&temperature_unit=fahrenheit&wind_speed_unit=mph
 
 === HEADERS (CORS is the point; no API key was sent) ===
@@ -8,6 +8,7 @@ Content-Type: application/json; charset=utf-8
 access-control-allow-origin: *
 access-control-allow-headers: accept, authorization, content-type, origin, x-requested-with, user-agent, access-control-allow-origin, range, if-match, if-unmodified-since
 access-control-allow-methods: GET, POST, OPTIONS
+access-control-expose-headers: x-ratelimit-cost, x-ratelimit-limit, x-ratelimit-remaining, x-ratelimit-reset, x-ratelimit-window, retry-after
 access-control-max-age: 600
 
 === CORS VERDICT (simple GET with Origin) ===
@@ -21,6 +22,7 @@ HTTP/1.1 200 OK
 access-control-allow-origin: *
 access-control-allow-headers: accept, authorization, content-type, origin, x-requested-with, user-agent, access-control-allow-origin, range, if-match, if-unmodified-since
 access-control-allow-methods: GET, POST, OPTIONS
+access-control-expose-headers: x-ratelimit-cost, x-ratelimit-limit, x-ratelimit-remaining, x-ratelimit-reset, x-ratelimit-window, retry-after
 access-control-max-age: 600
 
 === PARSED SHAPE (jq) ===
@@ -28,9 +30,9 @@ top-level keys: elevation, generationtime_ms, hourly, hourly_units, latitude, lo
 hourly vars: precipitation_probability, temperature_2m, time, weather_code, wind_speed_10m
 units: {"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"}
 timezone: GMT | elevation: 177.0
-first 6 temps: [57.5,55.8,54.2,52.5,52.1,54.2]
-first 6 precip%: [2,2,2,2,2,5]
-first 6 wind: [3.3,3.1,2.1,2.7,3.4,1.6]
+first 6 temps: [50.6,51.1,49.9,49.2,48.9,48.5]
+first 6 precip%: [0,0,0,0,0,0]
+first 6 wind: [9.0,8.7,8.3,6.1,6.7,7.4]
 
 === RAW BODY (first 800 chars) ===
-{"latitude":42.351395,"longitude":-83.06135,"generationtime_ms":1.3121366500854492,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":177.0,"hourly_units":{"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"},"hourly":{"time":["2026-11-02T00:00","2026-11-02T01:00","2026-11-02T02:00","2026-11-02T03:00","2026-11-02T04:00","2026-11-02T05:00","2026-11-02T06:00","2026-11-02T07:00","2026-11-02T08:00","2026-11-02T09:00","2026-11-02T10:00","2026-11-02T11:00","2026-11-02T12:00","2026-11-02T13:00","2026-11-02T14:00","2026-11-02T15:00","2026-11-02T16:00","2026-11-02T17:00","2026-11-02T18:00","2026-11-02T19:00","2026-11-02T20:00","2026-11-02T21:00","2026-11-02T22:00","2026-11-02T23:00"],"temperature_2m
+{"latitude":42.351395,"longitude":-83.06135,"generationtime_ms":0.20647048950195312,"utc_offset_seconds":0,"timezone":"GMT","timezone_abbreviation":"GMT","elevation":177.0,"hourly_units":{"time":"iso8601","temperature_2m":"°F","precipitation_probability":"%","wind_speed_10m":"mp/h","weather_code":"wmo code"},"hourly":{"time":["2026-11-09T00:00","2026-11-09T01:00","2026-11-09T02:00","2026-11-09T03:00","2026-11-09T04:00","2026-11-09T05:00","2026-11-09T06:00","2026-11-09T07:00","2026-11-09T08:00","2026-11-09T09:00","2026-11-09T10:00","2026-11-09T11:00","2026-11-09T12:00","2026-11-09T13:00","2026-11-09T14:00","2026-11-09T15:00","2026-11-09T16:00","2026-11-09T17:00","2026-11-09T18:00","2026-11-09T19:00","2026-11-09T20:00","2026-11-09T21:00","2026-11-09T22:00","2026-11-09T23:00"],"temperature_2

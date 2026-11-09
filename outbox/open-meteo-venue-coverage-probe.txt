@@ -1,4 +1,4 @@
-probe_at: 2026-11-02T19:52:05Z
+probe_at: 2026-11-09T20:14:52Z
 
 Verifies two changes to src/data/weather.js's VENUE_COORDS, both run
 from a GitHub Actions runner because this sandbox's egress allowlist
@@ -14,18 +14,26 @@ Coordinates below are read directly out of src/data/weather.js's
 VENUE_COORDS at run time (not a hand-copied fixture) so this probe
 can't silently drift from the table it's meant to verify.
 
-Globe Life Field [retractable]: http=200 temp_f=82.1
-loanDepot park [retractable]: http=200 temp_f=80.3
-Rogers Centre [retractable]: http=200 temp_f=61.7
-Daikin Park [retractable]: http=200 temp_f=82.7
-Tropicana Field [dome]: http=200 temp_f=74.0
-PNC Park [open]: http=200 temp_f=73.0
-Citi Field [open]: http=200 temp_f=66.9
-Sutter Health Park [open]: http=200 temp_f=64.0
-Comerica Park [open]: http=200 temp_f=60.1
-Nationals Park [open]: http=200 temp_f=65.4
-Great American Ball Park [open]: http=200 temp_f=61.9
-Rate Field [open]: http=200 temp_f=57.5
-Busch Stadium [open]: http=200 temp_f=62.7
-Angel Stadium [open]: http=200 temp_f=72.8
-Oracle Park [open]: http=200 temp_f=62.2
+Globe Life Field [retractable]: http=200 temp_f=70.2
+loanDepot park [retractable]: http=200 temp_f=81.0
+Rogers Centre [retractable]: http=200 temp_f=49.6
+Daikin Park [retractable]: http=200 temp_f=61.9
+Tropicana Field [dome]: http=200 temp_f=82.2
+PNC Park [open]: http=200 temp_f=54.2
+Citi Field [open]: http=200 temp_f=57.4
+Sutter Health Park [open]: http=200 temp_f=68.5
+Comerica Park [open]: http=200 temp_f=55.0
+Nationals Park [open]: http=200 temp_f=63.4
+Great American Ball Park [open]: http=200 temp_f=64.7
+Rate Field [open]: http=200 temp_f=59.0
+Busch Stadium [open]: http=200 temp_f=68.8
+Angel Stadium [open]: http=200 temp_f=85.6
+Oracle Park [open]: http=200 temp_f=63.1
+TPC Twin Cities [open]: http=200 temp_f=59.5
+
+=== VERDICT ===
+All 16 venues resolved: http=200 and a real
+temperature, roofType included, sourced straight from
+src/data/weather.js. Confirms the retractable/dome-roof reversal
+works: every site has real, fetchable weather regardless of roof
+status, including Tropicana Field, the one true fixed dome.
