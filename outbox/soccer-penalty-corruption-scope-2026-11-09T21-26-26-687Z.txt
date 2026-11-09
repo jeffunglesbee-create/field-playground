@@ -1,0 +1,56 @@
+probe_at: 2026-11-09T21:26:26.687Z
+purpose: scope WHICH archived soccer games carry a corrupted drama_arc from the confirmed
+penalty-dropping filter, and act as the standing regression detector once a fix ships.
+window: 30 real days back from 2026-11-09; max 60 soccer games profiled
+
+=== POPULATION ===
+real games in window:            1454
+real soccer games:               310
+  ...carrying an espn_event_id:  175  (only these can be checked)
+  ...WITHOUT one:                135  <- unverifiable by this method, reported not hidden
+
+NOTE: capped at 60 of 175 eligible games (PROBE_MAX_GAMES).
+115 eligible games were NOT checked -- this is a sample, not a census.
+
+=== PER-GAME: real scoring events vs what the relay filter keeps ===
+profiled 60 games successfully, 0 failed to fetch
+real scoring events (scoringPlay === true): 179
+kept by the relay's real filter:            171
+DROPPED:                                    8   (4.5% of real goals)
+
+=== CORRUPTED ROWS (>=1 real goal dropped -> drama_arc wrong from that point on) ===
+These are the rows a reset->refill would need to target. Reviewable list, not an estimate.
+  2026-11-07  Columbus @ Chicago
+      game_id=MLS_2026-11-07_e761935  espn_event_id=761935  sport=MLS  drama_peak=52
+      real=7 kept=5 DROPPED=2 -> Penalty - Scored | Penalty - Scored
+      corruption begins at clock: 8'
+  2026-11-07  Toronto @ Philadelphia
+      game_id=MLS_2026-11-07_e761941  espn_event_id=761941  sport=MLS  drama_peak=60
+      real=5 kept=3 DROPPED=2 -> Penalty - Scored | Penalty - Scored
+      corruption begins at clock: 41'
+  2026-11-07  Kansas City @ San Diego
+      game_id=MLS_2026-11-07_e761947  espn_event_id=761947  sport=MLS  drama_peak=70
+      real=1 kept=0 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 76'
+  2026-11-07  Frankfurt @ Paderborn
+      game_id=Bundesliga_2026-11-07_e401884737  espn_event_id=401884737  sport=Bundesliga  drama_peak=63
+      real=4 kept=3 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 73'
+  2026-11-01  Real Madrid @ Racing
+      game_id=La Liga_2026-11-01_e401882819  espn_event_id=401882819  sport=La Liga  drama_peak=52
+      real=3 kept=2 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 11'
+  2026-11-01  Real Sociedad @ Athletic
+      game_id=La Liga_2026-11-01_e401882826  espn_event_id=401882826  sport=La Liga  drama_peak=70
+      real=3 kept=2 DROPPED=1 -> Penalty - Scored
+      corruption begins at clock: 45'+2'
+
+=== SIGNAL CHECK: did this window contain any droppable event type at all? ===
+  "Penalty - Scored" x8
+
+=== VERDICT ===
+BUG STILL LIVE. 6 of 60 profiled soccer games carry a
+corrupted drama_arc. The listed rows are the reset->refill target set.
+Fix is un-applied by design: it lives in field-relay-nba, where a push to
+scripts/** auto-deploys and rewriting history collides with the drama_peak
+immutability guard. Human go/no-go, not this probe's call.
