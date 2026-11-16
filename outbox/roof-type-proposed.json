@@ -479,11 +479,11 @@
   {
     "name": "Shell Energy Stadium",
     "currentRoofType": "open",
-    "wikipediaRoofType": "open",
-    "leadSentence": "Shell Energy Stadium is a multi-purpose stadium located in Houston, Texas, United States.",
-    "agree": true,
+    "wikipediaRoofType": null,
+    "leadSentence": null,
+    "agree": null,
     "knownUnfixable": false,
-    "note": null
+    "note": "no Wikipedia data resolved (no title variant resolved)"
   },
   {
     "name": "Toyota Stadium",
@@ -492,7 +492,7 @@
     "leadSentence": null,
     "agree": null,
     "knownUnfixable": false,
-    "note": "no Wikipedia data resolved (no title variant resolved)"
+    "note": "no Wikipedia data resolved (disambiguation)"
   },
   {
     "name": "Mercedes-Benz Stadium",
