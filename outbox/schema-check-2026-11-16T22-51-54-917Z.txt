@@ -1,0 +1,34 @@
+mode: CHECK — re-measure live shape, diff against committed schema
+
+=== context-date-games ===
+  live records: 434  (schema built from 270)
+  new required field(s) in "mls": bsd_event_id  (schema is stale, not wrong)
+  VARIANT GONE: "mlb" existed in the schema and produced no records now
+  VARIANT GONE: "wnba" existed in the schema and produced no records now
+  DRIFT "pga tour": required field(s) no longer reliably present: streams
+  new required field(s) in "pga tour": away_score, drama_arc, drama_peak, finalized_at, home_score  (schema is stale, not wrong)
+  VARIANT GONE: "efl cup" existed in the schema and produced no records now
+  DRIFT "golf": required field(s) no longer reliably present: venue
+  new required field(s) in "golf": drama_arc, drama_peak  (schema is stale, not wrong)
+  NEW VARIANT: "nba" (n=74) — unknown to the schema
+  NEW VARIANT: "nhl" (n=74) — unknown to the schema
+  NEW VARIANT: "nfl" (n=28) — unknown to the schema
+  NEW VARIANT: "cfb" (n=119) — unknown to the schema
+  NEW VARIANT: "cfl" (n=3) — unknown to the schema
+  NEW VARIANT: "efl trophy" (n=19) — unknown to the schema
+  NEW VARIANT: "fa cup" (n=38) — unknown to the schema
+  NEW VARIANT: "epl" (n=9) — unknown to the schema
+  NEW VARIANT: "la liga" (n=9) — unknown to the schema
+  NEW VARIANT: "serie a" (n=9) — unknown to the schema
+  NEW VARIANT: "bundesliga" (n=8) — unknown to the schema
+  NEW VARIANT: "ligue 1" (n=8) — unknown to the schema
+
+=== bsd-incidents ===
+  live records: 112  (schema built from 117)
+  DRIFT "card": required field(s) no longer reliably present: player_id
+  new required field(s) in "card": reason  (schema is stale, not wrong)
+
+=== VERDICT ===
+6 drift(s) detected. A field the code treats as guaranteed has stopped being
+guaranteed, or changed type. This is the failure that costs days: it does not throw,
+it produces wrong values downstream. Fix the consumer or regenerate deliberately.
