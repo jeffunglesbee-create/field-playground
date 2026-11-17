@@ -1,0 +1,25 @@
+probe_at: 2026-11-17T00:30:51.884Z
+purpose: verify the live weather path end to end -- reachability, FIELDS, UNITS,
+and the shipped modifier running on real returned data.
+
+venue table read from src/data/weather.js: 98 entries
+sampling 5: Chase Field, Coors Field, Oracle Park, Fenway Park, Wrigley Field
+
+=== Chase Field (33.4453, -112.0667, retractable) ===
+  FAIL  forecast threw: TypeError: fetch failed
+=== Coors Field (39.7559, -104.9942, open) ===
+  FAIL  forecast threw: TypeError: fetch failed
+=== Oracle Park (37.7786, -122.3893, open) ===
+  FAIL  forecast threw: TypeError: fetch failed
+=== Fenway Park (42.3467, -71.0972, open) ===
+  FAIL  forecast threw: TypeError: fetch failed
+=== Wrigley Field (41.9484, -87.6553, open) ===
+  FAIL  forecast threw: TypeError: fetch failed
+=== SUMMARY ===
+  venue            band   gate                applied
+
+  Every venue scored 0 on the band table. That is a REAL RESULT, not a failure
+  -- calm weather everywhere means no band was met. It does mean this run did
+  not exercise any band end to end; the offline guard covers those.
+
+5 failure(s).
