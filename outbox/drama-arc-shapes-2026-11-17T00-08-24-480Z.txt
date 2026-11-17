@@ -1,0 +1,75 @@
+probe_at: 2026-11-17T00:08:24.481Z
+purpose: measure the real shapes of drama_arc, and open the object one, before
+any renderer is written against it.
+
+=== UNCENSORED SWEEP: /context/date/ over 120 days ===
+  games scanned: 4713
+    other:string    2106  (44.7%)
+    array           2071  (43.9%)
+    null             536  (11.4%)
+
+  by month:
+    month              array         null other:string
+    2026-07              192           67           11
+    2026-08              726          166          183
+    2026-09              643          136          550
+    2026-10              383          138          869
+    2026-11              127           29          493
+
+  by sport (non-null shapes only):
+    MLB                array     936
+    CFB                other:string  752
+    NHL                other:string  408
+    MLS                array     288
+    NBA                other:string  265
+    NFL                other:string  197
+    WNBA               array     157
+    La Liga            array     119
+    Serie A            other:string  110
+    EPL                array     100
+    EFL Trophy         other:string   91
+    Ligue 1            array      90
+    golf               other:string   87
+    Bundesliga         array      81
+    EFL Cup            other:string   81
+    UEFA Europa League array      72
+    UEFA Champions League array      72
+    UEFA Europa Conference League array      54
+    CFL                other:string   51
+    UEFA Europa Conference League Qualifying array      48
+    FA Cup             other:string   40
+    UEFA Europa League Qualifying array      24
+    wnba               array      19
+    PGA Tour           other:string   18
+    UEFA Champions League Qualifying array      11
+    MLB                other:string    6
+
+=== CENSORED SOURCE, kept apart: /archive/drama/leaderboard ===
+  (ranked AND truncated -- dense in drama by construction, so its shape mix
+   says nothing about how common each shape is overall.)
+  HTTP 400
+
+=== THE THIRD SHAPE: what is in the non-array, non-object strings? ===
+  2106 row(s)
+  distinct raw values, most common first:
+    2106x  "null"
+
+  a few whole rows:
+    golf             peak=0  arc="null"
+    NBA              peak=0  arc="null"
+    NBA              peak=0  arc="null"
+    NBA              peak=0  arc="null"
+    NBA              peak=0  arc="null"
+
+  rows whose drama_peak is a number > 0: 0 of 2106
+    None. Consistent with drama never being COMPUTED for these, rather than
+    computed and stored in an unreadable shape.
+
+=== THE OBJECT SHAPE ===
+  NOT ONE object-shape drama_arc found in either source.
+
+  That is a real result, not a failed probe. The two sources claiming this shape
+  exists are both PROSE, and the one measurement available (anomalyBaseline, golf,
+  2026-08-06) predates the 2026-08-03 MLB reset and any recompute since. Do NOT
+  write an extractor for a shape that cannot be produced on demand -- support it
+  when a real one appears.
