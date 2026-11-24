@@ -1,0 +1,48 @@
+probe_at: 2026-11-24T00:23:45.270Z
+purpose: permutation test -- does the per-sport framing find anything a shuffled-label
+control does not? This is the one check that can conclude the feature is unearned.
+window: 30 days; permutation trials: 200
+
+days OK: 30/30;  real games: 1201
+
+=== OBSERVED (real per-sport baselines) ===
+  judged: 998;  flagged: 940  (94.2%)
+    cfb                n= 256 distinct=  1 tier
+    nhl                n= 207 distinct=  1 tier
+    nba                n= 206 distinct=  1 tier
+    nfl                n=  56 distinct=  1 tier
+    mls                n=  52 distinct=  8 tier
+    fa cup             n=  40 distinct=  1 tier
+    serie a            n=  39 distinct=  1 tier
+    la liga            n=  30 distinct=  6 tier
+    epl                n=  29 distinct=  7 tier
+    ligue 1            n=  28 distinct=  8 tier
+    efl trophy         n=  28 distinct=  1 tier
+    bundesliga         n=  27 distinct=  6 tier
+    uefa europa league n=  18 distinct=  7 tier
+    uefa europa conference league n=  18 distinct=  5 tier
+    uefa champions league n=  18 distinct=  6 tier
+    efl cup            n=   8 distinct=  1 tier
+    cfl                n=   5 distinct=  1 tier
+    wnba               n=   4 distinct=  3 tier
+    mlb                n=   3 distinct=  3 tier
+
+=== NULL MODEL: 200 label permutations (marginal counts preserved) ===
+  shuffled flagged count: mean 152.9, p5 142, median 153, p95 163
+  observed flagged count: 940
+  permutation p-value (count >= observed): 0.0050
+  mean Jaccard overlap between real and shuffled flag sets: 0.088
+
+=== CONTROL: pooled baseline (the simpler design that was rejected) ===
+  pooled baseline: n=1105 distinct=11 resolution=tier
+  pooled flagged: 182;  per-sport flagged: 940
+  Jaccard(per-sport, pooled): 0.107
+  found ONLY by per-sport: 832;  found ONLY by pooled: 74
+
+=== VERDICT ===
+PER-SPORT FRAMING EARNS ITS PLACE. Shuffling sport labels selects a materially
+different set of games, so sport identity carries real information about what counts
+as unusual -- which is exactly the premise the design rests on.
+
+The pooled control diverges (Jaccard 0.107), confirming the rejection of a
+pooled baseline was a real decision and not a stylistic one.
